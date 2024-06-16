@@ -1,0 +1,508 @@
+# /etc/nginxsites-available/common
+
+# DOMAIN-LEVEL
+server { # <domain>.
+    server_name ~^(?<domain>wordbase|dinder|pico-repo|crowdmeal|sludge|unhappy|wwl|matchbox)\.(?<tld>[^.]+)$;
+    include sites-available/F/personal/https;
+    rewrite ^/-(.*)/?$ /$1;
+
+    error_page 418 = @base;
+    location @base {
+        include sites-available/F/proxy;
+        proxy_pass http://[::1]:5000$request_uri;
+        proxy_set_header Host $domain.$tld;
+    }
+    location /api { return 418; }
+    location /socket.io { return 418; }
+
+    location /icon.png {
+        add_header Access-Control-Allow-Origin *;
+        try_files /raw/$domain.$tld$uri /raw/$domain$uri $uri;
+    }
+    location /static {
+        add_header Access-Control-Allow-Origin *;
+        try_files $uri $uri/;
+    }
+    location ~ ^/raw/([^/]+)(.*)$ {
+        add_header Access-Control-Allow-Origin *;
+        try_files $uri $uri/ /raw/$1$2 /raw/$1$2/ /raw/$1 /raw/$1/ /raw/$1/index.html /raw/simple/$1.html =404;
+    }
+    
+    location / {
+        try_files $uri $uri/ /raw$uri /raw$uri/ @base; # send to server for preview meta TODO cache or something
+
+        # include sites-available/F/proxy;
+        # proxy_pass http://[::1]:5000/$domain;
+        # proxy_set_header Host freshman.dev;
+    }
+}
+# non-matching project domains
+#
+# fishbowl @ basin.fish
+server {
+    server_name basin.fish;
+    include sites-available/F/personal/https;
+    location = / {
+        try_files $uri $uri/ /raw/fishbowl/index.html;
+    }
+    location / {
+        try_files /raw/fishbowl/$uri /raw/fishbowl/$uri/ $uri $uri/ @proxy;
+    }
+    location @proxy {
+        proxy_pass https://[::1]$request_uri;
+        include sites-available/F/proxy;
+    }
+}
+# Browser Compute Bank @ itj.sh
+server {
+    server_name itj.sh;
+    include sites-available/F/personal/https;
+    location = / {
+        try_files $uri $uri/ /raw/browser-compute-bank/index.html;
+    }
+    location / {
+        try_files /raw/browser-compute-bank/$uri /raw/browser-compute-bank/$uri/ $uri $uri/ @proxy;
+    }
+    location @proxy {
+        proxy_pass https://[::1]$request_uri;
+        include sites-available/F/proxy;
+    }
+}
+# gitly - shorten github (and other source control ?) @ git.
+server {
+    server_name ~^git\.;
+    include sites-available/F/personal/https;
+    location = / {
+        try_files $uri $uri/ /raw/git/index.html;
+    }
+    location / {
+        try_files /raw/git/$uri /raw/git/$uri/ $uri $uri/ @proxy;
+    }
+    location @proxy {
+        proxy_pass https://[::1]/gitly$request_uri;
+        include sites-available/F/proxy;
+    }
+}
+# stream
+server {
+    server_name ~^stream\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
+    include sites-available/F/personal/https;
+    # location = / {
+    #     try_files $uri $uri/ /raw/stream/index.html;
+    # }
+    location / {
+        return 301 https://$domain.$tld/raw/stream;
+        # try_files /raw/stream$uri /raw/stream$uri/ $uri $uri/ @proxy;
+    }
+    # location @proxy {
+    #     proxy_pass https://[::1]$request_uri;
+    #     include sites-available/F/proxy;
+    # }
+}
+
+
+server { # l. index - static page, proxy paths to /ly
+    server_name ~^l\. 
+        xn--bdk.day # ツ.day
+        xn--bdk.pw # ツ.pw
+        xn--uda.fo # ý.fo
+        xn--nda.wtf # ö.wtf
+        tu.fo nn.fo;
+    include sites-available/F/personal/https;
+    location @ly {
+        proxy_pass https://[::1]/ly$request_uri;
+        include sites-available/F/proxy;
+    }
+    location / {
+        try_files /raw/l.$uri /raw/l.$uri/ $uri $uri/ @ly;
+    }
+}
+server { # l. subdomains - redirect to project pages (for non-raw)
+    server_name ~^(?<subdomain>\w+(?:-\w+)*)\.l\.
+        ~^(?<subdomain>\w+(?:-\w+)*)\.(?<domain>.+)\.fo$
+        ~^(?<subdomain>\w+(?:-\w+)*)\.xn--bdk\.(?<tld>.+)$
+        ~^(?<subdomain>\w+(?:-\w+)*)\.xn--nda\.(?<tld>.+)$
+    include sites-available/F/personal/https;
+    location / {
+        return 301 $scheme://freshman.dev/$subdomain$request_uri;
+    }
+}
+
+# .cafe
+server {
+    server_name ~^.+\.cafe;
+    include sites-available/F/personal/httpps;
+    location / {
+        try_files /raw/simple/cafe.html =404;
+    }
+}
+# .computer .codes
+server {
+    server_name ~^.+\.(computer|codes) webputer.page sickos.xyz;
+
+    # broke, figure it out later
+    return 301 https://raw.tu.fo/simple/computer.html;
+
+    # include sites-available/F/personal/https;
+
+    # location = / {
+    #     try_files /raw/simple/computer.html =404;
+    # }
+    # location /simple {
+    #     try_files /raw/simple$uri @proxy;
+    # }
+    # error_page 418 = @proxy;
+    # location /api { return 418; }
+    # location /socket.io { return 418; }
+    # # location ~ ^/([^/.]+)$ {
+    # #     return 301 /$1.html;
+    # # }
+    # location ~ ^/home/(.+) {
+    #     try_files /raw/simple$uri @file;
+    # }
+    # location @file {
+    #     proxy_pass https://[::1]/simple$request_uri;
+    #     include sites-available/F/proxy;
+    # }
+    # location / {
+    #     try_files /raw/simple$uri @public;
+    # }
+    # location @public {
+    #     proxy_pass https://[::1]/simple/home/public$request_uri;
+    #     include sites-available/F/proxy;
+    # }
+    # location ~ ^/raw/simple/(.+)$ {
+    #     return 301 /$1;
+    # }
+    # location @proxy {
+    #     proxy_pass https://[::1]$request_uri;
+    #     include sites-available/F/proxy;
+    # }
+}
+
+# insecure ASCII & other
+#
+# tr.ink/et
+server {
+    server_name tr.ink;
+    include sites-available/F/personal/httpps;
+    location /et {
+        try_files /raw/simple/trinket.html =404;
+    }
+    location / {
+        return 301 https://tr.ink/et;
+    }
+}
+# shr.ooo/m
+server {
+    server_name shr.ooo;
+    include sites-available/F/personal/httpps;
+    location ~ ^/(o*)m$ {
+        try_files /raw/simple/shroom.html =404;
+    }
+    location ~ ^/(o*)ms$ {
+        try_files /raw/no/index.html =404;
+    }
+    location / {
+        return 301 https://shr.ooo/m;
+    }
+}
+# sci.
+server {
+    server_name ~^sci\.;
+    include sites-available/F/personal/httpps;
+    location / {
+        try_files /raw/simple-in-progress/sci.html =404;
+    }
+}
+# pixelworld - static page @ pixelworld. px.
+server {
+    server_name ~^pixelworld\. ~^px\. marsh.f3n.co;
+    include sites-available/F/personal/httpps;
+    location = /128 {
+        return 301 "https://$host/#128";
+    }
+    location / {
+        proxy_pass https://[::1]/raw/pixelworld;
+        include sites-available/F/proxy;
+    }
+}
+# # wwl
+# server {
+#     server_name ~^wwl\.;
+#     listen 80;
+#     listen [::]:80;
+#     include sites-available/F/personal/https;
+#     location / {
+#         try_files /raw/wwl/$uri /raw/wwl/$uri/ $uri $uri/ /raw/wwl/index.html =404;
+#     }
+# }
+# # matchbox
+# server {
+#     server_name matchbox.zip;
+#     listen 80;
+#     listen [::]:80;
+#     include sites-available/F/personal/https;
+#     location / {
+#         try_files /raw/matchbox$uri /raw/matchbox$uri/ $uri $uri/ /raw/matchbox/index.html =404;
+#     }
+# }
+server {
+    server_name ~^(?<domain>[^.]+)\.(?<tld>[^.]+)$; # freshman.dev cyrusfreshman.com cyruswigginfreshman.com cyrusfre.sh f3n.co f8n.co 0000011111100100.com cf017.com freshman.dev monstera.software herb.dev;
+    # include sites-available/F/personal/https;
+    include sites-available/F/personal/index;
+    listen 443 ssl http2 default_server;
+    ssl_certificate /etc/letsencrypt/live/freshman.dev/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/freshman.dev/privkey.pem;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    include sites-available/F/gzip;
+    
+    rewrite ^/-(.*)/?$ /$1;
+    location /icon.png {
+        add_header Access-Control-Allow-Origin *;
+        try_files /raw/$domain.$tld$uri /raw/$domain$uri $uri;
+    }
+    location /static {
+        add_header Access-Control-Allow-Origin *;
+        try_files $uri $uri/;
+    }
+    location ~ ^/raw/([^/]+)(.*)$ {
+        add_header Access-Control-Allow-Origin *;
+        try_files $uri $uri/ /raw/$1$2 /raw/$1$2/ /raw/$1 /raw/$1/ /raw/$1/index.html /raw/simple/$1.html =404;
+    }
+
+    error_page 418 = @s;
+    location @s {
+        include sites-available/F/proxy;
+        proxy_pass http://[::1]:5000$request_uri;
+    }
+    location /api/file {
+        client_max_body_size 1000M;
+        return 418;
+    }
+    location /api {
+        client_max_body_size 100M;
+        return 418;
+    }
+    location / {
+        # return 418;
+
+        # try_files $uri $uri/ /raw/$1$2 /raw/$1$2/ /raw/$1 /raw/$1/ /raw/$1/index.html /raw/simple/$1.html @s;
+        try_files $uri $uri/ /raw$uri /raw$uri/ @s; # send to server for preview meta TODO cache or something
+    }
+}
+
+# SUBDOMAIN-LEVEL
+server { # online (api)
+    server_name ~^o\.;
+    include sites-available/F/personal/https;
+    location / {
+        proxy_pass https://[::1]/api/online;
+        include sites-available/F/proxy;
+    }
+}
+server { # www.
+    server_name ~^www\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
+    include sites-available/F/personal/httpps;
+    return 301 $scheme://$domain.$tld$request_uri;
+}
+server { # api.
+    server_name ~^api\. ~^a\.;
+    include sites-available/F/personal/https;
+    location / {
+        proxy_pass https://[::1]/api$request_uri;
+        include sites-available/F/proxy;
+    }
+}
+server { # mastodon
+    server_name mastodon.freshman.dev;
+    include sites-available/F/https;
+    
+    error_page 418 = @s;
+    location @s {
+        include sites-available/F/proxy;
+        proxy_pass http://[::1]:5000/api/mastodon-intent-auth$request_uri;
+        proxy_set_header Host $host;
+    }
+    location /share {
+        if ( $arg_resolve = "true") { return 418; }
+    }
+    location /authorize_follow {
+        if ( $arg_resolve = "true") { return 418; }
+    }
+}
+server {
+    server_name ~^mastodon\.;
+    include sites-available/F/personal/httpps;
+    return 301 $scheme://mastodon.freshman.dev$request_uri;
+}
+server { # raw.
+    server_name ~^raw.;
+    include sites-available/F/personal/https;
+    rewrite ^/-(.*)/?$ /$1;
+
+    error_page 418 = @base;
+    location @base {
+        include sites-available/F/proxy;
+        proxy_pass http://[::1]:5000$request_uri;
+    }
+    location / { return 418; }
+}
+server { # <subdomain>.
+    server_name ~^(?<subdomain>[^.]+)\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
+    include sites-available/F/personal/https;
+    rewrite ^/-(.*)/?$ /$1;
+
+    error_page 418 = @base;
+    location @base {
+        include sites-available/F/proxy;
+        proxy_pass http://[::1]:5000$request_uri;
+        proxy_set_header Host $domain.$tld;
+    }
+    location / { return 418; }
+}
+
+
+# HTTP
+server { # http:
+    server_name _;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    location /.well-known {
+        try_files $uri =404;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+
+# # mastodon
+# server {
+#     # server_name ~^mastodon\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
+#     server_name mastodon.freshman.dev;
+#     include sites-available/F/listen-ssl;
+#     # let mastodon nginx handle other requests
+#     # location / {
+#     #     proxy_pass https://[::1]:3003$request_uri;
+#     #     proxy_set_header Host mastodon.freshman.dev;
+#     #     proxy_set_header X-Real-IP $remote_addr;
+#     #     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#     #     proxy_set_header X-Forwarded-Proto https;
+#     # }
+#     error_page 418 = @resolve;
+#     location /share {
+#         if ( $arg_resolve = "true") { return 418; }
+#     }
+#     location /authorize_follow {
+#         if ( $arg_resolve = "true") { return 418; }
+#     }
+#     location @resolve {
+#         proxy_pass https://[::1]:5000/api/mastodon-intent-auth$request_uri;
+#         include sites-available/F/proxy;
+#         proxy_set_header Host $host;
+#     }
+#     location /actual_share {
+#         set $new_request_uri $request_uri;
+#         if ($request_uri ~ ^/actual_share(.*)$) {
+#             set $new_request_uri $1;
+#         }
+#         proxy_pass https://[::1]:3003/share$new_request_uri;
+#     }
+#     location /actual_authorize_follow {
+#         set $new_request_uri $request_uri;
+#         if ($request_uri ~ ^/actual_authorize_follow(.*)$) {
+#             set $new_request_uri $1;
+#         }
+#         proxy_pass https://[::1]:3003/authorize_follow$new_request_uri;
+#         # proxy_set_header Host mastodon.freshman.dev;
+#         # proxy_set_header X-Real-IP $remote_addr;
+#         # proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         # proxy_set_header X-Forwarded-Proto https;
+#     }
+# }
+# server {
+#     server_name
+#         ~^mastodon\.(?<domain>[^.]+)\.(?<tld>[^.]+)$
+#         ~^m\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
+#     listen 80;
+#     include sites-available/F/personal/https;
+#     return 301 $scheme://mastodon.freshman.dev$request_uri;
+# }
+
+# # gitlab
+# server {
+#     server_name ~^gitlab\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
+#     include sites-available/F/listen-ssl;
+#     location / {
+#         proxy_pass https://[::1]:3004$request_uri;
+#         proxy_set_header Host gitlab.freshman.dev;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto https;
+#     }
+# }
+
+
+# # public git
+# server {
+#     server_name ~^public\.;
+#     listen 80;
+#     include sites-available/F/listen-ssl;
+#     root /srv/git;
+#     error_page 418 = @redirect;
+#     location @redirect {
+#         return 301 https://git.freshman.dev;
+#     }
+#     location / {
+#         try_files $uri $uri/ =418;
+#     }
+# }
+# # public git visualizer
+# server {
+#     server_name ~^code\.;
+#     listen 80;
+#     location / {
+#         proxy_pass http://127.0.0.1:1234;
+#     }
+# }
+
+
+# # metrics @ metrics. m.
+# server {
+#     server_name ~^metrics\.;
+#     include sites-available/F/personal/https;
+#     location / {
+#         proxy_pass https://[::1]:8000$request_uri;
+#         proxy_set_header Host freshman.dev;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto https;
+#     }
+# }
+
+# # wiki @ wiki.
+# server {
+#     server_name ~^wiki\.;
+#     include sites-available/F/personal/https;
+#     location / {
+#         proxy_pass http://24.183.185.23:8080$request_uri;
+#         proxy_set_header Host $host;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto https;
+#     }
+# }
+
+# # gitlab @ gitlab.
+# server {
+#     server_name ~^gitlab\.;
+#     include sites-available/F/personal/https;
+#     location / {
+#         proxy_pass http://24.183.185.23:5010$request_uri;
+#         proxy_set_header Host freshman.dev;
+#         proxy_set_header X-Real-IP $remote_addr;
+#         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#         proxy_set_header X-Forwarded-Proto https;
+#     }
+# }

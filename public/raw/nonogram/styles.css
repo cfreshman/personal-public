@@ -1,0 +1,354 @@
+html {
+    /*background: black;*/
+    /* height: 100%; */
+    width: 100%;
+    height: max-content;
+    margin: 0;
+    /* font-size: min(1.5vw, 16px) !important; */
+    font-size: min(3.6vw, 16px) !important;
+    font-family: 'Roboto Slab', serif;
+    overflow-x: hidden;
+    background: white;
+}
+
+body {
+    overflow-x: hidden;
+    height: 100%;
+    max-width: 70rem;
+    /* width: calc(100% - 2rem); */
+    width: 100%;
+    padding: 0 1rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+* {
+    font-family: 'Roboto Slab', serif;
+    font-size: 1rem;
+}
+
+h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin: 1.5rem 0;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-content: stretch;
+    align-items: center;
+    white-space: normal;
+    gap: .4em;
+}
+
+img.logo {
+    /* height: 3rem;
+    width: 3rem; */
+    /* margin-left: 2rem; */
+    height: 2em;
+    width: 2em;
+    image-rendering: pixelated;
+}
+
+hr {
+    width: 100%;
+    border-top: 1px solid #8c8b8b;
+}
+
+
+#inputs {
+    /* width: calc(100% - 2rem); */
+    width: 100%;
+    margin: .5rem auto;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: .5em;
+}
+#inputs form {
+    flex-grow: 1;
+    display: flex; flex-direction: column; gap: .5em;
+}
+input[type=text] {
+    /* width: 700px; */
+    flex-grow: 1;
+    /* height: 1.3rem; */
+    /* margin: .3rem; */
+    text-indent: .15rem;
+    border: 1px solid rgb(121, 121, 121);
+    font-family: sans-serif;
+    margin-left: .5em;
+}
+label {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.label {
+    /* padding-right: 5px; */
+    min-width: 2.25rem;
+    text-align: right;
+    /* margin: .3rem; */
+}
+
+#examples {
+    display: flex; gap: .33em;
+}
+button {
+    /* margin: .3rem; */
+    border-radius: .15rem;
+    background-color: black;
+    color: white;
+    border: none;
+}
+button:focus {
+    outline: none;
+}
+
+button.lg {
+    font-size: 1.25rem;
+    padding: 1rem;
+}
+
+button.sm {
+    font-size: 1rem;
+    padding: .5rem;
+}
+
+
+#slider {
+    width: 100%;
+    /* height: .5rem; */
+    padding: .5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+#slider input {
+    flex-grow: 1;
+}
+#slider label {
+    /* min-width: 7rem; */
+    /* margin-right: .5rem; */
+    display: flex;
+    justify-content: center;
+}
+
+#custom-handle {
+    width: 4rem;
+    height: 1.6rem;
+    top: 50%;
+    margin-top: -.8rem;
+    margin-left: -2.075rem;
+    text-align: center;
+    line-height: 1.6rem;
+}
+#custom-handle:focus {
+    outline: none;
+}
+#custom-handle.ui-state-active {
+    border: 1px solid black;
+    background: black;
+}
+
+
+#board {
+    /* min-height: 8rem; */
+    /* height: fit-content; */
+    margin: 1rem 0;
+    flex-grow: 1;
+    /* width: calc(100% - 16rem); */
+    width: max-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+table, tbody, tr, td {
+    border-collapse: collapse;
+}
+
+tr {
+    font-size: 0;
+}
+
+td {
+    /* border: 1px solid #929292; */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    /* width: 24px;
+    height: 23px;
+    font-size: 24px; */
+    width: 1.5rem;
+    height: calc(1.5rem - 1px);
+    font-size: 1.5rem;
+}
+td:not(.numbers) {
+    border: 1px solid #00000006 !important;
+}
+
+td.highlight {
+    /* border-color: #252525; */
+    /* border-color: #0175ff; */
+    background: #0175ff88;
+    /*border-width: 2px;*/
+    border: 0;
+    color: #0175ff !important;
+}
+td.v1.highlight {
+    background: #0175ff !important;
+    border: 0;
+}
+
+tr:not(.numbers) {
+    background: #fff;
+    box-shadow: 2px 0 #000, -2px 0 #000;
+}
+table::after, tr:first-child::after {
+    position: absolute;
+    content: "";
+    height: 2px;
+    width: calc(100% + 4px);
+    left: 0;
+    margin-left: -2px;
+    background: #000;
+}
+tr:first-child {
+    position: relative;
+}
+tr:first-child::after {
+    bottom: 0;
+}
+
+/* td.highlight.down {
+    border-right-width: .05rem;
+    border-left-width: .05rem;
+}
+
+td.highlight.across {
+    border-top-width: .05rem;
+    border-bottom-width: .05rem;
+} */
+
+td.selected {
+    background: rgba(0, 0, 0, .5);
+}
+
+
+tr.numbers {
+    border: none;
+}
+td.numbers {
+    border: none;
+    justify-content: flex-end;
+    align-content: center;
+}
+.numbers div {
+    font-size: .7rem;
+    height: .9rem;
+}
+
+td.numbers.down:not(.across) {
+    height: auto;
+    flex-direction: column;
+    vertical-align: bottom;
+    padding: 0;
+    padding-bottom: .3rem;
+}
+
+td.border.vertical {
+    position: relative;
+}
+div.numbers.across {
+    position: absolute;
+    right: .3rem;
+    display: flex;
+}
+div.numbers.across div {
+    padding-right: .5rem;
+}
+div.numbers.across.down div {
+    font-size: .9rem;
+}
+
+
+td.border {
+    padding: 0;
+    border: none;
+    background: black;
+}
+tr:first-child td.not.border {
+    background: none;
+}
+
+tr.border {
+    display: flex;
+}
+td.border.horizontal {
+    height: .2rem;
+    height: 0;
+    flex: 1 0;
+    border: 0 !important;
+}
+td.not.border.horizontal {
+    flex: 0 0 .15rem;
+}
+td.end.not.border.horizontal {
+    flex: 0 0 0;
+    background: none;
+}
+
+td.border.vertical {
+    /* width: .2rem; */
+    /* display: none; */
+    width: 0;
+    border: 0 !important;
+}
+
+
+.v0 {
+
+}
+.v1 {
+    background-color: black !important;
+    border: 1px solid #252525;
+    border-color: black;
+}
+.v2 {
+    font-family: 'Coiny', 'Roboto Slab', sans-serif;
+    padding-top: .4rem;
+    padding-left: .1rem;
+}
+.v2.done {
+    color: #00000000;
+    border: 1px solid #9292921f;
+}
+.v2.done.slow {
+    transition: 1s ease-out;
+}
+
+.guess.v1 {
+    font-family: 'Coiny', 'Roboto Slab', sans-serif;
+    padding-top: .4rem;
+    padding-left: .1rem;
+    color: white;
+}
+.guess.v2 {
+
+}
+
+
+#examples {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* margin-bottom: 1rem; */
+}
+
+button, #custom-handle {
+    cursor: pointer;
+}

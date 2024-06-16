@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>pretty good numbers</title>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <button id=better>an even better number</button>
+  <script>
+let i = 0, x = 1, last = x
+better.onclick = e => better.insertAdjacentElement('afterend', node(`<div>${(() => {
+  do {
+    const start_ms = performance.now()
+    i += 1
+    const f = range(2, i + 1)
+    while (f.some(y => ((x / y) % 1) || performance.now() - start_ms > 500)) {
+      x += 1
+      if (performance.now() - start_ms > 500) {
+        better.textContent = "sorry that's it"
+        better.onclick = undefined
+        better.style.cssText += `
+        font-style: italic;
+        `
+        return ''
+      }
+    }
+  } while (x === last)
+  return last = x
+})()}</div>`))
+better.click()
+  </script>
+
+</body>
+</html>

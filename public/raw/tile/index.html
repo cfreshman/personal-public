@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<!-- <title>TILE DEMO</title> -->
+<style>
+  html {
+    background: #f9f8f6;
+    color: #101010;
+    font-size: 12px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5rem 1rem;
+  }
+  .title {
+    font-size: 1.25rem;
+    position: relative;
+    white-space: pre-line;
+  }
+  a {
+    color: inherit;
+  }
+  a:hover {
+    color: #f9f8f6;
+    background: #101010;
+  }
+  input[type="number"] {
+    width: 3em;
+  }
+  canvas {
+    image-rendering: pixelated;
+    width: min(80vw, 80vh);
+    height: min(80vw, 80vh);
+  }
+</style>
+
+<script src="/lib/utils.js"></script>
+</head>
+<body>
+
+  <div class="title">[ TILE DEMO ]</div>
+  <br/>
+
+  <canvas id="canvas"></canvas>
+
+  <p style="line-height: 2.5em;">
+    <button id="mode">type 1</button> <button id="run">run</button> <button id="color">color</button>
+  </p>
+
+  <script>
+    const s2grid = s => s.split('\n').filter(s=>s).map(l => l.trim().split('').map(c => c === 'X' ? 1 : 0))
+
+    const modes = []
+
+    const color = [
+      '#54b475', '#d2ca5c',
+    ]
+    // color[0] = `rgb(${randi(255)} ${randi(255)} ${randi(255)})`
+    // color[1] = `rgb(${randi(255)} ${randi(255)} ${randi(255)})`
+
+    // basic
+    {
+      // const tiles = [`
+      //   ..X.
+      //   ...X
+      //   X...
+      //   .X..
+      //   `,`
+      //   .X..
+      //   X...
+      //   ...X
+      //   ..X.
+      //   `
+      // ].map(s2grid)
+      // const scale = 4
+      // const size = 16
+
+      // // const grid2s = grid => grid.map(r => r.join('')).join('\n')
+      // // let grid = [[]]
+
+      // // const color = [
+      // //   // 'blue', 'red', 'yellow', 'green', 'purple'
+      // //   'blue', '#ff2f2f', '#ffee0d', '#04b337', '#9e2e9e'
+      // // ]
+      // const color = [
+      //   '#fff', '#000'
+      // ]
+
+      // const canvas = Q('#canvas')
+      // const ctx = canvas.getContext('2d')
+      // const draw = () => {
+      //   canvas.width = size * scale
+      //   canvas.height = size * scale
+      //   for (let r = 0; r < size; r++) {
+      //     for (let c = 0; c < size; c++) {
+      //       const tile = randpick(tiles)
+      //       tile.map((t_row, t_r) => t_row.map((t_cell, t_c) => {
+      //         ctx.fillStyle = color[t_cell]
+      //         ctx.fillRect(c*scale + t_c, r*scale + t_r, 1, 1)
+      //       }))
+      //     }
+      //   }
+      // }
+
+      // // modes.basic = () => draw()
+      // modes.push(() => draw())
+    }
+
+    // basic
+    {
+      const tiles = [`
+        ..X..
+        ...X.
+        X...X
+        .X...
+        ..X..
+        `,`
+        ..X..
+        .X...
+        X...X
+        ...X.
+        ..X..
+        `
+      ].map(s2grid)
+      const scale = 5
+      const size = 16
+
+      // const grid2s = grid => grid.map(r => r.join('')).join('\n')
+      // let grid = [[]]
+
+      // const color = [
+      //   // 'blue', 'red', 'yellow', 'green', 'purple'
+      //   'blue', '#ff2f2f', '#ffee0d', '#04b337', '#9e2e9e'
+      // ]
+      // const color = [
+      //   '#fff', '#000'
+      // ]
+
+      const canvas = Q('#canvas')
+      const ctx = canvas.getContext('2d')
+      const draw = () => {
+        // color[0] = `rgb(${randi(255)} ${randi(255)} ${randi(255)})`
+        // color[1] = `rgb(${randi(255)} ${randi(255)} ${randi(255)})`
+        canvas.width = size * scale
+        canvas.height = size * scale
+        for (let r = 0; r < size; r++) {
+          for (let c = 0; c < size; c++) {
+            const tile = randpick(tiles)
+            tile.map((t_row, t_r) => t_row.map((t_cell, t_c) => {
+              ctx.fillStyle = color[t_cell]
+              ctx.fillRect(c*scale + t_c, r*scale + t_r, 1, 1)
+            }))
+          }
+        }
+      }
+
+      // modes.basic = () => draw()
+      modes.push(() => draw())
+    }
+
+    // constrained
+    {
+      const patterns = [`
+        ..XX
+        ...X
+        X...
+        XX..
+        `,`
+        XX..
+        X...
+        ...X
+        ..XX
+        `,`
+        XXX.
+        XXXX
+        XXXX
+        .XXX
+        `,`
+        .XXX
+        XXXX
+        XXXX
+        XXX.
+        `,
+      ].map(s2grid)
+      const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+      const edges = [
+        [1, 2], // 0
+        [0, 3], // 1
+        new Set([0, 3]), // 2
+        new Set([1, 2]), // 3
+      ]
+      const tiles = patterns.map((pattern, i) => ({
+        pattern,
+        edges: edges[i],
+      }))
+      const scale = 4
+      const size = 16
+
+      let grid = [[]]
+      const get = (r, c) => {
+        return grid[r] ? grid[r][c] : undefined
+      }
+      const generate = () => {
+        grid = Array.from({ length: size }).map(_ => Array.from({ length: size }).map(_ => false))
+
+        grid[0][0] = randpick(tiles)
+        const explored = []
+        const frontier = [[0, 0]]
+        while (frontier.length) {
+          const [x, y] = randpop(frontier)
+          const allowed = Array.from(get(y, x).edges).map(i => tiles[i])
+
+          dirs.map(([x_o, y_o]) => {
+            let [x2, y2] = [y + y_o, x + x_o]
+            const tile = get(y2, x2)
+            if (tile === false) {
+              frontier.push([y + y_o, x + x_o])
+              grid[y2][x2] = randpick(allowed)
+            }
+          })
+        }
+      }
+
+      // const color = [
+      //   '#fff', '#000'
+      // ]
+
+      const canvas = Q('#canvas')
+      const ctx = canvas.getContext('2d')
+      const draw = () => {
+        canvas.width = size * scale
+        canvas.height = size * scale
+        for (let r = 0; r < size; r++) {
+          for (let c = 0; c < size; c++) {
+            const tile = get(r, c)
+            tile.pattern.map((t_row, t_r) => t_row.map((t_cell, t_c) => {
+              ctx.fillStyle = color[t_cell]
+              ctx.fillRect(c*scale + t_c, r*scale + t_r, 1, 1)
+            }))
+          }
+        }
+      }
+
+      modes.push(() => {
+        generate()
+        draw()
+      })
+    }
+
+    // constrained
+    {
+      const patterns = [`
+        ..XX
+        ...X
+        X...
+        XX..
+        `, // 0
+        `
+        XX..
+        X...
+        ...X
+        ..XX
+        `, // 1
+        `
+        XX..
+        XXX.
+        .XXX
+        ..XX
+        `, // 2
+        `
+        ..XX
+        .XXX
+        XXX.
+        XX..
+        `, // 3
+        `
+        ....
+        ....
+        X...
+        XX..
+        `, // 4
+        `
+        XX..
+        X...
+        ....
+        ....
+        `, // 5
+        `
+        ..XX
+        ...X
+        ....
+        ....
+        `, // 6
+        `
+        ....
+        ....
+        ...X
+        ..XX
+        `, // 7
+        `
+        ....
+        ....
+        ....
+        ....
+        `, // 8
+      ].map(s2grid)
+      const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+      const edges = [
+        [[1, 2, 7], [1, 2, 5], [1, 2, 5], [1, 2, 7]], // 0
+        [[0, 3, 4], [0, 3, 4], [0, 3, 6], [0, 3, 6]], // 1
+        [[0, 3, 4], [0, 3, 4], [0, 3, 6], [0, 3, 6]], // 2
+        [[1, 2, 7], [1, 2, 5], [1, 2, 5], [1, 2, 7]], // 3
+        [[5, 6, 8], [6, 7, 8], [1, 2, 5], [1, 2, 5]], // 4
+        [[0, 3, 4], [6, 7, 8], [4, 7, 8], [0, 3, 6]], // 5
+        [[1, 2, 7], [1, 2, 5], [4, 7, 8], [4, 5, 8]], // 6
+        [[5, 6, 8], [0, 3, 4], [0, 3, 6], [4, 5, 8]], // 7
+        [[8, 5, 6], [8, 6, 7], [8, 4, 7], [8, 4, 5]] // 8
+      ]
+      const tiles = patterns.map((pattern, i) => ({
+        pattern,
+        edges: edges[i],
+      }))
+      const scale = 4
+      const size = 16
+
+      let grid = [[]]
+      const get = (r, c) => {
+        return grid[r] ? grid[r][c] : undefined
+      }
+      function intersect(a_set, b_arr) {
+        const b = new Set(b_arr)
+        a_set.forEach(item => !b.has(item) && a_set.delete(item))
+      }
+      const generate = () => {
+        grid = Array.from({ length: size }).map(_ => Array.from({ length: size }).map(_ => false))
+
+        grid[0][0] = randpick(tiles)
+        const explored = []
+        const frontier = [[0, 0]]
+        while (frontier.length) {
+          // console.log(frontier)
+          // const [x, y] = randpop(frontier)
+          const [x, y] = frontier.shift()
+
+          dirs.map(([x_o, y_o]) => {
+            let [x2, y2] = [y + y_o, x + x_o]
+            const tile = get(y2, x2)
+            if (tile === false) {
+              frontier.push([y + y_o, x + x_o])
+              const allowed = new Set(tiles.map((_, i) => i))
+              dirs.map(([x_o, y_o], i) => {
+                const adj = get(y2 + y_o, x2 + x_o)
+                // console.log(i, adj)
+                if (adj) {
+                  // console.log(x2, y2, adj)
+                  intersect(allowed, adj.edges[(i + 2)%4])
+                }
+              })
+              grid[y2][x2] = randpick(Array.from(allowed).map(i => tiles[i]))
+            }
+          })
+        }
+      }
+
+      // const color = [
+      // '#000', '#fff'
+      // ]
+
+      const canvas = Q('#canvas')
+      const ctx = canvas.getContext('2d')
+      const draw = () => {
+        canvas.width = size * scale
+        canvas.height = size * scale
+        ctx.fillStyle = 'red'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        for (let r = 0; r < size; r++) {
+          for (let c = 0; c < size; c++) {
+            const tile = get(r, c)
+            tile?.pattern.map((t_row, t_r) => t_row.map((t_cell, t_c) => {
+              ctx.fillStyle = color[1 - t_cell]
+              ctx.fillRect(c*scale + t_c, r*scale + t_r, 1, 1)
+            }))
+          }
+        }
+      }
+
+      modes.push(() => {
+        generate()
+        draw()
+      })
+    }
+
+    // constrained
+    {
+      // const patterns = [`
+      //   ..XXX
+      //   ...XX
+      //   X...X
+      //   XX...
+      //   XXX..
+      //   `,`
+      //   XXX..
+      //   XX...
+      //   X...X
+      //   ...XX
+      //   ..XXX
+      //   `,`
+      //   XXX..
+      //   XXXX.
+      //   XXXXX
+      //   .XXXX
+      //   ..XXX
+      //   `,`
+      //   ..XXX
+      //   .XXXX
+      //   XXXXX
+      //   XXXX.
+      //   XXX..
+      //   `
+      // ].map(s2grid)
+      // const dirs = [[0, -1], [1, 0], [0, 1], [-1, 0]]
+      // const edges = [
+      //   [1, 1, 1, 2], // 0
+      //   [0, 0, 0, 3], // 1
+      //   [0, 0, 0, 3], // 2
+      //   [1, 1, 1, 2], // 3
+      // ]
+      // const tiles = patterns.map((pattern, i) => ({
+      //   pattern,
+      //   edges: edges[i],
+      // }))
+      // const scale = 5
+      // const size = 16
+
+      // let grid = [[]]
+      // const get = (r, c) => {
+      //   return grid[r] ? grid[r][c] : undefined
+      // }
+      // const generate = () => {
+      //   grid = Array.from({ length: size }).map(_ => Array.from({ length: size }).map(_ => false))
+
+      //   grid[0][0] = randpick(tiles)
+      //   const explored = []
+      //   const frontier = [[0, 0]]
+      //   while (frontier.length) {
+      //     const [x, y] = randpop(frontier)
+      //     console.log(get(y, x))
+      //     const allowed = Array.from(get(y, x).edges).map(i => tiles[i])
+      //     console.log(allowed)
+
+      //     dirs.map(([x_o, y_o]) => {
+      //       let [x2, y2] = [y + y_o, x + x_o]
+      //       const tile = get(y2, x2)
+      //       if (tile === false) {
+      //         frontier.push([y + y_o, x + x_o])
+      //         grid[y2][x2] = randpick(allowed)
+      //       }
+      //     })
+      //   }
+      // }
+
+      // const color = [
+      //   '#fff', '#000'
+      // ]
+
+      // const canvas = Q('#canvas')
+      // const ctx = canvas.getContext('2d')
+      // const draw = () => {
+      //   canvas.width = size * scale
+      //   canvas.height = size * scale
+      //   for (let r = 0; r < size; r++) {
+      //     for (let c = 0; c < size; c++) {
+      //       const tile = get(r, c)
+      //       tile.pattern.map((t_row, t_r) => t_row.map((t_cell, t_c) => {
+      //         ctx.fillStyle = color[t_cell]
+      //         ctx.fillRect(c*scale + t_c, r*scale + t_r, 1, 1)
+      //       }))
+      //     }
+      //   }
+      // }
+
+      // modes.push(() => {
+      //   generate()
+      //   draw()
+      // })
+    }
+
+    let mode = 0
+    on(Q('#run'), 'click', () => {
+      modes[mode]()
+    })
+    on(Q('#mode'), 'click', () => {
+      mode = (mode + 1) % modes.length
+      modes[mode]()
+      Q('#mode').textContent = 'type ' + (mode+1)
+    })
+    on(Q('#color'), 'click', () => {
+      if (color[0] === '#fff') {
+        color[0] = `rgb(${randi(255)} ${randi(255)} ${randi(255)})`
+        color[1] = `rgb(${randi(255)} ${randi(255)} ${randi(255)})`
+      } else {
+        color[0] = '#fff'
+        color[1] = '#000'
+      }
+      modes[mode]()
+    })
+    modes[mode]()
+    console.log(mode, modes)
+  </script>
+
+</body>
+</html>

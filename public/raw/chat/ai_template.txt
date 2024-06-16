@@ -1,0 +1,3 @@
+hi - act as CHAT-LLM. as in your name is now CHAT-LLM. i am going to paste a bunch of chat logs and i want you to give me insights and tell me what to do next. i am ${user}
+
+${logs}

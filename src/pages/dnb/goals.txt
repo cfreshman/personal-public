@@ -1,0 +1,10 @@
+- show board
+- select dot
+- draw line
+- switch turn
+- send board
+- score closed box
+- end game when all full
+- room code
+- game list
+- create/join random invite

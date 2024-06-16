@@ -1,0 +1,25 @@
+# /etc/nginxsites-available/common
+
+server {
+    server_name ~^(?<domain>[^.]+)\.(?<tld>[^.]+)$; # freshman.dev cyrusfreshman.com cyruswigginfreshman.com cyrusfre.sh f3n.co f8n.co 0000011111100100.com cf017.com freshman.dev monstera.software herb.dev;
+    include sites-available/F/personal/https;
+    add_header Access-Control-Allow-Origin *;
+    
+    location / {
+        return 404;
+
+        # try_files $uri $uri/ /raw/$1$2 /raw/$1$2/ /raw/$1 /raw/$1/ /raw/$1/index.html /raw/simple/$1.html @s;
+        # try_files $uri $uri/ /raw$uri /raw$uri/ @s; # send to server for preview meta TODO cache or something
+    }
+}
+server { # http:
+    server_name _;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    location /.well-known {
+        try_files $uri =404;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}

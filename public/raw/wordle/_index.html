@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>wordle</title>
+    <style>
+      #log {
+        white-space: pre;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div id="log"></div>
+
+    <script>
+      const logEl = document.querySelector('#log');
+      const log = entry => {
+        if (typeof(entry) !== 'string') entry = JSON.stringify(entry, null, 2)
+        logEl.textContent += `${entry}\n\n`
+      }
+      let dict;
+      fetch('/lib/dict/scrabble.txt').then(resp => resp.text()).then(text => {
+        let wordles = text
+          .split('\n')
+          .map(s => s.trim())
+          .filter(s => s && s[0] !== '#')
+          .filter(s => s.length === 5)
+        log(`loaded ${wordles.length} wordles`);
+        let total = {}
+        let freq = [{}, {}, {}, {}, {}]
+        wordles.forEach(word => {
+          word.split('').forEach((char, i) => {
+            freq[i][char] = 1 + (freq[i][char] ?? 0)
+          })
+          new Set(word.split('')).forEach(char => {
+            total[char] = 1 + (total[char] ?? 0)
+          })
+        })
+        // log(freq)
+        log(freq.map(place => Object.entries(place)
+          .sort((a, b) => a[1] - b[1])
+          .reverse()
+          .slice(0, 2)))
+
+        let scores
+
+        log('based on frequency per position')
+        scores = wordles
+          .map(word => {
+            let used = {}
+            word.split('')
+              .forEach((char, i) => {
+                used[char] = Math.max(used[char] ?? 0, freq[i][char] ?? 0)
+              })
+            let score = Object.values(used)
+              .reduce((sum, val) => sum + val)
+            // let score = word.split('')
+            //   .map((char, i) => freq[i][char] ?? 0)
+            //   .reduce((sum, val) => sum + val)
+            return { word, score, used }
+          })
+          .sort((a, b) => a.score - b.score)
+          .reverse()
+          .slice(0, 5)
+          .map(({word, score, used}) => {
+            let next = wordles
+              .map(word => {
+                let nextUsed = {}
+                word.split('')
+                  .forEach((char, i) => {
+                    nextUsed[char] = used[char]
+                      ? 0
+                      : Math.max(nextUsed[char] ?? 0, freq[i][char] ?? 0)
+                  })
+                let score = Object.values(nextUsed)
+                  .reduce((sum, val) => sum + val)
+                // let score = word.split('')
+                //   .map((char, i) => freq[i][char] ?? 0)
+                //   .reduce((sum, val) => sum + val)
+                return { word, score }
+              })
+              .sort((a, b) => a.score - b.score)
+              .reverse()[0]
+            return { word, score, next }
+          })
+        log(scores)
+
+        log('based on total frequency')
+        scores = wordles
+          .map(word => {
+            let used = {}
+            word.split('')
+              .forEach(char => {
+                used[char] = Math.max(used[char] ?? 0, total[char] ?? 0)
+              })
+            let score = Object.values(used)
+              .reduce((sum, val) => sum + val)
+            return { word, score, used }
+          })
+          .sort((a, b) => a.score - b.score)
+          .reverse()
+          .slice(0, 5)
+          .map(({word, score, used}) => {
+            let next = wordles
+              .map(word => {
+                let nextUsed = {}
+                word.split('')
+                  .forEach(char => {
+                    nextUsed[char] = used[char]
+                      ? 0
+                      : Math.max(nextUsed[char] ?? 0, total[char] ?? 0)
+                  })
+                let score = Object.values(nextUsed)
+                  .reduce((sum, val) => sum + val)
+                // let score = word.split('')
+                //   .map((char, i) => freq[i][char] ?? 0)
+                //   .reduce((sum, val) => sum + val)
+                return { word, score }
+              })
+              .sort((a, b) => a.score - b.score)
+              .reverse()[0]
+            return { word, score, next }
+          })
+        log(scores)
+      });
+    </script>
+  </body>
+</html>

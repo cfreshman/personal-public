@@ -1,0 +1,97 @@
+<title>od0bo</title>
+<meta charset=utf-8><meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>*{user-select:none;-webkit-user-select:none;color:inherit}body{display:flex;align-items:center;justify-content:center;font-size:16px}</style>
+<pre id=od0bo style="white-space:pre;font-family:monospace">
+        ░░░░░░░░░░░░
+           ░░░░░░░░░░░░░░░░░░░░░░░          ░░░░░░
+         ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+                       _.–_–._  ░░░░░░░░░░░░░
+                     _/__.=.__\_
+       .–-–.   ^   _/___ -=- ___\_   ^   .–-–.
+  mmmmm|| ||mmm|mm/     .===.     \mm|mmm|| ||mmmmm
+               | /______|===|______\ |
+                       '====='
+</pre>
+<script>
+  window.Q = (l, s) => s ? l.querySelector(s) : document.querySelector(l)
+  window.QQ = (l, s) => Array.from((s ? l.querySelectorAll(s) : document.querySelectorAll(l))||[])
+  window.on = (l, es, f, o=undefined) => [l]
+      .flatMap(x=>x)
+      .forEach(li => 
+          (typeof(li) === 'string' ? QQ(li) : [li])
+          .forEach(lii => lii && (typeof(es) === 'string' ? es.split(' ') : es).map(e => lii.addEventListener(e, f, o))))
+  window.node = html => (x => {
+      x.innerHTML = html
+      return x.children[0]
+  })(document.createElement('div'))
+  window.sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+  window.range = (a,o,e=1) => Array.from({ length: Math.floor((o===undefined?a:o-a)/e) }).map((_, i) => i*e + (o===undefined?0:a))
+
+  const map = `
+        ░░░░░░░░░░░░
+           ░░░░░░░░░░░░░░░░░░░░░░░          ░░░░░░
+         ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+                       _.–1–._  ░░░░░░░░░░░░░
+                     _/__.=.__\\_
+       .–-–.   2   _/___ -=- ___\\_   2   .–-–.
+  mmmmm|| ||mmm|mm/     .===.     \\mm|mmm|| ||mmmmm
+               | /______|===|______\\ |
+                       '====='`.slice(1) // ignore first newline
+  const state = {
+    torches: {},
+    cloudTimeouts: {},
+  }
+  const actions = {
+    '1': { link: location.href },
+    '2': { event: 'click', func: e => {
+      state.torches[e.od0bo.i] = !(state.torches[e.od0bo.i] ?? false)
+      e.target.textContent = state.torches[e.od0bo.i] ? 'W' : '^'
+      e.target.style.position = 'relative'
+      let timeout = setInterval(() => {
+        e.target.style.left = `${Math.random() * 2}px`
+        if (!state.torches[e.od0bo.i]) {
+          e.target.style.left = 0
+          clearInterval(timeout)
+        }
+      }, 100)
+    } },
+    '░': { event: 'pointerover', func: e => {
+      clearTimeout(state.cloudTimeouts[e.od0bo.i])
+      const elements = [e.target, e.target.previousElementSibling, e.target.nextElementSibling].filter(x=>x)
+      elements.forEach(x => {
+        x.style.opacity = .425
+      })
+      state.cloudTimeouts[e.od0bo.i] = setTimeout(() => {
+        elements.forEach(x => {
+          x.style.opacity = 1
+        })
+      }, 2000)
+    } },
+  }
+  const raw = od0bo.textContent
+  let processed = ''
+  let postProcess = []
+  for (let i = 0; i < raw.length; i++) {
+    const char = raw[i]
+    const key = map[i]
+    const action = actions[key]
+    if (action) {
+      if (action.link) {
+        processed += `<a href="${action.link}"">${char}</a>`
+      } else if (action.event) {
+        processed += `<span class="action-${action.event.replace(/ /g, '-')}-${key}" style="cursor:pointer;touch-action:none;">${char}</span>`
+      }
+    } else {
+      processed += char
+    }
+  }
+  od0bo.innerHTML = processed
+  Object.entries(actions).map(([key, action]) => {
+    if (action.event) {
+      QQ(od0bo, `.action-${action.event.replace(/ /g, '-')}-${key}`).map((L, i) => on(L, action.event, e => {
+        e.od0bo = { i }
+        action.func(e)
+      }))
+    }
+  })
+</script>

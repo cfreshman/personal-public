@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<title>sludge.fans</title>
+<style>
+  :root {
+    --background: #f9f8f6;
+    --color: #101010;
+  }
+  html {
+    background: var(--background);
+    color: var(--color);
+    font-size: 12px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5rem 1rem;
+    overflow-x: visible;
+  }
+  a {
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  a:hover {
+    color: var(--color);
+    background: var(--background);
+  }
+  @keyframes osc-out {
+    25% { opacity: 1; }
+    50% { opacity: 0; }
+    75% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  #bottom {
+    position: fixed;
+    bottom: .5em;
+    right: .5em;
+    text-decoration: none;
+    font-size: .9em;
+    padding: .15em .3em;
+    /* background: black;
+    color: white; */
+    border: 1px solid black;
+    border-radius: 2px;
+    opacity: .3;
+    text-transform: uppercase;
+  }
+  #bottom::after {
+    content: " →";
+  }
+  @keyframes osc-in {
+    25% { opacity: 0; }
+    50% { opacity: 1; }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+</style>
+
+<script type='text/javascript'>
+  window.Q = (doc, selector) => {
+    if (selector === undefined) {
+      selector = doc
+      doc = document
+    }
+    return doc.querySelector(selector)
+  }
+  window.QQ = (doc, selector) => {
+    if (selector === undefined) {
+      selector = doc
+      doc = document
+    }
+    return Array.from(doc.querySelectorAll(selector))
+  }
+  window.on = (el, evts, func, opts=undefined) => evts.split(' ').map(evt =>
+    el.addEventListener(evt, func, opts))
+  
+  document.title = location.host
+</script>
+</head>
+<body>
+
+  <div style="display:flex;flex-direction:column;widtH:fit-content;margin:auto;align-items:center;margin-top:4em;text-align:center;">
+    <div style="text-decoration: dotted underline;">
+      you need to be drinking sludge
+    </div>
+
+    <a id="bottom" href="https://freshman.dev">freshman.dev</a>
+
+    <!-- INSERT SLUDGE SIMULATION HERE -->
+  </div>
+
+</body>
+</html>

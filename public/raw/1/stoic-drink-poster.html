@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>STOIC DRINK</title>
+  <!-- icon from https://en.wikipedia.org/wiki/File:Paolo_Monti_-_Servizio_fotografico_(Napoli,_1969)_-_BEIC_6353768.jpg -->
+  <link rel="icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Paolo_Monti_-_Servizio_fotografico_%28Napoli%2C_1969%29_-_BEIC_6353768.jpg/811px-Paolo_Monti_-_Servizio_fotografico_%28Napoli%2C_1969%29_-_BEIC_6353768.jpg">
+  <meta name=description content="$2 / $3 caffeine" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      border: 0;
+      padding: 0;
+    }
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
+    .absolute-center {
+      position: absolute;
+      top: 0; left: 0; height: 100%; width: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body class="pre-wrap" style="
+min-height: calc(15em * 1.25);
+">
+
+  <div style="
+  padding: .5em;
+  "><div>STOIC DRINK table poster</div><div>best viewed in landscape</div><div><a href="https://docs.google.com/document/d/1RTkWeHPzU6ujHPKESG0iUTIkSQabz03HgZ89-DmFU6g/edit">1-page business plan</a></div></div>
+
+  <div class="absolute-center middle-column">
+    <img style="
+    height: max(90vh, 20em);  
+    " src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/bc/Paolo_Monti_-_Servizio_fotografico_%28Napoli%2C_1969%29_-_BEIC_6353768.jpg/811px-Paolo_Monti_-_Servizio_fotografico_%28Napoli%2C_1969%29_-_BEIC_6353768.jpg" />
+  </div>
+
+  <div style="
+  font-size: 7vh;
+  font-weight: bolder;
+  text-align: center;
+  gap: .5vh;
+  " class="absolute-center middle-column">
+    <div class="middle-column" style="
+    font-size: 2em;
+    background: #000; color: #fff;
+    ">STOIC DRINK</div>
+    <div class="middle-column" style="
+    background: #000; color: #fff;
+    ">25g protein</div>
+    <div class="middle-column" style="
+    background: #000; color: #fff;
+    ">$2 / $3 caffeine</div>
+    <div class="middle-column" style="
+    background: #000; color: #fff;
+    ">nutritious. not tasty</div>
+    <div id=flavor class="middle-column" style="
+    background: #000; color: #fff;
+    "></div>
+  </div>
+  <script>
+    const flavors = [
+      'i was a boy scout',
+      'satisfy hunger',
+      'i worked at amazon robotics',
+      'solve climate change',
+      'buy pea-rice urself! undercut me!',
+      'like weird water oatmeal',
+      'scared?',
+    ]
+    const set_random_flavor = () => {
+      const last_flavor = flavor.textContent
+      do {
+        flavor.textContent = rand.sample(flavors)
+      } while (flavor.textContent === last_flavor)
+    }
+    setInterval(set_random_flavor, 3_000)
+    set_random_flavor()
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,3 @@
+include sites-available/F/personal/index;
+include sites-available/F/httpps;
+include sites-available/F/gzip;

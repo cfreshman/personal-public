@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src=/copyright.js></script>
+    <title>fuck u</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <style>
+      #insult-container {
+        margin: 1rem;
+      }
+      #insult {
+        padding: .35rem;
+      }
+      #insult::after {
+        content: "↻";
+        margin-left: .25rem;
+        opacity: .5;
+      }
+      .wait-for-it {
+        opacity: .5;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="insult-container">
+      <span class="d-inline-block align-middle">
+        you are
+      </span>
+      <button id="insult" class="btn btn-light wait-for-it">wait for it</button>
+    </p><!-- <button id="reload">↻</button> -->
+
+    <script>
+      const q = (s) => document.querySelector(s);
+      const sample = (arr) => arr[Math.floor(Math.random() * arr.length)];
+      const encode = (s) => s.replace(/ /g, '+');
+      const decode = (s) => s.replace(/\+/g, ' ');
+
+      const insultElem = q('#insult');
+
+      let nouns, adjs;
+      const doInsult = (insult) => {
+        insult = insult ||  sample(adjs) + ' ' + sample(nouns);
+        insultElem.textContent = `${'aeiou'.includes(insult[0]) ? 'an' : 'a'} ${insult}`;
+        insultElem.classList.remove('wait-for-it');
+        window.location[window.location.hash[0] ? 'assign' : 'replace'](`#${encode(insult)}`);
+      }
+
+      const handleHash = () => {
+        let hash = window.location.hash;
+        hash.length && doInsult(decode(hash.slice(1)));
+      }
+      handleHash();
+      window.addEventListener('hashchange', handleHash);
+
+      Promise.all(['nouns.txt', 'adjectives.txt'].map(url =>
+        fetch(url).then(resp => resp.text())
+      )).then(texts => {
+        [nouns, adjs] = texts.map(text => text.split('\n'));
+        q('#insult').addEventListener('click', () => doInsult());
+        window.location.hash || doInsult();
+      });
+    </script>
+  </body>
+</html>

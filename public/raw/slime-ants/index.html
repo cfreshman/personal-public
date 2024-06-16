@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>/slime-ants</title>
+    <link rel="stylesheet" type="text/css" href="/styles.css" />
+    <link rel="icon" href="#a6e4b1" />
+    <style>
+      body {
+        background-color: rgb(244, 241, 232);
+
+        background: #fff;
+        user-select: none;
+      }
+
+      #canvas-container {
+        /* width: calc(100% - 1rem);
+        height: calc(100% - 1rem); */
+        width: 100%;
+        height: 100%;
+        /* margin: .5rem; */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #canvas {
+        image-rendering: pixelated;
+        /* border: 0.5rem solid transparent; */
+        /* border-radius: 1.5rem; */
+        /* border-radius: 50%; */
+        /* box-shadow: 0 0 .5rem .5rem #00000022; */
+        display: none;
+      }
+
+      #controls, #info {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 0;
+        /* background: white; */
+        padding: .3rem;
+        border-radius: .3rem;
+        margin: .25em;
+
+        max-height: calc(100% - .5em);
+        overflow-y: auto;
+      }
+      #controls { right: 0 }
+      #info { left: 0 }
+      #controls:not(.closed), #info:not(.closed) {
+        background: #ffffffdd;
+      }
+      #info:not(.closed) {
+        width: 30rem;
+        max-width: 70%;
+      }
+      #info.closed #info-text {
+        display: none;
+      }
+      #controls.closed #inputs {
+        display: none;
+      }
+      #info *, #controls * {
+        font-family: monospace;
+      }
+      #inputs > div {
+        display: flex;
+      }
+      #inputs > label {
+        text-transform: uppercase;
+        padding: .15rem; padding-top: 0;
+        border-left: .15rem solid #000;
+        margin-bottom: .15rem;
+      }
+      #controls label {
+        display: inline-block;
+        min-width: 8rem;
+      }
+      #controls button, #info button {
+        -webkit-appearance: none;
+        /* border: 2px solid black; */
+        border: none;
+        border: 2px solid rgb(177, 155, 127);
+        min-width: 1.75em;
+        /* background: black;
+        color: white; */
+        background: tan;
+        color: black;
+
+
+        background: #000;
+        color: #fff;
+        border: 0;
+        box-shadow: 1px 1px 0 2px #fff;
+        box-shadow: 1px 1px 0 2px #fffd;
+
+        border-radius: .3rem;
+        padding: .2rem;
+        cursor: pointer;
+
+        /* background: #a6e4b1;
+        border-color: #84d493; */
+        border-left: 0; border-top: 0;
+        padding-left: calc(.2rem + 1px);
+      }
+      :is(#controls:not(.closed), #info:not(.closed)) button {
+        box-shadow: none;
+      }
+      #controls button:active, #info button:active {
+        position: relative;
+        top: .5px;
+        left: .5px;
+        /* border-width: 1.5px; */
+        /* margin-left: .5px; margin-top: .5px; */
+      }
+      #controls > *:not(:last-child) {
+        margin-bottom: .3rem;
+      }
+      #examples {
+        justify-content: space-between;
+        margin-bottom: .3rem;
+      }
+      #reset-save {
+        margin-bottom: .15rem;
+      }
+      .line {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: .1rem;
+        margin-bottom: .1rem;
+        width: 100%;
+      }
+      .line :not(:last-child) {
+        margin-right: .3rem;
+      }
+      .line > * {
+        flex-grow: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .line label {
+        min-width: 0 !important;
+      }
+      .line button {
+        width: 0;
+        flex-grow: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="canvas-container">
+      <canvas id="canvas" class="shrink-target"></canvas>
+    </div>
+
+    <div id="info" class="closed">
+      <button id="info-toggle">?</button>
+      <div id="info-text">
+        <p>An interactive web demo based on prior work simulating slime mold -inspired agents. Agents use sensors to detect local 'scent', follow the strongest scent, and deposit scent</p>
+        <p>paper:
+          <a href="https://uwe-repository.worktribe.com/output/980579">
+            Characteristics of pattern formation and evolution in approximations of physarum transport networks</a>
+          <i>Jeff Jones</i></p>
+        <p>blog post:
+          <a href="https://sagejenson.com/physarum">
+            physarum</a>
+          <i>Sage Jenson</i></p>
+        <p>video:
+          <a href="https://www.youtube.com/watch?v=X-iSQQgOd1A">
+            Coding Adventure: Ant and Slime Simulations</a>
+          <i>Sebastian Lague</i></p>
+
+        <br/>
+        <p>note – for now, there aren't widespread parallel compute options for the web, so performance is substantially worse than the above native examples</p>
+        <p>this demo takes advantage of the different RGB channels to simulate up to 3 instances at once, to act independently (mostly for aesthetic effect) or to avoid others</p>
+      </div>
+    </div>
+
+    <div id="controls" class="closed">
+      <button id="controls-toggle">show inputs</button>
+      <div id="inputs">
+        <label>presets</label>
+        <div id="examples">
+          <button id="randomize">randomize</button>
+        </div>
+        <label>customize</label>
+        <div id="reset-save" class="line">
+          <button id="reset">reset</button>
+          <button id="save">save</button>
+        </div>
+        <div>
+          <label>color-specific</label>
+          <select id="specific">
+            <option value="-1">none</option>
+            <option value="0">RED</option>
+            <option value="1">GREEN</option>
+            <option value="2">BLUE</option>
+          </select>
+        </div>
+        <div><label>speed</label><input id="speed" type="number"/></div>
+        <div><label>sensor angle</label><input id="SA" type="number"/></div>
+        <div><label>sensor offset</label><input id="SO" type="number"/></div>
+        <div><label>turn angle</label><input id="RA" type="number"/></div>
+        <div><label>decay</label><input id="fade" type="number"/></div>
+        <div><label>spread</label><input id="diffuse" type="number"/></div>
+        <br/>
+        <div><label>wrap</label><input id="wrap" type="checkbox"/></div>
+        <div><label>avoid</label><input id="avoid" type="checkbox"/></div>
+        <div><label>circular</label><input id="circular" type="checkbox"/></div>
+        <div><label>custom colors</label><input id="colors" type="checkbox"/></div>
+        <!-- <div><label>red</label><input id="R" type="checkbox"/><input id="R_col" type="color" value='#ff0000'/></div>
+        <div><label>green</label><input id="G" type="checkbox"/><input id="G_col" type="color" value='#00ff00'/></div>
+        <div><label>blue</label><input id="B" type="checkbox"/><input id="B_col" type="color" value='#0000ff'/></div> -->
+        <div class='line'>
+          <div><label>R</label><input id="R" type="checkbox"/><input id="R_col" type="color" value='#ff0000'/></div>
+          <div><label>G</label><input id="G" type="checkbox"/><input id="G_col" type="color" value='#00ff00'/></div>
+          <div><label>B</label><input id="B" type="checkbox"/><input id="B_col" type="color" value='#0000ff'/></div>
+        </div>
+        <div><label>count</label><input id="n" type="number"/></div>
+        <br/>
+      </div>
+      <button id="generate" class="line">regenerate</button>
+    </div>
+
+    <script src="/lib/utils.js"></script>
+    <script src="/lib/seamless.js"></script>
+    <script src="/lib/store.js"></script>
+    <script src="/lib/pause.js"></script>
+    <script src="script.js"></script>
+    <script>
+      let inputs = document.querySelectorAll('#controls :is(input, select)')
+      inputs.forEach(input => {
+        input.addEventListener('change', e => {
+          if (input.id === 'specific') {
+            D.channel = Number(input.value)
+            updateInputs()
+          } else {
+            const specific = D.specific[D.channel] ?? D
+            if (input.type === 'number') {
+              specific[input.id] = Number(input.value)
+            } else if (input.type === 'checkbox') {
+              specific[input.id] = input.checked
+            } else {
+              specific[input.id] = input.value
+            }
+          }
+          generateL.textContent = 'generate'
+          console.debug(D)
+        })
+      })
+      updateInputs()
+
+      const generateL = document.querySelector('#generate')
+      document.querySelector('#generate').addEventListener('click', e => {
+        generate()
+        generateL.textContent = 'regenerate'
+      })
+      document.querySelector('#randomize').addEventListener('click', e => randomize())
+      document.querySelector('#save').addEventListener('click', ({target: save}) => {
+        save.textContent = 'saved!'
+        setStored('slime-settings', D)
+        setTimeout(() => {
+          save.textContent = 'save'
+        }, 3000)
+      })
+      document.querySelector('#reset').addEventListener('click', ({target: reset}) => {
+        Object.assign(D, D_defaults)
+        updateInputs()
+      })
+
+
+      const setControls = open => {
+        let controls= document.querySelector('#controls')
+        let toggle = document.querySelector('#controls-toggle')
+        if (open) {
+          controls.classList.remove('closed')
+          toggle.textContent = 'hide inputs'
+          setInfo(false)
+        } else {
+          controls.classList.add('closed')
+          toggle.textContent = 'show inputs'
+        }
+      }
+      const setInfo = open => {
+        let info = document.querySelector('#info')
+        let toggle = document.querySelector('#info-toggle')
+        if (open) {
+          info.classList.remove('closed')
+          toggle.textContent = 'close'
+          setControls(false)
+        } else {
+          info.classList.add('closed')
+          toggle.textContent = '?'
+        }
+      }
+      document.querySelector('#controls-toggle').addEventListener('click', ({target: toggle}) => {
+        setControls(toggle.textContent === 'show inputs')
+      })
+      document.querySelector('#info-toggle').addEventListener('click', ({target: toggle}) => {
+        setInfo(toggle.textContent === '?')
+      })
+
+      let examples = document.querySelector('#examples')
+      let settings = [
+      { // thick-laned
+        speed: 50,
+        SA: 60,
+        SO: 5,
+        RA: 30,
+        n: 5000,
+        fade: 1.5,
+        diffuse: .2,
+        specific: [{
+          speed: 100,
+          SA: 30,
+          SO: 10,
+          RA: 60,
+        }, {}, {}]
+      },
+      // { // two-laned, messy
+      //   speed: 50,
+      //   SA: 60,
+      //   SO: 5,
+      //   RA: 10,
+      //   n: 10000,
+      //   fade: 1.5,
+      //   diffuse: .1,
+      // },
+      { // thick cells
+        speed: 50,
+        SA: 45,
+        SO: 9,
+        RA: 45,
+        n: 10000,
+        fade: 1.5,
+        diffuse: .1,
+      },
+      // { // squiggly cells
+      //     speed: 100,
+      //     SA: 30,
+      //     SO: 5,
+      //     RA: 15,
+      //     n: 10000,
+      //     fade: 1.05,
+      //     diffuse: .5,
+      // },
+      // { // 2-lane cells fill space
+      //   speed: 42,
+      //   SA: 60,
+      //   SO: 7,
+      //   RA: 10,
+      //   n: 10000,
+      //   fade: 1.25,
+      //   diffuse: .5,
+      // },
+      // { // circles
+      //   speed: 145,
+      //   SA: 160,
+      //   SO: 6,
+      //   RA: 37,
+      //   n: 10000,
+      //   fade: 1.06,
+      //   diffuse: .75,
+      // },
+      { // swirls
+        speed: 92,
+        SA: 156,
+        SO: 16,
+        RA: 28,
+        n: 7000,
+        fade: 1.20,
+        diffuse: .91,
+      },
+      { // static brushes
+        speed: 135,
+        SA: 100,
+        SO: 8,
+        RA: 100,
+        n: 3000,
+        fade: 1.35,
+        diffuse: .15,
+      },
+      { // blobs
+        speed: 200,
+        SA: 90,
+        SO: 4,
+        RA: 100,
+        n: 1000,
+        fade: 1.022,
+        diffuse: .07,
+      },
+      // { // spagetti
+      //   speed: 50,
+      //   SA: 87,
+      //   SO: 17,
+      //   RA: 29,
+      //   n: 50,
+      //   fade: 1.028,
+      //   diffuse: .0137,
+      // },
+      { // mobile squiggly cells
+        speed: 100,
+        SA: 45,
+        SO: 5,
+        RA: 15,
+        n: 10000,
+        // fade: 1.005, doesn't play well with custom colors
+        fade: 1.1,
+        diffuse: 1,
+      },
+      { // variety - sole green wanderers disturb red & blue patches
+        speed: 0,
+        SA: 0,
+        SO: 0,
+        RA: 0,
+        n: 0,
+        fade: 0,
+        diffuse: 0,
+        avoid: true,
+        specific: [{
+          speed: 138,
+          SA: 108,
+          SO: 13,
+          RA: 177,
+          n: 910,
+          fade: 1,
+          diffuse: .9,
+        }, {
+          speed: 48,
+          SA: 173,
+          SO: 18,
+          RA: 16,
+          n: 555,
+          fade: 1.42,
+          diffuse: 1,
+        }, {
+          speed: 174,
+          SA: 36,
+          SO: 14,
+          RA: 84,
+          n: 563,
+          fade: 1.03,
+          diffuse: .68,
+        }]
+      },]
+      settings.map((setting, i) => {
+        let ex_i = document.createElement('button')
+        ex_i.textContent = i + 1
+        ex_i.addEventListener('click', e => {
+          Object.assign(D, { specific: [] }, setting)
+          generate()
+          updateInputs()
+        })
+        return ex_i
+      }).reverse().forEach(el => examples.insertAdjacentElement('afterBegin', el))
+
+      function randomize() {
+        Object.assign(D.specific[D.channel] ?? D, {
+            speed: randi(25, 200),
+            SA: randi(5, 180),
+            SO: randi(2, 20),
+            RA: randi(5, 180),
+            n: Math.round(Math.pow(10, rand(3) + 1)),
+            fade: Math.round((1 + Math.pow(10, -rand(3))) * 100)/100,
+            diffuse: Math.round(rand(1) * 100)/100,
+            specific: [{}, {}, {}],
+        })
+        if (D.colors) {
+          'RGB'.split('').map(x => `${x}_col`).map(x => document.querySelector('#'+x).value = D[x] = '#'+Array.from({ length:3 }).map(_=>Math.floor(Math.random() * 256).toString(16).padStart(2, 'f')).join(''))
+          'RGB'.split('').map(x => console.debug(document.querySelector(`#${x}_col`).value))
+        }
+        generate()
+        updateInputs()
+      }
+
+      function updateInputs() {
+        inputs.forEach(input => {
+          if (input.id === 'specific') {
+            input.value = D.channel ?? -1
+          } else {
+            let value = (D.specific[D.channel] ?? D)[input.id] ?? D[input.id]
+            console.debug(input.id, value)
+            if (input.type === 'number') {
+              input.value = value
+            } else if (input.type === 'checkbox') {
+              input.checked = value
+            } else {
+              input.value = value
+            }
+          }
+        })
+      }
+    </script>
+  </body>
+</html>

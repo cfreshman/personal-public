@@ -1,0 +1,8 @@
+# listen on 443 and set freshman.dev ssl certificates
+
+error_page 400 500 502 /error.html;
+error_page 404 /404.html;
+
+root /var/www/personal/build;
+
+include sites-available/fragments/listen-ssl;

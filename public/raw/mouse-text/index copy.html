@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<!-- mouse-text
+
+Use mouse for text input
+- rotary wheel instead of square keyboard
+- different wheels for letters, numbers, symbols
+- hold to spell word
+
+-->
+<html>
+<head>
+  <title>mouse-text demo</title>
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html {
+      background: #f9f8f6;
+      color: #101010;
+      font-size: 12px;
+    }
+    body {
+      font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      padding: .5em 1em;
+    }
+    a {
+      color: inherit;
+    }
+    a:hover {
+      color: #f9f8f6;
+      background: #101010;
+    }
+    .title {
+      font-size: 1.2em;
+      position: relative;
+      white-space: pre-line;
+      width: fit-content;
+      margin-bottom: 1em;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="title">[ mouse-text demo ]</div>
+
+  <input type="text" placeholder="click me!" onkeydown="
+  if (event.key === 'Enter') {
+    Q('#history').textContent += event.target.value + '\n'
+    event.target.value = ''
+  }
+  ">
+  <div id="history" style="white-space:pre"></div>
+
+  <div id='mouse-text'>
+    <div id='mouse-text-center'>
+      <!-- <div id="mouse-text-active"></div> -->
+      <div id='mouse-text-outer'></div>
+      <!-- <div id='mouse-text-single'>
+        <div id="mouse-text-space">␣</div>
+      </div> -->
+      <div id='mouse-text-inner'>
+        <div id="mouse-text-space">␣</div>
+        <div id="mouse-text-backspace">⌫</div>
+        <div id="mouse-text-clear">×</div>
+        <div id="mouse-text-enter">↳</div>
+        <div id="mouse-text-upp">A</div>
+        <div id="mouse-text-num">1</div>
+        <div id="mouse-text-pun">!</div>
+        <div id="mouse-text-sym">@</div>
+      </div>
+      <!-- <div id='mouse-text-outer'></div> -->
+    </div>
+    <style>
+      #mouse-text {
+        /* TODO actual placement */
+        position: fixed;
+        left: 50%; top: 50%;
+        overflow: visible;
+        font-family: system-ui, sans-serif;
+      }
+      #mouse-text * {
+        box-sizing: border-box;
+      }
+      #mouse-text-center {
+        position: relative;
+        width: 0; height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #mouse-text-center > * {
+        position: absolute;
+        border-radius: 50%;
+        width: 0; height: 0;
+      }
+      #mouse-text-center > * > :not(.mouse-text-pointer-target), #mouse-text-active {
+        position: absolute;
+        width: 1.5em; height: 1.5em;
+        translate: -.75em .75em;
+        cursor: pointer;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* border: 1px solid transparent; */
+        /* background: white; */
+        user-select: none;
+        z-index: 1;
+        pointer-events: none;
+      }
+      #mouse-text-center > * > :not(.mouse-text-pointer-target):is(.hover), #mouse-text-active {
+        z-index: 2;
+        /* border-color: black; */
+        /* background: #0001; */
+        /* background: white; */
+        /* background: #fff linear-gradient(#ff02 0 0); color: black; */
+        background: black; color: white;
+        /* scale: 1.5 !important;
+        font-size: 1.5em !important; */
+        /* width: 1em; height: 1em; */
+        /* translate: -.5em .5em; */
+      }
+      #mouse-text-center > * > :is(:active, .on) {
+        background: black; color: white;
+      }
+      /* #mouse-text-outer > * {
+        font-size: .5em;
+      }
+      #mouse-text-outer > *:hover {
+        font-size: 1em;
+      } */
+      #mouse-text-center > * > .mouse-text-pointer-target {
+        /* pointer target, set font-size to radius */
+        content: "";
+        display: block;
+        position: absolute;
+        width: 2.5em; height: 2.5em;
+        border-radius: 50%;
+        left: -1.25em; top: -1.25em;
+        background: none;
+        cursor: pointer;
+        /* border: 1px dashed #0008; */
+      }
+      #mouse-text-center > *:last-child > .mouse-text-pointer-target {
+        border: 1px dashed #0002;
+      }
+      /* #mouse-text-center > * > .mouse-text-pointer-target:hover {
+        background: #ff02;
+      } */
+      #mouse-text-active {
+        translate: 0 3.5em;
+        font-size: 2em;
+      }
+    </style>
+  </div>
+  <script>
+    const Q = (L, q)=>(q?L:document.body).querySelector(q||L)
+    const QQ = (L, q)=>Array.from((q?L:document.body).querySelectorAll(q||L))
+    const node = x => {
+      const c = document.createElement('div')
+      c.innerHTML = x
+      return c.children[0]
+    }
+
+    const mt = Q('#mouse-text')
+    const mtActive = Q(mt, '#mouse-text-active')
+    const mtSingle = Q(mt, '#mouse-text-single')
+    const mtInner = Q(mt, '#mouse-text-inner')
+    const mtOuter = Q(mt, '#mouse-text-outer')
+    let mtInput
+    const press = key => {
+      mtInput.dispatchEvent(new KeyboardEvent('keydown', { key, code: key, keyCode: {
+        'Enter': 13,
+        'Backspace': 8,
+      }[key] || key.charCodeAt(0) }))
+      if (key === 'Backspace') mtInput.value = mtInput.value.slice(0, -1)
+      else if (key === 'Enter') mtInput.value // pass
+      else mtInput.value += key
+    }
+    const render = async (items, target=mtOuter) => {
+      if (!target) return
+      if (typeof items === 'string') items = items.split('')
+      if (items) target.innerHTML = items.map(x => `<div>${x}</div>`).join('')
+      await Promise.resolve()
+
+      const Ls = QQ(target, '*')
+      const n = Ls.length
+      const circumference = n * 1.5
+      const default_radius = n / Math.PI / 2
+      // const radius = Math.max(target === mtOuter ? 3 : target === mtInner ? 1.5 : 0, default_radius)
+      // const radius = target === mtOuter ? 3 : target === mtInner ? 1.5 : 0
+      // const radius = target === mtOuter ? 2 : target === mtInner ? 4 : 0
+      // const radius = target === mtOuter ? 3 : target === mtInner ? 5 : 0
+      // const radius = target === mtOuter ? 2 : target === mtInner ? 5 : 0
+      // const radius = target === mtOuter ? 2.5 : target === mtInner ? 4 : 0
+      const radius = target === mtOuter ? 2 : target === mtInner ? 4 : 0
+      // const radius = target === mtOuter ? 4 : target === mtInner ? 2 : 0
+      const default_scale = Math.min(1, radius / default_radius)
+      Ls.map((x, i) => {
+        const angle = 2 * Math.PI * (i / n)
+        x.style.left = `${Math.sin(angle) * radius}em`
+        x.style.bottom = `${Math.cos(angle) * radius}em`
+        if (n > 1) {
+          x.style.scale = default_scale
+          // x.style.fontSize = default_scale+'em'
+        }
+        // if (x.id) {
+
+        // } else {
+        //   x.onclick = e => {
+        //     mtInput.value += x.textContent
+        //   }
+        // }
+      })
+      const pointerTarget = node(`<div class='mouse-text-pointer-target' style='font-size:${radius}em'></div>`)
+      target.insertAdjacentElement('afterBegin', pointerTarget)
+      await Promise.resolve()
+
+      const center = x => {
+        const rect = x.getBoundingClientRect()
+        return {
+          width: rect.width, height: rect.height,
+          x: rect.x + rect.width/2,
+          y: rect.y + rect.height/2,
+        }
+      }
+      const inners = Ls.map(center)
+      const outer = center(pointerTarget)
+      let ringEl = rings.find(x => x.target === target)
+      if (!ringEl) {
+        ringEl = { target }
+        rings.push(ringEl)
+      }
+      Object.assign(ringEl, {
+        Ls, outer, inners, default_scale,
+      })
+    }
+
+    const dist = (a, b) => {
+      return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2))
+    }
+    const rings = []
+    let hovered = undefined
+    mt.onpointermove = e => {
+      // console.debug(e)
+      if (hovered) {
+        hovered.classList.remove('hover')
+        hovered.style.scale = '1'
+      }
+      const pos = { x: e.clientX, y: e.clientY }
+      let max = { dist: 1_000_000, x: undefined }
+      rings.map(ring => {
+        const { target, Ls, outer, inners, default_scale } = ring
+        const radius = dist(outer, inners[0]) || 1
+        const angle = Math.atan2(outer.y - pos.y, - (outer.x - pos.x))
+        Ls.map((x, i) => {
+          const d = dist(pos, inners[i])
+          if (d < max.dist) max = { dist: d, x }
+          const ratio = Math.max(0, 1 - (d / 2 / radius))
+          // console.debug(x.textContent, ratio)
+          // x.style.scale = `${ratio}`
+          if (target === mtOuter) {
+            // x.style.fontSize = `${ratio}em`
+            // x.style.fontSize = `${Math.max(default_scale, 1.5 * (ratio + .33))}em`
+            // x.style.scale = `${Math.max(default_scale, 1.5 * (ratio + .33))}`
+            x.style.fontSize = `${1 + ratio / 3}em`
+            x.style.scale = `${Math.max(.5, 2 * Math.pow(ratio, 2))}`
+            // x.style.scale = `${Math.max(default_scale, 3 * Math.pow(ratio, 2))}`
+            x.style.zIndex = `${Math.ceil(ratio * 100_000)}`
+            // inners[i].scale = Math.max(default_scale, 2 * Math.pow(ratio, 2))
+          }
+        })
+      })
+      max.x?.classList.add('hover')
+      hovered = max.x
+      hovered.style.scale = '2'
+      if (hovered && false) { // TODO figure out better magnification
+        rings.map(ring => {
+          const { target, Ls, outer, inners, default_scale } = ring
+          const angle = Math.atan2(outer.y - pos.y, - (outer.x - pos.x))
+          const index = Ls.indexOf(hovered)
+          if (index > -1) {
+            // starting from hovered element, push others aside according to size
+            let shift = inners[index].scale
+            for (let i = 1; i < Ls.length / 2; i++) {
+              const l = (index + i)%Ls.length
+              const x = Ls[l]
+              // rotate nearby away from zoomed: ratio 0.01 => max, ratio 1 => none
+              const off = {
+                x: Number(x.style.left.slice(0, -2)),
+                y: Number(x.style.bottom.slice(0, -2)),
+              }
+              const off_mag = dist(off, { x: 0, y: 0 })
+              const off_angle = Math.atan2(off.y, off.x)
+
+              let angle_diff = angle - off_angle
+              while (angle_diff < -Math.PI) angle_diff += 2 * Math.PI
+              while (angle_diff > Math.PI) angle_diff -= 2 * Math.PI
+              const angle_diff_mag = Math.abs(angle_diff)
+              const angle_diff_sign = angle_diff / (angle_diff_mag || 1)
+
+              // const move_angle_diff_mag = angle_diff / Math.PI
+              // const move_angle = off_angle + move_angle_diff_mag * Math.PI / 6
+              // const move_angle = off_angle - Math.PI / 6 * (angle_diff_sign * (1 - Math.abs(angle_diff_mag)/Math.PI))
+              // const move_angle = off_angle + angle_diff
+              const move_angle = off_angle - shift
+              const moved = {
+                x: off_mag * Math.cos(move_angle),
+                y: off_mag * Math.sin(move_angle),
+              }
+              // x.style.left = `${moved.x}em`
+              // x.style.bottom = `${moved.y}em`
+              x.style.transform = `translate(${moved.x - off.x}em, ${-(moved.y - off.y)}em)`
+              // shift += inners[l].scale
+            }
+          }
+        })
+      }
+
+      if (hovered && mtActive) mtActive.textContent = hovered.textContent
+    }
+    mt.onpointerout = e => {
+      // if (e.target !== mt) return
+      // if (target === mtOuter) {
+        // console.debug(e)
+        // const pos = center(target)
+        // target.left = `${pos + e.layerX}px`
+        // target.top = `${pos + e.layerY}px`
+      // } else {
+        hovered?.classList.remove('hover')
+        hovered = undefined
+        // Ls.map((x, i) => {
+        //   x.style.scale = '1'
+        //   x.style.fontSize = `1em`
+        // })
+      // }
+
+      rings.map(ring => {
+        const { Ls, default_scale } = ring
+        Ls.map((x, i) => {
+          // x.style.fontSize = `1em`
+          x.style.scale = default_scale
+          // x.style.fontSize = default_scale+'em'
+          x.style.fontSize = '1em'
+        })
+      })
+    }
+    mt.onclick = e => {
+      x = hovered
+      mtInput.focus()
+      if (!x) return
+      if (x.id) {
+        x.onclick()
+        // switch (x.id) {
+        //   case '#mouse-text-backspace': mtInput.value = mtInput.value.slice(0, -1); return
+        //   case '#mouse-text-space': mtInput.value += ' '; return
+        //   case '#mouse-text-clear': mtInput.value = ''; return
+        //   case '#mouse-text-enter':
+        //     mtInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', charCode: 13 }))
+        //     return
+        // }
+      } else {
+        // mtInput.value += x.textContent
+        press(x.textContent)
+      }
+    }
+
+    const alf = 'abcdefghijklmnopqrstuvwxyz'
+    const alt = {
+      upp: alf.toUpperCase(),
+      num: '0123456789',
+      pun: '.,!?-;:\'"()|\\/',
+      sym: '@#$%^&*+=_~[]{}<>',
+    }
+    const toggles = []
+    Object.keys(alt).map(k => {
+      const toggle = Q(mt, `#mouse-text-${k}`)
+      toggles.push(toggle)
+      toggle.onclick = e => {
+        if (toggle.classList.contains('on')) {
+          toggle.classList.remove('on')
+          render(alf)
+        } else {
+          toggles.map(x => x.classList.remove('on'))
+          toggle.classList.add('on')
+          render(alt[k])
+        }
+      }
+    })
+    Q(mt, '#mouse-text-backspace').onclick = e => press('Backspace')
+    // Q(mt, '#mouse-text-space').onclick = e => mtInput.value += ' '
+    Q(mt, '#mouse-text-space').onclick = e => press(' ')
+    Q(mt, '#mouse-text-clear').onclick = e => mtInput.value = ''
+    Q(mt, '#mouse-text-enter').onclick = e => press('Enter')
+
+    const lock = input => {
+      mtInput = input
+      // input.requestPointerLock()
+    }
+    QQ('input[type=text]').map(input => {
+      input.addEventListener('click', e => {
+        lock(input)
+      })
+    })
+    lock(Q('input'))
+
+    setTimeout(async () => {
+      await render(false, mtSingle)
+      await render(false, mtInner)
+      await render(alf)
+    })
+  </script>
+
+
+</body>
+</html>

@@ -1,0 +1,157 @@
+{
+  "name": "Cyrus Freshman",
+  "location": "Boston, MA",
+  "email": "cyrus@freshman.dev",
+  "items": [
+    {
+      "entity": "FRESHMAN.DEV LLC",
+      "highlight": false,
+      "location": "BOSTON, MA",
+      "rating": "",
+      "positions": [
+        {
+          "title": "Software Developer",
+          "time": "2022–2023",
+          "description": [
+            "Miscelleaneous software projects"
+          ]
+        }
+      ],
+      "detail": "OWNER",
+      "options": {
+        "highlight": true
+      }
+    },
+    {
+      "entity": "AMAZON ROBOTICS",
+      "location": "WESTBOROUGH, MA",
+      "positions": [
+        {
+          "title": "Software Development Engineer",
+          "time": "SEPTEMBER 2019–APRIL 2022",
+          "description": [
+            "Developed unstructured path planning API for autonomous warehouse vehicles ([demo](https://-paths.tu.fo))\nImplemented real-time event stream processor for vehicle allocation\nOptimized tier-1 data pipeline service ecosystem to improve scaling of accessor API by 1500%\nDesigned internal alarming library used across adjacent teams\nSimplified management of throttling system and collaborated on self-service workflow for clients\nPresented technical design decisions\nUndertook occasional UI design work\nMentored intern project and positively influenced programming methodology of colleagues"
+          ]
+        }
+      ],
+      "detail": "PATH PLANNING TEAM",
+      "options": {
+        "highlight": true
+      }
+    },
+    {
+      "entity": "MATHWORKS",
+      "location": "NATICK, MA",
+      "positions": [
+        {
+          "title": "Software Engineering Intern",
+          "time": [
+            "SUMMERS 2016–2018"
+          ],
+          "description": [
+            "Developed full-stack feature for MATLAB Online’s Import Tool\nImplemented several heavy UI elements for MATLAB’s Property Inspector, including colormap ([detail](https://raw.tu.fo/cv/MathWorks/colormap))\nCreated graphics performance reporting app for progress tracking"
+          ]
+        }
+      ],
+      "detail": "DATA TOOLS & GRAPHICS TEAMS"
+    },
+    {
+      "entity": "UNIVERSITY OF MASSACHUSETTS, AMHERST",
+      "location": "AMHERST, MA",
+      "positions": [
+        {
+          "title": "Bachelor of Science in Computer Science",
+          "time": "SEPTEMBER 2015–MAY 2019",
+          "description": [
+            "589 Machine Learning – 514 Data Science – 583 Game Programming – 383 Artificial Intelligence\n403 Robotics – 326 Web Programming – 611 Advanced Algorithms – MATH MVCalc LinAlg DiffEq"
+          ]
+        }
+      ],
+      "detail": "",
+      "rating": "3.91",
+      "scale": "4.0"
+    },
+    {
+      "entity": "UNIVERSITY OF AUCKLAND",
+      "location": "AUCKLAND, NEW ZEALAND",
+      "positions": [
+        {
+          "title": "Semester Abroad",
+          "time": "SPRING 2018",
+          "description": [
+            "373 Computer Graphics – 351 Database Systems – 345 Human-Computer Interaction"
+          ]
+        }
+      ],
+      "detail": "",
+      "rating": "8.25",
+      "scale": "8.0"
+    },
+    {
+      "entity": "OTHER PROJECTS & ROLES",
+      "location": "",
+      "positions": [
+        {
+          "title": "MERN-based Web Applications",
+          "time": "2021–2023",
+          "description": [
+            "([wordbase.app](https://wordbase.app)) remake of discontinued multiplayer word game\n([wordle.freshman.dev](https://wordle.freshman.dev)) leaderboard for programmatic Wordle solvers\n([dinder.social](https://dinder.social)) make new recipes with random people on the internet\n([pico.cafe](https://pico.cafe)) resources for getting started with the Raspberry Pi Pico\n([follow-sync.freshman.dev](https://follow-sync.freshman.dev)) sync follows between Twitter and Mastodon\n([basin.fish](https://basin.fish)) fishbowl, a party game similar to charades"
+          ]
+        },
+        {
+          "title": "Hierarchical Control System for Simulated Pong-Playing Robot",
+          "time": "2019",
+          "description": [
+            "Composed behavior from low-level PD controllers to integrated gameplay for course competition"
+          ]
+        },
+        {
+          "title": "3D Game Development in Unity",
+          "time": "2019",
+          "description": [
+            "Designed physics-based couch game with Nintendo Joy-Cons for player input ([link](https://matchbox.zip))"
+          ]
+        },
+        {
+          "title": "Hackathon Competition",
+          "time": "2018",
+          "description": [
+            "Won ‘Most Innovative’ for idea with random group while studying at University of Auckland"
+          ]
+        },
+        {
+          "title": "Team Lead, Competitive Programming Interest Group ",
+          "time": "2017",
+          "description": [
+            "Achieved 7th place in the ICPC 2017 Northeast North America Regional Contest ([scoreboard](https://icpc.global/regionals/finder/northeast-north-america-2018/standings))\nQualified at BOSPRE Preliminary as first-time ICPC competitor ([scoreboard](https://hc3.seas.harvard.edu/hc3/bospre/2017/scoreboard.web))"
+          ]
+        },
+        {
+          "title": "Secretary, Association for Computing Machinery (ACM) Student Chapter",
+          "time": "2017",
+          "description": [
+            ""
+          ]
+        }
+      ],
+      "detail": ""
+    },
+    {
+      "entity": "PROGRAMMING LANGUAGES, FRAMEWORKS, TECHNOLOGIES & METHODOLOGIES",
+      "location": "",
+      "positions": [
+        {
+          "title": "",
+          "time": "",
+          "description": [
+            "Java, JavaScript/TypeScript, Python, C/C++, C#, Kotlin, Ruby, MATLAB, HTML/CSS, SQL\nMERN stack (MongoDB, ExpressJS, ReactJS, NodeJS), Django, Dojo Toolkit\nAWS, Chromium DevTools, Git, Unix shell, REST APIs, Service-Oriented Architecture, Agile"
+          ]
+        }
+      ],
+      "detail": ""
+    }
+  ],
+  "options": {
+    "variable font": true
+  }
+}

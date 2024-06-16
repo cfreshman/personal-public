@@ -1,0 +1,53 @@
+<title>shr.ooo/m</title>
+<meta charset=utf-8><meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>body{display:flex;align-items:center;justify-content:center}</style>
+<div style="white-space:pre-wrap;font-family:monospace">
+<!--           
+          /M\
+ .–––o–.   |
+{_o____o}  |   /M\
+    H  /M\ |/M\ | 
+    H    | ||  |
+<a href="https://shr.ooo/m">shr.ooo/m</a><a href="https://shr.ooo/m">shr.ooo/m</a> -->
+<div id=shroom></div>
+<script>
+  const shrooms = [
+`
+ .–––o–.
+{_O____o}
+   /M\\
+    -`, 
+
+`
+    _
+   /M\\
+    |    _
+ _  | _ /M\\
+/M\\ |/M\\ | 
+ |   || |`,
+
+].map(x=>x.slice(1))
+
+  shroom.textContent = shrooms[Math.floor(shrooms.length * Math.random())].split('\n').map(x => ' '+x+' ').join('\n')
+  const base = 'shr.ooo/'
+  const href = base + 'o'.repeat(Math.max(...shroom.textContent.split('\n').map(x=>x.length - 2)) - base.length - 1) + 'm'
+  shroom.innerHTML += `\n${Array.from({ length:href.length+2 }).map(_=>'""\''[Math.floor(3 * Math.random())]).join('')}\n <a href="https://${href}">${href}</a> `
+</script>
+</div>
+
+
+
+// `
+//           /M\\
+//  .–––o–.   |
+// {_o____o}  |   /M\\
+//     H  /M\\ |/M\\ | 
+//     H    | ||  |`,
+
+<!--           
+          /M\
+ .–––o–.   |
+(_o____o)  |   /M\
+    H  /M\ |/M\ | 
+    H    | ||  |
+<a href="https://shr.ooo/m">shr.ooo/m</a><a href="https://shr.ooo/m">shr.ooo/m</a> -->

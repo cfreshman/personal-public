@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>disc-ball</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src=/copyright.js></script>
+    <style>
+      html, body {
+        display: flex; align-items: center; justify-content: center;
+        margin: 0;
+        background-color: #050505;
+        color: #fff;
+        min-height: 20em;
+      }
+      #canvas {
+        width: 100% !important;
+        height: 100% !important;
+        image-rendering: pixelated;
+      }
+      #interaction {
+        position: absolute;
+        top: 0; left: 0; margin: .5em;
+        pointer-events: visible;
+      }
+      button {
+        cursor: pointer;
+        font-family: inherit;
+      }
+      a {
+        color: inherit;
+      }
+    </style>
+  </head>
+  <body>
+
+    <canvas id=canvas></canvas>
+    <div id=interaction>
+      <span style="
+      margin: 2px;
+      background: #000;
+      ">
+        <a href="https://twitter.com/bri4nh3nry/status/1736219846348812383">inspiration</a>
+        by @bri4nh3nry/Twitter
+      </span>
+    </div>
+    
+    <script src="/lib/three.js"></script>
+    <script src="/lib/OrbitControls.js"></script>
+    <script src="/lib/jsts/jstsES6.js"></script>
+    <script src="/lib/pause.js"></script>
+    <script>
+const log = named_log('disc-ball')
+
+const T = THREE
+const V2 = T.Vector2
+const V3 = T.Vector3
+const ORIGIN = V3(0, 0, 0)
+const v = (x, y, z=undefined) => z !== undefined ? new V3(x, y, z) : new V2(x, y)
+
+const V_to_T = v => {
+  v = V.ne(v)
+  di = v.di()
+  if (di === 2) return new V2(v.x, v.y)
+  else return new V3(v.x || 0, v.y || 0, v.z || 0)
+}
+const T_to_V = t => {
+  return V.ne(t.x, t.y, t.x)
+}
+
+const GF = new jsts.geom.GeometryFactory(new jsts.geom.PrecisionModel())
+const splitCollection = collection => Array
+    .from({ length: collection.getNumGeometries() })
+    .map((_, i) => collection.getGeometryN(i))
+
+const debug = {
+  showFlocks: false,
+  showFollow: false,
+  showRaycast: false,
+  seed: false,
+  fps: false,
+}
+
+// TODO fix meaning of scaling vars
+// const SIZE = 1024, SCALE = 4
+// let frustumSize = Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth) * SIZE
+
+const Color = from(entries({
+  BACKGROUND: '#000000',
+  WHITE: '#ffffff',
+  OFF_WHITE: '#aaaaaa',
+  FOG: "#eeeeee",
+}).map(e => [e[0], new T.Color(parseInt(e[1].slice(1), 16))]))
+
+const SIZE = 1024,
+  BORDER_SIZE = 16,
+  SCALE = 4,
+  MIN_HEIGHT = 1,
+  MAX_HEIGHT = 32,
+  CHUNK_SIZE = 14,
+  N_BOIDS = 256,
+  N_TREES = 1024,
+  N_FLOCKS = 3,
+  ORTHO = true,
+  IMG_SCALE = 1,
+  N_NEIGHBORS = 0,
+  C_R_SPHERE = 8
+var size = SIZE,
+  radius = SIZE / 2,
+  borderSize = BORDER_SIZE,
+  tiles = SIZE / Math.pow(2, SCALE),
+  minHeight = MIN_HEIGHT * Math.pow(2, SCALE),
+  maxHeight = MAX_HEIGHT * Math.pow(2, SCALE),
+  highestElevation = 0,
+  frustumSize = Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth) * SIZE,
+  chunkSize = CHUNK_SIZE / Math.pow(2, SCALE)
+var tileSize = size / tiles
+var liquidHeight = (maxHeight - minHeight)*1/5 + minHeight
+
+let scene, objects, renderer, camera, controls, axesHelper, sphere, discs, backdrop
+let sphere_radius, disc_distance
+let disc_controls
+const DiscMode = {
+  FLAT: 'flat',
+  OUT: 'out',
+  OUT_WAIT: 'out-wait',
+  FLIP: 'flip',
+  IN_WAIT: 'in-wait',
+  IN: 'in',
+}
+let timer, start_time
+let paused = false
+
+function init() {
+  aspect = window.innerWidth / window.innerHeight
+  start_time = performance.now()
+  timer = 0
+
+  scene = new T.Scene()
+  scene.background = Color.BACKGROUND
+  scene.fog = new T.FogExp2(Color.FOG, 0.0025)
+
+  objects = new T.Group()
+  scene.add(objects)
+
+  renderer = new T.WebGLRenderer({
+    canvas: canvas,
+    antialias: true,
+    alpha: true,
+    preserveDrawingBuffer: true,
+  })
+  renderer.setPixelRatio(window.devicePixelRatio)
+  renderer.setSize(window.innerWidth/IMG_SCALE, window.innerHeight/IMG_SCALE)
+  document.body.appendChild(renderer.domElement)
+
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = T.PCFSoftShadowMap;
+
+  if (ORTHO) {
+    camera = new T.OrthographicCamera(-frustumSize/2, frustumSize/2, frustumSize/aspect/2, -frustumSize/aspect/2, -10000, 10000)
+  } else {
+    camera = new T.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000)
+  }
+  camera.up.set(0, 0, 1)
+  camera.position.copy(new T.Vector3(Math.cos(Math.PI/4), Math.sin(Math.PI/4), 2/3).multiplyScalar(frustumSize))
+
+  // from three.js OrbitControls example
+  controls = new T.OrbitControls(camera, renderer.domElement)
+  controls.enableDamping = false
+  controls.screenSpacePanning = false
+  controls.minDistance = maxHeight
+  controls.maxDistance = 1500
+  controls.maxPolarAngle = Math.PI / 2
+  controls.minZoom = .5
+  controls.maxZoom = 10
+  controls.maxDistance = .1
+  
+  camera.zoom = Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth) // - .05
+  camera.updateProjectionMatrix()
+
+  axesHelper = new T.AxesHelper(size/2)
+  
+  sphere_radius = size * 1/8
+  scene.add(sphere = new T.Mesh(
+    new T.SphereGeometry(sphere_radius, 64, 32),
+    new T.MeshPhongMaterial({
+      metalness: 0,
+      roughness: 1,
+      color: Color.WHITE,
+
+      specular: 1,
+      reflectivity: 0,
+    })
+  ))
+
+  const N_DISCS = 10
+  const DISC_RADIUS = sphere_radius * .25
+  const DISC_THICK = DISC_RADIUS / 3
+  const DISC_SEGMENTS = 32
+  disc_distance = sphere_radius * 1
+  discs = []
+  const newDisc = (position) => {
+    const object = new T.Mesh(
+      (() => {
+        const g = new T.CylinderGeometry(DISC_RADIUS, DISC_RADIUS, DISC_THICK, DISC_SEGMENTS)
+        g.lookAt(new V3(0, 1, 0))
+        return g
+      })(),
+      new T.MeshPhongMaterial({
+        metalness: 0,
+        roughness: 1,
+        // metalness: .1,
+        // roughness: .9,
+        color: Color.WHITE,
+        specular: 1,
+        reflectivity: 0,
+      })
+    )
+    object.position.copy(position)
+    object.lookAt(new V3(0, 0, 0))
+    sphere.add(object)
+    return object
+  }
+  discs.push(...range(N_DISCS).map(i => {
+    const angle = (i / N_DISCS) * maths.TAU
+    const position = new V3(disc_distance * Math.cos(angle), disc_distance * Math.sin(angle), 0)
+    const object = newDisc(position)
+    // object.lookAt(new V3(1, 0, 0))
+    // object.lookAt(position)
+    // const position = new V3(sphere_radius * Math.cos(angle), sphere_radius * Math.sin(angle), 0).toArray()
+    // object.position.copy(position)
+    // object.lookAt(new V3(0, 0, 0))
+    // object.translate(...new V3(sphere_radius * Math.cos(angle), sphere_radius * Math.sin(angle), 0).toArray())
+    // sphere.add(object)
+    // sphere.add(object)
+    return object
+  }))
+  discs.push(...range(5).map(i => {
+    const angle = (i / 5) * maths.TAU + (1/20 * maths.TAU)
+    const position = new V3(...V.ne(Math.cos(angle), Math.sin(angle), .5).no().sc(disc_distance))
+    return newDisc(position)
+  }))
+  discs.push(...range(5).map(i => {
+    const angle = (i / 5) * maths.TAU + (1/20 * maths.TAU)
+    const position = new V3(...V.ne(Math.cos(angle), Math.sin(angle), -.5).no().sc(disc_distance))
+    return newDisc(position)
+  }))
+  discs.push(...range(5).map(i => {
+    const angle = (i / 5) * maths.TAU + (1/20 * maths.TAU) + (1/10 * maths.TAU)
+    const position = new V3(...V.ne(Math.cos(angle), Math.sin(angle), .8).no().sc(disc_distance))
+    return newDisc(position)
+  }))
+  discs.push(...range(5).map(i => {
+    const angle = (i / 5) * maths.TAU + (1/20 * maths.TAU) + (1/10 * maths.TAU)
+    const position = new V3(...V.ne(Math.cos(angle), Math.sin(angle), -.8).no().sc(disc_distance))
+    return newDisc(position)
+  }))
+  discs.push(...range(5).map(i => {
+    const angle = (i / 5) * maths.TAU + (1/20 * maths.TAU)
+    const position = new V3(...V.ne(Math.cos(angle), Math.sin(angle), 1.65).no().sc(disc_distance))
+    return newDisc(position)
+  }))
+  discs.push(...range(5).map(i => {
+    const angle = (i / 5) * maths.TAU + (1/20 * maths.TAU)
+    const position = new V3(...V.ne(Math.cos(angle), Math.sin(angle), -1.65).no().sc(disc_distance))
+    return newDisc(position)
+  }))
+  discs.push(...range(1).map(i => {
+    const position = new V3(...V.ne(0, 0, 1).no().sc(disc_distance))
+    return newDisc(position)
+  }))
+  discs.push(...range(1).map(i => {
+    const position = new V3(...V.ne(0, 0, -1).no().sc(disc_distance))
+    return newDisc(position)
+  }))
+  disc_controls = discs.map(disc => {
+    return {
+      disc,
+      t: 0,
+      mode: DiscMode.FLAT,
+      flat_time: rand.f(6) + 1
+    }
+  })
+
+  scene.add(backdrop = new T.Mesh(
+    (() => {
+      const g = new T.PlaneGeometry(size * 4, size * 2, 4)
+      g.lookAt(new V3(1, 0, 0))
+      g.translate(-size * 1/2, 0, 0)
+      return g
+    })(),
+    new T.MeshPhongMaterial({
+      // metalness: .1,
+      // roughness: .9,
+      specular: 100,
+      reflectivity: 0,
+      color: Color.OFF_WHITE,
+      side: T.DoubleSide,
+      flatShading: true,
+    })
+  ))
+
+  // scene.add(new T.AmbientLight(0x111111))
+  let light
+  light = new T.DirectionalLight(0xffccff, 1)
+  light.position.set(...V.ne(0.75, -0.5, 0.25).no())
+  light.castShadow = true
+  scene.add(light)
+  // var directionalLight = new T.DirectionalLight(0xffffff, 0.5)
+  // directionalLight.position.set(-0.5, 0.5, 1.5)
+  // directionalLight.position.normalize()
+  // scene.add(directionalLight)
+
+  ;[sphere, ...discs, backdrop].map(object => {
+    object.castShadow = true
+    object.receiveShadow = true
+  })
+
+  const handle_pause = () => { pause(true) }
+  window.addEventListener('blur', handle_pause)
+  window['disable-blur'] = () => window.removeEventListener('blur', handle_pause)
+  if (window.matchMedia('(display-mode: standalone)').matches) window['disable-blur']()
+  
+  window.addEventListener('focus', () => { pause(false) })
+  window.addEventListener('resize', onWindowResize, false)
+}
+
+function update(dt) {
+  controls.update()
+
+  sphere.rotateZ(dt * maths.TAU / 24)
+  disc_controls.map((control, i) => {
+    const angle = (i / 4) * maths.TAU
+    // // const position = new V3(Math.cos(angle), Math.sin(angle), 0)
+    // const position = new V3().copy(control.disc.position).normalize()
+    // const translate = V.p(angle, size / 16)
+    const translate = V.ne(control.disc.position.toArray()).no().sc(size / 16)
+    control.t += dt
+    switch (control.mode) {
+      case DiscMode.FLAT:
+        {
+          if (control.t > control.flat_time) {
+            control.mode = DiscMode.OUT
+            control.t = 0
+          }
+        }
+        break
+      case DiscMode.OUT:
+        {
+          const T = .5;
+          // control.disc.translateOnAxis(position, dt * size / 16 / 2)
+          control.disc.position.x += translate.x * dt / T
+          control.disc.position.y += translate.y * dt / T
+          control.disc.position.z += translate.z * dt / T
+          if (control.t > T) {
+            control.mode = DiscMode.OUT_WAIT
+            control.t = 0
+          }
+        }
+        break
+      case DiscMode.OUT_WAIT:
+        {
+          if (control.t > .25) {
+            control.mode = DiscMode.FLIP
+            control.t = 0
+          }
+        }
+        break
+      case DiscMode.FLIP:
+        {
+          const T = .5
+          control.disc.rotateX(dt * maths.TAU * .5 / T)
+          if (control.t > T) {
+            control.mode = DiscMode.IN_WAIT
+            control.t = 0
+            control.disc.lookAt(new V3(0, 0, 0))
+          }
+        }
+        break
+      case DiscMode.IN_WAIT:
+        {
+          if (control.t > .25) {
+            control.mode = DiscMode.IN
+            control.t = 0
+          }
+        }
+        break
+      case DiscMode.IN:
+        {
+          // control.disc.translateOnAxis(position, dt * -size / 16 / 2)
+          const T = .5
+          control.disc.position.x -= translate.x * dt / T
+          control.disc.position.y -= translate.y * dt / T
+          control.disc.position.z -= translate.z * dt / T
+          if (control.t > T) {
+            control.mode = DiscMode.FLAT
+            control.t = 0
+            control.disc.position.copy(new V3(...V.ne(control.disc.position.toArray()).no().sc(disc_distance)))
+          }
+        }
+        break
+    }
+    // control.disc.rotateX(dt * .1 * maths.TAU)
+  })
+}
+
+// animation loop: update & render scene
+function animate() {
+  if (paused) return
+
+  requestAnimationFrame(animate)
+  const now = performance.now()
+  const elapsed_time = now - start_time
+  start_time = now
+  const dt = Math.min(elapsed_time, 500) / 1_000
+  timer += elapsed_time
+  if (debug.fps) console.log(elapsed_time)
+
+  update(dt)
+  render()
+}
+
+// render scene to camera
+function render() {
+  renderer.render(scene, camera)
+}
+
+function onWindowResize() {
+  if (ORTHO) {
+    var aspect = window.innerWidth / window.innerHeight
+    camera.left   = - frustumSize / 2
+    camera.right  =   frustumSize / 2
+    camera.top    =   frustumSize / aspect / 2
+    camera.bottom = - frustumSize / aspect / 2
+  } else {
+    camera.aspect = window.innerWidth / window.innerHeight
+  }
+  camera.updateProjectionMatrix()
+  renderer.setSize(window.innerWidth/IMG_SCALE, window.innerHeight/IMG_SCALE)
+  render()
+}
+
+function pause(value) {
+  paused = (value !== null) ? value : true
+  controls.enabled = !paused
+  if (!paused) {
+    start_time = performance.now()
+    animate()
+  }
+  togglePauseHint(paused)
+}
+
+init()
+animate()
+
+    </script>
+  </body>
+</html>

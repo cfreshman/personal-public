@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>hecks.js</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    audio {
+      filter: invert(1);
+      min-height: 4em;
+    }
+    iframe {
+      width: 100%;
+      min-height: 20em;
+    }
+    img {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+    }
+  </style>
+
+  <script src="/lib/2/hecks/script.js"></script>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div id=root></div>
+  <script>
+    const TILE = 16
+    const SIZE = TILE * 16
+    const hf = new hecks.Field(TILE, hecks.Field.Orientation.TOP_FLAT)
+    let dots = 10
+    let rolls = {}, biomes = {}, owners = {}, inventories = {}
+    const biome_to_resource = {
+        gold: 'wheat',
+        green: 'wood',
+        blue: 'sheep',
+        red: 'brick',
+        black: 'ore',
+    }
+
+    const canvas = node('canvas')
+    canvas.width = canvas.height = SIZE
+    const ctx = canvas.getContext('2d')
+    root.append(canvas)
+
+    const svg = node(`
+    <svg id="svg"
+    width=${SIZE} height=${SIZE} 
+    viewBox="${-SIZE/2} ${-SIZE/2} ${SIZE} ${SIZE}" 
+    xmlns="http://www.w3.org/2000/svg"
+    style="
+    overflow: visible;
+    ">
+    </svg>`)
+    root.append(svg)
+
+    root.append(node(`
+    <div>
+        <button id=button_generate>generate</button>
+        <input id=input_dots type=number value=${dots}>
+    </div>
+    `))
+    button_generate.onclick = () => generate()
+    input_dots.onchange = (e) => {
+        dots = e.target.value
+        generate()
+    }
+
+    const catan = node(`
+    <svg id="catan"
+    width=${SIZE * 2} height=${SIZE * 2} 
+    viewBox="${-SIZE/2} ${-SIZE/2} ${SIZE} ${SIZE}" 
+    xmlns="http://www.w3.org/2000/svg">
+    </svg>`)
+    root.append(catan)
+
+    const generate = () => {
+        const centered = hf.nearest(dots, hf.center())
+        const carts = centered.map(v => hf.to_cartesian(v))
+        
+        canvas.width = canvas.width
+        ctx.fillStyle = '#000'
+        ctx.fillRect(0, 0, SIZE, SIZE)
+        let svg_inner_html = `
+        <style>
+            #svg circle {
+                fill: #000;
+                stroke: #000;
+                stroke-width: 2px;
+            }
+            #svg text {
+                fill: #fff;
+                text-anchor: middle;
+                dominant-baseline: middle;
+            }
+            #svg g * {
+                pointer: cursor !important;
+                user-select: none;
+            }
+            #svg g:hover circle {
+                fill: transparent;
+            }
+            #svg g:hover text {
+                fill: #000;
+            }
+        </style>
+        `
+        let catan_inner_html = ``
+        const biome_colors = [
+            'red',
+            'gold',
+            'green',
+            'blue',
+        ]
+
+        carts.map((cart, i) => {
+            ctx.fillStyle = `hsl(${360 / carts.length * i} 70% 70%)`
+            ctx.beginPath()
+            ctx.arc(cart.x + SIZE/2, cart.y + SIZE/2, hf.size / 2, 0, 2 * Math.PI)
+            ctx.fill()
+            
+            svg_inner_html += `
+            <g id="group_${i}">
+                <circle cx=${cart.x} cy=${cart.y} r=${hf.size / 2} />
+                <text x=${cart.x} y=${cart.y}>${i}</text>
+            </g>
+            `
+
+            const vs = hf.to_vertices(centered[i])
+            catan_inner_html += `
+            <g>
+                <path style="fill:${rand.sample(biome_colors)}" d="M ${vs[0][0]},${vs[0][1]} ${vs.slice(1).concat([vs[0]]).map(v => {
+                    return `L ${v[0]},${v[1]}`
+                })} Z" />
+            </g>
+            `
+        })
+
+        svg.innerHTML = svg_inner_html
+        catan.innerHTML = catan_inner_html
+        let clicked = undefined
+        carts.map((cart, i) => {
+            const label = node(`<div style="
+            border: 1px solid #000; background: #fff;
+            position: fixed;
+            margin: 1em;
+            ">
+            q,r: (${centered[i][0]}, ${centered[i][1]})
+            <br/>
+            x,y: (${Math.round(carts[i][0] * 100) / 100}, ${Math.round(carts[i][1] * 100) / 100})</div>`)
+            const place_label = e => {
+                label.remove()
+                label.style.left = e.clientX + 'px'
+                label.style.top = e.clientY + 'px'
+                label.style.background = `hsl(${360 / carts.length * i} 70% 70%)`
+                root.append(label)
+            }
+            const group = Q(svg, `#group_${i}`)
+            group.onpointermove = e => {
+                if (clicked) return
+                place_label(e)
+            }
+            group.onpointerout = e => {
+                if (clicked) return
+                label.remove()
+            }
+            // circle.onpointerdown = e => {
+            //     e.stopPropagation()
+            //     clicked = true
+            //     place_label(e)
+            // }
+        })
+        window.addEventListener('pointerdown', e => {
+            clicked?.remove()
+            clicked = undefined
+        })
+    }
+    generate()
+
+    // root.append(node(`
+    // <div>
+    //     <button id=button_roll>roll for catan cards</button>
+    //     <span id=catan_roll>(click to roll)</span>
+
+    //     <br/>
+
+    //     <div style="
+    //     display: flex;
+    //     flex-direction: column;
+    //     gap: 4px;
+    //     ">
+    //         <div id=catan_rolls style="
+    //         display: flex;
+    //         flex-direction: row;
+    //         gap: 4px;
+    //         flex-wrap: wrap;
+    //         "></div>
+    //         <div id=catan_inventories style="
+    //         display: flex;
+    //         flex-direction: column;
+    //         gap: 4px;
+    //         "></div>
+    //     </div>
+    // </div>
+    // `))
+    // button_roll.onclick = () => roll()
+    
+    // const roll = (render_only=false) => {
+    //     const player_order = Object.keys(inventories)
+    //     if (!render_only) {
+    //         const roll = rand.i(6) + rand.i(6) + 2
+    //         catan_roll.innerHTML = player_order[turn % player_order.length] + ' rolled ' + (roll === 7 ? '7 (robber)' : roll)
+    //         const tiles = rolls[roll] || []
+    //         // catan_rolls.prepend(...cards.map(card => node(`<div style="
+    //         // background: ${card};
+    //         // border-radius: 2px;
+    //         // font-size: 2em;
+    //         // width: 1em; height: 1.5em;
+    //         // display: flex; align-items: center; justify-content: center;
+    //         // ">
+    //         //     <span style="
+    //         //     border-radius: 100em;
+    //         //     width: 1.5em; height: 1.5em;
+    //         //     background: #fff; color: #000;
+    //         //     font-size: 1rem;
+    //         //     padding: .25em;
+    //         //     display: flex; align-items: center; justify-content: center;
+    //         //     ">${roll}</span>
+    //         // </div>`)))
+    //         tiles.map(tile => {
+    //             const biome = biomes[tile.st()]
+    //             const owner = owners[tile.st()]
+    //             if (owner) {
+    //                 const inventory = inventories[owner] = inventories[owner] || {}
+    //                 inventory[biome] = (inventory[biome] || 0) + 1
+    //             }
+    //         })
+    //         catan_rolls.prepend(node(`<span style="
+    //         background: #000; color: #fff; border-radius: 100em;
+    //         padding: 0 .25em;
+    //         ">${roll}</span>`))
+    //         turn += 1
+    //     } else {
+    //         catan_roll.innerHTML = `${player_order[turn % player_order.length]}'s turn`
+    //     }
+    //     console.debug({inventories})
+    //     catan_inventories.innerHTML = Object.keys(inventories).map(k => {
+    //         return `<div>
+    //             <span>${k}:</span>
+    //             ${Object.entries(inventories[k]).map(([i_k, i_v]) => `<span style="
+    //             border: 2px solid ${i_k}; border-radius: 100em;
+    //             padding: 0 .25em;
+    //             ">${biome_to_resource[i_k]}: ${i_v}</span>`).join('\n')}
+    //         </div>`
+    //     }).join('')
+    // }
+
+    // const generate = () => {
+    //     const centered = hf.nearest(dots, hf.center())
+    //     const carts = centered.map(v => hf.to_cartesian(v))
+        
+    //     canvas.width = canvas.width
+    //     ctx.fillStyle = '#000'
+    //     ctx.fillRect(0, 0, SIZE, SIZE)
+    //     let svg_inner_html = `
+    //     <style>
+    //         #svg circle {
+    //             fill: #000;
+    //             stroke: #000;
+    //             stroke-width: 2px;
+    //         }
+    //         #svg text {
+    //             fill: #fff;
+    //             text-anchor: middle;
+    //             dominant-baseline: middle;
+    //         }
+    //         #svg g * {
+    //             pointer: cursor !important;
+    //             user-select: none;
+    //         }
+    //         #svg g:hover circle {
+    //             fill: transparent;
+    //         }
+    //         #svg g:hover text {
+    //             fill: #000;
+    //         }
+    //     </style>
+    //     `
+    //     let catan_inner_html = `
+    //     <style>
+    //         #catan circle {
+    //             fill: #eddbc0;
+    //         }
+    //         #catan text {
+    //             fill: #fff;
+    //             text-anchor: middle;
+    //             dominant-baseline: middle;
+    //         }
+    //         #catan :is(circle, rect).placement_target:hover {
+    //             fill: #888 !important;
+    //         }
+    //         #catan line.placement_target:hover {
+    //             stroke: #888 !important;
+    //         }
+    //     </style>
+    //     `
+    //     // const biomes = [
+    //     //     'red',
+    //     //     'gold',
+    //     //     'green',
+    //     //     'blue',
+    //     // ]
+    //     // const biomes = [
+    //     //     'lawngreen',
+    //     //     'gold',
+    //     //     'darkgreen',
+    //     //     'brown',
+    //     //     'gray',
+    //     // ]
+
+    //     const biome_colors = [
+    //         'gold', 'gold', 'gold', 'gold',
+    //         'green', 'green', 'green', 'green',
+    //         'blue', 'blue', 'blue', 'blue',
+    //         'red', 'red', 'red',
+    //         'black', 'black', 'black',
+    //         'white',
+    //     ]
+    //     const values = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12]
+    //     const high_values = new Set([6, 8])
+    //     const players = ['red', 'red', 'blue', 'blue', 'green', 'green', 'gold', 'gold']
+    //     rolls = {}
+    //     biomes = {}
+    //     owners = {}
+    //     inventories = {}
+    //     players.map(player => inventories[player] = {})
+
+    //     carts.map((cart, i) => {
+    //         ctx.fillStyle = `hsl(${360 / carts.length * i} 70% 70%)`
+    //         ctx.beginPath()
+    //         ctx.arc(cart.x + SIZE/2, cart.y + SIZE/2, hf.size / 2, 0, 2 * Math.PI)
+    //         ctx.fill()
+            
+    //         svg_inner_html += `
+    //         <g id="group_${i}">
+    //             <circle cx=${cart.x} cy=${cart.y} r=${hf.size / 2} />
+    //             <text x=${cart.x} y=${cart.y}>${i}</text>
+    //         </g>
+    //         `
+
+    //         const vs = hf.to_vertices(centered[i])
+    //         // ${ctx.fillStyle}
+    //         // hsl(0 0% ${i / carts.length * 100}%)
+
+    //         const biome = dots > 19 ? rand.sample(biome_colors) : rand.pick(biome_colors)
+    //         const value = biome === 'white' ? 0 : dots > 19 ? rand.sample(values) : rand.pick(values)
+    //         rolls[value] = (rolls[value] || []).concat([cart])
+    //         biomes[cart.st()] = biome
+    //         catan_inner_html += `
+    //         <g>
+    //             <path style="fill:${biome}" d="M ${vs[0][0]},${vs[0][1]} ${vs.slice(1).concat([vs[0]]).map(v => {
+    //                 return `L ${v[0]},${v[1]}`
+    //             })} Z" />
+    //             <circle cx=${cart.x} cy=${cart.y} r=${hf.size / 2} />
+    //             <text x=${cart.x} y=${cart.y} style="
+    //             fill: ${high_values.has(value) ? 'red' : 'black'};
+    //             ">${value ? value : ''}</text>
+    //         </g>
+    //         `
+    //     })
+
+    //     // const interior = hf.interior_cartesian_vertices(centered.flatMap(x => hf.to_vertices(x)), 3)
+    //     // interior.map(cart => {
+    //     //     catan_inner_html += `
+    //     //     <g>
+    //     //         <circle cx=${cart.x} cy=${cart.y} r=${hf.size / 4} style="
+    //     //         fill: #000;
+    //     //         " />
+    //     //     </g>
+    //     //     `
+    //     // })
+
+    //     const verts = rand.shuffle(centered.flatMap(x => hf.to_vertices(x)))
+    //     const edges = rand.shuffle(centered.flatMap(x => hf.to_edges(x)))
+    //     const vert_to_edges = {}
+    //     edges.forEach(edge => {
+    //         edge.forEach(v => {
+    //             vert_to_edges[v.st()] = (vert_to_edges[v.st()] || []).concat([edge])
+    //         })
+    //     })
+    //     console.debug(vert_to_edges)
+
+    //     const houses = []
+    //     const roads = []
+    //     const placements = []
+    //     while (houses.length < 8) {
+    //         const curr = verts.pop()
+    //         if (!houses.some(h => h.ad(curr.sc(-1)).ma() <= hf.size * 1.1)) {
+    //             const house = curr
+    //             const road = vert_to_edges[curr.st()].pop()
+    //             const owner = dots > 19 ? rand.sample(players) : rand.pick(players)
+    //             houses.push(house)
+    //             roads.push(road)
+    //             placements.push({house,road,owner})
+
+    //             const tiles = carts.filter(cart => {
+    //                 return house.ad(cart.sc(-1)).ma() <= hf.size * 1.1
+    //             })
+    //             console.debug(house, tiles)
+    //             tiles.map(tile => owners[tile.st()] = owner)
+    //         }
+    //     }
+    //     // const roads = []
+    //     // while (roads.length < 8) {
+    //     //     const curr = edges.pop()
+    //     //     if (houses.some(h => h.eq(curr[0]) || h.eq(curr[1]))) {
+    //     //         roads.push(curr)
+    //     //     }
+    //     // }
+
+    //     // roads.map(([v1, v2], i) => {
+    //     //     catan_inner_html += `
+    //     //     <g>
+    //     //         <line 
+    //     //         x1=${v1[0]} y1=${v1[1]}
+    //     //         x2=${v2[0]} y2=${v2[1]}
+    //     //         style="
+    //     //         stroke: #fff;
+    //     //         stroke-width: calc(${hf.size / 8} + 2);
+    //     //         " />
+    //     //         <line 
+    //     //         x1=${v1[0]} y1=${v1[1]}
+    //     //         x2=${v2[0]} y2=${v2[1]}
+    //     //         style="
+    //     //         stroke: #000;
+    //     //         stroke-width: ${hf.size / 8};
+    //     //         " />
+    //     //     </g>
+    //     //     `
+    //     // })
+    //     // const house_size = hf.size / 3
+    //     // houses.map(cart => {
+    //     //     catan_inner_html += `
+    //     //     <g>
+    //     //         <rect 
+    //     //         x=${cart.x - house_size/2} y=${cart.y - house_size / 2} 
+    //     //         width=${house_size} height=${house_size} style="
+    //     //         fill: #000;
+    //     //         stroke: #fff;
+    //     //         " />
+    //     //     </g>
+    //     //     `
+    //     // })
+
+    //     const edge_size = hf.size / 12
+    //     edges.map(([v1, v2]) => {
+    //         catan_inner_html += `
+    //         <g>
+    //             <line class="placement_target"
+    //             x1=${v1[0]} y1=${v1[1]}
+    //             x2=${v2[0]} y2=${v2[1]}
+    //             style="
+    //             stroke: #fff;
+    //             stroke-width: ${edge_size};
+    //             " />
+    //         </g>
+    //         `
+    //     })
+    //     const vert_size = hf.size / 6
+    //     verts.map(cart => {
+    //         catan_inner_html += `
+    //         <g>
+    //             <circle class="placement_target"
+    //             cx=${cart.x} cy=${cart.y} 
+    //             r=${vert_size} style="
+    //             fill: #000;
+    //             " />
+    //         </g>
+    //         `
+    //     })
+
+    //     const house_size = hf.size / 3
+    //     placements.map(({house,road,owner}) => {
+    //         const [v1, v2] = road
+    //         catan_inner_html += `
+    //         <g>
+    //             <line 
+    //             x1=${v1[0]} y1=${v1[1]}
+    //             x2=${v2[0]} y2=${v2[1]}
+    //             style="
+    //             stroke: #fff;
+    //             stroke-width: calc(${hf.size / 8} + 2);
+    //             " />
+    //             <line 
+    //             x1=${v1[0]} y1=${v1[1]}
+    //             x2=${v2[0]} y2=${v2[1]}
+    //             style="
+    //             stroke: ${owner};
+    //             stroke-width: ${hf.size / 8};
+    //             " />
+    //         </g>
+    //         `
+    //         catan_inner_html += `
+    //         <g>
+    //             <rect class="placement_target"
+    //             x=${house.x - house_size/2} y=${house.y - house_size / 2} 
+    //             width=${house_size} height=${house_size} style="
+    //             fill: ${owner};
+    //             stroke: #fff;
+    //             " />
+    //         </g>
+    //         `
+    //     })
+    //     console.debug({rolls, biomes, owners})
+
+    //     svg.innerHTML = svg_inner_html
+    //     catan.innerHTML = catan_inner_html
+    //     catan_rolls.innerHTML = catan_inventories.innerHTML = ''
+    //     let clicked = undefined
+    //     carts.map((cart, i) => {
+    //         const label = node(`<div style="
+    //         border: 1px solid #000; background: #fff;
+    //         position: fixed;
+    //         margin: 1em;
+    //         ">
+    //         q,r: (${centered[i][0]}, ${centered[i][1]})
+    //         <br/>
+    //         x,y: (${Math.round(carts[i][0] * 100) / 100}, ${Math.round(carts[i][1] * 100) / 100})</div>`)
+    //         const place_label = e => {
+    //             label.remove()
+    //             label.style.left = e.clientX + 'px'
+    //             label.style.top = e.clientY + 'px'
+    //             label.style.background = `hsl(${360 / carts.length * i} 70% 70%)`
+    //             root.append(label)
+    //         }
+    //         const group = Q(svg, `#group_${i}`)
+    //         group.onpointermove = e => {
+    //             if (clicked) return
+    //             place_label(e)
+    //         }
+    //         group.onpointerout = e => {
+    //             if (clicked) return
+    //             label.remove()
+    //         }
+    //         // circle.onpointerdown = e => {
+    //         //     e.stopPropagation()
+    //         //     clicked = true
+    //         //     place_label(e)
+    //         // }
+    //     })
+    //     window.addEventListener('pointerdown', e => {
+    //         clicked?.remove()
+    //         clicked = undefined
+    //     })
+
+    //     turn = 0
+    //     roll(true)
+    // }
+    // let turn = 0
+    // generate()
+
+  </script>
+
+</body>
+</html>

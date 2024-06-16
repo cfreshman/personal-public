@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<!--
+  
+  this is HTML! edit the bestlist @ line 13
+
+  TODO
+  - <>list tags at top
+  - remove list suffix next to item
+  - turn 'save' into clickable link
+  - turn 'edit' into clickable link for glitch remix?
+
+-->
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>bestlist</title><meta name=description content="freshman.dev" /> <!-- replace freshman.dev with whatever you want -->
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <br />
+  <div id=bestlist class="pre-line">
+    - Red Dwarf showlist
+    - Monty Python and the Holy Grail movielist
+    - Firefly showlist
+    - Dune booklist
+    - Hitchhiker's Guide to the Galaxy booklist
+    - Ender's Game booklist
+    - The Matrix movielist
+    - Twilight Imperium 4 gamelist
+    - Civ 5 gamelist
+    - salmon sushi foodlist
+    - Celsius foodlist
+    - 5mg gummies druglist
+    - lox bagel w capers foodlist
+    - plain lobster foodlist
+    - pea-rice protein powder foodlist
+    - letterpress gamelist
+    - 1:1 iced espresso / skim foodlist
+    - Nausicaa movielist
+    - pipefish lifelist
+    - tree fern lifelist
+    - peed off lighthouse in gale/rain didlist
+    - nip in space station (1st ever?) didlist
+    - puked 2x @ bottom of ocean didlist
+    - competitive programming dolist
+    - codenames gamelist
+    - won senior assassin didlist
+    - boy scout (life, best rank) didlist
+    - #1 QuizUp Herbs & Spices '14 didlist
+    - named pizza: stirfry → Stir Pie didlist
+    - Nathan for You showlist
+    - pygmy seahorse lifelist
+    - Redline (sub) movielist
+    - web development dolist
+    - Fruity by Rubblebucket songlist
+    - Supersonic by Skrillex songlist
+    - Over the Garden Wall showlist
+    - Truman Show movielist
+    - boba tea goodlist
+    - rhododendrons lifelist
+    - IPHONE by Rico Nasty songlist
+    - Arrival movielist
+    - Zoboomafoo showlist
+    - Dua Lipa "New Rules" MV videolist
+    - Harrison Bergeron storylist
+    - The Egg storylist
+    - The Good Place showlist
+    - Phantogram artistlist
+    - pear jelly beans foodlist
+    - Eric Andre, James Van Der Beek episodelist
+  </div>
+  <script>
+    // YOU DON'T NEED TO EDIT ANYTHING BELOW
+
+    const log = named_log('bestlist')
+
+    const items = bestlist.textContent.split('\n').map(x => x.trim().replace('- ', '')).filter(x => x).map(x => {
+      const tokens = x.split(' ')
+      const last = tokens.slice(-1)[0]
+      let list = 'misclist'
+      if (/([^ ]+)list/.test(last)) list = tokens.pop()
+      const thing = tokens.join(' ')
+      return { thing, list }
+    })
+    log({items})
+
+    let curr_list = location.hash.slice(1) || undefined
+    const display_list = (list=undefined) => {
+      const list_display = list || 'bestlist'
+      log('display', list)
+      Q('title').textContent = list_display
+      const l_body_title = Q('.title')
+      if (l_body_title) l_body_title.textContent = l_body_title.textContent.replace(/\w+list/, list_display)
+      
+      bestlist.innerHTML = ''
+      items.filter(x => x.list !== 'druglist').filter(x => !list || x.list === list).map(x => bestlist.append(
+        (item => {
+          item.onclick = e => {
+            if (e.metaKey) {
+            } else {
+              e.preventDefault()
+              display_list(x.list === curr_list ? undefined : x.list)
+            }
+          }
+          return item
+        })(node(`<span class="item">- ${x.thing}${list ? '' : ` <a class="listname" href="#${x.list}">${x.list.replace('list', '')}</a>`}</span>`)),
+        '\n'))
+      bestlist.append('\n')
+
+      url.replace(location.origin + location.pathname)
+      if (list) {
+        const l_back = node(`<a>back to bestlist</a>`)
+        l_back.onclick = () => display_list()
+        bestlist.append(l_back)
+        url.replace(location.href + `#${list}`)
+      } else {
+        bestlist.insertAdjacentHTML('beforeEnd', `<div>(you can save & edit this file)</div>`)
+      }
+    }
+    display_list(location.hash.slice(1))
+
+    if (parent !== window) {
+      hydrated.then(() => {
+        Q('.subtitle').insertAdjacentHTML('afterEnd', `<span> <a onclick="parent.open(location.href, '_blank')">open in new tab</a></span>`)
+      })
+    }
+  </script>
+  <style>
+    :root {
+      filter: none; /* only needed bc /copyright.js adds a filter by default */
+    }
+    a {
+      color: #ffc107;
+      color: #8cb89c;
+      color: #8c9bb8;
+      color: #309ffc;
+    }
+  </style>
+
+  <div>&nbsp;</div>
+
+</body>
+</html>

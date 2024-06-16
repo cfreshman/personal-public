@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>error</title>
+</head>
+<body><span id="error">something's wrong!</span>
+
+1. refresh after 30s
+2. message me <a id="twitter" href="https://twitter.com/freshman_dev">@freshman_dev</a>/twitter <a id="email" href="mailto:cyrus@freshman">cyrus@freshman</a>/email
+
+<script>
+    // document.querySelector('#url').textContent = location.href
+    document.querySelector('#error').textContent = `something's wrong with ${location.href.replace(
+        location.pathname === '/' ? location.protocol : location.origin,
+        '',
+    )}`
+
+    const subject = encodeURIComponent(`something's wrong with ${location.href}`)
+    document.querySelector('#twitter').href =
+        `https://twitter.com/messages/compose?recipient_id=1351728698614042626&text=`+subject
+
+    const email = document.querySelector('#email')
+    email.href += '.dev?subject='+subject
+    email.textContent += '.dev'
+    </script>
+<style>
+    html {
+        font-family: monospace;
+        white-space: pre;
+        padding: 1em;
+    }
+</style>
+
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>sent-to-send [NOT FUNCTIONAL YET]</title>
+  <meta name=description content="email the same group of users" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<!-- 
+
+  take copied text from sent emails like
+  	"himashree_chandru@brown.edu" <himashree_chandru@brown.edu>,
+    "tsangl33@gmail.com" <tsangl33@gmail.com>,
+    taramruthur@gmail.com,
+    zersha.m@gmail.com,
+    "freshmanamy@gmail.com" <freshmanamy@gmail.com>,
+    "mvcourtney@yahoo.com" <mvcourtney@yahoo.com>,
+    "wvskiergirl@gmail.com" <wvskiergirl@gmail.com>,
+    fkfreshman@yahoo.com,
+    depasqualematt@yahoo.com,
+    "mwfreshman@gmail.com" <mwfreshman@gmail.com>,
+    "pfreshma@gmail.com" <pfreshma@gmail.com>,
+    "adamshay6@gmail.com" <adamshay6@gmail.com>,
+    "sunnydepasquale@msn.com" <sunnydepasquale@msn.com>
+  and convert to newline-separated list
+    	himashree_chandru@brown.edu
+      tsangl33@gmail.com
+      taramruthur@gmail.com
+      zersha.m@gmail.com
+      freshmanamy@gmail.com
+      mvcourtney@yahoo.com
+      wvskiergirl@gmail.com
+      fkfreshman@yahoo.com
+      depasqualematt@yahoo.com
+      mwfreshman@gmail.com
+      pfreshma@gmail.com
+      adamshay6@gmail.com
+      sunnydepasquale@msn.com
+
+-->
+
+  <div data-hydrate data-title></div>
+  <textarea id=in></textarea>
+  <div id=out class=pre></div>
+  <script>
+    in.onchange = e => {
+      const xs = (in.value || in.textContent).split(/,[ \n]/)
+      const emails = xs.map(x => {
+        const re = /".+" <(.+)>/
+        const match = re.exec(x)
+        if (match) {
+          return match[1]
+        } else {
+          return x
+        }
+      })
+      out.textContent = emails.join('\n')
+    }
+  </script>
+
+</body>
+</html>

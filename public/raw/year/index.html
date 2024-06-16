@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>year</title><meta name=description content="" />
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div id=root></div>
+  <div class="row gap">
+    <button id=button_prev>previous</button>
+    <button id=button_copy>copy</button>
+    <button id=button_next>next</button>
+  </div>
+  <script>
+    const letters = `
+┏━━┓
+┃┏┓┃
+┃┃┃┃
+┃┃┃┃
+┃┗┛┃
+┗━━┛
+
+┏━┓ 
+┗┓┃ 
+ ┃┃ 
+ ┃┃ 
+┏┛┗┓
+┗━━┛
+
+┏━━┓
+┗━┓┃
+┏━┛┃
+┃┏━┛
+┃┗━┓
+┗━━┛
+
+┏━━┓
+┗━┓┃
+┏━┛┃
+┗━┓┃
+┏━┛┃
+┗━━┛
+
+┏┓┏┓
+┃┃┃┃
+┃┗┛┃
+┗━┓┃
+  ┃┃
+  ┗┛
+
+┏━━┓
+┃┏━┛
+┃┗━┓
+┗━┓┃
+┏━┛┃
+┗━━┛
+
+┏━━┓
+┃┏━┛
+┃┗━┓
+┃┏┓┃
+┃┗┛┃
+┗━━┛
+
+┏━━┓
+┗━┓┃
+  ┃┃
+  ┃┃
+  ┃┃
+  ┗┛
+
+┏━━┓
+┃┏┓┃
+┃┗┛┃
+┃┏┓┃
+┃┗┛┃
+┗━━┛
+
+┏━━┓
+┃┏┓┃
+┃┗┛┃
+┗━┓┃
+  ┃┃
+  ┗┛
+`.trim().split('\n\n')
+    let year = Math.max(0, Number(new URLSearchParams(location.search).get('') || new Date().getFullYear()))
+    const render = () => {
+        const digits = year.toString().split('').map(Number).map(x => letters[x])
+        const lines = digits.map(digit => digit.split('\n'))
+        const display = range(lines[0].length).map(i => lines.map(line => line[i]).join('')).join('\n')
+        root.innerHTML = `<pre>${display}</pre>`
+    }
+    render()
+    on(button_prev, 'click', () => {
+        location.search = new URLSearchParams({ '': year - 1 }).toString()
+    })
+    on(button_next, 'click', () => {
+        location.search = new URLSearchParams({ '': year + 1 }).toString()
+    })
+    on(button_copy, 'click', () => {
+        copy(root.textContent)
+        displayStatus(button_copy, 'copied!')
+    })
+  </script>
+
+</body>
+</html>

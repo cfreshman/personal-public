@@ -1,0 +1,233 @@
+{
+  "built_with": "https://freshman.dev/html-resume",
+  "name": "Cyrus Freshman",
+  "location": "Providence, RI",
+  "email": "cyrus@freshman.dev",
+  "github": "",
+  "items": [
+    {
+      "entity": "WORK EXPERIENCE",
+      "location": "",
+      "rating": "",
+      "scale": "",
+      "positions": [],
+      "options": {
+        "highlight": false,
+        "spaced": false,
+        "section": true
+      },
+      "detail": "",
+      "hidden": false,
+      "simple": true
+    },
+    {
+      "entity": "FRESHMAN.DEV LLC",
+      "highlight": false,
+      "location": "Providence, RI",
+      "rating": "",
+      "positions": [
+        {
+          "title": "Owner / Full Stack Software Engineer",
+          "time": "April 2022–Present",
+          "description": [
+            "Various projects, many on MERN stack, for example:\n- [greeter](https://freshman.dev/greeter): social diary. AI/LLM social assistant feature\n- [wordbase](https://freshman.dev/wordbase): discontinued word game remake with support for 5 user-requested languages\n- [wordle bot leaderboard](https://freshman.dev/wordle/leaderboard): main leaderboard for Wordle solvers, 300+ submissions\nAccepted into startup incubator [RIHub](https://rihub.org/), 1k organic user signups"
+          ]
+        }
+      ],
+      "detail": "",
+      "options": {
+        "highlight": false
+      }
+    },
+    {
+      "entity": "MEADOWBROOK DAY CAMP",
+      "location": "Weston, MA",
+      "rating": "",
+      "positions": [
+        {
+          "title": "Makerspace Specialist",
+          "time": "Summer 2024",
+          "description": [
+            ""
+          ]
+        }
+      ],
+      "options": {
+        "highlight": false,
+        "spaced": false,
+        "section": false
+      },
+      "hidden": false,
+      "simple": false,
+      "detail": ""
+    },
+    {
+      "entity": "Amazon Robotics",
+      "location": "Westborough, MA",
+      "positions": [
+        {
+          "title": "Software Engineer",
+          "time": "September 2019–April 2022",
+          "description": [
+            "Developed new path planning API for autonomous warehouse vehicles ([demo](https://freshman.dev/raw/paths))\nImplemented event stream processor for vehicle allocation inputs\nOptimized tier-1 data pipeline ecosystem to improve scaling of accessor API by 1500%\nDesigned internal alarming library used across adjacent teams\nSimplified management of client throttling system and collaborated on new self-service workflow\nMentored intern project\nEarned the highest possible raise each year and left after 2.5 years"
+          ]
+        }
+      ],
+      "detail": "Path Planning Team",
+      "options": {
+        "highlight": false
+      }
+    },
+    {
+      "entity": "MathWorks",
+      "location": "Natick, MA",
+      "positions": [
+        {
+          "title": "Software Development Intern",
+          "time": [
+            "Summers 2016–2018"
+          ],
+          "description": [
+            "Developed full-stack feature for MATLAB Online’s Import Tool\nImplemented several UI elements for MATLAB’s Property Inspector, including colormap ([detail](https://freshman.dev/raw/cv/MathWorks/colormap))\nCreated performance test/report to track progress on MATLAB Online graphics optimization"
+          ]
+        }
+      ],
+      "detail": "Data Tools & Graphics Teams",
+      "options": {}
+    },
+    {
+      "entity": "EDUCATION",
+      "location": "",
+      "rating": "",
+      "scale": "",
+      "positions": [],
+      "options": {
+        "highlight": false,
+        "spaced": false,
+        "section": true
+      },
+      "detail": "",
+      "simple": true
+    },
+    {
+      "entity": "University of Massachusetts, Amherst",
+      "location": "Amherst, MA",
+      "positions": [
+        {
+          "title": "Bachelor of Science in Computer Science",
+          "time": "September 2015–May 2019",
+          "description": [
+            "589 Machine Learning – 514 Data Science – 583 Game Programming – 383 Artificial Intelligence\n403 Robotics – 326 Web Programming – 611 Advanced Algorithms – MATH MVCalc LinAlg DiffEq"
+          ]
+        }
+      ],
+      "detail": "",
+      "rating": "3.91",
+      "scale": "4.0",
+      "options": {}
+    },
+    {
+      "entity": "University of Auckland",
+      "location": "Auckland, New Zealand",
+      "positions": [
+        {
+          "title": "Semester Abroad",
+          "time": "Spring 2018",
+          "description": [
+            "373 Computer Graphics – 351 Database Systems – 345 Human-Computer Interaction"
+          ]
+        }
+      ],
+      "detail": "",
+      "rating": "8.25",
+      "scale": "8.0",
+      "options": {}
+    },
+    {
+      "entity": "OTHER PROJECTS & ROLES",
+      "location": "",
+      "rating": "",
+      "positions": [],
+      "options": {
+        "highlight": false,
+        "spaced": false,
+        "section": true
+      },
+      "hidden": false,
+      "simple": false
+    },
+    {
+      "entity": "",
+      "location": "",
+      "positions": [
+        {
+          "title": "3D Game Development in Unity",
+          "time": "2019",
+          "description": [
+            "Designed rally-car couch game with Nintendo Joy-Cons for player input ([link](https://freshman.dev/matchbox))"
+          ]
+        },
+        {
+          "title": "Hierarchical Control System for Simulated Pong-Playing Robot",
+          "time": "2019",
+          "description": [
+            "Composed behavior from low-level PD controllers to integrated gameplay for course competition"
+          ]
+        },
+        {
+          "title": "Hackathon Competition",
+          "time": "2018",
+          "description": [
+            "Won ‘Most Innovative’ for idea with random group while studying at University of Auckland"
+          ]
+        },
+        {
+          "title": "Team Lead, Competitive Programming Interest Group ",
+          "time": "2017",
+          "description": [
+            "Qualified at BOSPRE Preliminary as first-time ICPC competitor ([scoreboard](https://hc3.seas.harvard.edu/hc3/bospre/2017/scoreboard.web))\nAchieved 6th place of 17 in the 2017 Northeast North America Regional Contest ([scoreboard](https://icpc.global/regionals/finder/northeast-north-america-2018/standings))\n- new team competing against established teams from e.g. MIT, Harvard\n- responsible for 3.5 of 4 team points"
+          ]
+        },
+        {
+          "title": "Secretary, Association for Computing Machinery (ACM) Student Chapter",
+          "time": "2017",
+          "description": [
+            ""
+          ]
+        }
+      ],
+      "detail": "",
+      "options": {
+        "highlight": true,
+        "spaced": false
+      },
+      "simple": true
+    },
+    {
+      "entity": "PROGRAMMING LANGUAGES, STACKS, TECHNOLOGIES & METHODOLOGIES",
+      "location": "",
+      "positions": [
+        {
+          "title": "",
+          "time": "",
+          "description": [
+            "Java, JavaScript/TypeScript, Python, C/C++, Kotlin, Ruby, C#, MATLAB, HTML/CSS\nMERN stack (MongoDB, ExpressJS, ReactJS, NodeJS), SQL, Redis\nChrome DevTools, Git, Unix shell, AWS, REST APIs, Service-Oriented Architecture, Agile"
+          ]
+        }
+      ],
+      "detail": "",
+      "options": {
+        "highlight": true,
+        "spaced": true
+      },
+      "height": "12",
+      "width": "8.5"
+    }
+  ],
+  "options": {
+    "variable font": true,
+    "legal size": false
+  },
+  "height": 11,
+  "width": 8.5
+}

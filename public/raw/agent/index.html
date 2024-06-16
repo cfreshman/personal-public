@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<!-- agent
+debug info
+-->
+<html>
+<head>
+  <title>agent</title>
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    }
+    html {
+      height: 100%;
+      background: #fdfcfa;
+      color: #101010;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    body {
+      padding: .5em;
+      display: flex;
+      flex-direction: column;
+      row-gap: .5em;
+      flex-grow: 1;
+    }
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
+    a:hover {
+      background: #101010;
+      color: #fdfcfa;
+    }
+    button, a, input {
+      cursor: pointer;
+      font-size: 1em;
+      touch-action: manipulation;
+    }
+    button, input:is(:not([type]), [type=text]) {
+      border: 1px solid black;
+      border-radius: 5em;
+      padding: .1667em .67em !important;
+    }
+    button {
+      background: #eee;
+      user-select: none;
+    }
+    input:is(:not([type]), [type=text]) {
+      background: none;
+    }
+    input:is(:not([type]), [type=text])::placeholder {
+      opacity: .425;
+    }
+    .title {
+      font-weight: bold;
+    }
+    .subtitle {
+      font-style: italic;
+      opacity: .5;
+      font-size: .825em;
+    }
+
+    body {
+      white-space: pre-wrap;
+    }
+  </style>
+</head>
+<body><script>
+document.body.innerHTML = `
+<button onclick="location.reload()">reload</button>
+<div>Size: ${screen.width}x${screen.height} ${devicePixelRatio}dpr</div>
+<div>Inner: ${innerWidth}x${innerHeight}</div>
+<div>Smartwatch: ${(() => {
+  // return true if size is small and square-ish
+  const physical = {
+    width: screen.width / devicePixelRatio,
+    height: screen.height / devicePixelRatio,
+  }
+  return physical.width < 200 && Math.abs(1 - (physical.width / physical.height)) < .5
+})()}</div>
+<div>${navigator.userAgent}</div>
+`
+</script></body>
+</html>

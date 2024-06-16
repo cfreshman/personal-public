@@ -1,0 +1,270 @@
+<!-- 
+TODO:
+- colors: all, light, dark
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8><meta name="viewport" content="width=device-width, initial-scale=1" /><script src=/copyright.js></script><meta data-hydrate data-style />
+<title>k-means demo</title><meta name=description content="one of my favorite algorithms" />
+
+<style>
+  :root {
+    filter: none;
+  }
+  .mobile * {
+    font-size: 10px;
+  }
+  .title {
+    font-size: 1.2em;
+  }
+  input[type="number"] {
+    width: 5em;
+  }
+  pre {
+    margin: 0;
+  }
+  pre code {
+    display: block;
+    border-radius: 2px;
+    padding: 1em;
+    margin: 0.5em 0 0;
+    border: 1px dashed currentColor;
+  }
+  svg {
+    max-width: min(100%, 40em);
+  }
+</style>
+</head>
+<body>
+
+  <div style="display:flex;align-items:center;margin-bottom:.5em;white-space:pre">
+    <span class="title">[ k-means ]</span> <span style="font-style:italic;opacity:.7"> demo of clustering algorithm</span>
+  </div>
+  <div id="edit" class="column gap" style="
+  display: none;
+  ">
+<div>n = <input id="n" type="number"></input> input colors</div>
+<div>colors: <select id="type">
+  <option value="all">all</option>
+  <option value="light">light</option>
+  <option value="mids">mids</option>
+  <option value="dark">dark</option>
+  <option value="intense">intense</option>
+  <option value="fade">fade</option>
+</select></div>
+<div>i = <input id="i" type="number"></input> iterations</div>
+<div>k = <input id="k" type="number"></input> output clusters</div>
+<div><button id="cancel">cancel</button> <button id="update">update</button></div>
+  </div>
+  <div id="content" style="white-space: pre-line;"></div>
+  <script>
+    const log = named_log('kmeans')
+
+    const cookie_constants = 'kmeans-constants'
+    const constants = {
+      n: 512,
+      type: 'mids',
+      k: 4,
+      i: 16,
+      mode: 'max-distance',
+      ...(store.get(cookie_constants)||{})
+    }
+
+    const editL = Q('#edit')
+    function writeDemo() {
+      Q(editL, '#n').value = constants.n
+      Q(editL, '#type').value = constants.type
+      Q(editL, '#k').value = constants.k
+      Q(editL, '#i').value = constants.i
+      store.set(cookie_constants, constants)
+    }
+    function readDemo() {
+      constants.n = Number(Q(editL, '#n').value)
+      constants.type = Q(editL, '#type').value
+      constants.k = Number(Q(editL, '#k').value)
+      constants.i = Number(Q(editL, '#i').value)
+      log({constants})
+      demo()
+    }
+
+    function demo() {
+      const L = Q('#content')
+      writeDemo()
+
+      const { n, type, k, i:iterations, mode } = constants
+      const point_range = {
+        light: [256, 256 * 3],
+        // mids: [256 * .75, 256 * 2.25],
+        dark: [0, 256],
+      }[type] || [0, 256 * 3]
+      const points = range(n).map(() => {
+        if(0){
+        } else if (type === 'intense') {
+          return V.ne(colors.hsl_object_to_rgb({ h: rand.f(), s: 1, l: .5 }))
+        } else if (type === 'mids') {
+          return V.ne(colors.hsl_object_to_rgb({ h: rand.f(), s: rand.s(.8, 1), l: rand.s(.45, .55) }))
+        } else {
+          while (1) {
+            const x = V.ne(rand.i(256), rand.i(256), rand.i(256))
+            if (point_range[0] <= x.ma() && x.ma() < point_range[1]) return x
+          }
+        }
+      })
+      const hexes = points.map(x => '#' + x.map(y => y.toString(16)).join('').padStart(2, '0'))
+
+      L.innerHTML = `
+<i>one of my favorite algorithms</i>
+nice properties:
+- simple, greedy
+- same algorithm for all dimensions
+
+problem: how to cluster a set of elements
+
+for example: a set of ${n} colors (<a id="open-edit">edit</a>)
+<div id=display style="max-width:calc(100vw - 1em)"></div><div id=result>running k-means for ${k} clusters and ${iterations} iterations</div>
+
+to cluster <code>n</code> colors into <code>k</code> groups:
+<pre><code>// n randomly sampled points in [0,255]<sup>3</sup>
+points = range(n).map(_ => range(3).map(_ => rand.i(256))))
+
+// k randomly sampled input points
+centers = range(k).map(_ => rand.sample(points))
+
+range(16 /* <- sufficient number */).map(_ => {
+  groups = regroup(centers)
+  centers = recenter(groups)
+})</code></pre>
+
+to <code>regroup</code>:
+<pre><code>create k groups, one for each cluster center
+place each point in group for nearest center
+</code></pre>
+
+to <code>recenter</code>:
+<pre><code>for each group:
+  compute the center of mass (CoM)
+  find the element closest to the CoM (average position)
+return these elements as the new centers
+</code></pre>
+
+<style>
+</style>
+  `
+
+      on(Q(L, '#open-edit'), 'click', e => editL.style.display = '')
+
+      // const default_background = '#000'
+      const default_background = {
+        light: '#000',
+        dark: '#fff',
+      }[type] || '#000'
+
+      document.documentElement.style.filter = type==='fade' ? 'var(--filter)' : ''
+
+      setTimeout(() => {
+        display.innerHTML = `<svg viewBox="-1 -1 2 2" style="
+        background: ${default_background};
+        "></svg>`
+        const svg = Q(display, 'svg')
+        const place_color = (x, r=.01, outline=0) => {
+          const hsl = colors.rgb_to_hsl_object(...x)
+          // const length = (V.ne(1, .5).ma() - V.ne(1, .5).ma(V.ne(hsl.s, hsl.l))) * .9
+          const length = (V.ne(0, .5).ma() - V.ne(0, .5).ma(V.ne(0, hsl.l))) / V.ne(0, .5).ma() * .9
+          const angle = hsl.h * maths.TAU
+          svg.append(svg_node('circle', {
+            cx: length * Math.cos(angle),
+            cy: length * Math.sin(angle),
+            r,
+            fill: colors.rgb_to_hex(...x),
+            stroke: default_background, 'stroke-width': outline,
+          }))
+        }
+
+        points.map(x => place_color(x))
+
+        setTimeout(() => {
+          const kmeans = (points, k, iterations, mode) => {
+            const dim = points[0].length
+            let centers
+            let groups
+            const regroup = (centers) => {
+              const groups = range(k).map(() => [])
+              points.map((p, p_i) => {
+                let minus_p = p.sc(-1)
+                let min_center_i, min_center_d2
+                centers.map((c, c_i) => {
+                  const center_d2 = c.ad(minus_p).do()
+                  if (min_center_i === undefined || center_d2 < min_center_d2) {
+                    min_center_i = c_i
+                    min_center_d2 = center_d2
+                  }
+                })
+                groups[min_center_i].push(p_i)
+              })
+              return groups
+            }
+            const recenter = (groups) => {
+              return groups.map(group => {
+                let c = V.ze(dim)
+                if (group.length) {
+                  group.map(p_i => c = c.ad(points[p_i]))
+                  c = c.sc(1 / group.length)
+                }
+                return c
+              })
+            }
+            const generate = () => {
+              range(iterations).map(() => {
+                centers = groups ? recenter(groups) : range(k).map(() => rand.sample(points))
+                groups = regroup(centers)
+              })
+              log({ centers })
+
+              // // experiment to increase contrast between final centers
+              // if (mode === 'max-distance') {
+              //   const max_distants = regroup(centers).map((group, g_i) => {
+              //     const total_distances = group.map(p_i => maths.sum(
+              //       centers.map((c, c_i) => c_i === g_i ? 0 : Math.sqrt(points[p_i].ma(c)))
+              //       ))
+              //     let max_distance_i = 0
+              //     for (let i = 1; i < group.length; i++) {
+              //       if (total_distances[i] > total_distances[max_distance_i]) {
+              //         max_distance_i = i
+              //       }
+              //     }
+              //     return points[max_distance_i]
+              //   })
+              //   centers = max_distants // set max_distants to centers to return
+              // }
+            }
+            generate()
+
+            return [centers, groups]
+          }
+
+          const [centers] = kmeans(points, k, iterations, mode)
+          centers.map(x => place_color(x, .1, .01))
+
+          const hexes = centers.sort((a, b) => colors.rgb_to_hsl_object(...a).h - colors.rgb_to_hsl_object(...b).h).map(x => colors.rgb_to_hex(...x))
+          result.innerHTML = 'result: ' + hexes.join(' ') + `
+<a href="/gradients#${hexes.map(x => x.slice(1)).join('-')}" target="_blank">open in /gradients</a>`
+        })
+      })
+    }
+
+    demo()
+    on(Q(editL, '#cancel'), 'click', e => editL.style.display = 'none')
+    on(Q(editL, '#update'), 'click', e => {
+      e.target.textContent = Q('#content').textContent = '...'
+      setTimeout(() => {
+        readDemo()
+        editL.style.display = 'none'
+        e.target.textContent = 'update'
+      })
+    })
+
+  </script>
+
+</body>
+</html>

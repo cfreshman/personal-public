@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>GEOMETRY</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    :root, body {
+      /* filter: none; */
+    }
+  </style>
+</head>
+<body class="middle-column" style="
+background: #fff;
+color: #000;
+padding: 1em;
+max-height: 100%;
+max-width: 100%;
+min-height: 40em;
+">
+
+  <div id=canvas-container class="middle-column" style="
+  height: 0;
+  flex-grow: 1;
+  aspect-ratio: 1/1;
+  max-width: calc(100vw - 1em);
+  ">
+    <canvas id=canvas style="
+    width: 100%;
+    aspect-ratio: 2/1;
+    image-rendering: pixelated;
+    /* border: 1px solid #888; */
+    "></canvas>
+  </div>
+  <span style="
+  margin: 2px;
+  ">
+    <a href="https://twitter.com/rafaela31416/status/1736304924672028746">inspiration</a>
+    by @rafaela31416/Twitter
+  </span>
+  <script>
+    const log = named_log('GEOMETRY')
+    const S = 1024, N = 32, T = S / N
+    const ORIGIN = V.ne(1, 1).sc(S/2)
+    canvas.height = (canvas.width = S) / 2
+    const ctx = canvas.getContext('2d')
+    const fill_canvas = (color) => {
+      ctx.fillStyle = color
+      ctx.fillRect(0, 0, S, S)
+    }
+    const fill_shape = (ps, color) => {
+      ps = ps.map(p => p.ad(ORIGIN))
+      ctx.fillStyle = color
+      ctx.beginPath()
+      ctx.moveTo(...ps[0])
+      ps.map(p => ctx.lineTo(...p))
+      ctx.fill()
+      ctx.closePath()
+    }
+    const stroke_shape = (ps, color, width=1) => {
+      ps = ps.map(p => p.ad(ORIGIN))
+      ctx.strokeStyle = color
+      ctx.lineWidth = width
+      ctx.beginPath()
+      ctx.moveTo(...ps[0])
+      ;[...ps, ps[0]].map(p => ctx.lineTo(...p))
+      ctx.stroke()
+      ctx.closePath()
+    }
+
+    const actual_n = N * 2
+    const grid = range(-N, N + 1).map(r => range(-N, N + 1).map(c => V.ne(c + Math.sin(c * (maths.TAU / 12) + maths.TAU/2), r * Math.sqrt(2)).sc(T)))
+    log(grid, ORIGIN)
+
+    fill_canvas('#fff')
+    // grid.slice(1).map((row, r_i) => row.slice(1).map((_, c_i) => {
+    //   stroke_shape([
+    //     grid[r_i][c_i],
+    //     grid[r_i + 1][c_i],
+    //     grid[r_i + 1][c_i + 1],
+    //     grid[r_i][c_i + 1],
+    //   ], '#000')
+    // }))
+    grid.slice(1).map((row, r_i) => row.slice(1).map((_, c_i) => {
+      let ps = [
+        grid[r_i][c_i],
+        grid[r_i + 1][c_i],
+        grid[r_i + 1][c_i + 1],
+        grid[r_i][c_i + 1],
+      ]
+      stroke_shape(ps, '#000')
+    }))
+    grid.slice(2).map((row, r_i) => row.slice(2).map((_, c_i) => {
+      let ps = [
+        grid[r_i + 1][c_i],
+        grid[r_i][c_i + 1],
+        grid[r_i + 1][c_i + 2],
+        grid[r_i + 2][c_i + 1],
+      ]
+      if ((r_i + c_i) % 2 !== 0) {
+        stroke_shape(ps, '#000')
+      } else{
+        stroke_shape(ps, '#000')
+        const center = V.ad(...ps).sc(1/4)
+        ps = ps.map(p => V.ad(p.sc(4), center.sc(1)).sc(1/5))
+        stroke_shape(ps, '#000', 2)
+        ps = ps.map(p => V.ad(
+          p.sc(8),
+          center.sc(1),
+          V.ne(-Math.sin(p.x / T * (maths.TAU / 12) + maths.TAU/2), 0).sc(8)
+          ).sc(1/9))
+        stroke_shape(ps, '#000', 2)
+      }
+      
+      // fill_shape(ps, '#fff')
+      // fill_shape(ps, `hsl(${-Math.floor(c_i / (row.length - 1) * 360)}deg 70% 70%)`)
+    }))
+
+  </script>
+
+</body>
+</html>

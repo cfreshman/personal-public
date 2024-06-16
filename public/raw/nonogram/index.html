@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src=/copyright.js></script><meta data-hydrate data-style />
+
+  <title>Nonogram Solver</title>
+
+  <link rel="icon" href="favicon.png">
+  <link rel="apple-touch-icon-precomposed" href="app.png">
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto+Slab" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Coiny" rel="stylesheet">
+
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+  <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+
+<h1>Nonogram Solver<img class='logo' src="favicon.png"></h1>
+
+<div id="inputs">
+  <form>
+    <label><span class="label">Top</span><input type="text" name="down" autocomplete="off"></label>
+    <label><span class="label">Side</span><input type="text" name="across" autocomplete="off"></label>
+  </form>
+  <button id="submit-button" class="lg">Solve</button>
+</div>
+
+<!-- <div id="slider">
+  <div id="custom-handle" class="ui-slider-handle"></div>
+</div> -->
+<div id="slider">
+  <label>250 ms/action</label>
+  <input type="range" min="0" max="100" value="50" step="5"></input>
+</div>
+
+<div id="board"></div>
+
+<hr>
+
+<div style="
+height: 1em; margin-top: -1.5em; margin-bottom: .5em;
+font-size: .75em;
+background: #fff; padding: 0 .5em;
+">examples</div>
+<div id="examples"></div>
+<!-- <div>examples</div> -->
+<hr>
+<!-- <br/> -->
+<div style="
+font-size:.75em;
+">new! <a style="font-size:1em;" href="/raw/daily-nonogram" data-hydrate data-external>daily nonogram</a></div>
+<br/>
+
+<script
+  src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+<script
+  src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"
+  integrity="sha256-VazP97ZCwtekAsvgPBSUwPFKdrwD3unUfSGVYrahUqU="
+  crossorigin="anonymous"></script>
+
+<script type="text/javascript" src="script.js"></script>
+
+</body>
+</html>

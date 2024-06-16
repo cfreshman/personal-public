@@ -1,0 +1,42 @@
+Back transparent backgrounds with linear-gradient
+<br/><br/>
+<div>
+  layer 1, <code>background: #f008</code>
+  <div style="
+  background: #f008;
+  ">foreground</div>
+
+  <br/>
+
+  layer 2, <code>background: linear-gradient(#f008 0 0), white</code>
+  <div style="
+  background: linear-gradient(#f008 0 0), white;
+  ">foreground</div>
+
+  <script>
+    document.querySelectorAll('div div').forEach(x => {
+      x.style.position = 'relative'
+      x.style.width = '50%'
+
+      const node = document.createElement('div')
+      node.innerHTML = `
+      <span id="background" style="
+      position: absolute;
+      top: 0; left: 0; width: 200%;
+      font-size: 1.5em; height: 150%;
+      overflow: hidden;
+      z-index: -1;
+      ">${'background '.repeat(1000)}</span>`
+      x.append(node.children[0])
+    })
+  </script>
+
+</div>
+
+<style>
+  :root {
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+  }
+</style>

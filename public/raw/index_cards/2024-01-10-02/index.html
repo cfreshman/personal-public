@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>dot noise</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    :root {
+      /* filter: none; */
+    }
+  </style>
+</head>
+<body class="middle-column" style="
+background: #000;
+color: #fff;
+padding: 1em;
+max-height: 100%;
+max-width: 100%;
+min-height: 40em;
+">
+
+  <div id=root-container class="middle-column" style="
+  height: 0;
+  flex-grow: 1;
+  aspect-ratio: 1/2;
+  max-width: calc(100vw - 1em);
+  ">
+    <canvas id=root style="
+    width: 100%;
+    aspect-ratio: inherit;
+    image-rendering: pixelated;
+    border: 1.25vw solid #fff;
+    background: #fff;
+    "></canvas>
+  </div>
+  <span style="
+  margin: 2px;
+  ">
+    <a href="https://twitter.com/Anna___Beller/status/1744967165646651873">inspiration</a>
+    from Twitter
+  </span>
+
+  <script src="/lib/noise.js"></script>
+  <script>
+    const log = named_log('dot noise')
+    const S = 1024, T = S / 64, N = 2
+    const D = V.ne(S, S*2)
+
+    const get_fill = (x, y) => {
+      // return true
+      const zoom = S * 2
+      huge = noise.simplex2(x/zoom/4 - 10000, y/zoom/4 - 10000)
+      large = noise.simplex2(x/zoom*2 + 10000, y/zoom*2 + 10000)
+      medium = noise.simplex2(x/zoom*4 + 20000, y/zoom*4 + 20000)
+      small = noise.simplex2(x/zoom*10 + 30000, y/zoom*10 + 30000)
+      // value = Math.pow(huge*0.3 + large*0.5 + medium*0.15 + small*0.05, 3)
+      value = huge*0.3 + large*0.5 + medium*0.15 + small*0.05
+      return value > .05
+    }
+    const get_v = ({ x, y }) => {
+      // return true
+      const zoom = S
+      huge = noise.simplex2(x/zoom/4 - 10000, y/zoom/4 - 10000)
+      large = noise.simplex2(x/zoom*2 + 10000, y/zoom*2 + 10000)
+      medium = noise.simplex2(x/zoom*4 + 20000, y/zoom*4 + 20000)
+      small = noise.simplex2(x/zoom*10 + 30000, y/zoom*10 + 30000)
+      value = huge*0.3 + large*0.5 + medium*0.15 + small*0.05
+      return value / 2 + .5
+
+      // log(x, y)
+      return noise.simplex2(x, y)
+    }
+
+    const canvas = root
+    canvas.width = D.x
+    canvas.height = D.y
+    const ctx = canvas.getContext('2d')
+    const handle = {
+      generate: () => {
+        const seed = Math.random()
+        log('seed', seed)
+        noise.seed(seed)
+
+        canvas.width = D.x
+        const n = N // rand.i(N - 1) + 1
+        range(n).map(i => {
+          const color = `rgb(${rand.i(255)} ${rand.i(255)} ${rand.i(255)})`
+          ctx.fillStyle = color
+          const offset = V.ne(rand.s(1e4), rand.s(1e4))
+          const p = T * (i / n)
+          for (let x = p; x <= D.x - T; x += T) {
+            for (let y = p; y <= D.y - T; y += T) {
+              if (get_fill(x + offset.x, y + offset.y)) {
+                // log('fill', x, y)
+                ctx.beginPath()
+                ctx.arc(x + T/2, y + T/2, T/2, 0, maths.TAU)
+                ctx.fill()
+              }
+              // const color = `hsl(0deg 0% ${get_v(V.ne(x + offset.x, y + offset.y)) * 100}%)`
+              // ctx.fillStyle = color
+              // log(x + offset.x, y + offset.y, color)
+              // ctx.beginPath()
+              // ctx.arc(x + T/2, y + T/2, T/2, 0, maths.TAU)
+              // ctx.fill()
+            }
+          }
+        })
+      }
+    }
+    on(window, 'keydown', e => {
+      switch (e.key) {
+        case ' ':
+          handle.generate()
+          break
+      }
+    })
+    handle.generate()
+
+  </script>
+
+</body>
+</html>

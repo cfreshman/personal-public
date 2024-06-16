@@ -1,0 +1,42 @@
+body {
+    background: var(--dark);
+}
+
+.container {
+    user-select: none;
+    flex-grow: 1;
+    width: 100%;
+    display: flex;
+}
+.outer.container {
+    /* padding: 1rem; */
+}
+.inner.container {
+    justify-content: center;
+    align-items: center;
+}
+
+#gameCanvas {
+    image-rendering: pixelated;
+    user-select: none;
+}
+
+.gui-container {
+    position: absolute;
+    z-index: 1000;
+}
+
+.gui {
+    width: 100%;
+    height: 100%;
+}
+
+.gui button, .gui div {
+    position: absolute;
+    border: none;
+    outline: none;
+    transition: 0s;
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
+    transform-origin: top left;
+}

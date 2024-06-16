@@ -1,0 +1,3 @@
+root /var/www/personal/build;
+error_page 400 500 502 /error.html;
+error_page 404 /404.html;

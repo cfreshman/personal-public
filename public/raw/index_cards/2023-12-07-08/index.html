@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>:)</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    :root, body {
+      filter: none;
+    }
+  </style>
+</head>
+<body class="middle-column" style="
+background: #fff;
+color: #000;
+padding: 1em;
+max-height: 100%;
+max-width: 100%;
+min-height: 40em;
+">
+
+  <div id=canvas-container class="middle-column" style="
+  height: 0;
+  flex-grow: 1;
+  aspect-ratio: 1/1;
+  max-width: calc(100vw - 1em);
+  ">
+    <canvas id=canvas style="
+    width: 100%;
+    aspect-ratio: 1/1;
+    image-rendering: pixelated;
+    border: 1px solid #888;
+    "></canvas>
+  </div>
+  <span style="
+  margin: 2px;
+  ">
+    <a href="https://twitter.com/beesandbombs/status/1732168044510580818">original</a>
+    by @beesandbombs/Twitter
+  </span>
+  <script>
+    const S = 1024, T = S / 7, L = 6
+    const ORIGIN = V.ne(1, 1).sc(S/2)
+    const COEFF_ROTATION = .2
+    const LIGHT = '#fff'
+    const DARK = '#181818'
+    canvas.height = canvas.width = S
+    canvas.fontSize = `${T}px`
+    const ctx = canvas.getContext('2d')
+    const fill_canvas = (color) => {
+      ctx.fillStyle = color
+      ctx.fillRect(0, 0, S, S)
+    }
+    const draw_square = (p, a, color) => {
+      ctx.fillStyle = color
+      // ctx.fillRect(p.x - T/2 + S/2, p.y - T/2 + S/2, T, T)
+
+      const T_diag = Math.pow(2, .5) * (T / 2)
+      const CENTER = p.ad(ORIGIN)
+      const a_tr = M.r(a)
+      const ps = 
+      range(4)
+      .map(i => (maths.TAU / 4) * i + (maths.TAU / 8))
+      .map(a => V.p(a, T_diag))
+      .map(v => M.mu(a_tr, v).co(0))
+      .map(v => v.ad(CENTER))
+      ctx.beginPath()
+      ctx.moveTo(...ps[0])
+      ps.map(p => ctx.lineTo(...p))
+      ctx.fill()
+    }
+
+    let t = 0
+    const render = () => {
+      const a = t * COEFF_ROTATION * maths.TAU
+      const a_tr = M.r(a)
+      console.debug(t, a)
+      const common = (i_offset, color) => {
+        for (let i = 0; i < L; i++) {
+          const s = i * 2 - 1
+          for (let j = 0; j < 4; j++) {
+            const j_a = (j / 4) * maths.TAU
+            const j_anchor = V.p(j_a).sc(T * (i + i_offset))
+            const j_a_right = j_a - (maths.TAU / 4)
+            const j_tr = M.r(j_a_right).sc(T)
+            for (let k = -i; k <= i; k += 2) {
+              const p = M.mu(
+                a_tr, 
+                V.ad(j_anchor, M.mu(j_tr, V.ne(k, 0)).co(0)))
+                .co(0)
+              draw_square(p, a / 2, color)
+            }
+          }
+        }
+      }
+      if (a % maths.TAU < maths.TAU / 2) {
+        fill_canvas(DARK)
+        common(0, LIGHT)
+      } else {
+        fill_canvas(LIGHT)
+        common(1, DARK)
+      }
+    }
+    
+    let last_ms = performance.now()
+    const loop = () => {
+      const now = performance.now()
+      t += (now - last_ms) / 1_000
+      last_ms = now
+      requestAnimationFrame(loop)
+      render()
+    }
+    loop()
+    // render()
+  </script>
+  <style>
+    #canvas-container {
+      position: relative;
+    }
+    #canvas-container::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; height: 100%; width: 100%;
+
+      --radius: 50%;
+      --inset: 0%;
+      --transition-length: 50%;
+      --blur: .25em;
+      
+      inset: 0;
+      -webkit-backdrop-filter: blur(var(--blur));
+      backdrop-filter: blur(var(--blur));
+      --r: max(var(--transition-length), calc(var(--radius) - var(--inset)));
+      --corner-size: calc(var(--r) + var(--inset)) calc(var(--r) + var(--inset));
+      --corner-gradient: 
+        transparent 0px,
+        transparent calc(var(--r) - var(--transition-length)), 
+        #000 var(--r);
+      --fill-gradient: 
+        #000,
+        #000 var(--inset),
+        transparent calc(var(--inset) + var(--transition-length)),
+        transparent calc(100% - var(--transition-length) - var(--inset)),
+        #000 calc(100% - var(--inset));
+      --fill-narrow-size: calc(100% - (var(--inset) + var(--r)) * 2);
+      --fill-farther-position: calc(var(--inset) + var(--r));
+      -webkit-mask-image:
+        linear-gradient(to right, var(--fill-gradient)),
+        linear-gradient(to bottom, var(--fill-gradient)),
+        radial-gradient(at bottom right, var(--corner-gradient)),
+        radial-gradient(at bottom left, var(--corner-gradient)),
+        radial-gradient(at top left, var(--corner-gradient)),
+        radial-gradient(at top right, var(--corner-gradient));
+      -webkit-mask-size:
+        100% var(--fill-narrow-size),
+        var(--fill-narrow-size) 100%,
+        var(--corner-size), var(--corner-size), var(--corner-size), var(--corner-size);
+      -webkit-mask-position:
+        0 var(--fill-farther-position),
+        var(--fill-farther-position) 0,
+        0 0, 100% 0, 100% 100%, 0 100%;
+      -webkit-mask-repeat: no-repeat;
+    }
+  </style>
+
+</body>
+</html>

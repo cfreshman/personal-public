@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>pedestrian bridge</title><meta name=description content="real talk show" />
+  <link rel="icon" href="https://freshman.dev/raw/images/pedestrian-bridge.png" />
+
+  <!-- open graph protocol -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="pedestrian bridge" />
+  <meta property="og:description" content="bridge talk show" />
+  <meta property="og:image" content="https://freshman.dev/raw/images/pedestrian-bridge.png" />
+
+  <style>
+    :root {
+      filter: none;
+      background: #fff;
+      height: 1e9vh;
+    }
+  </style>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <br />
+  <div class="column gap" style="gap:.5em">
+    <style>
+      .title-card-container {
+        border: 1px solid #000;
+      }
+    </style>
+    <div class="row gap wrap" style="padding:1px;gap:.5em">
+      <div class="title-card-container">
+        <div class="pre-line middle-column gap" style="
+        aspect-ratio: 2/1;
+        width: fit-content;
+        padding: .5em;
+        line-height: 1;
+        font-family: monospace;
+        position: relative; z-index: 1;
+        background: #fff; color: #000;
+        ">
+          <span><i>real talk show</i></span>
+          <b style="font-size:2em;">pedestrian bridge</b>
+          <span>preethi jayaraman & cyrus freshman</span>
+        </div>
+      </div>
+      <!-- <div class="title-card-container">
+        <div class="pre-line middle-column gap" style="
+        aspect-ratio: 2/1;
+        width: fit-content;
+        padding: .5em;
+        line-height: 1;
+        font-family: monospace;
+        position: relative; z-index: 1;
+        background: #000; color: #fff;
+        ">
+          <b style="font-size:2em;">pedestrian bridge</b>
+          <span>preethi jayaraman & cyrus freshman</span>
+        </div>
+      </div> -->
+      <script>
+        const ls_title_card = QQ('.title-card-container > *')
+        ls_title_card.map(l_title_card => {
+          let inverted = false
+          setInterval(() => {
+            inverted = !inverted
+            l_title_card.style.filter = inverted ? `invert(1)` : ''
+          }, 10_000)
+        })
+      </script>
+    </div>
+    <div style="line-height: 1.5;">
+      <div><b>coming soon</b></div>
+      <div>audio @ <a target="_blank" href="https://open.spotify.com/show/06AiENs4URXWvBYDZHQfeT">open.spotify.com/show/06AiENs4URXWvBYDZHQfeT</a></div>
+      <div>video @ <a target="_blank" href="https://www.youtube.com/channel/UC5VBPQBC_g5bg1-Ojwzf20w">youtube.com/@pdstrn_brdg</a></div>
+      <div>X @ <a target="_blank" href="https://x.com/pdstrn_brdg">x.com/pdstrn_brdg</a></div>
+      <div>Threads @ <a target="_blank" href="https://www.threads.net/@pdstrn_brdg">threads.net/@pdstrn_brdg</a></div>
+      <!-- <div><i><b><span style="background:#000;color:#fff;text-transform:uppercase;">pdstrn/brdg</span></b></i> merch @ (soon)</div> -->
+      <div>merch soon</div>
+    </div>
+    <div id="cvs" class="row gap wrap" style="
+    border: 1px solid #000;
+    padding: .25em;
+    "></div>
+    <script>
+      const log = named_log('pedestrian-bridge')
+      const l_CVs = Q('#cvs')
+      defer(async () => {
+        const sync_load_image = async (url) => {
+          return await new Promise(resolve => {
+            const img = node(`<img src="${url}" crossorigin="anonymous" referror="noreferrer" style="width:calc(${(n => `100%/${n} - (.25em * ${n-1})/${n}`)(devices.is_mobile ? 2 : 3)})" />`)
+            img.onload = () => resolve(img)
+            img.onerror = () => resolve(undefined)
+          })
+        }
+        const skip = new Set([4, 6, 8, 9, 10, 12, 13, 14, 15, 16, 18, 20, 22, 24, 25, 26, 27, 30])
+        for (let i = 1; ; i++) {
+          if (skip.has(i)) continue
+          const img = [...await Promise.allSettled(list('jpg webp').map(ext => sync_load_image(`/raw/pedestrian-bridge/ai/ca-${i}.${ext}`)))].map(({ value:img }) => img).find(img => {
+            log(i, img?.src, img)
+            return truthy(img)
+          })
+          if (!img) break
+          img.title = `pedestrian bridge cover art (#${i})`
+          l_CVs.append(img)
+        }
+      })
+    </script>
+  </div>
+
+</body>
+</html>

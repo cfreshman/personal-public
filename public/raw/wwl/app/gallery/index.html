@@ -1,0 +1,118 @@
+<head>
+  <title>gallery</title>
+  <meta name="description" content="apps built with wwl.js" />
+  <meta name="author" content="cyrus@freshman.dev">
+  <link rel="icon" href="https://freshman.dev/raw/wwl/icon-js.png">
+</head>
+<body>
+  <script src="/lib/2/wwl/script.js"></script>
+  <script>
+    Promise.prototype.with = function(handler) {
+      return this.then(x => {
+        handler(x)
+        return x
+      })
+    }
+    
+    const gallery = {
+      apps: {},
+      handle: {
+        load: app => {
+          fetch('/raw/wwl/app/gallery-icons.json')
+          .then(x=>x.json())
+          .with(console.debug)
+          .then(info_list => Promise.all(info_list.map(async ({ name, href, icon }) => {
+            const absolute = new URL(href, document.baseURI).href.replace(':3000', ':5050')
+            // const src = await new Promise(resolve => {
+            //   const request = new XMLHttpRequest()
+            //   request.onreadystatechange = () => {
+            //     console.debug(request)
+            //     resolve(request.responseText)
+            //   }
+            //   request.open('GET', href)
+            //   // request.setRequestHeader('Access-Control-Allow-Origin:', '*')
+            //   request.send()
+            //   // const iframe = document.createElement('iframe')
+            //   // iframe.onload = () => {
+            //   //   console.debug('loaded')
+            //   //   resolve(iframe.srcdoc)
+            //   // }
+            //   // iframe.src = "https://basin.fish"
+            //   // iframe.style.display = 'none'
+            //   // document.body.append(iframe)
+            // })
+            console.debug(absolute)
+            // can't get this to load an external HTML page ??
+            // const src = await fetch(absolute, { mode:'no-cors' }).then(x=>x.text())
+            // const icon = (/rel="icon" href="([^"]+)"/.exec(src) || '')[1]
+            const src = undefined
+            return [name, { name, href, absolute, icon, src }]
+          })))
+          .then(Object.fromEntries)
+          .then(apps => {
+            console.debug(apps)
+            gallery.apps = apps
+            app.rerender()
+          })
+        },
+      },
+    }
+
+    wwl.attach({
+      state: 0,
+      states: [
+        () => `<div class=app-gallery>${Object.values(gallery.apps).map(({ name, href, icon }) => 
+          `<div class=app-tile style="position:relative">
+          ${
+            icon
+            ? `
+            <img class=app-tile-icon src="${icon}" />
+            <span style="
+            position: absolute;
+            bottom: 0; right: 0; margin: 2px; color: #fff; background: #222;
+            ">${name}</span>
+            `
+            : `<span class=app-tile-name>${name}</span>`
+          }
+          <a class=app-tile-link href="${href}"></a>
+        </div>`).join('\n') || '(loading)'}</div>`
+      ],
+      prefix: `<style>
+        .app-gallery {
+          display: flex;
+          flex-direction: row;
+          flex-wrap: wrap;
+          gap: 2px;
+        }
+        .app-tile {
+          display: flex;
+          width: calc(50% - 2px); aspect-ratio: 1/1;
+          position: relative;
+          padding: 0; margin: 0; box-sizing: border-box;
+          background-color: #222;
+        }
+        .app-tile-icon {
+          width: 100%; height: 100%;
+          object-fit: cover;
+          image-rendering: pixelated;
+        }
+        .app-tile-name {
+          position: absolute;
+          width: 100%; height: 100%; left: 0; top: 0;
+          display: flex; align-items: center; justify-content: center;
+          pointer-events: none;
+          color: #fff;
+        }
+        .app-tile-link {
+          position: absolute;
+          width: 100%; height: 100%; left: 0; top: 0;
+          display: flex; align-items: center; justify-content: center;
+        }
+      </style>`,
+      style: `text-align: center`,
+      init: app => {
+        gallery.handle.load(app)
+      },
+    })
+  </script>
+</body>

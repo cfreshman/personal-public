@@ -1,0 +1,232 @@
+export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
+alias rg='source ~/.bash_profile'
+
+confirm-y() {
+    local confirm_result=0
+    read -p "$1 (Y/n) " -n 1 -r
+    grep -iq "^[^y]" <<< $REPLY && confirm_result=1
+    echo
+    return $confirm_result
+}
+confirm-n() {
+    local confirm_result=1
+    read -p "$1 (y/N) " -n 1 -r
+    grep -iq "^y" <<< $REPLY && confirm_result=0
+    echo
+    return $confirm_result
+}
+
+ls-server() {
+    ls /etc/nginx/sites-available
+}
+restart-server() {
+    sudo nginx -t
+    echo "restarting servers"
+    confirm-y "reload?" && sudo service nginx restart
+}
+alias rs="restart-server"
+config-server() {
+    sudo nano /etc/nginx/sites-available/$1
+    sudo nginx -t
+    confirm-n "reload?" && sudo service nginx restart
+}
+cat-server() {
+    cat /etc/nginx/sites-available/$1
+}
+
+enable-server() {
+    sudo ln -s /etc/nginx/sites-available/$1 /etc/nginx/sites-enabled/
+    restart-server
+}
+disable-server() {
+    unlink /etc/nginx/sites-enabled/$1
+    restart-server
+}
+
+permit() {
+    sudo chown -R cyrus:cyrus $1
+}
+
+# alias cert='sudo certbot --nginx -d freshman.dev -d www.freshman.dev -d cyrusfreshman.com -d 00010110.page -d 0000011111100100.com -d f8n.co -d f3n.co'
+# alias cert-api='sudo certbot --nginx -d api.freshman.dev -d api.cyfr.dev -d api.cyrusfreshman.com -d api.f8n.co -d api.f3n.co -d a.l0.vc'
+# alias cert-wb='sudo certbot --nginx -d wordbase.freshman.dev -d wordbase.dev -d wordbase.app -d w.f3n.co'
+# alias cert-px='sudo certbot --nginx -d pixelworld.freshman.dev -d pixelworld.f8n.co -d px.f8n.co -d pixelworld.f3n.co -d px.f3n.co -d marsh.f3n.co'
+# alias cert-l='sudo certbot --nginx -d l.f3n.co -d l0.vc'
+# alias cert-od0bo='sudo certbot --nginx -d od0bo.net'
+# alias cert-all='cert && cert-api && cert-wb && cert-px && cert-l && cert-od0bo'
+
+cert() {
+    local base_list=""
+    local cert_list=""
+    while read domain; do
+        if ! [ -z "$domain" ]; then
+            domain=$(echo $domain | cut -d " " -f1)
+            base_list+="-d $domain ";
+            cert_list+="-d $domain -d *.$domain ";
+        fi
+    done < /var/www/personal/deploy/domains
+
+    echo "sudo certbot
+    --cert-name freshman.dev
+    -i nginx --manual --preferred-challenges http,dns
+    $cert_list"
+    echo ""
+
+    sudo certbot certonly \
+    --cert-name base-freshman.dev \
+    --nginx \
+    --register-unsafely-without-email \
+    $base_list
+
+    sudo certbot certonly \
+    --cert-name freshman.dev \
+    --manual --preferred-challenges http,dns \
+    --register-unsafely-without-email \
+    $cert_list
+
+    restart-server
+}
+
+alias site="cd /var/www/site"
+
+
+export EDITOR='nano'
+
+alias restart='sudo reboot'
+alias off='sudo halt'
+
+alias py="python3"
+alias py2="python"
+alias py3="python3"
+
+alias ip='curl ident.me && echo ""'
+alias devices='arp -a'
+alias config='nano -w ~/.bash_profile && source ~/.bash_profile'
+alias reconfig='source ~/.bash_profile'
+alias logs='pm2 log personal --lines 50'
+alias l='logs'
+alias logs-full='vi ~/.pm2/logs/ts-node-out.log'
+alias mem="du -h --max-depth=1"
+alias db-size='mongo site --eval "[
+    [`name`, `size (MB)`, `storageSize (MB)`]
+].concat(
+    db.getCollectionNames().map(
+        name => db.getCollection(name).stats()
+    ).sort(
+        (a,b)=>b.size-a.size
+    ).map(
+        stats => [stats.ns, (stats.size/1048576).toFixed(3), (stats.storageSize/1048576).toFixed(3)]
+    )
+).forEach(
+    row => print(`${row[0].padEnd(40)} ${row[1].padEnd(9)} ${row[2].padEnd(9)}`)
+)"'
+alias backup-clean='cd /var/www/personal/backups && ls | grep -E db-2023-[-0-9]{4}[1-9] | xargs "rm"'
+
+alias in1='personal && command cp -rf ./deploy/bash_profile ~/.bash_profile && source ~/.bash_profile && in2'
+in2() {
+    echo 'shell profile updated'
+    if ! (diff -r ./deploy/nginx/ /etc/nginx/sites-available/ > /dev/null);  then
+        sudo cp -rf ./deploy/nginx/* /etc/nginx/sites-available
+        restart-server
+    fi
+    sudo cp ./deploy/cron/personal /etc/cron.d/
+    # pm2 start --name personal ts-node -- -P tsconfig.json --transpileOnly --esm --experimental-specifier-resolution=node server/index.ts
+}
+
+# reverse proxy might have different command in future
+alias r1='cd /var/www/proxy && command cp -rf ./deploy/bash_profile ~/.bash_profile && source ~/.bash_profile; r2'
+r2() {
+    sudo mkdir -p /var/www/proxy
+    sudo chown cyrus:cyrus /var/www/proxy
+    cd /var/www/proxy
+    if ! (diff -r ./deploy/nginx/ /etc/nginx/sites-available/ > /dev/null);  then
+        sudo cp -rf ./deploy/nginx/* /etc/nginx/sites-available
+        restart-server
+    fi
+}
+
+alias pathwiki="cd /var/www/pathwiki"
+alias path-in='pathwiki && path-in2'
+path-in2() {
+    echo in2
+    cp ./deploy/nginx/* /etc/nginx/sites-available
+}
+
+
+TITLE="\s"
+GREEN="\[\e[32m\]"
+YELLOW="\[\e[33m\]"
+BLUE="\[\e[34m\]"
+PURPLE="\[\e[35m\]"
+RED="\[\e[31m\]"
+LIGHT_GRAY="\[\e[37m\]"
+DARK_GRAY="\[\e[90m\]"
+OFF="\[\e[0m\]"
+PROMPT_COMMAND=__prompt_command
+__prompt_command() {
+    local exit_code="$?"
+    if [ ${exit_code} == 0 ]; then
+        local exit_code_text=""
+    else
+        local exit_code_text="${RED}[${exit_code}]"
+    fi
+
+    local timestr="${DARK_GRAY}`date +%H:%M:%S` "
+    local branch="$(parse_git_branch)"
+    if [ ${branch} ]; then
+        branch="${LIGHT_GRAY}${branch} "
+    fi
+
+    PS1="\n${BLUE}\u@\h:${YELLOW}\w ${branch}${timestr}${exit_code_text}${OFF}\n\$ "
+}
+parse_git_branch() {
+  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/'
+}
+
+
+# most from https://natelandau.com/my-mac-osx-bash_profile/
+alias cp='cp -iv'
+alias mv='mv -iv'
+alias mkdir='mkdir -pv'
+alias ls='ls -GFh'
+alias ll='ls -AlGFh'
+cd() { builtin cd "$@"; ls; }
+alias cd..='cd ../'
+alias ..='cd ../'
+alias ...='cd ../../'
+alias .3='cd ../../../'
+alias .4='cd ../../../../'
+alias .5='cd ../../../../../'
+
+alias edit='nano'
+
+alias ~="cd ~"                              # ~:            Go Home
+alias c='clear'                             # c:            Clear terminal display
+alias which='type -all'                     # which:        Find executables
+alias path='echo -e ${PATH//:/\\n}'         # path:         Echo all executable Paths
+mcd() { mkdir -p "$1" && cd "$1"; }         # mcd:          Makes new Dir and jumps inside
+
+zipf() { zip -r "$1".zip "$1" ; }          # zipf:         To create a ZIP archive of a folder
+#
+#   extract:  Extract most know archives with one command
+#   ---------------------------------------------------------
+extract() {
+    if [ -f $1 ] ; then
+      case $1 in
+        *.tar.bz2)   tar xjf $1     ;;
+        *.tar.gz)    tar xzf $1     ;;
+        *.bz2)       bunzip2 $1     ;;
+        *.rar)       unrar e $1     ;;
+        *.gz)        gunzip $1      ;;
+        *.tar)       tar xf $1      ;;
+        *.tbz2)      tar xjf $1     ;;
+        *.tgz)       tar xzf $1     ;;
+        *.zip)       unzip $1       ;;
+        *.Z)         uncompress $1  ;;
+        *.7z)        7z x $1        ;;
+        *)     echo "'$1' cannot be extracted via extract()" ;;
+         esac
+     else
+         echo "'$1' is not a valid file"
+     fi
+}

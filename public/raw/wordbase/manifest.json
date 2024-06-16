@@ -1,0 +1,15 @@
+{
+  "name": "wordbase.app",
+  "short_name": "wordbase",
+  "display": "standalone",
+  "start_url": "https://wordbase.app",
+  "icons": [{
+    "src": "https://wordbase.app/raw/wordbase/favicon.png",
+    "sizes": "32x32",
+    "type": "image/png"
+  }, {
+    "src": "https://wordbase.app/raw/wordbase/favicon256.png",
+    "sizes": "256x256",
+    "type": "image/png"
+  }]
+}

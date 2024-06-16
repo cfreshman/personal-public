@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<title>bar</title>
+<style>
+  html {
+    background: #f9f8f6;
+    color: #101010;
+    font-size: 12px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5rem 1rem;
+  }
+  .title {
+    font-size: 1.5rem;
+    position: relative;
+    white-space: pre-line;
+  }
+  a {
+    color: inherit;
+  }
+  a:hover {
+    color: #f9f8f6;
+    background: #101010;
+  }
+  input[type="number"] {
+    width: 3em;
+  }
+  canvas {
+    image-rendering: pixelated;
+    width: min(80vw, 80vh);
+    height: min(80vw, 80vh);
+  }
+  .spinner {
+    display: inline-block;
+    width: 1em; height: 1em;
+    background: conic-gradient(red, orange, yellow, green, blue, purple, red);
+    border-radius: 50%;
+    animation: 1s infinite linear spin;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+</style>
+
+<script src="/lib/utils.js"></script>
+</head>
+<body>
+  
+  <script>
+    const bars = '▁▂▃▄▅▆▇█'
+    let s = ''
+
+    const title = Q('.title')
+    const view = isMobile ? {
+      set: s => title.textContent = s,
+    } : {
+      set: s => location.hash = '/' + s,
+    }
+
+    location.hash = s
+    setInterval(() => {
+      const height = Math.round((Math.sin(s.length * Math.PI/9)/2 + .5) * (bars.length - 1))
+      s = bars[height] + s
+      view.set(s)
+    }, 100)
+  </script>
+
+</body>
+</html>

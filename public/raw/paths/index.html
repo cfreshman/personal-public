@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <meta charset=utf-8>
+    <title>Path Planning Demo</title>
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+    <!-- <link rel="stylesheet" type="text/css" href="styles.css"> -->
+    <style>
+body {
+  /* background-color: #050505; */
+  background: white;
+}
+
+#canvas {
+  /* width: 100% !important;
+  height: 100% !important; */
+  image-rendering: pixelated;
+  background: white;
+}
+#canvasContainer {
+  width: 100% !important;
+  height: 100% !important;
+  /* image-rendering: pixelated; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: black;
+}
+#map {
+  width: 100% !important;
+  height: 100% !important;
+  /* image-rendering: pixelated; */
+  background: white;
+}
+
+#info {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+  display: block;
+  pointer-events: none;
+
+  /* color: white; */
+  color: black;
+  font-family: monospace;
+}
+
+#info a {
+  pointer-events: all;
+  cursor: pointer;
+  text-decoration: underline;
+  color: inherit;
+}
+#info select, #info input {
+  pointer-events: all;
+  cursor: pointer;
+}
+
+table {
+  padding: 15px 10px;
+  /* padding: 15px 20px; */
+}
+th, td {
+  padding: 0 10px;
+  text-align: left;
+
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  white-space: pre-wrap;
+  background: white;
+  padding: 0 .15em;
+  line-height: 1.5;
+}
+label, span {
+  display: inline-flex; align-items: center;
+}
+label input {
+  margin-right: .4rem;
+}
+input {
+  padding: 0;
+}
+
+@keyframes loader {
+  100% { transform: rotate(360deg) }
+}
+.loader {
+  display: inline-block;
+  border: .2em solid #0002;
+  border-left-color: #000;
+  animation: loader 2s infinite linear;
+}
+.loader, .loader::after {
+  border-radius: 50%;
+  width: .8em;
+  height: .8em;
+}
+    </style>
+  </head>
+  <body>
+    <div id="info">
+      <table id="info-view">
+        <tr>
+          <th colspan=2><b>Path Planning Demo</b></th>
+        </tr>
+        <tr>
+          <td colspan="2"><span style="background:rgba(255, 0, 0, .3)">path</span> has <input
+            id="clearance" value="1" min="0"
+            type="number" style="width:3em;"
+          >m clearance through <span style="background:rgba(255, 200, 0, .6)">obstacles</span> (<select id="slot">
+            <option>map 1</option>
+            <option value="new">new map</option>
+            <option value="delete">delete</option>
+          </select>&nbsp;<a id="edit">edit</a>)</td>
+        </tr>
+        <tr>
+          <td colspan="2">tap to place start & goal in <span style="background:rgba(0, 64, 255, .2)">open area</span>&nbsp;<span>(<label><input id="fixed" type="checkbox"><a>fixed start</a></label>)</span></td>
+            <!--
+            <label>
+              <input id="funnelstar" type="checkbox" checked>
+              <a>funnel A*</a>
+            </label> -->
+        </tr>
+        <tr id="generating"><td><div class="loader"></div> loading</td></tr>
+      </table>
+      <table id="info-edit" style="display:none">
+        <tr>
+          <th colspan=2><b>Path Planning Demo</b></th>
+        </tr>
+        <tr>
+          <td><a id="save">save</a>&nbsp;<a id="cancel">cancel</a>&nbsp;<a id="reset">reset</a>&nbsp;<span id="import"><a>import</a><input type="file" style="display:none"></span>&nbsp;<a id="export">export</a></td>
+        </tr>
+        <tr>
+          <td colspan="2">tap to place <input
+            id="column-width" value="1" min="0"
+            type="number" style="width:2em;"
+          >m <select id="column-type">
+            <option value="square">square</option>
+            <option value="circle">circular</option>
+          </select> column, tap again to place wall, close to end</td>
+        </tr>
+        <tr>
+          <td colspan="2">select existing column or wall to <a id="delete">delete</a></td>
+        </tr>
+      </table>
+    </div>
+    <!-- <canvas id="canvas"></canvas> -->
+    <!-- <div id="canvasContainer" className="seamless"
+        style="height: 100%; width: 100%; background: black;">
+        <canvas id="canvas"></canvas>
+    </div> -->
+    <div id="map" class="map"></div>
+
+    <script src="/lib/ol/ol.js"></script>
+    <link rel="stylesheet" type="text/css" href="/lib/ol/ol.css">
+    <script src="/lib/jsts/jstsES6.js"></script>
+    <script src="/lib/utils.js"></script>
+    <script src="/lib/delaunator.min.js"></script>
+    <script src="/lib/priority-queue.js"></script>
+    <script src="/lib/store.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

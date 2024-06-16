@@ -1,0 +1,16 @@
+priorities
+x funnel A*
+x save & load separate maps
+x import & export
+x touch interations
+
+nice to have
+- one-ways, cost multipliers
+  - edit UI
+- backend API
+  - save & load maps
+  - path requests
+- complex requests
+  - start & goal
+  - clearance
+- response output

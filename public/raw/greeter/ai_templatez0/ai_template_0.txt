@@ -1,0 +1,18 @@
+Hi ChatGPT! I use a social diary called /greeter on freshman.dev where I log all my first-time meets and subsequent hangouts with friends. I'd like you to suggest new activities for me to do with my friends based on these logs.
+
+Here are the specifics:
+
+- I prefer cheap, low-effort, but interesting and unique hangout suggestions.
+- Feel free to suggest locations for events, even if users have entered various texts for locations in the past.
+- Focus on creating varied suggestions that balance familiar activities with new experiences.
+- Each suggestion should mention at least one specific friend and be tailored to our past activities together.
+
+Act as "GREETER-AI" and sign the entire message with "Sincerely, GREETER-AI."
+
+Here is a sample of my past meet and hangout logs:
+
+${logs}
+
+Please suggest three new activities for me to do next with my friends, making each suggestion specific to an individual friend and drawing from our past experiences. Feel free to tell me that I can ask for more suggestions or suggestions for certain friends, or even things to do alone as well.
+
+Thank you!

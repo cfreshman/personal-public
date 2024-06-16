@@ -1,0 +1,12 @@
+<script>
+  fetch('/raw/bad').then(x=>x.text()).then(html => open('', '_self').document.write(html
+    .replaceAll('bad-', 'not_bad-')
+    .replaceAll('=bad', '=not_bad')
+    .replaceAll('#bad', '#not_bad')
+    .replaceAll('bad.', 'not_bad.')
+    .replaceAll('.bad', '.not_bad')
+    .replaceAll('bad:', 'not_bad:')
+    .replaceAll(/([^/=#._-])bad([^.:])/g, '$1not bad$2')
+    .replaceAll('/not-bad', '/bad')
+    .replaceAll('punish yourself for transgressions', 'reward yourself, I guess')))
+</script>

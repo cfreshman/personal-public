@@ -1,0 +1,66 @@
+<script>
+  // function f(x) { /* code */ }
+  // f(2)
+
+  // class C {
+  //   constructor(x) {
+  //     this.x = x
+  //     this.y = x + 2
+  //   }
+  //   alert() { alert(this.x) }
+  //   static hello() {
+  //     return new C('hello')
+  //   }
+  // }
+  // const c = new C(2)
+  // c.alert()
+
+  // const c2 = new C(3)
+  // c2.alert()
+  // console.log(c2.y)
+
+  // const c3 = C.hello()
+  // c3.alert()
+
+  // const c4 = new C(7)
+  // c4.alert()
+
+  
+  // Javascript class example
+  class Hi {
+    constructor(greeting, name) {
+      this._greeting = greeting
+      this._name = name
+    }
+    alert() { alert(this._greeting + ' ' + this._name) }
+  }
+  const hi1 = new Hi('hi', 'laura')
+  hi1.alert()
+  // setting private variable for <good reason>
+  hi1._greeting = 'bye'
+  hi1.alert()
+
+  // builder pattern example
+  class Person {
+    constructor() {
+      this.name = 'anonymous'
+      this.salary = undefined
+    }
+    with_name(name) {
+      this.name = name
+      return this
+    }
+    with_salary(salary) {
+      this.salary = salary
+      return this
+    }
+    alert() {
+      alert(`${this.name} makes $${this.salary}`)
+    }
+  }
+  const anon = new Person()
+  anon.alert()
+  const mike = new Person().with_name('mike').with_salary(3)
+  mike.alert()
+
+</script>

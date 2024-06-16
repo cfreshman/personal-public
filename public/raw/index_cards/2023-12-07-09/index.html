@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>binary bitmap pulsar</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    :root, body {
+      filter: none;
+    }
+  </style>
+</head>
+<body class="middle-column" style="
+background: #fff;
+color: #000;
+padding: 1em;
+max-height: 100%;
+max-width: 100%;
+min-height: 40em;
+">
+
+  <div id=canvas-container class="middle-column" style="
+  height: 0;
+  flex-grow: 1;
+  aspect-ratio: 1/1;
+  max-width: calc(100vw - 1em);
+  ">
+    <canvas id=canvas style="
+    width: 100%;
+    aspect-ratio: 1/1;
+    image-rendering: pixelated;
+    border: 1px solid #888;
+    "></canvas>
+  </div>
+  <div style="
+  margin: 2px;
+  ">
+    <div>
+      <a href="https://twitter.com/Guandanarian/status/1732833571029553173">idea</a>
+      by @Guandanarian/Twitter
+    </div>
+    <div>
+      <a href="https://twitter.com/pjscow/status/1732809863288213630">palette</a>
+      by @pjscow/Twitter
+    </div>
+</div>
+  <script>
+    const log = named_log('binary bitmap pulsar')
+    const img = node('<img src="tiles_128.png" />')
+    img.onload = () => {
+      const T = {
+        to_binary: (data) => {
+          data = M.ne(data.map(row => row.map(V.ne)))
+          return M.ne(range(data.m).map(r => range(data.n).map(c => data[r][c].ma() !== 0)))
+        },
+      }
+      const data = M.ne(canvases.data(img))
+      const bin = T.to_binary(data)
+      const counter = M.ze(...bin.di())
+      
+      const population = []
+      const ADJ = range(4).map(i => V.p(i * maths.TAU / 4))
+      bin.map((row, r) => row.map((x, c) => {
+        if (x) population.push(V.ne(r, c))
+      }))
+      const frontier = [[population.shift(), 1]]
+      const explored = new Set()
+      while (population.length) {
+        const pick = rand.pick(population)
+        if (!explored.has(pick.st())) {
+          frontier.push([pick, 1])
+        }
+
+        while (frontier.length) {
+          const [x, n] = frontier.pop()
+          counter[x[0]][x[1]] = n
+          if (!explored.has(x.st())) {
+            explored.add(x.st())
+            const adj = ADJ.map(y => V.ad(x, y)).filter(adj => (bin[adj[0]]||{})[adj[1]] && !explored.has(adj.st()))
+            adj.map(x => {
+              frontier.unshift([x, n + 1])
+            })
+          }
+        }
+      }
+      log(counter)
+
+      const S = img.width
+      canvas.height = canvas.width = S
+      const ctx = canvas.getContext('2d')
+      canvases.draw(ctx, data)
+
+      const COLOR_RAMP = [
+        '#ff6600',
+        '#ff9200',
+        '#ffbe00',
+        '#fbe0be',
+        '#fafaf0',
+        '#87a19e',
+        '#496767',
+        '#0f3538',
+        '#0f2021',
+        '#0f0a0a',
+      ].map(s => lists.group(list(s.slice(1), ''), 2).map(x => parseInt(x.join(''), 16)))
+      log(COLOR_RAMP)
+
+      setInterval(() => {
+        const colors = counter.map((row, r) => row.map((x, c) => {
+          if (x) {
+            counter[r][c] += 1
+            return COLOR_RAMP[(x - 1) % COLOR_RAMP.length]
+          } else {
+            // return V.on(3).sc(255 * 2/16)
+            return COLOR_RAMP.at(-1)
+          }
+        }))
+        canvases.draw(ctx, colors)
+      }, 33)
+    }
+  </script>
+
+</body>
+</html>

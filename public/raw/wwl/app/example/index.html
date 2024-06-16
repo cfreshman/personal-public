@@ -1,0 +1,21 @@
+<head>
+  <title>toggle</title>
+  <meta name="description" content="wwl.js example" />
+  <meta name="author" content="cyrus@freshman.dev">
+  <link rel="icon" href="/lib/2/wwl/icon.png">
+</head>
+<body>
+  <script src="/lib/2/wwl/script.js"></script>
+  <script>
+    wwl.attach({
+      state: 0,
+      states: [
+        '<button id=1>off</button>',
+        {
+          html: '<button id=0>on</button>',
+          style: 'filter: invert(1)',
+        },
+      ],
+    })
+  </script>
+</body>

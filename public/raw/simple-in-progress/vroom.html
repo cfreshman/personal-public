@@ -1,0 +1,15 @@
+<title>tr.ink/et</title>
+<meta charset=utf-8><meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>*{user-select:none;-webkit-user-select:none;overflow:hidden}</style>
+<div id=display style="white-space:pre;font-family:monospace">
+   __
+ToO L\----,,
+ (o)---(o)"
+</div>
+<script>
+const drive = () => display.textContent = display.textContent.split('\n').map(x => ' '+x).join('\n')
+setTimeout(() => {
+  setInterval(drive, 10)
+  setTimeout(() => setInterval(drive, 10), 5 + 20 * 10)
+}, 2_000)
+</script>

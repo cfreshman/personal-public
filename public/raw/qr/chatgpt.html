@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR Code Generator</title>
+  <meta name="description" content="Simple QR code generator">
+  <script src="/lib/2/external/qrcode.min.js"></script>
+  <script src="/copyright.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    textarea, input {
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #ref_qr {
+      padding: 16px;
+      border: 16px solid black;
+      border-image-slice: 1;
+      border-image-source: conic-gradient(from 90deg, red, hsl(180, 100%, 50%), red);
+    }
+  </style>
+</head>
+<body>
+
+  <h1>QR Code Generator</h1>
+  <textarea id="input" placeholder="Paste/enter URL" rows="4" oninput="handle.input(event.target.value)"></textarea>
+  <input id="l_size" type="number" placeholder="Size (e.g., 256)" oninput="handle.size(event.target.value)">
+  <div class="row">
+    <button onclick="handle.generate(input.value)">Generate</button>
+    <button onclick="input.value = ''">Clear</button>
+    <button onclick="handle.openNewTab()">+</button>
+  </div>
+  <div id="ref_qr"></div>
+
+  <script>
+    const log = console.log;
+    const STORAGE_KEY = { SIZE: 'qr-size' };
+    let size = localStorage.getItem(STORAGE_KEY.SIZE) || 256;
+    const ref_qr = document.getElementById('ref_qr');
+    const input = document.getElementById('input');
+    const l_size = document.getElementById('l_size');
+
+    const handle = {
+      generate: href => {
+        if (!href) return;
+        ref_qr.innerHTML = '';
+        new QRCode(ref_qr, { width: size, height: size }).makeCode(href);
+      },
+      input: text => {
+        input.value = text;
+        history.replaceState(null, '', `?${text}`);
+      },
+      size: new_size => {
+        size = Number(new_size);
+        localStorage.setItem(STORAGE_KEY.SIZE, size);
+        log('Size set to', size);
+      },
+      openNewTab: () => {
+        if (top !== self) {
+          location.reload();
+        } else {
+          window.open(location.href, '_blank', `popup,width=${innerWidth},height=${innerHeight},left=${screenX},top=${screenY + 135}`);
+        }
+      }
+    };
+
+    l_size.value = size;
+    const urlParams = new URLSearchParams(window.location.search);
+    const url = urlParams.get('');
+    if (url) {
+      handle.input(url);
+      handle.generate(url);
+    }
+  </script>
+
+</body>
+</html>

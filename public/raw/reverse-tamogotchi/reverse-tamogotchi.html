@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src=/copyright.js></script>
+  <meta data-hydrate data-style />
+</head>
+<body>
+
+  <pre id=recommendations>[WIP]</pre>
+
+  <script>
+
+Object.entries({
+    'common.js': '/lib/2/common/script.js',
+}).map(([key,src])=>!window[key]&&document.head.append((x=>Object.assign(x,{innerHTML:(src=>(x=>{x.withCredentials=false;x.open('GET',src,false);x.send();return x.responseText})(new XMLHttpRequest()))(new URL(src,location.port==='3030'/*local testing on port 3030*/?location.origin:'https://freshman.dev').toString())}))(document.createElement('script'))))
+
+const FREQ = {
+  'DO SOME WORK': 25,
+  'TAKE A WALK': 3,
+  'EAT': 10,
+  'DRINK WATER': 10,
+  'SLEEP': 3,
+  'USE BATHROOM': 10,
+  'JOURNAL': 3,
+}
+
+// attempt to recommend action once per minute, w/ likelihood once per hour
+setTimeout(() => {
+  const pick = rand.weighted(FREQ)
+  recommendations.textContent = pick
+
+  setInterval(() => {
+    const change = rand.i(60)
+    if (change === 0) {
+      const pick = rand.weighted(FREQ)
+      recommendations.textContent += '\n' + pick
+    }
+  }, 60_000)
+}, 1_000)
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>k-means clustering</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src=/copyright.js></script>
+    <style>
+      body {
+        background: #fff;
+        color: #000;
+        padding: 1em;
+        max-height: 100%;
+        max-width: 100%;
+        min-height: 40em;
+      }
+      body a {
+        color: inherit;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body class="middle-column">
+
+    <div id=nodes-container class="middle-column" style="
+    height: 0;
+    flex-grow: 1;
+    aspect-ratio: 1/1;
+    max-width: calc(100vw - 1em);
+    ">
+      <!-- <svg id=nodes style="
+      width: 100%;
+      aspect-ratio: 1/1;
+      image-rendering: pixelated;
+      "></svg> -->
+      <div id=root></div>
+    </div>
+    <div style="
+    margin: 2px;
+    ">
+      <a id="button_generate">generate</a>
+    </div>
+
+    <script>
+const log = named_log('k-means')
+
+const points = range(256).map(() => V.ne(rand.i(256), rand.i(256), rand.i(256)))
+let k = 5, dim = points[0].length
+let centers
+let groups
+const regroup = () => {
+  groups = range(5).map(() => [])
+  points.map((p, p_i) => {
+    let minus_p = p.sc(-1)
+    let min_center_i, min_center_d2
+    centers.map((c, c_i) => {
+      const center_d2 = c.ad(minus_p).do()
+      if (min_center_i === undefined || center_d2 < min_center_d2) {
+        min_center_i = c_i
+        min_center_d2 = center_d2
+      }
+    })
+    groups[min_center_i].push(p_i)
+  })
+}
+const recenter = () => {
+  centers = groups.map(group => {
+    let c = V.ze(dim)
+    if (group.length) {
+      group.map(p_i => c = c.ad(points[p_i]))
+      c = c.sc(1 / group.length)
+    }
+    return c
+  })
+}
+const generate = () => {
+  centers = range(5).map(() => rand.sample(points))
+  range(16).map(() => {
+    regroup()
+    recenter()
+  })
+
+  root.innerHTML = ''
+  root.append(node(`<div style="
+  display: flex;
+  gap: .25em;
+  ">${centers.map(c => {
+    const rgb = `rgb(${c.join(', ')})`
+    return `<div style="
+    height: 5em;
+    width: 5em;
+    background: ${rgb};
+    ">${c.st()}</div>`
+  }).join('\n')}</div>`))
+}
+generate()
+on(button_generate, 'click', generate)
+
+    </script>
+
+  </body>
+</html>

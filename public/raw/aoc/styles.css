@@ -1,0 +1,132 @@
+html {
+    font-size: 16px !important;
+}
+html,body {
+    /* hide strange extra space to right of page :) */
+    overflow-x: hidden;
+}
+
+#aoc {
+    width: 100%;
+    height: 100%;
+    background: var(--dark);
+    color: var(--light);
+    padding: 1rem;
+    font-family: 'Source Code Pro', monospace;
+
+    display: flex;
+    flex-direction: column;
+}
+#aoc > *:not(:last-child) {
+    margin-bottom: .5rem;
+}
+
+#aoc .form-inline {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+#aoc .form-inline > *:not(:last-child) {
+    margin-right: .5rem;
+}
+#aoc .input, #aoc .output {
+    width: 100%;
+    padding: .2rem;
+    background: black;
+    color: var(--light);
+}
+#aoc .input:focus {
+    background: black;
+    color: var(--light);
+}
+#aoc .input.year, #aoc .input.day {
+    width: 4rem;
+}
+#aoc .input.drop {
+    flex-grow: 1;
+    text-align: center;
+}
+#aoc .output {
+    border: none;
+    flex-grow: 1;
+    white-space: pre;
+}
+
+#aoc .title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.4rem;
+    margin-right: 1rem !important;
+}
+#aoc .title a {
+    font-size: 1rem;
+    color: #ddffe4;
+    text-decoration: none;
+}
+#aoc .title a:hover {
+    color: var(--light);
+    text-decoration: underline;
+}
+
+#aoc #run {
+    /* align-self: flex-end; */
+    background: none;
+    line-height: normal;
+    padding: 0.3rem;
+    border: none;
+    padding: 0;
+    color: var(--light);
+}
+#aoc #run::before {
+    content: "[ ";
+}
+#aoc #run::after {
+    content: " ]";
+}
+#aoc #run:hover {
+    /* text-decoration: underline; */
+    background: var(--light);
+    color: black;
+}
+#aoc #run:disabled {
+    opacity: .5;
+    text-decoration: none;
+}
+
+#aoc .answer {
+    width: 4rem;
+    flex-grow: 1;
+    background: black;
+    color: var(--light);
+}
+#aoc .label {
+    margin-left: .5rem;
+}
+
+#aoc .login-warning {
+    font-size: .66rem;
+    margin-top: .5rem;
+}
+#aoc .doc {
+    width: 100%;
+    flex-grow: 1;
+    background: white;
+}
+#aoc .doc iframe {
+    transform-origin: top left;
+    transform: scale(.6667);
+    width: 150%;
+    height: 150%;
+}
+
+#aoc a {
+    color: white;
+    text-decoration: underline;
+    cursor: pointer;
+}
+#aoc a:hover {
+    background: white;
+    color: black;
+    text-decoration: none;
+}

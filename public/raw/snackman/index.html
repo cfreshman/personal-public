@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Snackman</title>
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+  </head>
+  <body>
+    <div class="outer container">
+      <div class="inner container">
+        <canvas
+        id="gameCanvas"
+        class="-shrink-target"
+        ></canvas>
+      </div>
+    </div>
+
+    <div id="joystick"></div>
+    <script src="/lib/joy.js"></script>
+    <script type="text/javascript">
+      const resize = () => {
+        if (document.body.clientHeight / document.body.clientWidth > 1.33) {
+          document.querySelector('#joystick').style.position = ''
+          document.querySelector('#joystick').style.visibility = ''
+          document.querySelector('#gameCanvas').classList.remove('shrink-target')
+        } else {
+          document.querySelector('#joystick').style.position = 'absolute'
+          document.querySelector('#joystick').style.visibility = 'hidden'
+          document.querySelector('#gameCanvas').classList.add('shrink-target')
+        }
+      }
+      window.addEventListener('resize', resize)
+      resize()
+
+      var joy = new JoyStick('joystick', {
+        internalFillColor: '#dd0000',
+        internalLineWidth: 1,
+        internalStrokeColor: '#000000',
+        externalLineWidth: 10,
+        externalStrokeColor: '#dddddd',
+      });
+      setInterval(() => {
+        let x = joy.GetX();
+        let y = joy.GetY();
+        let dir = joy.GetDir();
+
+        // determine 'wasd' key to press from joystick direction
+        let key = '';
+        if (dir !== 'C') {
+          if (Math.abs(x) > Math.abs(y)) {
+            key = (x > 0) ? 'd' : 'a';
+          } else {
+            key = (y > 0) ? 'w' : 's';
+          }
+        }
+
+        function emitKey(key, isDown) {
+          document.dispatchEvent(new KeyboardEvent(
+            isDown ? 'keydown' : 'keyup',
+            { 'key': key }
+          ));
+        }
+        if (key) {
+          emitKey(key, true);
+          emitKey(key, false);
+        }
+      }, 16);
+    </script>
+
+    <script src="/lib/utils.js"></script>
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

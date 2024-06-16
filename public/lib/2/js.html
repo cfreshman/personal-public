@@ -1,0 +1,76 @@
+/*
+
+js.html 1.0.0 @ https://freshman.dev/lib/2/
+- import as javascript
+- view as html
+
+<div style="white-space:normal">
+  <title>README</title>
+  <script src="https://freshman.dev/copyright.js"></script>
+  <meta data-hydrate data-style />
+  <style>body{white-space:pre}</style>
+</div>
+<span class=wide data-hydrate data-code>&lt;script src="https://freshman.dev/lib/2/js.html">&lt;/script></span>
+<br/>
+<div data-hydrate data-title></div>
+<div id=README class="tall wide" data-hydrate data-code data-markdown>
+
+### js.html
+single-file js / html README
+
+**Usage**
+```
+js_html({ script:'script url', readme:'readme url', detail?:['detail', 'lines'] })
+```
+
+</div></body></html>collated with freshman.dev/js.html <!-- the entire document is interpreted as <body> when parsed as html --> <!--*/
+Object.entries({
+  'common.js': '/lib/2/common/script.js',
+}).map(([key,src])=>!window[key]&&document.head.append((x=>Object.assign(x,{innerHTML:(src=>(x=>{x.withCredentials=false;x.open('GET',src,false);x.send();return x.responseText})(new XMLHttpRequest()))(new URL(src,location.port==='3030'/*local testing on port 3030*/?location.origin:'https://freshman.dev').toString())}))(document.createElement('script'))))
+
+if (!window['js.html']) (_=>{
+  const log = named_log('js.html')
+
+  window.js_html = ({ script:script_src, readme:readme_src, name=script_src, version=undefined, detail:detail_lines=[] }) => {
+
+    log(script_src, detail_lines, readme_src)
+
+    const script = xhr(script_src)
+    const readme = xhr(readme_src)
+
+    const destination_parts = name?.split('/') || ['unknown/', 'script.js']
+    const dest_dir = (
+      destination_parts.slice(0, -1).join('/') || script_src?.split('/').slice(0, -1).join('/') || 'unknown'
+    ) + '/'
+    const dest_name = destination_parts.slice(-1)[0] || script_src.split('/').slice(-1)[0]
+    const destination = [dest_dir, dest_name].join('')
+    const detail = Array.isArray(detail_lines) ? detail_lines.join('\n') : detail_lines
+
+    return `/*
+
+${[`${dest_name}${version ? ' '+version : ''} @ ${dest_dir}`, ...detail.split('\n')].join('\n')}
+
+<div style="white-space:normal">
+  <title>README</title>
+  <script src="https://freshman.dev/copyright.js"></script>
+  <meta data-hydrate data-style />
+  <style>body{white-space:pre}</style>
+</div>
+<span class=wide data-hydrate data-code>&lt;script src="${destination || '<replace with script location>'}">&lt;/script></span>
+<br/>
+<div data-hydrate data-title></div>
+<div id=README class="tall wide" data-hydrate data-code data-markdown>
+
+${readme}
+
+</div></body></html>collated with freshman.dev/js.html <!-- the above is interpreted as <body> when parsed as html --> <!--*/
+
+${script}
+`
+  }
+
+  window.js_html_url = ({ script, readme, detail=[] }) => {
+    return URL.createObjectURL(new Blob([js_html({ script, readme, detail })], { type:'application/html' })).toString()
+  }
+
+})()

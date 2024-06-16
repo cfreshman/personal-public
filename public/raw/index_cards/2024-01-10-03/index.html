@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>box lines</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    :root {
+      /* filter: none; */
+    }
+  </style>
+</head>
+<body class="middle-column" style="
+background: #000;
+color: #fff;
+padding: 1em;
+max-height: 100%;
+max-width: 100%;
+min-height: 40em;
+">
+
+  <div id=root-container class="middle-column" style="
+  height: 0;
+  flex-grow: 1;
+  aspect-ratio: 1/1;
+  max-width: calc(100vw - 1em);
+  ">
+    <canvas id=root style="
+    width: 100%;
+    aspect-ratio: inherit;
+    image-rendering: pixelated;
+    border: 1.25vw solid #fff;
+    background: #fff;
+    "></canvas>
+  </div>
+  <span style="
+  margin: 2px;
+  ">
+    <a href="https://twitter.com/avant_arte/status/1744691585197933052">inspiration</a>
+    from Twitter
+  </span>
+
+  <script>
+    const log = named_log('box lines')
+    const S = 1024, N = 3
+
+    const canvas = root
+    canvas.width = canvas.height = S
+    const ctx = canvas.getContext('2d')
+    const handle = {
+      generate: async () => {
+        let points = [
+          V.ne(0, .5),
+          V.ne(1, .5),
+          V.ne(1, 1.5),
+          V.ne(0, 1.5),
+          V.ne(.5, 0),
+          V.ne(1.5, 0),
+          V.ne(1.5, 1),
+          V.ne(.5, 1),
+        ].map(v => v.sc(S / 3).ad(V.ne(S / 4, S / 4)))
+        const edges = [
+          [0, 1], [1, 2], [2, 3], [3, 0],
+          [4, 5], [5, 6], [6, 7], [7, 4],
+          [0, 4], [1, 5], [2, 6], [3, 7],
+        ]
+        const draw = () => {
+          edges.map(edge => {
+            const a = points[edge[0]]
+            const b = points[edge[1]]
+            ctx.strokeStyle = '#000'
+            ctx.beginPath()
+            ctx.moveTo(...a)
+            ctx.lineTo(...b)
+            ctx.stroke()
+          })
+        }
+        const clear = () => {
+          canvas.width = S
+        }
+        clear()
+        draw()
+
+        const point_states = [points, ...range(2).map(() => points.map(p => p.ad(V.ne(rand.s(S / 4), rand.s(S / 4)))))]
+
+        for (let j = 0; ; j++) {
+          const from_points = point_states[j % point_states.length]
+          const to_points = point_states[(j + 1) % point_states.length]
+          const n = 20
+          for (let i = 0; i < n; i++) {
+            await defer(undefined, 100)
+            const p = (i + 1) / n
+            points = range(points.length).map(p_i => V.ad(from_points[p_i].sc(1 - p), to_points[p_i].sc(p)))
+            draw()
+          }
+
+          clear()
+          draw()
+          await defer(undefined, 250)
+        }
+      }
+    }
+    handle.generate()
+
+  </script>
+
+</body>
+</html>

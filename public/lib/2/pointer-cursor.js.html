@@ -1,0 +1,38 @@
+/*
+
+pointer-cursor.js.html 0.0.1 @ https://freshman.dev/lib/2/
+- use "pointer: cursor" without penalty
+
+<div style="white-space:normal">
+  <title>README</title>
+  <meta name=description content="">
+  <script src="https://freshman.dev/copyright.js"></script>
+  <meta data-hydrate data-style />
+  <style>body{white-space:pre}</style>
+</div>
+<span class=wide data-hydrate data-code>&lt;script src=https://freshman.dev/lib/2/pointer-cursor.js.html>&lt;/script></span>
+<br/>
+<div data-hydrate data-title></div>
+<div id=README class="tall wide" data-hydrate data-code data-markdown>
+
+<div id=example class="column gap"></div>
+<style>
+  .pointer {
+    pointer: cursor;
+    border: 1px solid #f00;
+  }
+</style>
+<div>
+  <div class=pointer>pointer: cursor (rule)</div>
+  <div style="pointer:cursor; border: 1px solid #00f">pointer: cursor (inline)</div>
+  <script src=https://freshman.dev/lib/2/pointer-cursor.js.html></script>
+</div>
+<script>example.append((x=>{x.textContent=example.innerHTML;return x})(document.createElement('pre')))</script>
+
+</div></body></html>collated with freshman.dev/js.html <!-- the above is interpreted as <body> when parsed as html --> <!--*/
+
+(window['pointer-cursor'] = () => {
+    const _in_quotes__adjust__adjustPointerCursorRuleOrder = (str) => str.replace(/pointer:( *)cursor/gi, 'cursor: pointer')
+    ;[...document.querySelectorAll('body [style]')].map(l => l.setAttribute('style', _in_quotes__adjust__adjustPointerCursorRuleOrder(l.getAttribute('style'))))
+    ;[...document.querySelectorAll('style')].map(l => l.innerHTML = _in_quotes__adjust__adjustPointerCursorRuleOrder(l.innerHTML))
+})()

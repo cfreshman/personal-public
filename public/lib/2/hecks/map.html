@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>hecks.js map</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <style>
+    #map {
+        width: 100% !important;
+        height: 100% !important;
+        background: white;
+    }
+  </style>
+  <div id="controls">
+    <button>clear</button>
+    <button>generate</button>
+    <button>remove random</button>
+    <label>mode: <select id="mode" value="both">
+        <option value="both">both</option>
+        <option value="output">output</option>
+        <option value="input">input</option>
+    </select></label>
+  </div>
+  <div id="map" class="map"></div>
+  
+
+  <script src="/lib/ol/ol.js"></script>
+  <link rel="stylesheet" type="text/css" href="/lib/ol/ol.css">
+  <script src="/lib/2/hecks/script.js"></script>
+  <script>
+    const log = named_log('hecks map demo')
+    const TILE = 16
+    const SIZE = TILE * 16
+    const hf = new hecks.Field(TILE, hecks.Field.Orientation.TOP_FLAT)
+    const placement = new hecks.Placement(hf)
+    let dots = 10
+
+    //#region map init
+    let mouse
+    const dragPan = new ol.interaction.DragPan({})
+    const dragPan2 = new ol.interaction.DragPan({
+        condition: function(e) {
+            return this.getPointerCount() === 2
+        },
+    })
+    const map = new ol.Map({
+        layers: [],
+        target: 'map',
+        // controls: [mousePositionControl],
+        controls: [],
+        view: new ol.View({
+            center: [0, 0],
+            zoom: 1,
+        }),
+        interactions: ol.interaction.defaults({
+            doubleClickZoom: false,
+            dragPan: false,
+        }).extend([
+            dragPan,
+            dragPan2,
+        ]),
+    })
+
+    const outer_geom = (() => {
+        const outer_rect = [[0, 0], [1, 0], [1, 1], [0, 1]].map(p => [SIZE * (p[0] - .5), SIZE * (p[1] - .5)])
+        return new ol.geom.Polygon([outer_rect])
+    })()
+    const Mode = {
+        both: 'both',
+        output: 'output',
+        input: 'input',
+    }
+    let mode = 'both'
+    function visualize() {
+        const input = ids.map(id => placement.input_for_id(id)).map(place => new ol.geom.Circle(place.ar(), hf.inner_size / 2))
+        const output = ids.map(id => placement.place_for_id(id)).map(v => hf.to_cartesian(v)).map(place => new ol.geom.Circle(place.ar(), hf.inner_size))
+        const geometries = mode === Mode.output ? output : input
+
+        const colors = [
+            [[255, 200, 0, 1], 'black'],   // yellow - structure
+            // [[0, 0, 255, 0.2], '#0001'],   // blue - graph
+            [[0, 64, 255, 0.2], '#0001'],   // blue - graph
+            [[0, 150, 0, 0.5], '#0001'],   // green - start
+            [[255, 0, 0, 0.5], 'black'],   // red - goal
+        ]
+
+        const colorToStyle = (color, id=undefined, font=undefined) => new ol.style.Style({
+            fill: new ol.style.Fill({
+                color: color[0],
+            }),
+            stroke: new ol.style.Stroke({
+                color: color[1],
+                width: 1,
+            }),
+            ...(id === undefined ? {} : {
+                text: new ol.style.Text({
+                    text: String(id),
+                    fill: new ol.style.Fill({ color: '#fff' }),
+                    stroke: new ol.style.Stroke({ color: color[0], width: 2 }),
+                    font,
+                })
+            })
+        })
+
+        const outer_layer = new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: [outer_geom].map(g => new ol.Feature(g))
+            }),
+            style: colorToStyle(['white', 'black'])
+        })
+        const input_layer = ['input', 'both'].includes(mode) && new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: input.map((g, i) => {
+                    const f = new ol.Feature(g)
+                    f.setStyle(colorToStyle(['blue', 'blue'], ids[i], '12px sans-serif'))
+                    return f
+                })
+            }),
+        })
+        const output_layer = ['output', 'both'].includes(mode) && new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: output.map((g, i) => {
+                    const f = new ol.Feature(g)
+                    f.setStyle(colorToStyle(['black', 'black'], ids[i], '18px sans-serif'))
+                    return f
+                })
+            }),
+        })
+        const mouse_layer = mouse && new ol.layer.Vector({
+            source: new ol.source.Vector({
+                features: [new ol.geom.Circle(mouse, hf.inner_size / 2)].map(g => new ol.Feature(g))
+            }),
+            style: colorToStyle(['white', 'black'])
+        })
+        map.setLayers([outer_layer, mouse_layer, output_layer, input_layer].filter(x=>x))
+    }
+    //#endregion
+
+    let ids = [], used_ids = new Set()
+    const place_new = (v) => {
+        let id
+        do { id = rand.uppernum(2) } while (used_ids.has(id))
+        ids.push(id)
+        used_ids.add(id)
+        placement.add(id, v)
+    }
+    const generate = () => {
+        const center = hf.center()
+        range(dots).map(() => place_new(center))
+        visualize()
+    }
+    generate()
+    map.getView().fit([-SIZE/2, -SIZE/2, SIZE/2, SIZE/2])
+
+    const handle = {
+        generate,
+        clear: () => {
+            ids = [], used_ids.clear()
+            placement.clear()
+            visualize()
+        },
+        'remove random': () => {
+            const id = rand.sample(ids)
+            log('remove', id)
+            placement.remove(id)
+            lists.remove(ids, id)
+            visualize()
+        }
+    }
+    QQ('#controls > button').map(l => l.onclick = () => handle[l.textContent]())
+    Q('#controls #mode').onchange = e => {
+        mode = e.target.value
+        visualize()
+    }
+
+    map.on('pointermove', e => {
+        mouse = e.coordinate
+        visualize()
+    })
+    map.on('pointerdown', e => {
+        place_new(V.ne(mouse))
+        visualize()
+    })
+
+  </script>
+
+</body>
+</html>

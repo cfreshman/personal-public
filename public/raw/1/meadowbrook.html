@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>meadowbrook</title><meta name=description content="" />
+  <style>
+    :root {
+      filter: none;
+      background: #fff;
+      height: 1e9vh;
+    }
+    .mb-wordmark {
+      font-family: parasine-plus;
+      font-size: 40px;
+      text-transform: uppercase;
+    }
+    .mb-headline {
+      font-family: rockwell;
+      font-size: 20px;
+      text-transform: uppercase;
+    }
+    .mb-body {
+      font-family: parasine;
+      font-size: 16px;
+    }
+    .mb-body b {
+      /* text-decoration: underline; */
+      text-transform: uppercase;
+    }
+    .mb-body .system-ui {
+      font-family: system-ui;
+    }
+  </style>
+  <script>
+    const log = named_log('meadowbrook')
+  </script>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <br />
+  <div id="max-badge" class="pre-line middle-column gap" style="
+  padding: 10px;
+  width: fit-content;
+  aspect-ratio: 1/1;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1;
+  border-radius: 50%;
+  ">
+    <span class="mb-wordmark" style="font-size: 4em">MAX</span>
+    <span class="mb-body" style="font-size: 1em">VineyardAppCamp</span>
+    <span style="font-size: .5em">&nbsp;</span>
+  </div>
+  <br />
+  <div id="whiteboard" class="pre-line middle-column gap" style="
+  width: fit-content;
+  aspect-ratio: 70/46;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1.3;
+  ">
+    <span>YOU must clean everything you use - back to where you got it</span>
+  </div>
+  <br />
+  <div id="themes" class="pre-line middle-column gap" style="
+  padding: 10px;
+  width: 20em;
+  height: 40em;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1.3;
+  ">
+    <table style="
+    width: 100%; height: 100%;
+    text-align: left;
+    ">
+    </table>
+  </div>
+  <script>
+    {
+      const table = Q('#themes table')
+      log({table})
+      const themes = list('underwater or in the trees,up or down', ',')
+      let inner_html = ``
+      range(8).map(i => {
+        const theme = themes[i] || ''
+        inner_html += `
+        <tr style="
+        height: calc(100% / 8);
+        "><td>${i+1})&nbsp;</td><td class="mb-expand">${theme}</td></tr>
+        `
+      })
+      table.innerHTML = inner_html
+    }
+  </script>
+  <br />
+  <div style="
+  transform-origin: 0 0;
+  scale: .5;
+  margin-bottom: -6in;
+  ">
+    <svg id="cut-camp"
+    viewBox="0 0 100 50"
+    xmlns="http://www.w3.org/2000/svg"
+    style="
+    box-shadow: 0 0 0 1px #000;
+    width: 24in;
+    height: 12in;
+    "
+    >
+      <style>
+        .mb-cut {
+          fill: none;
+
+          paint-order: stroke;
+          stroke: #000;
+          stroke-width: .1pt;
+          stroke-linecap: butt;
+          stroke-linejoin: round;
+        }
+      </style>
+      <text x="50" y="22.5" class="mb-wordmark mb-cut" style="
+      dominant-baseline: middle;
+      text-anchor: middle;
+      font-size: .18in;
+      ">branches</text>
+      <text x="50" y="34" class="mb-headline mb-cut" style="
+      dominant-baseline: middle;
+      text-anchor: middle;
+      font-size: .09in;
+      ">at meadowbrook</text>
+    </svg>
+  </div>
+  <br />
+  <div id="archery-steps" class="pre-line column gap mb-body" style="
+  padding: 10px;
+  width: max-content;
+  aspect-ratio: 40/28;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1.2;
+  gap: 1em;
+  ">
+    <div class="mb-wordmark">11 Steps to the Gold</div>
+    <div class="row wide between mb-wordmark">
+      <style>
+        #archery-steps table {
+          font-size: 20px;
+          tr {
+            td {
+              vertical-align: middle;
+              padding: 0;
+            }
+            td:first-child {
+              text-align: right;
+              padding: 0 .25em;
+            }
+            td:nth-child(2) {
+              max-width: 21em;
+            }
+            td:nth-child(3) {
+              padding-left: 1em;
+            }
+          }
+          img {
+            height: 3.5em;
+          }
+        }
+      </style>
+      <table>
+        <tr><td>1</td><td>stance</td><td><img src="meadowbrook/a1-2.png" /></td></tr>
+        <tr><td>2</td><td>nock</td><td><img src="meadowbrook/a2-2.png" /></td></tr>
+        <tr><td>3</td><td>string grip</td><td><img src="meadowbrook/a3-2.png" /></td></tr>
+        <tr><td>4</td><td>bow grip</td><td><img src="meadowbrook/a4-2.png" /></td></tr>
+        <tr><td>5</td><td>lift & draw</td><td><img src="meadowbrook/a5-2.png" /></td></tr>
+        <tr><td>6</td><td>anchor</td><td><img src="meadowbrook/a6-2.png" /></td></tr>
+      </table>
+      <table>
+        <tr><td>7</td><td>hold</td><td><img src="meadowbrook/a7-2.png" /></td></tr>
+        <tr><td>8</td><td>aim</td><td><img src="meadowbrook/a8-2.png" /></td></tr>
+        <tr><td>9</td><td>release</td><td><img src="meadowbrook/a9-2.png" /></td></tr>
+        <tr><td>10</td><td>follow thru</td><td><img src="meadowbrook/a10-2.png" /></td></tr>
+        <tr><td>11</td><td>feedback</td><td><img src="meadowbrook/a11-2.png" /></td></tr>
+      </table>
+      <script>
+        // const sharpen = (ctx, w, h, mix) => {
+        //   var x, sx, sy, r, g, b, a, dstOff, srcOff, wt, cx, cy, scy, scx,
+        //     weights = [0, -1, 0, -1, 5, -1, 0, -1, 0],
+        //     katet = Math.round(Math.sqrt(weights.length)),
+        //     half = (katet * 0.5) | 0,
+        //     dstData = ctx.createImageData(w, h),
+        //     dstBuff = dstData.data,
+        //     srcBuff = ctx.getImageData(0, 0, w, h).data,
+        //     y = h;
+        //   while (y--) {
+        //     x = w;
+        //     while (x--) {
+        //       sy = y;
+        //       sx = x;
+        //       dstOff = (y * w + x) * 4;
+        //       r = 0;
+        //       g = 0;
+        //       b = 0;
+        //       a = 0;
+        //       if(x>0 && y>0 && x<w-1 && y<h-1) {
+        //         for (cy = 0; cy < katet; cy++) {
+        //           for (cx = 0; cx < katet; cx++) {
+        //             scy = sy + cy - half;
+        //             scx = sx + cx - half;
+        
+        //             if (scy >= 0 && scy < h && scx >= 0 && scx < w) {
+        //               srcOff = (scy * w + scx) * 4;
+        //               wt = weights[cy * katet + cx];
+        
+        //               r += srcBuff[srcOff] * wt;
+        //               g += srcBuff[srcOff + 1] * wt;
+        //               b += srcBuff[srcOff + 2] * wt;
+        //               a += srcBuff[srcOff + 3] * wt;
+        //             }
+        //           }
+        //         }
+        
+        //         dstBuff[dstOff] = r * mix + srcBuff[dstOff] * (1 - mix);
+        //         dstBuff[dstOff + 1] = g * mix + srcBuff[dstOff + 1] * (1 - mix);
+        //         dstBuff[dstOff + 2] = b * mix + srcBuff[dstOff + 2] * (1 - mix);
+        //         dstBuff[dstOff + 3] = srcBuff[dstOff + 3];
+        //       } else {
+        //         dstBuff[dstOff] = srcBuff[dstOff];
+        //         dstBuff[dstOff + 1] = srcBuff[dstOff + 1];
+        //         dstBuff[dstOff + 2] = srcBuff[dstOff + 2];
+        //         dstBuff[dstOff + 3] = srcBuff[dstOff + 3];
+        //       }
+        //     }
+        //   }
+        
+        //     ctx.putImageData(dstData, 0, 0);
+        // }
+        // QQ('#archery-steps img').map(l => {
+        //   l.onload = () => {
+        //     l.onload = undefined
+        //     const canvas = node('canvas')
+        //     const ctx = canvas.getContext('2d')
+        //     canvas.width = l.width
+        //     canvas.height = l.height
+        //     ctx.drawImage(l, 0, 0, l.width, l.height)
+        //     sharpen(ctx, canvas.width, canvas.height, .9)
+        //     // l.src = canvas.toDataURL()
+        //     l.parentNode.append(canvas)
+        //   }
+        // })
+      </script>
+    </div>
+  </div>
+  <br />
+  <div id="camp" class="pre-line middle-column gap" style="
+  padding: 10px;
+  width: fit-content;
+  aspect-ratio: 2/1;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1.3;
+  ">
+    <span class="mb-wordmark" style="">SIGN IN</span>
+    <span class="mb-body" style="">late arrivals after 9am</span>
+  </div>
+  <br />
+  <div id="camp" class="pre-line middle-column gap" style="
+  padding: 10px;
+  width: fit-content;
+  aspect-ratio: 2/1;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1;
+  ">
+    <span style="font-family:parasine-plus;font-size:40px;">LOST</span>
+    <span style="font-family:parasine-plus;font-size:20px;">AND</span>
+    <span style="font-family:parasine-plus;font-size:40px;">FOUND</span>
+  </div>
+  <br />
+  <div id="camp" class="pre-line middle-column gap" style="
+  padding: 10px;
+  width: fit-content;
+  aspect-ratio: 2/1;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1;
+  ">
+    <span style="font-family:parasine-plus;font-size:40px;">BRANCHES</span>
+    <span style="font-family:rockwell;font-size:20px;">AT MEADOWBROOK</span>
+  </div>
+  <br />
+  <div id="gaga" class="pre-line column gap mb-body" style="
+  padding: 10px;
+  width: max-content;
+  aspect-ratio: 28/40;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1.2;
+  gap: 1em;
+  ">
+    <div class="mb-wordmark mb-expand">GAGA BALL</div>
+    <div><span class="mb-headline">IT'S KINDA LIKE DODGEBALL</span>
+      hit the ball with your hands to get other players out
+      <b>you win if:</b>
+      &nbsp;•&nbsp; you're the final player
+      &nbsp;•&nbsp; you have to leave before the end
+    </div>
+    <div><span class="mb-headline">TO START</span>
+      &nbsp;•&nbsp; stand in pit with hand on wall
+      &nbsp;•&nbsp; one player tosses ball up into middle
+      &nbsp;•&nbsp; yell <b>GA</b> <b>GA</b> <b>BALL</b> as ball bounces 3 times, then play<span class="system-ui">!</span>
+    </div>
+    <div><span class="mb-headline">YOU'RE OUT IF YOU</span>
+      &nbsp;•&nbsp; leave wall or hit ball before 3 bounces
+      &nbsp;•&nbsp; ball touches you at <b>knee or below</b>
+      &nbsp;•&nbsp; hit ball:
+      &nbsp; &nbsp; 1) twice in a row (double touch) - reset by wall or other player
+      &nbsp; &nbsp; 2) with fist - open hands only
+      &nbsp; &nbsp; 3) into <b>waist or above</b> besides arms/hands
+      &nbsp; &nbsp; 4) into air and someone catches
+      &nbsp; &nbsp; 5) out of pit - <b>last player to touch</b> - unless it was (3)
+      &nbsp;•&nbsp; hold/throw ball - drop after catching
+      &nbsp;•&nbsp; sit, kneel, or crouch (turtling)
+    </div>
+    <div><span class="mb-headline">REMEMBER</span>
+      &nbsp;•&nbsp; leave pit immediately when out
+      &nbsp;•&nbsp; solve issues with rock-paper-scissors
+      &nbsp;•&nbsp; winner starts next game
+      &nbsp;•&nbsp; <b>be kind and have good sportsmanship<span class="system-ui">!</span></b>
+    </div>
+    <div><span class="mb-headline">VARIATIONS</span>
+      <b>revenge:</b> if the player who got you out gets out, you're back in
+      <b>multiball:</b> more than one ball<span class="system-ui">!</span>
+    </div>
+  </div>
+  <br />
+  <div id="street_hockey" class="pre-line column gap mb-body" style="
+  padding: 10px;
+  width:fit-content;
+  aspect-ratio: 28/40;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1.3;
+  gap: 1em;
+  ">
+    <div class="mb-wordmark mb-expand">STREET HOCKEY</div>
+    <div>work as team to score ball into opposing goal</div>
+    <div><span class="mb-headline">RULES</span>
+      <table id="table-street_hockey-rules">
+        <style>
+          #table-street_hockey-rules {
+            tr {
+              td {
+                vertical-align: top;
+                padding: 0;
+              }
+              td:first-child {
+                text-align: right;
+                padding: 0 .25em;
+              }
+              td:nth-child(2) {
+                max-width: 21em;
+              }
+            }
+          }
+        </style>
+        <tr><td>1</td><td>decide how game ends before start<br/>(time? points?)</td></tr>
+        <tr><td>2</td><td>a player from each team faces off in the middle at start and after each goal, with everyone starting on their own side</td></tr>
+        <tr><td>3</td><td>ball out of bounds: team that didn't touch it last passes in from where it went out</td></tr>
+        <tr><td>4</td><td>no checking or other physical play,<br/>you can only try to hit the ball</td></tr>
+        <tr><td>5</td><td>goalies must wear masks</td></tr>
+        <tr><td>6</td><td>take care of equipment</td></tr>
+        <tr><td>7</td><td><b>exhibit good sportsmanship and<br/>have fun!</b></td></tr>
+      </table>
+    </div>
+  </div>
+  <br />
+  <div id="boating" class="pre-line column gap mb-body" style="
+  padding: 10px;
+  width:fit-content;
+  aspect-ratio: 28/40;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1.3;
+  gap: 1em;
+  ">
+    <div class="mb-wordmark mb-expand">BOATING</div>
+    <div><span class="mb-headline">RULES</span>
+      <table id="table-boating-rules">
+        <style>
+          #table-boating-rules {
+            tr {
+              td {
+                vertical-align: top;
+                padding: 0;
+              }
+              td:first-child {
+                text-align: right;
+                padding: 0 .25em;
+              }
+              td:nth-child(2) {
+                max-width: 21em;
+              }
+            }
+          }
+        </style>
+        <tr><td>1</td><td>wear a life jacket at all times</td></tr>
+        <tr><td>2</td><td>don't walk onto the dock - until told</td></tr>
+        <tr><td>3</td><td>don't get into a boat - until told</td></tr>
+        <tr><td>4</td><td><b>KEEP 3 points of contact</b></td></tr>
+        <tr><td>5</td><td>don't get out of a boat - until told</td></tr>
+        <tr><td>6</td><td>don't disturb wildlife</td></tr>
+        <tr><td>7</td><td><b>DO YOUR PART TO PADDLE AND<br/>HAVE FUN!</b></td></tr>
+      </table>
+    </div>
+  </div>
+  <br />
+  <div id="wait" class="pre-line middle-row" style="
+  width: fit-content;
+  aspect-ratio: 2/1;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1.1;
+  gap: .05em;
+  background: #ddd;
+  align-items: stretch;
+  ">
+    <div class="middle-column" style="
+    padding: .5em;
+    background: #fff;
+    ">
+      <span style="font-size:3em">✋</span>
+      <span style="font-family:sans-serif;font-size:1em"><b>WAIT</b></span>
+    </div>
+    <div class="middle-column" style="
+    padding: .5em;
+    background: #fff;
+    ">
+      <span style="font-size:3em">✋</span>
+      <span style="font-family:sans-serif;font-size:1em"><b>WAIT</b></span>
+    </div>
+    <div class="middle-column" style="
+    padding: .5em;
+    background: #fff;
+    ">
+      <span style="font-size:3em">✋</span>
+      <span style="font-family:sans-serif;font-size:1em"><b>WAIT</b></span>
+    </div>
+  </div>
+
+  <script>
+    QQ('.mb-expand').map(async l => {
+      l.style['text-wrap'] = 'nowrap'
+      const style_save = l.style.cssText
+      const rect = l.getBoundingClientRect()
+      l.style.width = '-webkit-fill-available'
+      await defer(0, 100)
+      l.style.height = `${l.clientWidth * (rect.height / rect.width)}px`
+      await defer(0, 100)
+      const target_width = l.clientWidth
+      const target_height = l.clientHeight
+      l.style.cssText = style_save
+      log(l, target_width)
+
+      let x, step = .1
+      for (x = 1; l.clientWidth <= target_width && l.clientHeight <= target_height && x < 1000; x += step) {
+        l.style['font-size'] = `${x}px`
+      }
+    })
+  </script>
+
+
+  <br />
+  <div id="large" class="pre-line column gap mb-body" style="
+  padding: 10px;
+  width: max-content;
+  aspect-ratio: 28/40;
+  box-shadow: 0 0 0 1px #000;
+  line-height: 1.2;
+  gap: 1em;
+  ">
+    <div class="mb-wordmark mb-expand">large sign</div>
+    <div class="column">
+      <style>
+        #large table {
+          tr {
+            td {
+              vertical-align: top;
+              padding: 0;
+            }
+            td:first-child {
+              text-align: right;
+              padding: 0 .25em 0 0;
+            }
+            td:nth-child(2) {
+              max-width: 21em;
+            }
+          }
+        }
+      </style>
+      <div class="mb-headline">rules</div>
+      <table>
+        <tr><td>1</td><td></td></tr>
+        <tr><td>2</td><td></td></tr>
+        <tr><td>3</td><td></td></tr>
+        <tr><td>4</td><td></td></tr>
+        <tr><td>5</td><td></td></tr>
+        <tr><td>6</td><td></td></tr>
+        <tr><td>7</td><td></b></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <br />
+  <div id="electives" class="column gap" style="width:1e9vw">
+    <script>
+      list('science,free swim,art,archery,street\nhockey,gaga,sports,boating,makerspace,obstacle\nfitness,tennis,counselor\'s\nchoice,playground,nurse', ',').map(elective => {
+        Q('#electives').append(node(`
+        <div class="pre-line middle-column gap" style="
+        padding: 10px;
+        width: fit-content;
+        aspect-ratio: 2/1;
+        box-shadow: 0 0 0 1px #000;
+        line-height: 1;
+        ">
+          <span class="mb-wordmark" style="">${elective}</span>
+        </div>`))
+      })
+    </script>
+  </div>
+
+  <div>&nbsp;</div>
+
+</body>
+</html>

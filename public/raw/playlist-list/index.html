@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>playlist-list</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    body > * {
+        max-width: 100%;
+    }
+  </style>
+  <script src=/lib/2/spotify_client/script.js></script>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div id=input_root></div>
+  <br />
+  <div id=playlist_root></div>
+  <script>
+const log = named_log('playlist-list')
+const spotify = spotify_client.new(
+  'playlist-list',
+  '5ccd1a7094054b53b23a7a0f17659276',
+  'user-library-read playlist-read-private',
+  'https://freshman.dev/raw/playlist-list/',
+)
+
+const state = {
+  profile: undefined,
+  playlists: [],
+  playlist: undefined,
+}
+const render = {
+  input: () => {
+    const loading = state.profile && !state.playlists
+    input_root.innerHTML = `
+<div>
+  <div>all content is attributed to Spotify</div>
+  <div>
+    <a href="https://spotify.com" style="display:inline-block"><img src="/raw/spotify/Spotify_Logo_RGB_Green.png" style="
+    height: 5em;
+    border: 1px solid #000;
+    padding: .5em;
+    " /></a>
+  </div>
+  <div><a href="https://spotify.com">OPEN SPOTIFY</a></div>
+</div>
+<br />
+${state.profile ? `
+<span class="row inline gap">
+  <button id="disconnect">disconnect ${state.profile.id}</button>
+  <button id="all">export all playlists</button>
+</span>
+` : '<button id="connect">connect to Spotify</button>'}
+${[
+`${(loading) ? 'loading your tracks' : ''}`,
+].filter(x=>x).join(', ')}
+<br/>
+<div class="row gap">
+<input id=input_playlist placeholder="paste playlist share link" style="
+min-width: 20em;
+" value="${state.playlist?.external_urls.spotify || ''}" />
+<button id="load_playlist">load</button>
+<button id="clear_playlist">clear</button>
+</div>
+`
+    QQ(input_root, ':scope button').map(x => x.onclick = handle[x.id])
+  },
+  playlist: (loading=false, list=false) => {
+    const playlist_item = (playlist) => {
+      log(playlist)
+      return `<div class="middle-row gap" style="
+      border: 1px solid #000;
+      min-height: 4em;
+      ${list ? `
+      cursor: pointer;  
+      ` : ''}
+      " ${list ? `onclick="
+      input_playlist.value = '${playlist.external_urls.spotify}'
+      handle.load_playlist()
+      "` : ''}>
+        ${playlist.images && playlist.images[0] ? `<img src="${playlist.images[0].url}" style="
+        width: 4em;
+        aspect-ratio: 1/1;
+        " />` : ''}
+        <div style="
+        padding: .25em;
+        padding-right: .5em;
+        ">
+          <a href="${playlist.external_urls.spotify}">${playlist.name}</a>
+          by
+          <a href="${playlist.owner.external_urls.spotify}">${playlist.owner.display_name}</a>
+        </div>
+      </div>`
+    }
+    log({loading,list})
+    list = list || (state.playlists && !state.playlist)
+    if (state.playlists && list) {
+      playlist_root.innerHTML = `<div class="column gap">
+        ${state.playlists.map(playlist_item).join('\n')}
+        <br />
+        <br />
+      </div>`
+      return
+    } else if (!state.playlist) {
+      playlist_root.innerHTML = loading ? 'loading playlist' : 'log in and paste playlist URL to load'
+      return
+    }
+    playlist_root.innerHTML = `<div class="column gap">
+      ${playlist_item(state.playlist)}
+      <div class="row gap">
+        <button id="generate_list">generate list</button>
+        <button id="download_list" style="display:none">download</button>
+      </div>
+      <pre id=root_playlist_list>
+      </pre>
+    </div>`
+    QQ(playlist_root, ':scope button').map(x => x.onclick = handle[x.id])
+  },
+}
+const handle = {
+  connect: () => spotify.oauth(),
+  disconnect: () => spotify.disconnect(),
+  load: async () => {
+    state.profile = await spotify.profile()
+    render.input()
+
+    state.playlists = await spotify.playlists_parallel()
+    log(state)
+
+    render.input()
+  },
+  load_playlist: async (playlist_url=input_playlist.value) => {
+    if (!playlist_url) {
+      alert('paste playlist link')
+      return
+    }
+
+    Q('#clear_playlist').textContent = 'clear'
+    const id = /playlist\/([^?]+)/.exec(playlist_url)[1]
+    if (id) {
+      const search = new URLSearchParams(location.search)
+      search.set('playlist', playlist_url)
+      url.replace(location.pathname + ('?' + search.toString()))
+    
+      render.playlist(true)
+      state.playlist = await spotify.playlist(id)
+      log(state)
+      render.playlist()
+    } else {
+      alert('enter valid playlist link')
+    }
+  },
+  generate_list: async () => {
+    Q('#generate_list').textContent = 'generating...'
+    await Promise.resolve()
+    if (!state.playlist) return
+    const { playlist, playlist: {tracks} } = state
+    const n = tracks.length
+    log({tracks,n})
+
+    state.export_text = [
+      list('name artists album url').join(','),
+      ...tracks.map((item, i) => {
+        const { track } = item
+        return [
+          track.name,
+          track.artists.map(artist => artist.name).join(', '),
+          track.album.name,
+          track.external_urls.spotify,
+        ].map(x => `"${x.replace(/"/, '\\"')}"`)
+      })
+    ].join('\n')
+
+    root_playlist_list.innerHTML = state.export_text
+    Q('#generate_list').textContent = 'generate'
+    Q('#download_list').style.display = ''
+  },
+  download_list: async () => {
+    download(state.export_text, `${state.playlist.name} export.csv`.replace(/ /g, '_'))
+  },
+  all: async () => {
+    displayStatus(Q('#all'), 'exporting...')
+    await Promise.resolve()
+    const playlists = await Promise.all(state.playlists.slice(0, 2).map(async ({id}) => await spotify.playlist(id)))
+    log({playlists})
+    playlists.map(playlist => {
+      const {tracks} = playlist
+      const n = tracks.length
+      log({tracks,n})
+  
+      const export_text = [
+        list('name artists album url').join(','),
+        ...tracks.map((item, i) => {
+          const { track } = item
+          return [
+            track.name,
+            track.artists.map(artist => artist.name).join(', '),
+            track.album.name,
+            track.external_urls.spotify,
+          ].map(x => `"${x.replace(/"/, '\\"')}"`)
+        })
+      ].join('\n')
+      download(export_text, `${playlist.name} export.csv`.replace(/ /g, '_'))
+    })
+  },
+  clear_playlist: async () => {
+    if (input_playlist.value) {
+      input_playlist.value = ''
+      Q('#clear_playlist').textContent = state.playlist ? 'revert' : 'clear'
+      log('render playlist list')
+      render.playlist(false, true)
+    } else {
+      if (state.playlist) {
+        input_playlist.value = state.playlist.external_urls.spotify
+        Q('#clear_playlist').textContent = 'clear'
+        render.playlist()
+      }
+    }
+  },
+}
+
+render.input()
+defer(async () => {
+  await spotify.autogrant()
+  if (spotify.granted()) {
+    await handle.load()
+    const search = new URLSearchParams(location.search)
+    const playlist_url = search.get('playlist') || '' // 'https://open.spotify.com/playlist/3FRnVOPaTgKvqNcey6AZEl?si=45cc3abddcf442e0'
+    input_playlist.value = playlist_url
+    if (input_playlist.value) {
+      await handle.load_playlist()
+      await handle.generate_list()
+    } else {
+      await render.playlist()
+    }
+  }
+})
+
+  </script>
+
+</body>
+</html>

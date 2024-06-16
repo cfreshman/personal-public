@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>gradient lines</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    :root {
+      /* filter: none; */
+    }
+  </style>
+</head>
+<body class="middle-column" style="
+background: #fff;
+color: #000;
+padding: 1em;
+max-height: 100%;
+max-width: 100%;
+min-height: 40em;
+">
+
+  <div id=root-container class="middle-column" style="
+  height: 0;
+  flex-grow: 1;
+  aspect-ratio: 1/1;
+  max-width: calc(100vw - 1em);
+  ">
+    <div id=root style="
+    width: 100%;
+    aspect-ratio: 2/1;
+    image-rendering: pixelated;
+    background: linear-gradient(15deg #00f #0000);
+    border: 1.25vw solid #000;
+    background: #000;
+    "></div>
+  </div>
+  <span style="
+  margin: 2px;
+  ">
+    <a href="https://twitter.com/balon_art/status/1744868037650415747">inspiration</a>
+    from Twitter
+  </span>
+  <script>
+    const log = named_log('bars')
+    const N = 48
+    const color_lerps = [
+      [['#0000', '#f00'], [50, 100], [0, 75]],
+      [['#0000', '#4f0'], [0, 10], [0, 100]],
+      [['#00f', '#0000'], [0, 100], [0, 100]],
+    ]
+
+    root.style.cssText += `
+    display: flex;
+    flex-direction: row;
+    `
+    range(N).map(i => {
+      const p = i / (N - 1)
+      color_lerps.map(color_lerp => {
+        const [colors, start, end] = color_lerp
+        const lerp = [maths.lerp(start[0], end[0], p), maths.lerp(start[1], end[1], p)]
+        root.append(node(`<div style="
+        height: 100%;
+        width: 0;
+        flex-grow: 1;
+        background: linear-gradient(180deg, ${colors[0]} ${lerp[0]}%, ${colors[1]} ${lerp[1]}%);
+        filter: blur(.01vw);
+        "></div>`))
+      })
+    })
+    list(root.children).at(0).remove()
+    list(root.children).at(-1).remove()
+
+
+  </script>
+
+</body>
+</html>

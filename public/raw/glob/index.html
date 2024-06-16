@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>glob</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src=/copyright.js></script>
+    <style>
+      body {
+        background: #000;
+        color: #fff;
+        padding: 1em;
+        max-height: 100%;
+        max-width: 100%;
+        min-height: 40em;
+      }
+      body a {
+        color: inherit;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body class="middle-column">
+
+    <div style="
+    margin: 2px;
+    ">
+      <a id="button_generate">generate</a>
+    </div>
+    <div id=canvas-container class="middle-column" style="
+  height: 0;
+  flex-grow: 1;
+  aspect-ratio: 1/1;
+  max-width: calc(100vw - 1em);
+  ">
+    <canvas id=canvas style="
+    width: 100%;
+    aspect-ratio: 1/1;
+    image-rendering: pixelated;
+    "></canvas>
+  </div>
+    <div style="
+    margin: 2px;
+    ">
+      <a href="https://www.youtube.com/watch?v=bMTeCqNkId8">colors</a>
+      by @BarneyCodes/YouTube
+    </div>
+
+    <script src="/lib/noise.js"></script>
+    <script>
+const SIZE = 1024,
+  BORDER_SIZE = 16,
+  SCALE = 3,
+  MIN_HEIGHT = 1,
+  MAX_HEIGHT = 32,
+  CHUNK_SIZE = 16,
+  N_BOIDS = 256,
+  N_TREES = 1024,
+  N_FLOCKS = 3,
+  ORTHO = true,
+  IMG_SCALE = 1,
+  N_NEIGHBORS = 0,
+  C_R_SPHERE = 8
+var size = SIZE,
+    buffer = SIZE / 16,
+    radius = SIZE / 2,
+    borderSize = BORDER_SIZE,
+    tiles = SIZE / Math.pow(2, SCALE),
+    minHeight = MIN_HEIGHT * Math.pow(2, SCALE),
+    maxHeight = MAX_HEIGHT * Math.pow(2, SCALE),
+    highestElevation = 0,
+    frustumSize = Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth) * SIZE,
+    chunkSize = CHUNK_SIZE / Math.pow(2, SCALE)
+var tileSize = size / tiles
+var liquidHeight = (maxHeight - minHeight)*1/5 + minHeight
+
+let ctx
+let center, vertices
+
+function init() {
+  canvas.height = canvas.width = size + buffer
+  center = V.on(2).sc((size + buffer)/2)
+  ctx = canvas.getContext('2d')
+  generate()
+}
+
+function generate() {
+  // const seed = Math.random()
+  const seed = rand.i(1e6)
+  console.debug(seed)
+  noise.seed(seed) // 0.8182382724578854
+
+  const half_offset = V.on(2).sc(size / 2).sc(-1)
+  vertices = []
+  for (let i = 0; i <= tiles; i++) {
+    for (let j = 0; j <= tiles; j++) {
+      const [x, y] = V.ne(i, j).sc(tileSize).ad(half_offset)
+      const z = getHeight(x, y)
+      if (V.ne(x, y, z - maxHeight).ma() <= radius) {
+        vertices.push(V.ne(x, y, z))
+      }
+    }
+  }
+  vertices.map(v => v.z = maths.lerp(0, 1, (v.z - minHeight) / (maxHeight - minHeight)))
+
+  render()
+}
+
+function getHeight(x, y) {
+  zoom = 1024 / chunkSize
+  huge = noise.simplex2(x/zoom/4 - 10000, y/zoom/4 - 10000)
+  large = noise.simplex2(x/zoom*2 + 10000, y/zoom*2 + 10000)
+  medium = noise.simplex2(x/zoom*4 + 20000, y/zoom*4 + 20000)
+  small = noise.simplex2(x/zoom*10 + 30000, y/zoom*10 + 30000)
+  value = Math.pow(huge*0.3 + large*0.5 + medium*0.15 + small*0.05, 3)
+  if (value > 0) {
+    // scale height down at sides
+    // value = value * (1 - Math.pow(V.ne(x, y).ma() * 2 / size, 2))
+
+    height = maths.lerp(liquidHeight, maxHeight, Math.sqrt(value))
+  } else {
+    height = maths.lerp(liquidHeight, minHeight, Math.sqrt(-value))
+  }
+
+  return height
+}
+
+function render() {
+  ctx.fillStyle = '#000'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  for (let i = 0; i < vertices.length; i++) {
+    const v = vertices[i]
+    let style
+    if(v.z <= 0.2) {
+      style = "#62A6A9"
+    } else if(v.z <= 0.25) {
+      style = "#D6B69E"
+    } else if(v.z <= 0.4) {
+      style = "#98AD5A"
+    } else if(v.z <= 0.6) {
+      style = "#658541"
+    } else if(v.z <= 0.7) {
+      style = "#477645"
+    } else if(v.z <= 0.8) {
+      style = "#6D7687"
+    } else if(v.z <= 0.9) {
+      style = "#848D9A"
+    } else {
+      style = "#D2E0DE"
+    }
+    ctx.fillStyle = style
+    ctx.fillRect(v.x + center.x - tileSize/2, v.y + center.y - tileSize/2, tileSize, tileSize)
+  }
+}
+
+function onWindowResize() {
+  render()
+}
+
+init()
+on(window, 'keydown', (event) => {
+  switch(event.key) {
+    case ' ':
+      generate()
+      break
+  }
+}, false)
+on(button_generate, 'click', () => {
+  button_generate.textContent = 'generating...'
+  defer(() => {
+    generate()
+    button_generate.textContent = 'generate'
+  })
+})
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Snakes on a Plain</title>
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+  </head>
+  <body>
+
+    <div class="outer container">
+      <div class="inner container">
+        <canvas id="gameCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="upper">
+      <!-- <h1 class="title">Snakes on a Plain</h1> -->
+      <div class="info">
+        <table>
+          <tr>
+            <th colspan=2><b>Controls</b></th>
+          </tr>
+          <tr>
+            <td>move</td>
+            <td>wasd vs. arrow keys</td>
+          </tr>
+          <tr>
+            <td>replay</td>
+            <td>space</td>
+          </tr>
+          <tr>
+            <td>mobile</td>
+            <td>drag finger</td>
+          </tr>
+        </table>
+      </div>
+      <div class="info">
+        <table>
+          <tr>
+            <td colspan=2>
+              <b>High Scores</b>
+              <span class='login'></span>
+            </td>
+          </tr>
+          <tr>
+            <td>personal</td>
+            <td id="hs-personal"></td>
+          </tr>
+          <tr>
+            <td>global</td>
+            <td id="hs-global"></td>
+          </tr>
+          <tr>
+            <td>view more:</td>
+            <td id='record-links'>
+              <a id="single-link">single</a>
+              /
+              <a id="coop-link">co-op</a>
+            </td>
+          </tr>
+          <!-- <tr>
+            <td colspan=2><b>High Score</b>
+              <a id="single-link">single</a>
+              /
+              <a id="coop-link">co-op</a>
+            </td>
+          </tr>
+          <tr>
+            <td>personal</td>
+            <td id="hs-personal"></td>
+          </tr>
+          <tr>
+            <td>global</td>
+            <td id="hs-global"></td>
+          </tr>
+          <tr>
+            <td colspan=2>
+              <a id="scoreboard">view scoreboard</a>
+            </td>
+          </tr> -->
+        </table>
+      </div>
+    </div>
+
+    <script src="/lib/utils.js"></script>
+    <script src="/lib/arc.js"></script>
+    <!-- <script src="script.js"></script> -->
+    <script src="/lib/seamless.js"></script>
+    <script type="module" src="script.js"></script>
+  </body>
+</html>

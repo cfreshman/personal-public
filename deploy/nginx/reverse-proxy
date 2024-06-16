@@ -1,0 +1,41 @@
+# /etc/nginx/sites-available/reverse-proxy
+# r1 http://161.35.119.138/
+
+server {
+    server_name ~^(?<subdomain>[^.]+)\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
+    include sites-available/fragments/personal-ssl;
+    include sites-available/fragments/gzip;
+    location = / {
+        try_files /raw/$subdomain/$uri /raw/$subdomain/$uri/ /raw/$subdomain/index.html $uri $uri/ @proxy;
+    }
+    location / {
+        try_files /raw/$subdomain/$uri /raw/$subdomain/$uri/ $uri $uri/ @proxy;
+    }
+    location @proxy {
+        include sites-available/fragments/proxy;
+        proxy_pass https://24.183.185.23/$subdomain$request_uri;
+        proxy_set_header Host $domain.$tld;
+    }
+}
+
+server {
+    server_name ~^(?<domain>[^.]+)\.(?<tld>[^.]+)$;
+    include sites-available/fragments/personal-ssl;
+    include sites-available/fragments/gzip;
+    location / {
+        include sites-available/fragments/proxy;
+        proxy_pass https://24.183.185.23$request_uri;
+    }
+}
+server {
+    server_name _;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    location /.well-known {
+        return 301 http://$host$request_uri;
+    }
+    location / {
+        include sites-available/fragments/proxy;
+        proxy_pass https://24.183.185.23$request_uri;
+    }
+}

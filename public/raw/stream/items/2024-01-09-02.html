@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>try to touch the creature</title><meta name=description content="" />
+  <style>
+    body {
+      background: #000;
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div data-entry='5.12.2022'>
+    <p class='.content'>
+      =~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=
+      <br/><br/>
+      try to touch the creature
+      <br/><br/>
+      <svg id="svg-5_12_2022"
+      xmlns="http://www.w3.org/2000/svg" x="0px" y="0px"
+      width="23.2rem" height="23.2rem"
+      viewBox="0 0 100 100"
+      style="overflow: visible; z-index: 1000;">
+      </svg>
+      <script type="text/javascript">
+        let ring = false
+        const expandToRing = () => {
+          ring = true
+        }
+        {
+        const svg = Q('#svg-5_12_2022')
+        const DIM = [100, 100]
+        const mouse = [DIM[0]/2, DIM[1]/2]
+        on(window, 'pointermove', e => {
+          const rect = svg.getBoundingClientRect()
+          mouse[0] = (e.clientX - rect.x) / rect.width * DIM[0]
+          mouse[1] = (e.clientY - rect.y) / rect.height * DIM[1]
+        })
+        
+        const blobRadius = 4
+        const scribbles = Array.from({ length: 42 }).map((_, i, arr) => {
+          const angle = i / arr.length * 2*Math.PI
+          const dist = 16 + Math.random()
+          const rBase = Math.random()*1.5 + .2
+          return {
+            style: `fill: hsl(${i / arr.length * 360}deg 70% 70%);`,
+            angle, dist, rBase, r: rBase,
+            ring: false,
+            pulseOffset: Math.random() * Math.PI * 2,
+            v: [0, 0],
+            pos:  [
+              // DIM[0]/2 + dist * Math.cos(angle),
+              // DIM[1]/2 + dist * Math.sin(angle),
+              DIM[0]/2 + Math.random() * blobRadius * Math.cos(Math.random() * Math.PI * 2),
+              DIM[1]/2 + Math.random() * blobRadius * Math.sin(Math.random() * Math.PI * 2),
+            ],
+            fleeCooldown: 0,
+          }
+        })
+        const draw = scribbles => {
+          svg.innerHTML = scribbles.map(({ style, r, pos }, i) => {
+            const next = scribbles[(i+1)%scribbles.length].pos
+            return `
+            <circle cx="${pos[0]}" cy="${pos[1]}" r="${r}" style="${style}" onpointerover="expandToRing()" />`
+          }).join('')
+          // svg.innerHTML = scribbles.map(({ style, r, pos }, i) => {
+          //   const next = scribbles[(i+1)%scribbles.length].pos
+          //   return `
+          //   <line x1="${pos[0]}" y1="${pos[1]}" x2="${next[0]}" y2="${next[1]}"
+          //     stroke="#fff8" stroke-width=".5" />`
+          // }).join('') + scribbles.map(({ style, r, pos }, i) => {
+          //   const next = scribbles[(i+1)%scribbles.length].pos
+          //   return `
+          //   <circle cx="${pos[0]}" cy="${pos[1]}" r="${r}" style="${style}" onpointerover="expandToRing()" />`
+          // }).join('')
+        }
+        const dist = (a, b=[0, 0]) => 
+          Math.sqrt(Math.pow(a[0] - b[0], 2) + Math.pow(a[1] - b[1], 2))
+        const diff = (a, b) => [a[0] - b[0], a[1] - b[1]]
+        const add = (a, b) => [a[0] + b[0], a[1] + b[1]]
+        const scale = (a, c) => [a[0] * c, a[1] * c]
+        const norm = (a, c=1) => {
+          const length = dist(a) || 1
+          return scale(a, c / length)
+        }
+        const startTime = performance.now() / 1000
+        let prevTime = startTime
+        const animate = () => {
+          const t = performance.now() / 1000 - startTime
+          const dt = t - prevTime
+          prevTime = t
+
+          scribbles.map(scribble => {
+            scribble.r = scribble.rBase * (1 + 
+              .2 * Math.sin(scribble.pulseOffset + t * 5))
+            if (ring) {
+              scribble.target = [
+                Math.max(0, Math.min(DIM[0],
+                  mouse[0] + scribble.dist * Math.cos(scribble.angle))),
+                Math.max(0, Math.min(DIM[0],
+                  mouse[1] + scribble.dist * Math.sin(scribble.angle))),
+              ]
+              if (scribble.ring === false) {
+                scribble.pos = [
+                  scribble.pos[0]*2/3 + scribble.target[0]/3,
+                  scribble.pos[1]*2/3 + scribble.target[1]/3,
+                ]
+                const targetOffset = diff(scribble.target, scribble.pos)
+                if (dist(targetOffset) < scribble.rBase * .05) {
+                  scribble.ring = true
+                }
+              } else {
+                // evade pointer, move towards target
+                const pointerOffset = diff(scribble.pos, mouse)
+                const pointerDist = dist(pointerOffset) || 1
+                const targetOffset = diff(scribble.target, scribble.pos)
+                const targetDist = dist(targetOffset) || 1
+                scribble.v = add(scribble.v, scale(scribble.v, -.1 * dt))
+                if (pointerDist < scribble.dist) {
+                  const speed = 50 * pointerDist / Math.max(1, pointerDist)
+                  scribble.v = add(scribble.v, scale(pointerOffset, speed * dt))
+                  if (pointerDist < scribble.dist * .9) {
+                    // scribble.fleeCooldown = 2
+                    console.log('flee', pointerDist, scribble.dist, scribble)
+                  }
+                } else {
+                  if (scribble.fleeCooldown > 0) {
+                    scribble.fleeCooldown -= dt
+                    console.log('wait', dt, scribble)
+                    scribble.v = scale(scribble.v, .9)
+                  } else {
+                    // const speed = 50 * targetDist / Math.max(1, pointerDist)
+                    const speed = 10 * Math.max(.1, targetDist)
+                    const normTargetOffset = norm(targetOffset)
+                    // scribble.v = add(scribble.v, norm(targetOffset, speed * dt))
+                    scribble.v = add(
+                      scale(scribble.v, .95),
+                      norm(targetOffset, speed * dt))
+                  }
+                }
+                // const pointerOffset = diff(scribble.pos, mouse)
+                // const pointerOffsetMag = dist(pointerOffset) || 1
+                // const targetOffset = diff(scribble.target, scribble.pos)
+                // // scribble.pos = [
+                // //   scribble.pos[0] + offset[0]/3,
+                // //   scribble.pos[1] + offset[1]/3,
+                // // ]
+                // const targetOffsetMag = dist(targetOffset) || 1
+                // const pointerDist = dist(scribble.pos, mouse) || 0
+                // const speed = 50 * targetOffsetMag / Math.max(1, pointerDist)
+                // const normTargetOffset = norm(targetOffset)
+                // let v
+                // if (pointerOffsetMag < scribble.dist) {
+                //   v = norm(pointerOffset, speed)
+                // } else {
+                //   v = norm(targetOffset, speed)
+                // }
+                // const v = add(
+                //   norm(targetOffset, speed),
+                //   norm(pointerOffset, speed))
+                // const v = pointerOffset
+                scribble.pos = add(scribble.pos, scale(scribble.v, dt))
+
+                // if (scribble === scribbles[0]) console.log('offset', offset, scribble.target, scribble.pos)
+                // const offsetMag = dist(offset) || 1
+                // // const speed = 1 /
+                // //   (1 + Math.exp(- (dist - scribble.dist)/scribble.dist))
+                // const pointerDist = dist(scribble.pos, mouse)
+                // const speed = 1 / pointerDist
+                // const v = [offset[0] / dist * speed, offset[1] / dist * speed]
+                // // if (scribble === scribbles[0]) console.log(dist, speed)
+                // scribble.pos = [
+                //   scribble.pos[0] + v[0],
+                //   scribble.pos[1] + v[1],
+                // ]
+              }
+
+            }
+            // scribble.pos = [
+            //   DIM[0]/2 + scribble.dist * Math.cos(scribble.angle) * (1 + 
+            //   .02 * Math.sin(scribble.pulseOffset + t * 5)),
+            //   DIM[1]/2 + scribble.dist * Math.sin(scribble.angle) * (1 + 
+            //   .02 * Math.sin(scribble.pulseOffset + t * 5)),
+            // ]
+          })
+
+          draw(scribbles)
+
+          requestAnimationFrame(animate)
+        }
+        animate()
+        }
+      </script>
+      <br/><br/>
+      =~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=~=
+      <br />
+      brought over from <a href="https://tilde.town/~marshfen/#5.12.2022">tilde.town/~marshfen</a>
+    </p>
+  </div>
+
+</body>
+</html>

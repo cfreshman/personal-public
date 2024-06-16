@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<!-- bad
+punish yourself for transgressions
+-->
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>bad</title>
+  <style>
+    * {
+      font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    }
+    html {
+      height: 100%;
+      background: #fdfcfa;
+      color: #101010;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    body {
+      padding: .5em;
+      display: flex;
+      flex-direction: column;
+      row-gap: .5em;
+      flex-grow: 1;
+    }
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
+    a:hover {
+      background: #101010;
+      color: #fdfcfa;
+    }
+    button, a, input {
+      cursor: pointer;
+      font-size: 1em;
+      touch-action: manipulation;
+    }
+    button, input:is(:not([type]), [type=text]) {
+      border: 1px solid black;
+      border-radius: 5em;
+      padding: .1667em .67em !important;
+    }
+    button {
+      background: #eee;
+      user-select: none;
+    }
+    input:is(:not([type]), [type=text]) {
+      background: none;
+    }
+    input:is(:not([type]), [type=text])::placeholder {
+      opacity: .425;
+    }
+
+    .title {
+      font-weight: bold;
+    }
+    .subtitle {
+      font-style: italic;
+      opacity: .5;
+      font-size: .825em;
+    }
+
+    #title {
+      display: flex;
+      align-items: center;
+      white-space: pre;
+    }
+    #bad-container {
+      height: 0;
+      flex-shrink: 1;
+      flex-grow: 1;
+    }
+    #bad {
+      font-weight: bold;
+      white-space: pre-wrap;
+      word-break: break-all;
+      height: 100%;
+      overflow: auto;
+    }
+    #controls {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: .33em;
+    }
+    @media (max-aspect-ratio: 1/1) { /* MOBILE */
+      #bad-container {
+        position: relative;
+      }
+      #bad {
+        /* white-space: pre;
+        display: flex;
+        flex-wrap: wrap-reverse;
+        align-items: flex-start;
+        align-content: baseline; */
+      }
+      #bad-container::after {
+        /* position: absolute; top: 0; left: 0; height: 100%; width: 100%;
+        pointer-events: none;
+        content: "";
+        background: linear-gradient(180deg, #fdfcfa, #fdfcfa00 2em); */
+      }
+      #controls {
+        flex-direction: row-reverse;
+      }
+      .lefty #controls {
+        flex-direction: row;
+      }
+      #flip::before {
+        content: "←";
+      }
+      .lefty #flip::before {
+        content: "→";
+      }
+    }
+    @media (min-aspect-ratio: 1/1) { /* DESKTOP */
+      #title {
+        order: 2;
+      }
+      #bad-container {
+        order: 1;
+      }
+      #flip {
+        display: none;
+      }
+    }
+
+    .dot {
+      cursor: pointer;
+    }
+    .dot:nth-child(5n + 1)::before {content:" "}
+  </style>
+</head>
+<body>
+
+  <div id=title>
+    <span class="title">(<a href="/raw/not-bad">bad</a>)</span>&nbsp;<span class="subtitle"> punish yourself for transgressions</span>
+  </div>
+  <div id=bad-container><div id=bad></div></div>
+
+  <div id=controls>
+    <button onclick="
+    handle.bad(1)
+    ">bad</button> <button onclick="
+    parent.window.open(location.href, '_blank', opener ? `popup,width=${innerWidth},height=${innerHeight},left=${screenX},top=${screenY+100}` : undefined)
+    ">+</button> <button onclick="
+    handle.reset()
+    "><span style="
+    display: inline-block;
+    scale: -1 1;
+    ">↻</span></button> <input id=label placeholder="label" oninput="
+    handle.label(label.value)
+    " style="
+    background: none;
+    border: 1px solid black;
+    border-radius: 5em;
+    padding-left: .5em;
+    "/> <button id=flip onclick="
+    handle.flip()
+    "></button>
+  </div>
+
+  <script>
+    const CHAR = '•'
+    let dots
+    const handle = {
+      dot: t => {
+        dots.push(t)
+        bad.append(node(`<span class=dot title="${datetime.ymdhms(t)}">${CHAR}</span>`))
+        localStorage.setItem(`bad-${label.value}`, JSON.stringify(dots))
+      },
+      bad: n => {
+        range(n).map(() => handle.dot(Date.now()))
+      },
+      reset: (_dots=[]) => {
+        bad.textContent = ''
+        dots = []
+        _dots.map(handle.dot)
+      },
+      label: text => {
+        console.debug(text)
+        history.replaceState(0,0, location.href.replace(location.search ? location.search : /$/, text ? '?'+new URLSearchParams({ '': text }).toString() : ''))
+        label.value = text || ''
+
+        let existing
+        try{existing = JSON.parse(localStorage.getItem(`bad-${label.value}`))}catch{existing = []}
+        handle.reset(existing)
+      },
+      flip: _ => {
+        document.body.classList.toggle('lefty')
+        localStorage.setItem('lefty', JSON.parse(document.body.classList.contains('lefty') || 'false'))
+      },
+    }
+    handle.label(decodeURIComponent(location.search.slice(2)))
+    if (localStorage.getItem('lefty') === 'true') handle.flip()
+  </script>
+
+</body>
+</html>

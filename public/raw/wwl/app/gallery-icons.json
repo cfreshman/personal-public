@@ -1,0 +1,25 @@
+[{
+    "name": "fishbowl",
+    "href": "/raw/wwl/app/fishbowl",
+    "icon": "/raw/fishbowl/icon.png"
+}, {
+    "name": "gymnastic dots",
+    "href": "/raw/wwl/app/gymnastic-dots",
+    "icon": "/raw/wwl/app/gymnastic-dots/icon.png"
+}, {
+    "name": "tappy square",
+    "href": "/raw/wwl/app/tappy",
+    "icon": "/raw/wwl/app/tappy/icon.png"
+}, {
+    "name": "demos",
+    "href": "/raw/watch"
+}, {
+    "name": "skeleton: guide",
+    "href": "/raw/wwl/app/wwl-js-render.html?=%2Fraw%2Fwwl%2Fbuilder%2Fexample%2Fguide.js"
+}, {
+    "name": "skeleton: colors",
+    "href": "/raw/wwl/app/wwl-js-render.html?=%2Fraw%2Fwwl%2Fbuilder%2Fexample%2Fnamed.js"
+}, {
+    "name": "skeleton: session",
+    "href": "/raw/wwl/app/wwl-js-render.html?=%2Fraw%2Fwwl%2Fbuilder%2Fexample%2Fsession.js"
+}]

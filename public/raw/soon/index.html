@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<link rel="icon" href="icon.png">
+<title>coming soon</title>
+<style>
+  :root {
+    --background: #f9f8f6;
+    --color: #101010;
+  }
+  html {
+    background: var(--background);
+    color: var(--color);
+    font-size: 12px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5rem 1rem;
+    overflow-x: visible;
+  }
+  a {
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  a:hover {
+    color: var(--color);
+    background: var(--background);
+  }
+  @keyframes osc-out {
+    25% { opacity: 1; }
+    50% { opacity: 0; }
+    75% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  #bottom {
+    position: fixed;
+    bottom: .5em;
+    right: .5em;
+    text-decoration: none;
+    font-size: .9em;
+    padding: .15em .3em;
+    /* background: black;
+    color: white; */
+    border: 1px solid black;
+    border-radius: 2px;
+    opacity: .3;
+    text-transform: uppercase;
+  }
+  #bottom::after {
+    content: " →";
+  }
+  @keyframes osc-in {
+    25% { opacity: 0; }
+    50% { opacity: 1; }
+    75% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+</style>
+
+<script type='text/javascript'>
+  window.Q = (doc, selector) => {
+    if (selector === undefined) {
+      selector = doc
+      doc = document
+    }
+    return doc.querySelector(selector)
+  }
+  window.QQ = (doc, selector) => {
+    if (selector === undefined) {
+      selector = doc
+      doc = document
+    }
+    return Array.from(doc.querySelectorAll(selector))
+  }
+  window.on = (el, evts, func, opts=undefined) => evts.split(' ').map(evt =>
+    el.addEventListener(evt, func, opts))
+  
+  document.title = location.host
+</script>
+<script src="/lib/punycode.js"></script>
+</head>
+<body>
+
+  <div style="display:flex;flex-direction:column;widtH:fit-content;margin:auto;align-items:center;margin-top:6em;text-align:center;">
+    <div style="text-decoration: dotted underline;">
+      coming soon
+      <!-- url shortnr for <a href="https://freshman.dev/about">freshman.dev</a> -->
+      <!-- -> <a href="https://freshman.dev/about">freshman.dev</a> -->
+    </div>
+
+    <a id="bottom" href="https://freshman.dev">freshman.dev</a>
+
+    <svg id="cube"></svg>
+    <script>
+      const cube = {
+        L: document.querySelector('#cube'),
+        render: () => {
+          let points = [  // index
+            [1, 1, 1],    // 0: 1 3
+            [-1, 1, 1],   // 1: 2
+            [-1, -1, 1],  // 2: 3 5
+            [1, -1, 1],   // 3: 4
+            [1, -1, -1],  // 4: 5 7
+            [-1, -1, -1], // 5: 6
+            [-1, 1, -1],  // 6: 7 1
+            [1, 1, -1],   // 7: 0
+          ]
+          const t = Date.now() / 1000 / 12
+          const angleX = -Math.PI*2 * ((t % 4) / 4)
+          const angleY = Math.PI*2 * ((t % 3) / 3)
+          const angleZ = 0 // Math.PI*2 * (performance.now() / 1000 % 4)
+          points = points.map(([x, y, z]) => {
+            let mag, ang
+            const calcMag = (a, b) => Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2))
+            // rotate y & z around X
+            mag = calcMag(y, z)
+            ang = Math.atan2(z, y) + angleX
+            ;[y, z] = [mag * Math.cos(ang), mag * Math.sin(ang)]
+            // rotate z & x around Y
+            mag = calcMag(z, x)
+            ang = Math.atan2(x, z) + angleY
+            ;[z, x] = [mag * Math.cos(ang), mag * Math.sin(ang)]
+            // rotate x & y around Z
+            mag = calcMag(x, y)
+            ang = Math.atan2(y, x) + angleZ
+            ;[x, y] = [mag * Math.cos(ang), mag * Math.sin(ang)]
+
+            return [x, y, z]
+          })
+          // project edges on X/Y plane
+          const edges = Array.from({ length: 8 }).map((_, i) => [i, (i+1)%8])
+          edges.push([0, 3])
+          edges.push([2, 5])
+          edges.push([4, 7])
+          edges.push([6, 1])
+          const dim = Math.sqrt(4)
+          cube.L.setAttribute('viewBox', `${-dim} ${-dim} ${2*dim} ${2*dim}`)
+          cube.L.innerHTML = edges.map(edge => {
+            const a = points[edge[0]]
+            const b = points[edge[1]]
+            return `<line
+              x1="${a[0]}" y1="${a[1]}"
+              x2="${b[0]}" y2="${b[1]}" />`
+          }).join('')
+        },
+        animate: () => {
+          requestAnimationFrame(cube.render)
+          requestAnimationFrame(cube.animate)
+        },
+      }
+      cube.animate()
+    </script>
+    <style>
+      #cube {
+        font-size: 1em;
+        stroke-width: .02;
+        stroke: var(--color);
+
+        width: 30%;
+        border: 1px solid var(--color);
+        border-radius: 50%;
+        margin: -7em;
+        translate: 0 1em;
+      }
+    </style>
+  </div>
+
+</body>
+</html>

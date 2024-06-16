@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>/greeter</title>
+  <meta name=description content="explainer" />
+  <link rel="icon" href="/raw/greeter/icon.png">
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    :root {
+      --theme: #7687fc;
+    }
+    html, body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      border: 0;
+      padding: 0;
+      background: var(--theme);
+      filter: none !important;
+    }
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
+    .absolute-center {
+      position: absolute;
+      top: 0; left: 0; height: 100%; width: 100%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body style="
+padding: .5em;
+font-size: 1.25em;
+min-height: 15em;
+">
+
+  <div><a href="/greeter">/greeter</a> poster</div>
+  <br />
+  <div class="absolute-center middle-column">
+    <div class="middle-column" style="
+    padding: 1em;
+    background: #000; color: var(--theme);
+    border: .2em dashed currentcolor;
+    ">
+      <div><b><i>a social diary</i></b></div>
+      <div>keep track of how you met friends</div>
+      <div>& collect hangouts</div>
+    </div>
+  </div>
+
+  <!-- <div style="
+  padding: .5em;
+  "><div>/greeter poster</div><div>best viewed in landscape</div><div><a href="https://docs.google.com/document/d/1RTkWeHPzU6ujHPKESG0iUTIkSQabz03HgZ89-DmFU6g/edit">1-page business plan</a></div></div> -->
+
+  <!-- <div class="absolute-center middle-column">
+    <img style="
+    height: max(90vh, 20em);  
+    " src="/raw/greeter/icon.png" />
+  </div>
+
+  <div style="
+  font-size: 7vh;
+  font-weight: bolder;
+  text-align: center;
+  gap: .5vh;
+  " class="absolute-center middle-column">
+    <div class="middle-column" style="
+    font-size: 2em;
+    background: #000; color: #fff;
+    ">/greeter</div>
+    <div class="middle-column" style="
+    background: #000; color: #fff;
+    ">a social diary</div>
+    <div class="middle-column" style="
+    background: #000; color: #fff;
+    ">keep track of how you met friends</div>
+    <div class="middle-column" style="
+    background: #000; color: #fff;
+    ">& collect hangouts</div>
+  </div> -->
+
+</body>
+</html>

@@ -1,0 +1,83 @@
+body {
+    padding: 1rem;
+    padding-bottom: 2rem;
+}
+body.seamless {
+    padding: 1rem 0;
+}
+
+.upper {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: start;
+    user-select: none;
+    /* display: none; */
+}
+.title {
+    text-transform: uppercase;
+    /* display: none; */
+    font-size: 2rem;
+    margin: 0;
+    padding: 15px 10px;
+}
+.info {
+    z-index: 100;
+    display: block;
+    font-family: monospace;
+    text-align: left;
+    font-size: .8rem;
+}
+.info table {
+    padding: 15px 10px;
+}
+.info th, td {
+    padding: 0 10px;
+}
+#record-links a {
+    color: black;
+    /* color: black;
+    color: var(--light);
+    background: var(--dark);
+    border: 1px solid black;
+    border-radius: .2rem;
+    padding: 0 .3rem;
+    text-decoration: none; */
+}
+
+.container {
+    flex-grow: 1;
+    width: 100%;
+    display: flex;
+}
+.outer.container {
+    /* padding: 1rem; */
+}
+.inner.container {
+    justify-content: center;
+    align-items: center;
+}
+
+#gameCanvas {
+    image-rendering: pixelated;
+}
+
+.gui-container {
+    position: absolute;
+    z-index: 1000;
+}
+
+.gui {
+    width: 100%;
+    height: 100%;
+}
+
+.gui button, .gui div {
+    position: absolute;
+    border: none;
+    outline: none;
+    transition: 0s;
+    image-rendering: pixelated;
+    background-repeat: no-repeat;
+    transform-origin: top left;
+}

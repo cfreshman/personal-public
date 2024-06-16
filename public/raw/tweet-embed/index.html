@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>fixed it</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+
+  <script src=s.js></script>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <br/>
+  <div><a href="https://publish.twitter.com/?query=https%3A%2F%2Ftwitter.com%2FTweetsOfCats%2Fstatus%2F1651885836688932865&widget=Tweet">publish.twitter.com</a> <a id=example>example</a> <a onclick="update('')">clear</a></div></div>
+  <input id=input style="
+width: -webkit-fill-available;
+  " placeholder="plain Twitter embed HTML goes here" />
+  <br/>
+  <pre id=output data-hydrate data-code data-label="iframe Twitter embed"></pre>
+  <br/>
+  <div id=preview style="scale:.67;transform-origin:0 0;"></div>
+
+  <!-- <pre data-hydrate data-code data-label="programmatic usage">
+&lt;script src=https://freshman.dev/raw/tweet-embed/s.js>&lt;/script>
+&lt;script>
+  TE.render(twitter_publish_output)
+&lt;/script>
+  </pre> -->
+
+  <script>
+    const update = (value=input.value) => {
+      location.hash = encodeURIComponent(input.value = value)
+      output.textContent = ((preview.innerHTML = (value && TE.render(value))) || '(output will appear here)')+'\n'
+      hydrates.code(output)
+    }
+    on(input, 'input', e => update())
+    on(example, 'click', e => update(`<blockquote class="twitter-tweet" data-dnt="true" data-theme="dark"><p lang="it" dir="ltr">evil catto <a href="https://t.co/TDGCR6JLlu">pic.twitter.com/TDGCR6JLlu</a></p>&mdash; Tweets of Cats (@TweetsOfCats) <a href="https://twitter.com/TweetsOfCats/status/1651885836688932865?ref_src=twsrc%5Etfw">April 28, 2023</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script\>`))
+    update(decodeURIComponent(location.hash.slice(1)))
+  </script>
+
+</body>
+</html>

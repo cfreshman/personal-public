@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" /><script src=https://freshman.dev/copyright.js></script>
+  <title>[=]</title>
+
+  <link rel="icon" href="">
+  <link rel="apple-touch-icon-precomposed" href="">
+  <meta property="og:image" content="">
+  <meta property="og:title" content="">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="">
+  <style>
+    :root {
+      /* --background: #f9f8f6; */
+      --background: rgb(238, 235, 230);
+      --color: #101010;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin: 0;
+    }
+    html {
+      background: var(--background);
+      color: var(--color);
+      font-size: 12px;
+    }
+    body {
+      font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      padding: .5rem 1rem;
+      overflow-x: visible;
+    }
+    a {
+      color: inherit;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    #bottom {
+      position: fixed;
+      bottom: .5em;
+      right: .5em;
+      text-decoration: none;
+      font-size: .9em;
+      padding: .15em .3em;
+      border: 1px solid var(--color);
+      border-radius: 2px;
+      opacity: .3;
+      text-transform: uppercase;
+
+      display: none;
+    }
+    #bottom::after {
+      content: " →";
+    }
+
+    :root {--button:#eee;}button,a,input,*[onclick]{font-family:inherit;font-size:max(1em, 12px);cursor:pointer;touch-action:manipulation;}button,input:is(:not([type]),[type=text],[type=password],[type=email]){border:1px solid currentColor;border-radius:10em;padding:.1667em.67em;height:calc(100%-1px);margin:.5px 0;}button{background:var(--button);user-select:none;}
+  </style>
+
+</head>
+<body>
+  <script>
+    const log = named_log('stream')
+    {
+      const query_keys = set(',', ',')
+      const query = new URLSearchParams(location.search)
+      list(query.keys()).filter(k => !query_keys.has(k) && query.delete(k))
+      query.set('', query.get('')?.split('?')[0] || '')
+      url.replace(location.origin + location.pathname + ('?'+query.toString()) + location.hash)
+    }
+  </script>
+  
+  <div id="loading-container" style="
+  position: fixed; top: 0; left: 0; height: 100%; width: 100%;
+  background: #0004;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100100100100;
+  ">
+    <div id="loading" style="
+    width: min(calc(100% - 2em), 20em);
+    background: #fff; color: #000;
+    min-height: 10em;
+    display: flex; align-items: center; justify-content: center;
+    ">
+      loading
+    </div>
+  </div>
+
+  <div id="floater" class="row gap" style="
+  display: none;
+  position: fixed;
+  top: 2px; right: 2px;
+  z-index: 100100100;
+  filter: var(--filter);
+  ">
+    <a id="jump" onclick="
+    Q(`#item-${location.search.slice(2).split('.')[0]}`)?.scrollIntoView({ block: 'start' })
+    ">jump to selected</a>
+    <a id="jump" onclick="
+    url.replace('?=')
+    Q('#floater').style.display = 'none'
+    QQ('.label.hidden').map(x => x.style.display = 'none')
+    document.title = '[=]'
+    ">deselect</a>
+    <a id="selected-controls-copy-link" onclick="
+    copy(location.href)
+    display_status(event.target, 'copied!')
+    ">copy link</a>
+    <style>
+      #floater > a {
+        background: #fff; color: #000;
+        border: 1px solid #000;
+        padding: .25em;
+      }
+    </style>
+  </div>
+
+  <div style="display:flex;flex-direction:column;width:fit-content;margin:auto;align-items:center">
+    <div id="list">
+      <div class="row gap" style="
+      order: 0;
+      width: fit-content;
+      align-self: center;
+      margin-top: -1em;
+      ">
+        <button onclick="
+        // Q('#list').scrollIntoView({behavior:'smooth',block:'end'})
+        // html.scrollTop = html.scrollHeight
+        Q('#list').scrollIntoView({block:'end'})
+        defer(() => window['handleScroll'](true))
+        ">load all</button>
+        <!-- <button onclick="
+        const l_list = Q('#list')
+        l_list.classList.toggle('best-only')
+        if (l_list.classList.contains('best-only')) {
+          Q('#list .item:first-child').scrollIntoView({ block: 'start' })
+        }
+        ">filter to best</button> -->
+      </div>
+    </div>
+    <button style="
+    position: sticky;
+    bottom: .5em; margin-top: 100vh;
+    z-index: 1;
+    transform: translate3d(0,0,0);
+    " onclick="
+    event.preventDefault()
+    Q('#list').scrollIntoView({block:'start'})
+    ">scroll to top</button>
+    <style>
+      body {
+        min-height: 200vh;
+        padding-bottom: 67vh;
+      }
+      #list {
+        display: flex; flex-direction: column;
+      }
+      #list::before {
+        order: 0;
+        content: "^PINNED";
+      }
+      #list > .item {
+        position: relative;
+        padding-top: 1em;
+        width: 100%;
+        width: min(36em, calc(100vw - 1em));
+        max-height: max(100vw, 200vh);
+      }
+      #list > .item > .content {
+        white-space: pre-wrap;
+        background: white;
+        color: black;
+        padding: .5em 1em;
+        padding-bottom: 2.5em;
+        font-size: .8em;
+      }
+      #list > .item > .content.render-target {
+        min-height: 15em;
+        min-width: min(45em, calc(100vw - 1em));
+      }
+      #list > .item > .label {
+        /* font-size: .6em; */
+        font-size: .8em;
+        text-align: right;
+
+        position: absolute; bottom: 0; right: 0;
+        margin: .25em;
+        color: white;
+        /* mix-blend-mode: difference; */
+      }
+      #list > .item > .label::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        height: 100%; width: 100%;
+        background: #000;
+        color: var(--background);
+      }
+      #list > .item a {
+        text-decoration: none;
+        mix-blend-mode: difference;
+      }
+      #list > .item > :first-child {
+        width: 100%;
+        border: 1px solid var(--color);
+        display: flex;
+        max-height: calc(100vh - 1em);
+      }
+      #list > .item > .palette {
+        position: absolute;
+        top: 0; left: 100%; margin: 0 .5em;
+      }
+      #list.best-only > .item:not(.best) {
+        display: none;
+      }
+    </style>
+    <script>
+      const hr = new Date().getHours()
+      const nighttime = hr < 7 || 12 + 6 < hr
+
+      const has_search = location.search.slice(2)
+      Q('#loading-container').style.display = has_search ? 'flex' : 'none'
+      Q('#floater').style.display = has_search && !devices.is_mobile ? '' : 'none'
+
+      const scrollToItem = window['scrollToItem'] = (item=new URLSearchParams(location.search).get('')?.split('?')[0]) => {
+        if (item) {
+          const element = document.querySelector(`#item-${item.split('.')[0]}`)
+          document.querySelector(`#item-${item.split('.')[0]}`).scrollIntoView({
+            block: 'start',
+          })
+        }
+      }
+
+      {
+        const stream_name = ''
+        const stream_path = `/${stream_name || 'stream'}`
+        try { dependency(`/raw${stream_path}/items/-socials.js`) } catch {}
+
+        const list = Q('#list')
+        const item = new URLSearchParams(location.search).get('')?.split('?')[0]
+        Promise.all([
+          fetch('/api/stream/' + stream_name)
+          .then(res => res.json()),
+          fetch(`/raw${stream_path}/items/-pins`)
+          .then(res => res.text())
+          .then(text => (x => [x, new Set(x)])(text.split('\n').filter(x => x && !x.startsWith('//'))))
+          .catch(e => undefined),
+          fetch(`/raw${stream_path}/items/-best`)
+          .then(res => res.text())
+          .then(text => (x => [x, new Set(x)])(text.split('\n').filter(x => x && !x.startsWith('//'))))
+          .catch(e => undefined),
+        ])
+        .then(async ([files, pins=[[], new Set()], best=[[], new Set()]]) => {
+          console.debug('render stream', {files, pins, best})
+
+          const renders = {}
+          list.innerHTML += files
+            .filter(file => !file.startsWith('-'))
+            .map(file => {
+              const path = `/raw${stream_path}/items/${file}`
+              let [_, name, extension] = /([^\.]+)((?:\..+)+)$/.exec(file) || []
+
+              switch (extension) {
+                case '.png': case '.jpg':
+                  return `<img src="${path}" />`
+                case '.html': case '.href.txt': 
+                  return `<iframe src="${path}" onload="
+                  const L = event.target
+                  let prev_height = undefined
+                  const resize = () => {
+                    L.height = L.contentWindow.document.documentElement.scrollHeight / 2
+                    L.height = L.contentWindow.document.documentElement.scrollHeight + 8 + 16
+                    const changed = L.height !== prev_height
+                    prev_height = L.height
+                    return changed
+                  }
+                  const resize_loop = () => {
+                    if (resize()) resize_loop()
+                    else setTimeout(() => requestAnimationFrame(resize_loop), 1_000)
+                  }
+                  resize_loop()
+
+                  if ('${file}' === location.search.slice(2)) {
+                    window['scrollToItem']()
+                  }
+
+                  try {
+                    if (L.src === L.contentWindow.window.location.href && ${extension === '.href.txt'}) {
+                      L.contentWindow.window.location.href = L.contentWindow.window.document.body.textContent
+                    } else if (!L.contentWindow.window.location.pathname.includes('/raw')) {
+                      defer(() => {
+                        L.style.minHeight = 0
+                        L.style.minHeight = \`max(100px, \${(L.contentWindow.window.document.body.querySelector('.body')?.scrollHeight||0)+'px'});\`
+                      }, 1_000)
+                    }
+                    
+                  } catch {}
+                  "></iframe>`
+                default:
+                  return [
+                    () => 
+                    fetch(path, {
+                      headers: {
+                        'Content-Type': 'text/plain; charset-UTF-8',
+                      },
+                    })
+                    .then(res => res.text())
+                    .then(async text => {
+                      await sleep(100)
+                      const l = Q(`#content-${name}`)
+                      if (l) return l.innerHTML = text
+                    }),
+                    `<div class='content' id="content-${name}">[...]</div>`,
+                  ]
+              }
+            })
+            .map((render, i) => {
+              const encoded = files[i]
+              const name = decodeURIComponent(encoded)
+              const socials = (window['stream-item-socials'] || {})[name]
+
+              const id = `item-${encoded.split('.')[0]}`
+              const pinned = pins[1].has(name)
+              const is_best = best[1].has(name)||pins[1].has(name)
+              is_best && log({name,is_best,pinned})
+              let load_on_scroll_into_view
+              if (pinned) {
+                load_on_scroll_into_view = render
+              } else {
+                renders[id] = render
+                load_on_scroll_into_view = `<div class='render-target content'></div>`
+              }
+              
+              return `
+            <div class="item ${is_best?'best':''}" id="${id}" style="
+            order: ${pinned ? -(pins[0].length - pins[0].indexOf(encoded)) : i};
+            ${pinned ? `
+            margin-top: calc(-1em - 1px) !important;
+            ` : ''}
+            ">
+              ${name.includes('rated-R')
+              ? `<div style="
+              background: #fff;
+              ">
+                <button style="
+                margin: .5em 1em;
+                cursor: pointer;
+                " onclick="
+                console.debug(event)
+                event.target.parentNode.parentNode.prepend(event.target.nextElementSibling.children[0])
+                event.target.parentNode.remove()
+                ">RATED R</button>
+                <div style="display:none">
+                  ${load_on_scroll_into_view}
+                </div>
+              </div>`
+              : load_on_scroll_into_view}
+              ${
+                `<div class="label hidden" style="
+                bottom: 1.5em;
+                ${item === name ? '' : 'display: none;'}
+                "><a target="_blank" href="${location.origin}/raw${stream_path}/items/${name}">new tab ↗</a></div>`
+              }
+              <div class="label">${
+                `<a href="?=${encoded}" onclick="
+                const e = event
+                const { currentTarget:l } = e
+                if (!e.metaKey) {
+                  e.preventDefault()
+                  const show_new_tab = !l.href.endsWith(location.search)
+                  url.replace(show_new_tab ? l.href : '?=')
+                  let item = l
+                  while (item && !item.classList?.contains('item')) {
+                    item = item.parentNode
+                  }
+
+                  document.title = '[=]'
+                  QQ('.label.hidden').map(x => x.style.display = 'none')
+
+                  if (show_new_tab) {
+                    QQ(item, '.label').map(x => x.style.display = 'unset')
+                    document.title = '${name}'
+                    item.scrollIntoView()
+                    Q('#floater').style.display = ''
+                  } else {
+                    Q('#floater').style.display = 'none'
+                  }
+                }
+                ">${name}</a>`
+              }</div>
+              ${
+                socials ? `<div class=row style="
+                position: absolute;
+                bottom: 0; left: 0; margin: 2px;
+                ">${
+                  socials.map(([object, args]) => object.render(...args.render)).map(x => `<div class=label style="
+                  color: #fff; height: 1em;
+                  ">${x}</div>`).join('')
+                }</div>` : ''
+              }
+            </div>`
+            })
+            .join('\n') + (nighttime ? `
+            <style>
+              :root {
+                --background: #112;
+                --color: #888;
+              }
+            </style>
+            ` : '')
+
+          let unloaded = QQ(list, '.item:has(.render-target)')
+          let scroll_in_progress = 0
+          const Scale = {
+            SCALED: (window.innerWidth * .8) / list.clientWidth,
+            DEFAULT: 1
+          }
+          let scale = devices.is_mobile ? Scale.SCALED : Scale.DEFAULT
+          let user_scroll = false
+          let start_ms = performance.now()
+          const handleScroll = window['handleScroll'] = (force=false) => {
+            if (scroll_in_progress) return
+            if (performance.now() - start_ms > 250) user_scroll = true
+            try {
+              scroll_in_progress = 1
+              unloaded = unloaded.slice().reverse().filter(l => {
+                const rect = l.getBoundingClientRect()
+                if (force || (0 <= rect.y + rect.height + innerHeight && rect.y - innerHeight <= innerHeight)) {
+                  const render_target = Q(l, '.render-target')
+                  render_target.innerHTML = '(loading)'
+                  let as_rendered_innerHTML = Array.isArray(renders[l.id])
+                  try {
+                    if (as_rendered_innerHTML) {
+                      renders[l.id][0]()
+                      renders[l.id] = renders[l.id][1]
+                    } else {
+                      render_target.outerHTML = renders[l.id]
+                    }
+                  } catch {}
+                  delete renders[l.id]
+                  return false
+                } else {
+                  return true
+                }
+              })
+            } catch {} finally {
+              scroll_in_progress = 0
+            }
+          }
+          on(window, 'scroll click', () => handleScroll())
+          handleScroll()
+          scrollToItem()
+
+          Array.from(list.querySelectorAll('iframe')).map(frame => frame.addEventListener('load', () => {
+            try {
+              const links = Array.from(frame.contentWindow.window.document.querySelectorAll('a[href]'))
+              links.map(link => link.addEventListener('click', e => {
+                if (!link.href.startsWith(location.origin)) {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  window.open(link.href, '_blank')
+                }
+              }))
+            } catch {}
+          }))
+
+          list.style.cssText += `;
+          scale: ${scale};
+          transform-origin: top;
+          `
+
+          let last_click_ms = undefined
+          on(window, 'click', e => {
+            const click_ms = performance.now()
+            const change_scale = last_click_ms && click_ms - last_click_ms < 500
+            console.debug('change scale?', change_scale, click_ms - last_click_ms, {last_click_ms,click_ms})
+            if (change_scale) {
+              if (Number(list.style.scale) === Scale.DEFAULT) list.style.scale = Scale.SCALED
+              else list.style.scale = Scale.DEFAULT
+            }
+            last_click_ms = click_ms
+          })
+        })
+
+        if (devices.is_mobile) {
+          let i = 10
+          const timeout = setInterval(() => {
+            Q(`#item-${location.search.slice(2).split('.')[0]}`)?.scrollIntoView({ block: 'start' })
+            i -= 1
+            if (!i) {
+              clearTimeout(timeout)
+              Q('#loading-container').style.display = 'none'
+            }
+          }, 500)
+        } else {
+          Q('#loading-container').style.display = 'none'
+        }
+      }
+    </script>
+
+    <a id="bottom" href="https://freshman.dev">freshman.dev</a>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<!-- watch
+smartwatch UI experiments
+- defines outer safe area w/ rounded corners to match watch exterior
+- dynamically generated button components
+- QR code generator for login, etc
+-->
+<html>
+<head>
+  <title>watch</title>
+  <meta name="description" content="smartwatch UI experiments">
+
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      box-sizing: border-box;
+      gap: .25em;
+    }
+    html {
+      height: 100%; width: 100%;
+      font-size: 12px;
+      visibility: hidden;
+    }
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
+    button, .button, [data-button], a, input {
+      cursor: pointer;
+      font-size: 1.25em;
+      touch-action: manipulation;
+      color: #000;
+      display: inline-flex; flex-direction: column; align-items: stretch; text-align: center;
+    }
+    button, .button, input:is(:not([type]), [type=text], [type=number]) {
+      border: 1px solid #000;
+      border-radius: 5em;
+      padding: .1667em .67em !important;
+    }
+    button, .button {
+      background: #eee;
+      user-select: none;
+    }
+    input:is(:not([type]), [type=text], [type=number]) {
+      background: none;
+    }
+    input[type=number] {
+      text-align: right;
+    }
+    input:is(:not([type]), [type=text], [type=number])::placeholder {
+      opacity: .425;
+    }
+    .title {
+      font-weight: bold;
+    }
+    .subtitle {
+      font-style: italic;
+      opacity: .5;
+      font-size: .825em;
+    }
+    .center {
+      display: inline-flex; flex-direction: column; align-items: stretch; justify-content: center; text-align: center;
+    }
+
+    html {
+      --height: 333px;
+      --width: 320px;
+      --corner-ratio: .21;
+      --title: "";
+      --subtitle: "";
+      background: #000;
+      display: flex; align-items: center; justify-content: center;
+      white-space: pre-wrap;
+    }
+    body {
+      margin: 0; padding: 0; flex-grow: 0;
+      height: var(--height);
+      width: var(--width);
+      display: flex; flex-direction: column; align-items: flex-end;
+      border-radius: calc(var(--width) * var(--corner-ratio));
+    }
+    #root {
+      background: #fff;
+      height: 100%; width: 100%;
+      padding: calc(var(--width) * var(--corner-ratio)) .5em;
+      display: flex; flex-direction: column; row-gap: .5em;
+      overflow: auto;
+      border-radius: inherit;
+      position: relative;
+
+      /* display: flex; place-content: center;
+      padding: .5em; */
+    }
+    #root::before, #root::after {
+      z-index: 100;
+      position: absolute;
+      /* top: calc(100% - var(--height) + .5em);  */
+      top: calc(100% - var(--height)); 
+      left: 0;
+      /* height: calc(var(--width) * var(--corner-ratio)); */
+      width: 100%;
+      display: flex; align-items: center; justify-content: center;
+      white-space: pre;
+      pointer-events: none;
+    }
+    #root::before {
+      height: calc(var(--width) * var(--corner-ratio) / 2);
+      content: var(--title);
+      font-weight: bold;
+      /* height: fit-content;
+      margin-top: 1em; */
+      font-size: calc(1em / .825);
+    }
+    #root::after {
+      height: calc(var(--width) * var(--corner-ratio));
+      content: var(--subtitle);
+      font-style: italic;
+      opacity: .5;
+      /* font-size: .825em; */
+    }
+
+    html#mock {
+      background: #e6dfdc;
+    }
+    #mock body {
+      background: #222;
+      box-shadow: 0 0 0 1em #000;
+      /* height: 568px; */
+      height: calc(var(--height) * 1.175);
+      width: var(--width);
+      border-radius: calc(var(--width) * var(--corner-ratio));
+      position: relative;
+    }
+    #mock body::before {
+      content: "Oooo";
+      color: #fff1;
+      width: 100%;
+      flex-grow: 1;
+      font-family: system-ui;
+      font-size: 2.5em;
+      display: flex;
+      align-items: flex-end;
+      padding: 0.2em 0.8em;
+      box-sizing: border-box;
+    }
+    #mock #root {
+      background: #fff;
+      height: var(--height);
+    }
+  </style>
+</head>
+<body>
+
+<div id=root></div>
+
+<script>
+const { documentElement:html, body } = document
+const description = html.querySelector('meta[name=description]')
+
+const smartwatch = (() => {
+  // return true if physical screen is small and square-ish
+  const physical = {
+    width: screen.width / devicePixelRatio,
+    height: screen.height / devicePixelRatio,
+  }
+  return physical.width < 400 && Math.abs(1 - (physical.width / physical.height)) < .5
+})()
+if (!smartwatch) {
+  html.id = 'mock'
+}
+
+const css_variables = {
+  ...(smartwatch ? {
+    height: innerHeight+'px',
+    width: innerWidth+'px',
+  } : {})
+}
+;(x => {
+  x.innerHTML = `
+  html {
+    ${Object.entries(css_variables).map(([k, v]) => `--${k}: ${v};`).join('\n')}
+  }`
+  body.append(x)
+})(document.createElement('style'))
+
+const State = {
+  '': 0,
+  BACK: 0,
+  DEMOS: 1,
+  SAFE: 1.5,
+  SHAPES: 1.75,
+  BUTTONS: 2.0,
+  BUTTONS_DEMO: 2.1,
+  COMPUTER: 3,
+}
+let state
+const config = {
+  buttons: 4,
+}
+const handle = {
+  title: (title=document.title, _description=description.content) => {
+    document.title = title
+    description.content = _description
+    console.debug({ title, description:_description })
+    html.style.setProperty('--title', `"(${title})"`)
+    html.style.setProperty('--subtitle', `"${_description}"`)
+  },
+  reload: _ => {
+    body.outerHTML = ''
+    location.reload()
+  },
+  render: (_state=state) => {
+    requestAnimationFrame(() => setTimeout(() => html.style.visibility = 'visible'))
+    state = _state
+    const state_name = Object.entries(State).find(e=>e[1]===state)[0]
+    console.debug('render', state_name)
+    document.title = {
+      SAFE: 'rounded safe area',
+      BUTTONS: 'buttons',
+      COMPUTER: 'console'
+    }[state_name] || 'watch'
+    description.content = {
+      'rounded safe area': 'to match bottom & top radii',
+      'console': 'computer.html'
+    }[document.title] || 'smartwatch UI experiments'
+    switch (state) {
+      case State.BACK: {
+        root.innerHTML = `
+<button>reload</button>
+<button>demos</button>
+<div>Screen: ${screen.width}x${screen.height} ${devicePixelRatio}dpr
+Inner: ${innerWidth}x${innerHeight}
+Smartwatch: ${smartwatch}</div>
+<div>${navigator.userAgent}</div>
+`
+      } break
+      case State.DEMOS: {
+        root.innerHTML = `
+<button>reload</button>
+<button>back</button>
+<button id=safe>rounded safe area</button>
+<!-- <button>shapes</button> -->
+<button>buttons</button>
+<button id=computer>console</button>
+`
+      } break
+      case State.SAFE: {
+        // body { background: red !important }
+        root.innerHTML = `
+<style>
+#root#root {
+  background: none;
+  padding: 0 0 .5em 0;
+  border-radius: 0;
+}
+</style>
+<div class="center" style="
+background: #bfd;
+height: 100%;
+width: 100%;
+border-radius: calc(var(--width) * var(--corner-ratio));
+padding: calc(var(--width) * var(--corner-ratio)) 0;
+">
+<div class="center" style="
+background: #4f8;
+height: 100%;
+width: 100%;
+padding: .5em;
+">
+<button data-button=demos>back</button>
+<button>reload</button>
+</div>
+</div>
+`
+      } break
+      case State.SHAPES: {
+        root.innerHTML = `
+<svg viewBox='-1.1 -1.1 2.2 2.2'>
+<rect x="-1" y="-1" height="2" width="2" fill="red" />
+<circle data-button=demos rx="0" ry="0" r="1" fill="blue" />
+</svg>
+`
+      } break
+      case State.BUTTONS: {
+        root.innerHTML = `
+<button>reload</button>
+<button data-button=demos>back</button>
+<button onclick="handle.button(1)">1</button>
+<button onclick="handle.button(2)">2</button>
+<button onclick="handle.button(3)">3</button>
+<button onclick="handle.button(4)">4</button>
+<input onchange="handle.button(Number(event.target.value))" type="number" placeholder="#"></input>
+`
+      } break
+      case State.BUTTONS_DEMO: {
+        // generate button layout with svg
+        // all layouts use the same exterior mask
+        const style = `
+        position: absolute; top: 0; left: 0; height: 100%; width: 100%;
+        border-radius: inherit;
+        `
+        root.innerHTML = `<div style="${style}"></div>`
+        const rect = root.children[0].getBoundingClientRect()
+        const aspect = rect.width / rect.height
+        const hh = 1
+        const h = 2
+        const hw = aspect
+        const w = aspect * 2
+        const r = .21
+
+        const shapes = []
+        const n = config.buttons
+
+        // produce rectangles in [[-1, -1], [1, 1]]
+        // find closest sqaure-ish number
+        // (iterate though values up to sqrt(n) and keep last factor of n or n + 1)
+        // (if for n + 1, place larger shapes in center)
+        let split = 1
+        for (let i = 1; i <= Math.sqrt(n + 1); i++) {
+          if (n / i % 1 === 0 || (n + 1) % 1 === 0) split = i
+        }
+        console.debug('button split', n, split, Math.ceil(n / split))
+
+        const gap = 0 // .05
+        let max_split = 1
+        // odd - upper/lower, even - left/right
+        if (n % 2 || 1) {
+          const upper = Math.ceil(n / 2), lower = Math.floor(n / 2)
+          max_split = Math.max(upper, lower, lower && upper ? 2 : 1)
+          let y = -1
+          ;[lower, upper].map((half, i) => {
+            if (!half) return
+            let x = -1;
+            for (let j = 0; j < half; j++) {
+              // shapes.push({
+              //   i: shapes.length,
+              //   x, y,
+              //   width: (2 / half) - (gap * half / (half - 1 || 1)),
+              //   height: 1 - gap/2,
+              // })
+              const s_i = i % 2 ? (half - 1 - j) + (shapes.length - j) : shapes.length
+              const width = (2 / half) - gap/2
+              const height = (lower ? 1 : 2) - gap/2
+// <g fill="red">
+//   <rect data-button=buttons x="-${hw}" y="-${hh}" height="${hh - .03}" width="${hw - .03}" />
+//   <text x="-${hw/2}" y="-${hh/2}" dominant-baseline="middle" text-anchor="middle">1</text>
+// </g>
+// <rect data-button=buttons x=".03" y="-${hh}" height="${hh - .03}" width="${hw - .03}" fill="yellow" />
+// <text x="${hw/2}" y="-${hh/2}" dominant-baseline="middle" text-anchor="middle">2</text>
+// <rect data-button=buttons x="-${hw}" y=".03" height="${hh - .03}" width="${hw - .03}" fill="green" />
+// <text x="-${hw/2}" y="${hh/2}" dominant-baseline="middle" text-anchor="middle">3</text>
+// <rect data-button=buttons x=".03" y=".03" height="${hh - .03}" width="${hw - .03}" fill="blue" />
+// <text x="${hw/2}" y="${hh/2}" dominant-baseline="middle" text-anchor="middle">4</text>
+              shapes.push(`
+<g fill="hsl(${s_i / (n + 1) * 360 - 15}deg 100% 50%)">
+  <rect data-button=buttons x="${x}" y="${y/aspect}" height="${height/aspect}" width="${width}" />
+  <text x="${x + width/2}" y="${y/aspect + height/aspect/2}" dominant-baseline="middle" text-anchor="middle">${s_i + 1}</text>
+</g>`)
+              x += 2 / half + gap
+            }
+            y += 1 + gap/2
+          })
+        }
+        console.debug('shapes', shapes)
+
+        root.innerHTML = `
+<style>
+  #root#root {
+    background: none;
+    padding: 0 0 .5em 0;
+    border-radius: 0;
+  }
+  #root::before, #root::after {
+    display: none;
+  }
+</style>
+<div class="center" style="
+height: 100%; width: 100%;
+border-radius: calc(var(--width) * var(--corner-ratio));
+position: relative;
+">
+<svg viewBox='-1 -1 2 2' style="${style}">
+<filter id=shadow x="0" y="0" width="100%" height="100%">
+  <feOffset result="off-up" in="SourceAlpha" dx="-${.025 / max_split}" dy="-${.025 / max_split}" />
+  <feOffset result="off-down" in="SourceAlpha" dx="${.025 / max_split}" dy="${.025 / max_split}" />
+  <feColorMatrix result="off-down-black" in="off-down" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
+  <feBlend in="off-up" in2="off-down-black" mode="normal" />
+</filter>
+<g id=shapes>${shapes.join('')}</g>
+<style>
+  #shapes rect {
+    stroke-width: .01px;
+    stroke: #000;
+  }
+  #shapes text {
+    filter: url(#shadow);
+    font-size: ${1 / max_split}px;
+    font-family: system-ui;
+    fill: #000;
+    // fill: #fff;
+    // mix-blend-mode: difference;
+    pointer-events: none;
+    stroke: #000;
+    stroke-width: ${.1 / max_split}px;
+    stroke-linejoin: round;
+    overflow: visible;
+  }
+</style>
+</svg>
+</div>
+`
+      } break
+      case State.COMPUTER: {
+        root.innerHTML = `
+<button data-button=demos>back</button>
+<iframe id=frame src="/raw/simple/computer.html" style="
+flex-grow: 1;
+"></iframe>
+`
+        frame.onload = () => {
+          frame.contentWindow.window.document.body.style.zoom = '.875'
+        }
+
+      } break
+    }
+
+    Array
+    .from(document.querySelectorAll(':is(button, .button, [data-button])'))
+    .map(x => {
+      console.debug(x.dataset['button'], x.textContent, handle[x.dataset['button'] || x.id || x.textContent])
+      x.onclick = x.onclick || handle[x.dataset['button'] || x.id || x.textContent] || (_ => {
+        console.debug((x.dataset['button'], x.dataset['button'] || x.id || x.textContent).toUpperCase().replace(' ', '_'))
+        handle.render(State[(x.dataset['button'] || x.id || x.textContent).toUpperCase().replace(' ', '_')])
+      })
+    })
+    Array
+    .from(document.querySelectorAll('input'))
+    .map(x => x.onchange = x.onchange || (_ => handle[x.id](x.value)))
+    location.hash = state_name
+    handle.title()
+  },
+  button: n => {
+    config.buttons = n
+    console.debug('button', n, config)
+    handle.render(State.BUTTONS_DEMO)
+  }
+}
+console.debug(location.hash.slice(1))
+handle.render(State[location.hash.slice(1)] ?? State.BACK)
+
+</script></body>
+</html>

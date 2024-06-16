@@ -1,0 +1,1036 @@
+<!-- cyrusfreshman 2023 -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<title>cards</title>
+<link rel="icon" href="">
+<link rel="apple-touch-icon-precomposed" href="">
+<meta property="og:image" content="">
+<meta property="og:title" content="">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="">
+<style>
+  :root {
+    --background: #f9f8f6;
+    --color: #101010;
+  }
+  * {
+    box-sizing: border-box;
+    user-select: none;
+  }
+  html, body {
+    background: var(--background);
+    color: var(--color);
+    font-size: 15px;
+    margin: 0;
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+  }
+  a {
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  #reference-label {
+    position: fixed;
+    top: .5em;
+    right: .5em;
+    text-decoration: none;
+    font-size: .9em;
+    padding: .15em .3em;
+    border: 1px solid black;
+    border-radius: 2px;
+    opacity: .3;
+    text-transform: uppercase;
+  }
+  #reference-label::after {
+    content: " →";
+  }
+  @keyframes loader {
+  100% { transform: rotate(360deg) }
+  }
+  .loader {
+    display: inline-block;
+    border: .15em solid #0000;
+    border-left-color: currentColor;
+    animation: loader 1.5s infinite linear;
+  }
+  .loader, .loader::after {
+    border-radius: 50%;
+    width: .8em;
+    height: .8em;
+  }
+</style>
+</head>
+<body>
+
+  <script>
+    class V {
+      static new = (x=0, y=0, z=0, w=0) => ({ x, y, z, w })
+      static of = (v) => ({ x:v.x, y:v.y, z:v.z, w:v.w })
+
+      static dot = (a, b=a) => (a.x??0) * (b.x??0) + (a.y??0) * (b.y??0) + (a.z??0) * (b.z??0) + (a.w??0) * (b.w??0)
+      static cro = (a, b) => ({ x:(a.x??0)*(b.y??0), y:(a.y??0)*(b.z??0), z:(a.z??0)*(b.x??0) })
+      static sca = (v, c) => ({ x:(v.x??0)*c, y:(v.y??0)*c, z:(v.z??0)*c, w:(v.w??0)*c })
+      static mag = (v) => Math.sqrt(V.dot(v))
+      static nor = (v) => V.sca(v, 1 / (V.mag(v) || 1))
+      static inv = (v) => ({ x:v.x?1/v.x:0, y:v.y?1/v.y:0, z:v.z?1/v.z:0, w:v.w?1/v.w:0 })
+      static tra = (v, M) => ({
+        x: (v.x??0)*(M[0][0]??0) + (v.y??0)*(M[0][1]??0) + (v.z??0)*(M[0][2]??0) + (v.w??0)*(M[0][2]??0),
+        y: (v.x??0)*(M[1][0]??0) + (v.y??0)*(M[1][1]??0) + (v.z??0)*(M[1][2]??0) + (v.w??0)*(M[1][2]??0),
+        z: (v.x??0)*(M[2][0]??0) + (v.y??0)*(M[2][1]??0) + (v.z??0)*(M[2][2]??0) + (v.w??0)*(M[2][2]??0),
+        w: (v.x??0)*(M[3][0]??0) + (v.y??0)*(M[3][1]??0) + (v.z??0)*(M[3][2]??0) + (v.w??0)*(M[3][2]??0),
+      })
+
+      static add = (a, b) => ({ x:(a.x??0)+(b.x??0), y:(a.y??0)+(b.y??0), z:(a.z??0)+(b.z??0), w:(a.w??0)+(b.w??0) })
+      static mul = (a, b) => ({ x:(a.x??0)*(b.x??0), y:(a.y??0)*(b.y??0), z:(a.z??0)*(b.z??0), w:(a.w??0)*(b.w??0) })
+    }
+  </script>
+
+  <script type='text/javascript'>
+    window.Q = (doc, selector) => {
+      if (selector === undefined) {
+        selector = doc
+        doc = document
+      }
+      return doc.querySelector(selector)
+    }
+    window.QQ = (doc, selector) => {
+      if (selector === undefined) {
+        selector = doc
+        doc = document
+      }
+      return Array.from(doc.querySelectorAll(selector))
+    }
+    window.on = (el, evts, func, opts=undefined) => evts.split(' ').map(evt => el.addEventListener(evt, func, opts))
+    window.vertical = window.innerWidth < window.innerHeight
+    if (vertical) document.body.classList.add('vertical')
+    
+    const node = html => {
+      const _temp = document.createElement('div')
+      _temp.innerHTML = html
+      return _temp.children[0]
+    }
+  
+    const range = n => Array.from({ length: n }).map((_, i) => i)
+    const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+    const add = (a, b) => {
+      const returnArray = Array.isArray(a) || Array.isArray(b)
+      ;[a, b] = [a, b].map(x => Array.isArray(x) ? x : [x])
+      const value = range(Math.max(a.length, b.length)).map(i => (a[i] ?? 0) + (b[i] ?? 0))
+      return returnArray ? value : value[0]
+    }
+    const scale = (a, b) => {
+      const returnArray = Array.isArray(a) || Array.isArray(b)
+      if (Array.isArray(a) && !Array.isArray(b)) b = range(a.length).map(i => b)
+      else if (Array.isArray(b) && !Array.isArray(a)) a = range(b.length).map(i => a)
+      else if (!returnArray) {
+        ;[a, b] = [[a], [b]] 
+      }
+      const value = range(Math.max(a.length, b.length)).map(i => (a[i] ?? 0) * (b[i] ?? 0))
+      return returnArray ? value : value[0]
+    }
+  
+    // don't use this for anything important
+    class Random {
+      constructor(seed=Date.now()) {
+        this.seed(seed)
+      }
+      seed(x) {
+        this._seed = x
+        this.i = 0
+      }
+      random() {
+        this.i += 1
+        return ((this._seed / 1_000 + 1_000) / (this.i + 1_000)) % 1
+      }
+    }
+    window.seededRandom = new Random()
+  </script>
+  <script src='./socket.io.min.js'></script>
+  <script type="text/javascript">
+    let socket 
+    if (this.io) {
+      const backend = location.host.replace(':3000', ':5050')
+      console.debug('[socket CONNECT]', backend)
+      socket = io(backend, {
+        closeOnBeforeunload: false,
+      })
+      socket?.on('connect', () => console.debug('[socket CONNECTED]'))
+    }
+  </script>
+  
+  <div id="objects">
+    <div id="cards"></div>
+  </div>
+  <div id="ui">
+    <div id="bottom"></div>
+  </div>
+  <script>
+    if (location.hash) {
+      location.href = location.href.replace('#', '?')
+    }
+    const path_room_match = /cards\/(.+)/.exec(location.pathname)
+    let room_id = (location.search || '').replace(/^\?/, '') || (path_room_match && path_room_match[1]) || '', prev
+    if (room_id.includes('prev/')) {
+      prev = room_id.split('prev/')[1]
+      room_id = ''
+    }
+    const room_events_id = room_id ? `cards-${room_id}` : 'cards'
+
+    // const path_prefix = location.pathname.replace(path_room_match, '')
+    // const other_href = location.origin + path_prefix + (location.search ? '?' : '/') + (prev || 'prev/'+room_id)
+    // if (room_id || prev) Q('#ui').append(node(`
+    //   <div id="top-right">
+    //     <button onclick="location.href = other_href">${room_id || 'default'}</button>
+    //   </div>`))
+    
+    // listen for 'cards' socket events
+    socket?.on('echo:'+room_events_id, (...x) => console.debug('[socket] echo', x))
+    socket?.emit('echo', room_events_id)
+
+    const colors = ['red', 'black']
+    const suits = ['hearts', 'diamonds', 'spades', 'clubs']
+    const symbols = ['♥', '♦', '♠', '♣']
+    const suitToColor = suit => colors[suits.indexOf(suit) % colors.length]
+    const suitToSymbol = suit => symbols[suits.indexOf(suit) % symbols.length]
+    const ranks = [...range(9).map(i => i + 2), 'J', 'Q', 'K', 'A']
+    const n_cards = suits.length * ranks.length
+    const generateCardId = (suit, rank) => `${suit[0]}${rank}`
+
+    let position_offset = [0, 0]
+    const getTransformedBoundingClientRect = element => {
+      const rect = element.getBoundingClientRect()
+      rect.x -= position_offset[0]
+      rect.y -= position_offset[1]
+      return rect
+    }
+
+    // card elements
+    const cards = {}
+    let order = undefined
+    const flipped = {}
+    const spots = {} // { x, y, suit? }
+    const stacks = {} // { id: string, bottom: [x, y], next?: { id, next } } | { bottom: [x, y], next? }
+    const id_to_stack = {}
+    const card_ratio = [2.45, 3.5]
+    let card_size, deck_offset
+    const stack_offset_ratio = [0, .5]
+    const deck_offset_ratio = .4
+    const computeSnapDistance = card_size => card_size[0] * .5
+    const computeCardExtents = () => {
+      let min_x, min_y, max_x, max_y
+      Object.values(cards).map(card => {
+        const rect = getTransformedBoundingClientRect(card.element)
+        min_x = min_x !== undefined ? Math.min(min_x, rect.x) : rect.x
+        min_y = min_y !== undefined ? Math.min(min_y, rect.y) : rect.y
+        max_x = max_x !== undefined ? Math.max(max_x, rect.x + rect.width) : rect.x + rect.width
+        max_y = max_y !== undefined ? Math.max(max_y, rect.y + rect.height) : rect.y + rect.height
+      })
+      return {
+        min: { x: min_x, y: min_y },
+        max: { x: max_x, y: max_y },
+      }
+    }
+    const centerCardView = (card_extents=computeCardExtents()) => {
+      if (vertical) {
+        const button_extents = getTransformedBoundingClientRect(Q('#bottom'))
+        const card_shift = [
+          document.body.clientWidth/2 - (card_extents.max.x - card_extents.min.x)/2 - card_extents.min.x,
+          (document.body.clientHeight - button_extents.height)/2 - (card_extents.max.y - card_extents.min.y)/2 - card_extents.min.y,
+        ]
+        updatePositionOffset(card_shift)
+      }
+    }
+    let z = 0
+
+    // cursor elements
+    const cursor_id = Math.round(Math.random() * 1e16)
+    const cursors = {} // { timestamp, text, element }
+    const non_text_cursor_timeout = 5 * 60_000 // remove static non-text cursors after ~5 minutes
+    setInterval(() => {
+      Object.entries(cursors).map(([id, cursor]) => {
+        if (!cursor.text && Date.now() - cursor.timestamp > non_text_cursor_timeout) {
+          cursor.element.remove()
+          delete cursors[id]
+        }
+      })
+    }, non_text_cursor_timeout) 
+
+    let wait_for_init = Date.now() // unset after 'state' request or 'init' response
+    const Action = {
+      splay: (stack_or_id, as_deck=undefined) => {
+        const stack = typeof(stack_or_id) === 'string' ? stacks[stack_or_id] || id_to_stack[stack_or_id] : stack_or_id
+        if (!stack) return
+        // display as deck or stack
+        const root_id = stack.id || stack.next.id
+        const root = cards[root_id].element
+
+        // set bottom, and if deck, shift upper cards to right
+        const display_as_deck = as_deck ?? (stack.offset?.toString() === '0,0')
+        const display_with_handle = display_as_deck && stack.id
+        const rect = getTransformedBoundingClientRect(root)
+        let [x, y] = [rect.x, rect.y], bottom, last, offset = stack.offset || [0, 0], n = 0
+        for (let c = stack; c; c = c.next) n += 1
+        let card_offset = deck_offset / Math.min(6, n)
+        let edge_width = 0
+        console.debug('splay', { display_as_deck, stack, pos: [x, y], deck_offset, card_offset })
+        for (let curr = stack, i = 0; curr; curr = curr.next, i += 1) {
+          if (!curr.id) continue
+          const node_element = cards[curr.id].element
+          console.debug('splay', x, y, node_element)
+          node_element.style.left = x+'px'
+          node_element.style.top = y+'px'
+          if (flipped[curr.id]) node_element.classList.add('flipped')
+          else node_element.classList.remove('flipped')
+          node_element.style.zIndex = z
+          bottom = [x, y]
+
+          x += offset[0]
+          y += offset[1]
+          z += 1
+          if (display_with_handle && curr.next) {
+            node_element.classList.add('bottom')
+            
+            card_offset = Math.min(deck_offset - edge_width, card_offset)
+            x += card_offset
+            edge_width += card_offset
+            // if (curr.id === root_id) x += deck_offset
+            // if (curr.id === root_id) x += deck_offset - edge_width
+            // else x += card_offset
+          } else {
+            node_element.classList.remove('bottom')
+          }
+          last = curr
+        }
+        for (let c = stack; c; c = c.next) c.bottom = bottom
+        
+        if (!last || last.id === root_id) {
+          delete stack.offset
+          console.debug('unstacked', stack)
+        }
+      },
+      place: (id, pos=undefined) => {
+        console.debug('place', id, pos)
+        const element = cards[id].element
+        const rect = getTransformedBoundingClientRect(element)
+        let [x, y] = pos ? pos : [rect.x, rect.y]
+        const stack_offset = stack_offset_ratio.map((x, x_i) => x * card_size[x_i])
+        const snap_distance = computeSnapDistance(card_size)
+
+        // replace from current stack
+        // (this only loops when card is replaced from stack)
+        let stack_node = stacks[id]
+        if (stack_node) {
+          console.debug('place stack', stack_node, pos)
+          delete stack_node.spot
+        } else {
+          Object.values(stacks).find(stack => {
+            let current = stack
+            while (current.next) {
+              if (current.next.id === id) {
+                delete id_to_stack[id]
+                stack_node = current.next
+                stack_node.offset = stack.offset
+                delete current.next
+                Action.splay(stack.id || Object.keys(stacks).find(x => x === stack))
+                return true
+              }
+              current = current.next
+            }
+          })
+        }
+        if (!stack_node) stack_node = { id, bottom: [rect.x, rect.y] }
+
+        // find stack in new position, if any
+        let to_stack = id_to_stack[id] || Object.values(stacks).filter(x => x.id !== id).find(stack => {
+          const [s_x, s_y] = stack.bottom
+          if (stack.offset && stack.id) {
+            const is_deck = stack.offset.toString() === '0,0'
+            const base = is_deck && getTransformedBoundingClientRect(cards[stack.id || stack.next.id].element)
+            return (
+              Math.sqrt(
+              Math.pow(x - (s_x + stack.offset[0]), 2)
+              + Math.pow(y - (s_y + stack.offset[1]), 2)
+              ) < snap_distance
+            ) || (
+              base && Math.sqrt(
+              Math.pow(x - base.x, 2)
+              + Math.pow(y - base.y, 2)
+              ) < snap_distance
+            )
+          } else {
+            const same_flip = true // flipped[stack.id || stack.next?.id] === flipped[id]
+            const empty_spot = !(stack.id || stack.next)
+            const below = !empty_spot && Math.sqrt(
+              Math.pow(x - (s_x + stack_offset[0]), 2)
+              + Math.pow(y - (s_y + stack_offset[1]), 2)
+              ) < snap_distance
+            const stacked = Math.sqrt(
+              Math.pow(x - s_x, 2)
+              + Math.pow(y - s_y, 2)
+              ) < snap_distance
+            const match = same_flip && (stacked || below)
+            if (match) console.debug('stack match', { match, below, stack }, stack.bottom, stack.offset)
+            if (match && !empty_spot && !stack.offset) {
+              stack.offset = below ? stack_offset : [0, 0]
+              console.debug('offset', match, below, [s_x, s_y], Math.sqrt(
+              Math.pow(x - (s_x + stack_offset[0]), 2)
+              + Math.pow(y - (s_y + stack_offset[1]), 2)
+              ), stack.offset.toString())
+            }
+            return match
+          }
+        })
+        if (to_stack) {
+          // add to stack
+          delete stacks[id]
+          let current = to_stack, in_stack = false
+          while (current.next) {
+            console.debug(current.id, id)
+            // if (current.id === id) return // short-circuit, keep card in stack
+            // if (current.id === id) in_stack = true
+            current = current.next
+          }
+          current.next = stack_node
+          if (to_stack.offset) {
+            x = to_stack.bottom[0] + to_stack.offset[0]
+            y = to_stack.bottom[1] + to_stack.offset[1]
+          } else {
+            x = to_stack.bottom[0]
+            y = to_stack.bottom[1]
+          }
+          id_to_stack[id] = to_stack
+        } else {
+          to_stack = stack_node
+        }
+
+        // snap to spot
+        Object.values(spots).filter(x => !x.suit || x.suit === cards[id].suit).some(spot => {
+          const stacked = Math.sqrt(
+            Math.pow(x - spot.x, 2)
+            + Math.pow(y - spot.y, 2)
+            ) < snap_distance
+          if (stacked) {
+            x = spot.x
+            y = spot.y
+            return true
+          }
+        })
+
+        console.debug('stack', [x, y], to_stack.offset, to_stack, stack_node)
+        stacks[to_stack.id] = to_stack
+
+        // place card & stacked
+        element.style.left = x+'px'
+        element.style.top = y+'px'
+        Action.splay(id)
+      },
+      flip: (id, is_flipped=undefined) => {
+        let stack = stacks[id] || id_to_stack[id]
+        
+        // if flipped and (not bottom card, or stacked on spot), flip all & reverse order
+        let bottom = stack
+        for (; bottom.next; bottom = bottom.next) {}
+        if ((bottom.id !== id || !stack.id) && stack.offset?.toString() === '0,0') {
+          const rect = getTransformedBoundingClientRect(cards[stack.id || stack.next.id].element)
+          console.debug('flip deck', id, stack)
+          let ids = []
+          for (let c = stack; c; c = c.next) {
+            ids.push(c.id)
+            flipped[c.id] = is_flipped ?? !flipped[c.id]
+          }
+          if (stack.id) {
+            delete stacks[stack.id]
+            id_to_stack[stack.id] = stack
+          }
+          for (let c = stack; c; c = c.next) c.id = ids.pop()
+          if (stack.id) {
+            stacks[stack.id] = stack
+            delete id_to_stack[stack.id]
+            Action.place(stack.id, [rect.x, rect.y])
+          } else {
+            Action.splay(stack)
+          }
+        } else {
+          // flip face up from card
+          // flip face down from stack
+          let c = stack
+          // if (!is_flipped) 
+          for (; c.id !== id; c = c.next) {}
+          for (; c; c = c.next) {
+            // ids.push(c.id)
+            flipped[c.id] = is_flipped ?? !flipped[c.id]
+            // console.debug(c.id, flipped[c.id])
+          }
+          Action.splay(stack)
+          // Action.place(stack.id || stack.next.id) // update stack ordering
+        }
+        console.debug({ flipped })
+      },
+      spot: ([x, y], suit=undefined) => {
+        const id = [x, y].map(x => Math.round(x * 10)/10).join()
+        const spot = spots[id] = {
+          x, y, suit,
+          element: node(`
+          <div id=${id} class="card-container" style="
+          position: fixed;
+          top: ${y}px;
+          left: ${x}px;
+          ">
+            <div class="card spot" style="
+            width: ${card_ratio[0]}em;
+            height: ${card_ratio[1]}em;
+            ">
+              ${suit ? `
+              <div class="card-suit" style="
+              font-size: ${
+                2.25
+              }em;
+              ">${
+                suitToSymbol(suit)
+              }</div>` : ''}
+            </div>
+          </div>
+          `),
+        }
+        // stacks[id] = { bottom: [x, y] }
+        Q('#cards').append(spot.element)
+        console.debug('place spot', spot, stacks[id], stacks)
+      },
+      state: () => {
+        wait_for_init = false
+        // emit entire board state to new instance
+        const action_list = []
+        Object.values(stacks).map(stack => {
+          for (let current = stack; current; current = current.next) {
+            if (current.id) {
+              const element = cards[current.id].element
+              const rect = getTransformedBoundingClientRect(element)
+              if (!current.id) action_list.push(['spot', [rect.x, rect.y]])
+              action_list.push(['place', current.id, [rect.x, rect.y]])
+              flipped[current.id] && action_list.push(['flip', current.id, flipped[current.id]])
+            }
+          }
+        })
+        Object.values(spots).map(({ x, y, suit }) => {
+          action_list.push(['spot', [x, y], suit])
+        })
+        console.debug(action_list)
+        socket?.emit('emit', room_events_id, 'init', action_list)
+      },
+      init: (action_list) => {
+        // console.debug(action_list)
+        if (wait_for_init) {
+          console.debug('init', action_list)
+          Action.blank()
+          wait_for_init = false
+          action_list.map(([action, ...args]) => {
+            console.debug(action)
+            Action[action](...args)
+          })
+        }
+      },
+      cursor: (id, pos=undefined, press=false, text=undefined, temporary=false) => {
+        let [x, y] = pos || []
+
+        let cursor = cursors[id]
+        const color = `hsl(${id * 360} 100% 85%)`
+        if (!cursor) {
+          cursor = cursors[id] = {
+            timestamp: undefined, text: '',
+            element: node(`
+            <div class="cursor-container" style="
+            position: absolute;
+            top: ${x}; left: ${y}; width: .5em; height: .5em;
+            z-index: 100100100100;
+            pointer-events: none;
+            user-select: none;
+            ">
+              <div class="cursor" style="
+              position: relative;
+              ">
+                <div class="cursor-icon" style="
+                width: 1em; height: 1em;
+                ${id === cursor_id ? 'visibility: hidden;' : ''}
+                "></div>
+                <div class="cursor-text" style="
+                width: max-content; overflow-wrap: nowrap;
+                background: ${color};
+                border: .1em solid black;
+                border-radius: 1em;
+                padding: 0 .4em;
+                position: absolute;
+                top: .82em; left: .75em;
+                "></div>
+              </div>
+            </div>
+            `),
+          }
+          Q('#objects').append(cursor.element)
+        }
+        cursor.timestamp = Date.now()
+        if (pos) {
+          cursor.element.style.top = y+'px'
+          cursor.element.style.left = x+'px'
+        }
+        Q(cursor.element, '.cursor-icon').style.background = press
+        ? `url("data:image/svg+xml,%3Csvg width='100%' height='100%' viewBox='-.1 -.1 1.2 1.2' fill='${color}' stroke='black' stroke-width='.1' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='.5' cy='.5' r='.5' /%3E%3C/svg%3E")`
+        : `url("data:image/svg+xml,%3Csvg width='100%' height='100%' viewBox='-.1 -.1 1.2 1.2' fill='${color}' stroke='black' stroke-width='.1' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpolygon points='0 0 1 .25 .25 1 0 0' /%3E%3C/svg%3E")`
+        const cursor_text_element = Q(cursor.element, '.cursor-text')
+        if (text !== undefined) {
+          cursor.text = text
+          cursor_text_element.textContent = text
+          cursor_text_element.style.color = temporary ? '#0008' : ''
+          cursor.element.style.scale = cursor_text_element.style.scale = ''
+        }
+        cursor_text_element.style.display = cursor_text_element.textContent ? '' : 'none'
+        const rect = getTransformedBoundingClientRect(cursor_text_element)
+        if (rect.x + rect.width > document.body.clientWidth) {
+          cursor.element.style.scale = cursor_text_element.style.scale = '-1 1'
+        } else if (rect.x < 0) {
+          cursor.element.style.scale = cursor_text_element.style.scale = ''
+        }
+      },
+      uncursor: id => {
+        cursors[id].element.remove()
+        delete cursors[id]
+      },
+      reset: (_order) => {
+        order = _order || suits.flatMap(suit => ranks.map(rank => generateCardId(suit, rank)))
+
+        // remove spots
+        Object.keys(spots).map(k => {
+          spots[k].element.remove()
+          delete spots[k]
+          // const stack = stacks[k]
+          // if (stack.next) {
+          //   stack.id = stack.next.id
+          //   stack.offset = stack.next.offset
+          //   stack.next = stack.next.next
+          //   stacks[stack.id] = stack
+          //   delete id_to_stack[stack.id]
+          //   // for (let c = stack; c; c = c.next) {
+          //   //   id_to_stack[c.id] = stack
+          //   // }
+          // }
+          // delete stacks[k]
+        })
+        // move elements out of view & flip face-up
+        Object.values(cards).forEach(({ id, element }, i) => {
+          Action.place(id, [document.body.clientWidth * 10, i * card_size[1]])
+          Action.flip(id, false)
+        })
+        // arrange in grid
+        order.forEach((id, i) => {
+          const group = Math.floor(i / (order.length / 4))
+          const group_i = i % (order.length / 4)
+          console.debug(id, group, group_i)
+          const c_pos = [
+            1 + (card_ratio[0] + .33) * (group_i % (ranks.length/2)),
+            .25 
+            + (card_ratio[1] + .5) * (group * 2 + Math.floor(group_i / (ranks.length/2)))
+            + (Math.floor(group_i / (ranks.length/2)) === 0 ? .75 : .5),
+          ]
+          Action.place(id, c_pos.map((x, x_i) => x / card_ratio[x_i] * card_size[x_i]))
+        })
+      },
+      blank: () => {
+        Action.reset()
+        Object.values(cards).forEach(({ id, element }, i) => {
+          Action.flip(id, false)
+          Action.place(id, [document.body.clientWidth * 10, i * card_size[1]])
+        })
+      },
+      deck: (_order=undefined, pos=undefined, reset=true) => {
+        const [x, y] = pos || [card_size[0] * .25, card_size[0] * .25]
+        order = _order
+        if (reset) Action.reset(order)
+        order.map(id => {
+          Action.flip(id, true)
+          Action.place(id, [-card_size[0], 0])
+        })
+        Action.place(order[0], [x, y])
+      },
+
+      interrupt: () => interrupt(),
+    }
+    const sync = {}
+    const action_keyToId = k => ({
+      'spot': 't',
+      'state': 'e',
+      'interrupt': 'n',
+    }[k] || k[0])
+    const recursiveFormat = x => {
+      if (typeof(x) === 'number') return Math.round(x)
+      if (typeof(x) === 'boolean') return x ? 1 : 0
+      if (Array.isArray(x)) return x.map(recursiveFormat)
+      return x
+    }
+    Object.entries(Action).map(([k, v]) => {
+      const k_id = action_keyToId(k)
+      if (sync[k_id]) throw 'REPEATED ACTION LETTER ' + k
+
+      sync[k] = sync[k_id] = (...args) => {
+        args = args.map(recursiveFormat)
+        socket?.emit('emit', room_events_id, k_id, ...args)
+        Action[k](...args)
+      }
+    })
+    socket?.on('emit:'+room_events_id, (action, ...args) => Action[action] && Action[action](...args))
+    socket?.emit('emit', room_events_id)
+    on(window, 'beforeunload', e => {
+      sync.uncursor(cursor_id)
+      socket.close()
+    })
+
+    // request state from other clients
+    socket?.emit('emit', room_events_id, 'state')
+
+    let cursor_edit = ''
+    let cursor_down = false
+    // let position_offset = [0, document.body.clientWidth < document.body.clientHeight ? document.body.clientHeight / 3 : 0]
+    const eventToPosition = e => {
+      return add([e.clientX, e.clientY], scale(-1, position_offset))
+    }
+    const updatePositionOffset = (_position_offset=position_offset) => {
+      position_offset = _position_offset
+      Q('#objects').style.translate = `${_position_offset[0]}px ${_position_offset[1]}px`
+    }
+    let pos, down_cursor_pos, down_position_offset
+    on(window, 'pointerdown', e => {
+      down_position_offset = position_offset
+      down_cursor_pos = [e.clientX, e.clientY]
+      pos = eventToPosition(e)
+      cursor_down = true
+      sync.cursor(cursor_id, pos, cursor_down)
+    })
+    on(window, 'pointerup', e => {
+      cursor_down = false
+      sync.cursor(cursor_id, undefined, cursor_down)
+    })
+    on(window, 'pointermove', e => {
+      pos = eventToPosition(e)
+      sync.cursor(cursor_id, pos, cursor_down)
+      if (!down_card) {
+        let node = e.target
+        while (node && !node.classList.contains('card')) node = node.parentElement
+        if (!node && cursor_down) {
+          const cursor_pos = [e.clientX, e.clientY]
+          updatePositionOffset(add(down_position_offset, add(cursor_pos, scale(-1, down_cursor_pos))))
+        }
+      }
+    })
+    on(window, 'keydown', e => {
+      pos = eventToPosition(e)
+      if (e.key === 'Enter') {
+        sync.cursor(cursor_id, pos, cursor_down, cursor_edit)
+        cursor_edit = ''
+      } else if (!e.metaKey) {
+        if (e.key === 'Backspace') cursor_edit = e.shiftKey ? '' : cursor_edit.slice(0, -1)
+        else if (e.key.length === 1) cursor_edit += e.key
+        sync.cursor(cursor_id, pos, cursor_down, cursor_edit || cursors[cursor_id].text, cursor_edit)
+      }
+    })
+
+    let down_card
+    Q('#cards').innerHTML = suits.map(suit => ranks.map(rank => {
+      const id = generateCardId(suit, rank)
+      setTimeout(() => {
+        const element = Q('#'+id)
+        const card = cards[id] = {
+          id, suit, rank, element
+        }
+
+        if (!card_size) {
+          const rect = getTransformedBoundingClientRect(element)
+          card_size = [rect.width, rect.height]
+          deck_offset = card_size[0] * deck_offset_ratio
+          console.debug('INIT', {
+            card_size, deck_offset
+          })
+        } else if (suit === suits.slice(-1)[0] && rank === ranks.slice(-1)[0]) {
+          centerCardView()
+        }
+        let down, stack, pos, start
+        
+        on(element, 'pointerdown', e => {
+          down_card = id
+          stack = stacks[id] || id_to_stack[id]
+          const rect = getTransformedBoundingClientRect(element)
+          pos = [rect.x, rect.y]
+          down = eventToPosition(e)
+          start = Date.now()
+          cursor_down = true
+          sync.cursor(cursor_id, undefined, cursor_down)
+        })
+        on(element, 'touchstart', e => e.preventDefault())
+        on(window, 'pointermove', e => {
+          if (down) {
+            e.preventDefault()
+            let [x, y] = eventToPosition(e).map((x, i) => pos[i] + (x - down[i]))
+            
+            // move entire stack if part of deck
+            stack = stack && (stacks[id] || id_to_stack[id])
+            let bottom = stack
+            for (; bottom.next; bottom = bottom.next) {}
+            if (stack.offset?.toString() === '0,0' && id !== bottom.id) {
+              sync.place(stack.id || stack.next.id, [x, y])
+            } else {
+              sync.place(id, [x, y])
+            }
+            sync.cursor(cursor_id, undefined, cursor_down)
+          }
+        })
+        on(window, 'pointerup', e => {
+          down_card = cursor_down = down = false
+          sync.cursor(cursor_id, undefined, cursor_down)
+          if (Date.now() - start < 150) sync.flip(id)
+        })
+
+        const rect = getTransformedBoundingClientRect(element)
+        Action.place(id, [rect.x, rect.y])
+      })
+      return `
+      <div id=${id} class="card-container" style="
+      position: fixed;
+      top: ${1 + (3.5 + 1) * suits.indexOf(suit)}em;
+      left: ${1 + (2.45 + 1) * ranks.indexOf(rank)}em;
+
+      top: ${1 + (3.5 + .25) * ranks.indexOf(rank)}em;
+      left: ${1 + (2.45 + 1) * suits.indexOf(suit)}em;
+
+      top: ${.25 
+        + (3.5 + .5) * (suits.indexOf(suit) * 2 + Math.floor(ranks.indexOf(rank) / (ranks.length/2)))
+        + (Math.floor(ranks.indexOf(rank) / (ranks.length/2)) === 0 ? .75 : .5)}em;
+      left: ${1 + (2.45 + .33) * (ranks.indexOf(rank) % (ranks.length/2))}em;
+      ">
+        <div class="card" style="
+        width: ${card_ratio[0]}em;
+        height: ${card_ratio[1]}em;
+        border: 2px solid ${suitToColor(suit)};
+        color: ${suitToColor(suit)};
+        ">
+
+          <span class="card-rank">${rank}</span>
+          <div class="card-suit" style="
+          font-size: ${
+            // typeof(rank) === 'string' || rank === 1 ? 2 : rank < 3 ? 1 : .5
+            2.25
+          }em;
+          ">${
+            // suitToSymbol(suit).repeat(typeof(rank) === 'number' ? rank : 1)
+            suitToSymbol(suit)
+          }</div>
+
+        </div>
+      </div>
+      `
+    }).join('\n')).join('\n')
+
+    const _shuffle = async (pos=undefined, reset=true) => {
+      const random = new Random()
+      order = Object.keys(cards).sort(() => random.random() - .5)
+      return await sync.deck(order, pos, reset)
+    }
+
+    let interrupt = () => {}
+    const interruptedSleep = ms => new Promise((resolve, reject) => {
+      let handle = setTimeout(() => {
+        resolve(false)
+      }, ms)
+      interrupt = () => {
+        console.debug('interrupt')
+        clearTimeout(handle)
+        resolve(true)
+      }
+    })
+    const buttons = {
+      shuffle: () => _shuffle(), 
+      solitaire: async e => {
+        const dealMs = 67
+        sync.blank()
+        const padding = range(2).map(x => card_size[0] * .25)
+        const spacing = [1 + deck_offset_ratio * 1.1, 2].map((x, i) => x * card_size[i])
+
+        // place spots
+        // stacks
+        for (let i = 0; i < 7; i += 1) {
+          sync.spot([padding[0] + spacing[0] * i, padding[1] + spacing[1]])
+        }
+        // header
+        {
+          const y = padding[1]
+          for (let i = 0; i < 2; i += 1) {
+            sync.spot([padding[0] + spacing[0] * 1.5 * i, y])
+          }
+          for (let i = 0; i < 4; i += 1) {
+            // sync.spot([padding[0] + spacing[0] * (i + 3), y], suits[i])
+            sync.spot([padding[0] + spacing[0] * (i + 3), y])
+          }
+        }
+        centerCardView({
+          min: { x: padding[0], y: padding[1] },
+          max: { 
+            x: padding[0] + spacing[0] * (3 + 3) + card_size[0],
+            y: padding[1] + spacing[1] + 6 * (card_size[1] * stack_offset_ratio[1]) + card_size[1],
+          },
+        })
+        
+        // await sync.shuffle(padding, reset=false)
+        await _shuffle(padding, reset=false)
+        if (await interruptedSleep(100)) return
+
+        // move cards from bottom of deck to stacks
+        const deck = Object.values(stacks)[0]
+        const deck_order = []
+        for (let c = deck; c.next; c = c.next) deck_order.push(c.id)
+        console.debug(deck, deck_order)
+        const flips = []
+        const deck_rect = getTransformedBoundingClientRect(cards[deck_order[0]].element)
+
+        const last_pile_card_id = []
+        for (let i = 0; i < 7; i += 1) {
+          const y = padding[1] + spacing[1] + i * (card_size[1] * stack_offset_ratio[1])
+          for (let j = i; j < 7; j += 1) {
+            const x = padding[0] + spacing[0] * j
+            const id = deck_order.shift()
+            sync.place(deck_order[0], [deck_rect.x, deck_rect.y - card_size[1]])
+            sync.flip(id, true)
+            sync.place(id, last_pile_card_id[j] 
+              ? (() => {
+                const prev_card = cards[last_pile_card_id[j]]
+                const pos = getTransformedBoundingClientRect(prev_card.element)
+                return [pos.x, pos.y + (card_size[1] * stack_offset_ratio[1])]
+              })() 
+              : [x, y])
+            last_pile_card_id[j] = id
+            // await sleep(100)
+            // if (j == i) flips.push(id)
+            if (j == i) {
+              sync.flip(id, false)
+              // await sleep(50)
+            }
+            sync.place(deck_order[0], [deck_rect.x, deck_rect.y])
+            if (await interruptedSleep(100)) return
+          }
+        }
+        // for (const id of flips) {
+        //   sync.flip(id, false)
+        //   await sleep(50)
+        // }
+      },
+      reset: e => sync.reset(),
+    }
+    Object.keys(buttons).forEach(k => {
+      const func = buttons[k]
+      buttons[k] = async (...args) => {
+        sync.interrupt()
+        const value = await func(...args)
+        centerCardView()
+        return value
+      }
+    })
+
+    Q('#bottom').innerHTML =
+      Object
+      .entries(buttons)
+      .map(([name, callback]) => {
+        setTimeout(() => on(Q(`#button-${name}`), 'click', callback))
+        return `<button id="button-${name}">${name}</button>`
+      })
+      .join('\n')
+    
+    on(window, 'pointerdown touchstart', e => {
+      e.stopPropagation()
+      e.preventDefault()
+    })
+
+  </script>
+  <style>
+    html, body {
+      height: 100%; width: 100%; margin: 0; overflow: hidden;
+      font-size: 15px;
+    }
+    * {
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #cards {
+      overflow: visible;
+    }
+    #ui {
+      pointer-events: none;
+      margin: .5em;
+      position: absolute;
+      top: 0; left: 0;
+      height: calc(100% - 1em); width: calc(100% - 1em);
+      z-index: 100100100100;
+      pointer-events: none;
+    }
+    #ui button {
+      pointer-events: all;
+      cursor: pointer;
+    }
+    #bottom {
+      position: absolute;
+      bottom: 0; left: 0;
+    }
+    #top-right {
+      position: absolute;
+      top: 0; right: 0;
+    }
+    .card {
+      border-radius: .15em;
+      background: white;
+      position: relative;
+      cursor: pointer;
+    }
+    .flipped .card {
+      background: #000;
+    }
+    :is(.flipped, .bottom) .card {
+      border-color: #333 !important;
+    }
+    :is(.flipped, .bottom) .card * {
+      display: none;
+    }
+    .card.spot {
+      /* background: #0008; */
+      background: #0002;
+      cursor: default;
+    }
+    .card-rank {
+      padding: 0 .1em;
+      font-size: 1.2em;
+      font-family: system-ui;
+      font-weight: bold;
+    }
+    .card-suit {
+      position: absolute;
+      top: 40%; left: 0%;
+      height: 60%; width: 100%;
+      display: flex;
+      align-items: flex-start; justify-content: center;
+      flex-wrap: wrap;
+      word-break: break-all;
+      line-height: .8;
+    }
+    .card.spot .card-suit {
+      color: #fffc;
+    }
+
+    .vertical #bottom {
+      display: flex;
+      column-gap: .5em;
+      width: 100%;
+      justify-content: center;
+    }
+  </style>
+  <a id="site" href="https://freshman.dev">freshman.dev</a>
+
+</body>
+</html>

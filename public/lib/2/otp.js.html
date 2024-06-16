@@ -1,0 +1,95 @@
+// otp.js.html 0.0.1 @ https://freshman.dev/lib/2/ <!--
+/*--><script src="
+/copyright.js "></script><title>README</title><meta data-hydrate data-style /><!--<script>*/
+Object.entries({
+  'common.js': '/lib/2/common/script.js',
+  'freshman_api.js': '/lib/2/freshman_api.js',
+}).map(([key,src])=>!window[key]&&document.head.append((x=>Object.assign(x,{innerHTML:(src=>(x=>{x.withCredentials=false;x.open('GET',src,false);x.send();return x.responseText})(new XMLHttpRequest()))(new URL(src,location.port==='3030'/*local testing on port 3030*/?location.origin:'https://freshman.dev').toString())}))(document.createElement('script'))))
+
+{
+  const names = lists.of('otp.js OTP')
+  if (names.some(name => !window[name])) {
+    // OTP lifecycle: with two devices, D1 without user session and D2 with user session
+    // 1) D1: http request otp, store otp
+    // 2) D1: http poll 5min for otp input
+    // 3) D2: enter otp, http post
+    // 4) D1: handle return from otp poll
+      
+    /* script
+    */
+    const version = `otp.js v0.0.1`
+    const log = named_log(version)
+    const definition = {
+  
+      // 1) D1 request
+      request: ({mode='numeric'}={}) => FA.json(`/api/otp`,{method:'POST',body:{mode}}),
+  
+      // 2) D1 poll, 4) D1 handle poll
+      // poll: ({otp,ms=duration({m:5})}={}) => defer(async control => {
+      //   const end = Date.now() + ms
+      //   do (rs => rs && control.resolve(rs))(await FA.json(`/api/otp/${otp}`,{method:'POST',ms}))
+      //   while (Date.now() < end)
+      // }),
+      poll: ({otp,ms=duration({m:5})}={}) => new Promise(async (resolve, reject) => {
+        const end = Date.now() + ms
+        let result
+        do {
+          try {
+            result = await FA.json(`/api/otp/${otp}`,{method:'POST',ms})
+          } catch {}
+        } while (!result && Date.now() < end)
+        resolve(result)
+      }),
+  
+      // 3) D2 input
+      input: (otp, user, token) => FA.fetch(`/api/otp/${otp}?${new URLSearchParams({user, token}).toString()}`,{method:'POST'}),
+  
+    }
+    names.map(name => window[name] = merge(definition, {
+      version, v:version, [name]:version, t:Date.now()
+    }))
+  }
+}
+
+{
+  // TODO include basic server code here
+}
+
+// </script>
+/*-->
+<br/><br/>
+<div data-hydrate data-title></div>
+<pre id=README data-hydrate data-code></pre>
+<script>README.dataset['markdown']=`
+Usage: two devices, new D1 and old D2 with existing user session
+
+D1, logged out
+\`\`\`
+;(async () => {
+  const {otp} = await OTP.request()
+  alert(otp)
+  let user, token
+  while ({user, token} = await OTP.poll(otp)) {}
+
+  // request freshman.dev/api with { X-Freshman-Auth-User: user, X-Freshman-Auth-Token: token }
+
+})()
+\`\`\`
+D2, user session
+\`\`\`
+<input inputmode=numeric onchange="
+const otp = e.target.value
+if (otp.length === 6) {
+  const { user, token } = stored_auth_information
+  OTP.input(otp, user, token)
+  setTimeout(() => e.target.value = '', 1_000)
+}
+"></input>
+\`\`\`
+OTP lifecycle: two devices, new D1 and old D2 with user session
+- D1: http request api/otp, store otp & otp token
+- D1: http poll api/otp/<otp>
+- D2: input otp & http post api/otp/<otp>
+- D1: handle return from otp poll
+`.replace(/</g,'&lt;')</script>
+<!--*/

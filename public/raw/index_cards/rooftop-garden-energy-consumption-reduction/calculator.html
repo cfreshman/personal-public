@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src=/copyright.js></script>
+  <meta data-hydrate data-style />
+</head>
+<body>
+
+  <div>[WIP or suggest something]</div>
+
+  <script>
+
+const xhr = src => (x => {
+    x.withCredentials = false
+    x.open('GET', src, false)
+    x.send()
+    return x.responseText
+})(new XMLHttpRequest())
+const dependency = src => document.head.append((x => Object.assign(x, { innerHTML:xhr(src) }))(document.createElement('script')))
+;[
+  '/lib/2/ve/ve.js',
+  '/lib/2/common/script.js',
+].map(x => dependency(new URL(x, 'https://freshman.dev').toString()))
+
+  </script>
+
+</body>
+</html>

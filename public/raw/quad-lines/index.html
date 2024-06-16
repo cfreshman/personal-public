@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>☰</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src=/copyright.js></script>
+    <style>
+      body {
+        background: #000;
+        color: #111;
+        padding: 1em;
+        max-height: 100%;
+        max-width: 100%;
+        min-height: 40em;
+      }
+      body a {
+        color: inherit;
+        text-decoration: underline;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body class="middle-column">
+
+    <div id=nodes-container class="middle-column" style="
+    height: 0;
+    flex-grow: 1;
+    aspect-ratio: 1/1;
+    max-width: calc(100vw - 1em);
+    ">
+      <svg id=svg_nodes style="
+      width: 100%;
+      aspect-ratio: 1/1;
+      image-rendering: pixelated;
+      border: 1px solid #fff;
+      " viewBox="0 0 256 256"
+      xmlns="http://www.w3.org/2000/svg"
+      stroke="#fff" fill="#fff"></svg>
+    </div>
+    <div style="
+    margin: 2px;
+    ">
+      <a id="button_generate">generate</a>
+    </div>
+
+    <script>
+const log = named_log('k-means')
+
+const COEFF_MOVE = .5
+const squares = range(2).map(() => {
+  return range(4).map(() => {
+    const x_base = rand.f(1)
+    const y_base = rand.f(1)
+    const v = V.ne(rand.s(1), rand.s(1))
+    return [
+      [V.ne(x_base + rand.s(1 / 16), y_base + rand.s(1 / 16)), v],
+      [V.ne(x_base + rand.s(1 / 16), y_base + rand.s(1 / 16)), v],
+    ]
+  })
+})
+const hues = range(2).map(() => rand.i(360))
+
+const timer = datetime.timer()
+const update = (dt) => {
+  squares.map(square => square.map(pair => pair.map((e, p_i) => {
+    e[0] = e[0].ad(e[1].sc(dt * COEFF_MOVE))
+    if (e[0].x < 0 || e[0].x > 1) {
+      e[1] = e[1].mu(V.ne(-1, 1))
+      e[0] = e[0].ad(e[1].sc(dt))
+    }
+    if (e[0].y < 0 || e[0].y > 1) {
+      e[1] = e[1].mu(V.ne(1, -1))
+      e[0] = e[0].ad(e[1].sc(dt))
+    }
+  })))
+  hues.map((_, i) => hues[i] = (hues[i] + dt * 60) % 360)
+}
+const render = () => {
+  svg_nodes.innerHTML = ''
+  squares.map((square, square_i) => {
+    range(4).map(s_i => {
+      const a = square[s_i]
+      const b = square[(s_i + 1) % square.length]
+      const a_l = a[0][0]
+      const a_r = a[1][0]
+      const b_l = b[0][0]
+      const b_r = b[1][0]
+      range(5).map(i => {
+        const lerp = i / 4
+        const a_lerp = V.ne(maths.lerp(a_l.x, a_r.x, lerp), maths.lerp(a_l.y, a_r.y, lerp))
+        const b_lerp = V.ne(maths.lerp(b_l.x, b_r.x, lerp), maths.lerp(b_l.y, b_r.y, lerp))
+        const svg_node = document.createElementNS("http://www.w3.org/2000/svg", 'line')
+        entries({
+          x1: a_lerp.x * 256,
+          y1: a_lerp.y * 256,
+          x2: b_lerp.x * 256,
+          y2: b_lerp.y * 256,
+          'stroke-width': .5,
+          'stroke': `hsl(${hues[square_i]} 70% 70%)`,
+        }).map(([k, v]) => svg_node.setAttribute(k, v))
+        svg_nodes.appendChild(svg_node)
+      })
+    })
+  })
+}
+render()
+let paused = false
+const loop = () => {
+  if (paused) return
+  update(Math.min(1_000 / 15, timer.elapsed() / 1_000))
+  render()
+  requestAnimationFrame(loop)
+}
+loop()
+on(window, 'blur', () => paused = true)
+on(window, 'focus', () => {
+  paused = false
+  timer.elapsed()
+  requestAnimationFrame(loop)
+})
+
+    </script>
+
+  </body>
+</html>

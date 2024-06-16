@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>meter & progress</title><meta name=description content="HTML elements" />
+  <style>
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <br/>
+  <div class="column gap">
+    <div>
+      <label for="fuel">Fuel level:</label>
+      <meter id="fuel" min="0" max="100" low="33" high="66" optimum="80" value="50">at 50/100</meter>
+    </div>
+    <div>
+      <label>
+        Uploading Document: <progress value="70" max="100">70 %</progress>
+      </label>
+    </div>
+  </div>
+
+</body>
+</html>

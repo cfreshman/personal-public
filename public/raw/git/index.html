@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8 />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8 />
+<link rel="icon" href="icon.png">
+<title>git.nn.fo</title>
+<meta name="description" content="short links with clear repo info" />
+<style>
+  html {
+    background: #f9f8f6;
+    color: #101010;
+    font-size: 12px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5rem 1rem;
+  }
+  .title {
+    font-size: 1.5rem;
+    position: relative;
+    white-space: pre-line;
+  }
+  a {
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  a:hover {
+    color: #f9f8f6;
+    background: #101010;
+  }
+</style>
+
+<script src="/lib/utils.js"></script>
+<script src="/lib/punycode.js"></script>
+</head>
+<body>
+
+  <div id="urls">[ <i>git url shortnr</i> ]
+    <form id="url-login"></form><div id="url-list"></div>
+  </div>
+  <script type="module">
+    import api from '/lib/modules/site/api.js'
+    import { auth, login, logout } from '/lib/modules/site/auth.js'
+
+    const host = punycode.toUnicode(location.host)
+
+    const loginDiv = Q('#url-login')
+    const listL = Q('#url-list')
+    let urls = undefined
+
+    const handle = {
+      onEnter: (L, f) => on(L, 'keypress', e => e.key === 'Enter' && f(e)),
+      load: () => {
+        if (auth.user) {
+          api.get('/gitly').then(data => {
+            console.log(data)
+            handle.render(data.list)
+          })
+        } else {
+          handle.render([])
+        }
+      },
+      copy: e => {
+        navigator.clipboard.writeText(e)
+      },
+      render: (newUrls=undefined) => {
+        urls = newUrls
+
+        if (auth.user) {
+          loginDiv.innerHTML =
+          `|
+          |–[ <i>user</i> ]
+          | &nbsp;${auth.user} <a>log out</a>`
+          on(Q(loginDiv, 'a'), 'click', handle.logout)
+        } else {
+          loginDiv.innerHTML =
+          `|
+          |–[ <i>log in</i> ]
+          | &nbsp;<input type="text" placeholder="user" autoComplete="username" autoCorrect='off' autoCapitalize='off'></input>
+          | &nbsp;<input type="password" placeholder="password" autoComplete="current-password"></input>
+          | &nbsp;<a>log in</a>`
+          const userL = Q(loginDiv, 'input[placeholder="user"]')
+          const passL = Q(loginDiv, 'input[placeholder="password"]')
+          const loginL = Q(loginDiv, 'a')
+          handle.onEnter(userL, () => passL.focus())
+          handle.onEnter(passL, () => loginL.click())
+          on(loginL, 'click', handle.login)
+        }
+
+        if (urls) {
+          listL.innerHTML = // <input type="checkbox"></input> org <input type="checkbox" checked></input> repo <input type="checkbox"></input> branch <input type="checkbox"></input> path <input type="checkbox"></input> file
+          `|
+          |–[ <i>urls</i> ]
+          | &nbsp;<input type="text" placeholder="url" autoCorrect='off' autoCapitalize='off'></input> <a id="shrt">shorten</a>
+          `
+          + (urls.length ? '|\n' : '')
+          + urls.slice().reverse().map(url => {
+            const display = url.url?.replace(/https?:\/\//, '') ?? ''
+            const maxLen = 9999
+            return `| &nbsp;<a href="/${url.short}">${host}/${url.short}</a> <a class="copy-url" data-copy="${host}/${url.short}">copy</a>\n` +
+            `| &nbsp;=> ${display.slice(0, maxLen)}${
+              (display.length >= maxLen ? '...' : '')
+            }`
+          }).join('\n')
+          const urlL = Q(listL, 'input[placeholder="url"]')
+          QQ(listL, '.copy-url').map(copyL => on(copyL, 'click', e => {
+            handle.copy(copyL.dataset.copy)
+            copyL.textContent = 'copied!'
+            setTimeout(() => copyL.textContent = 'copy', 3000)
+          }))
+          handle.onEnter(urlL, e => handle.shorten(urlL.value))
+          on(Q(listL, '#shrt'), 'click', e => handle.shorten(urlL.value))
+        } else {
+          listL.innerHTML = ''
+        }
+      },
+      shorten: url => {
+        if (auth.user && url) {
+          api.put('/gitly', { url }).then(handle.load)
+        }
+      },
+      login: e => {
+        login(
+          Q(loginDiv,'input[placeholder="user"]').value,
+          Q(loginDiv, 'input[placeholder="password"]').value)
+        .then(handle.load)
+      },
+      logout: e => {
+        logout()
+        handle.render([])
+      },
+    }
+    handle.load()
+    window._copy_link = handle.copy
+
+  </script>
+  <style>
+    #urls {
+      margin: .5rem 0;
+      white-space: pre-line;
+    }
+    #urls i {
+      font-weight: bold;
+    }
+    #urls > p {
+      margin: 0;
+    }
+    input[placeholder="url"] {
+      min-width: min(40rem, 60vw);
+    }
+  </style>
+
+  <div id="demo" class="host">
+    [ <i>demo</i> ]
+    |
+    |–[ <i>short links with clear repo info</i> ]
+    | &nbsp;<a href="https://git.nn.fo/Adafruit-PN532/bQZ4V5m#L142">git.nn.fo/Adafruit-PN532/bQZ4V5m#L142</a>
+    <p>| &nbsp;=> github.com/adafruit/Adafruit-PN532/blob/master/examples/ntag2xx_updatendef/ntag2xx_updatendef.ino#L142</p>
+  </div>
+  <style>
+    #demo {
+      margin: .5rem 0;
+      white-space: pre-line;
+    }
+    #demo i {
+      font-weight: bold;
+    }
+    #demo > p {
+      margin: 0;
+      white-space: pre;
+    }
+    .demo-api {
+      white-space: pre;
+    }
+  </style>
+  <script type="module">
+    {
+      import api from '/lib/modules/site/api.js'
+      const host = punycode.toUnicode(location.host)
+      Q('#demo').innerHTML = Q('#demo').innerHTML.replaceAll('git.nn.fo', host)
+    }
+  </script>
+
+</body>
+</html>

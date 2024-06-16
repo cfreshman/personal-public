@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>broken color wall</title><meta name=description content="" />
+  <style>
+    body {
+      width: max-content;
+    }
+  </style>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div id=root class="column" style="
+  background: #fff;
+  border: 1px solid #fff;
+  gap: 1px;
+  "></div>
+
+  <script>
+    const D = V.ne(128, 32)
+
+    const n_colors = 10
+    const colors = range(10).map(i => {
+      const color = `hsl(${(i / n_colors) * 360}deg 100% 50%)`
+      return color
+    })
+
+    const r_breaks = range(D.y / 8).map(i => rand.i(D.y - 2) + 1)
+    const c_breaks = range(D.x / 8).map(i => rand.i(D.x - 2) + 1)
+
+    const grid = V.ra(D.y).map(r => V.ra(D.x).map(c => {
+      const rand_c = Math.max(0, Math.min(c + rand.s(D.x / colors.length), D.x - 1))
+      const color = colors[Math.floor((rand_c / D.x) * colors.length)]
+      const empty = r_breaks.includes(r) || c_breaks.includes(c)
+      const square = node(`<div class style="
+      width: 9px;
+      aspect-ratio: 1/1;
+      overflow: hidden;
+      position: relative;
+      ">
+        ${range(2).flatMap(r => range(2).map(c => `<div style="
+        position: absolute;
+        background: ${empty ? `#ccc` : color};
+        top: ${r * 5}px;
+        left: ${c * 5}px;
+        width: 4px;
+        aspect-ratio: 1/1;
+        "></div>`))}
+      </div>`)
+      return {
+        node: square,
+        t: 0,
+      }
+    }))
+    grid.map(row => {
+      const row_node = node(`<div class="row" style="
+      gap: 1px;
+      "></div>`)
+      row.map(cell => row_node.append(cell.node))
+      root.append(row_node)
+    })
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>no_birds</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    img {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+  </style>
+  </style>
+</head>
+<body style="width: 100%">
+
+  <div data-hydrate data-title></div>
+  <div>
+    new startup
+  </div>
+
+  <!-- <br />
+
+  <div class="row" style="
+  position: relative;
+  width: fit-content !important;
+  ">
+    <img src="2023-12-03.png" style="
+    width: 256px;
+    border: 1px solid #000;
+    "/>
+    <div style="
+    border: 1px solid #000;
+    position: absolute; top: 0; left: 0;
+    background: #fff;
+    color: #000;
+    line-height: 1;
+    font-family: 'highway-gothic';
+    mix-blend-mode: difference;
+    font-size: 16px;
+    ">
+      no_birds
+    </div>
+  </div> -->
+
+  <br />
+
+  <div class="row" style="
+  flex-wrap: wrap;
+  gap: 1em;
+  ">
+    <div class="no_birds_logo l1"  style="
+    position: relative;
+    width: 6em;
+    height: 6em;
+    background: linear-gradient(-15deg, #ff0000, #6aff00);
+    background: linear-gradient(-15deg, #ffcc00, #ff00b7);
+    "></div>
+    <script>
+      {
+        const L = Q('.no_birds_logo.l1')
+        const S = 6
+        let s = list('no_birds', '')
+        let s_i = 0
+        console.debug(s)
+        list('0000 ' + '1100 0100 1011 0101' + ' 0000')
+        .map((x, r) => 
+          list('0'+x+'0', '')
+          .map(Number)
+          .map((y, c) => {
+            L.append(node(`<div class='middle-row' style="
+            background: ${y ? 'transparent' : '#000'};
+            position: absolute;
+            top: ${r}em; left: ${c}em;
+            height: 1em; width: 1em;
+
+            color: #000;
+            "></div>`))
+          }))
+      }
+    </script>
+
+    <!-- <div class="no_birds_logo l2"  style="
+    position: relative;
+    width: 6em;
+    height: 6em;
+    background: #fff;
+    "></div>
+    <script>
+      {
+        const L = Q('.no_birds_logo.l2')
+        const S = 6
+        let s = list('no birds', '')
+        let s_i = 0
+        console.debug(s)
+        list('0000 ' + '1100 0100 1011 0101' + ' 0000')
+        .map((x, r) => 
+          list('0'+x+'0', '')
+          .map(Number)
+          .map((y, c) => {
+            L.append(node(`<div class='middle-row' style="
+            background: ${y ? 'transparent' : '#000'};
+            color: ${y ? '#000' : '#fff'};
+            position: absolute;
+            top: ${r}em; left: ${c}em;
+            height: 1em; width: 1em;
+
+            ">${!y ? '' : s.shift() || ''}</div>`))
+          }))
+      }
+    </script> -->
+
+    <!-- <div class="no_birds_logo l4" style="
+    position: relative;
+    width: 6em;
+    height: 6em;
+    background: #fff;
+    "></div>
+    <script>
+      {
+        const L = Q('.no_birds_logo.l4')
+        const S = 6
+        let s = list('no birds', '')
+        let s_i = 0
+        console.debug(s)
+        list('0000 ' + '1100 0100 1011 0101' + ' 0000')
+        .map((x, r) => 
+          list('0'+x+'0', '')
+          .map(Number)
+          .map(Boolean)
+          .map((y, c) => {
+            L.append(node(`<div class='middle-row fill-${y}' data-letter="${y ? s.shift() || '' : ''}" style="
+            background: ${y ? 'transparent' : '#000'};
+            color: ${y ? '#000' : '#fff'};
+            position: absolute;
+            top: ${r}em; left: ${c}em;
+            height: 1em; width: 1em;
+            ">${!y ? '*' : ''}</div>`))
+          }))
+        let i = 0
+        // setInterval(() => {
+        //   i += 1
+        //   QQ(L, '.fill-true').map(x => x.textContent = (x.dataset['letter'] + ' ')[i % 2])
+        //   console.debug(i % 2)
+        // }, 1_000)
+      }
+    </script> -->
+
+    <div class="no_birds_logo l5" style="
+    position: relative;
+    width: 6em;
+    height: 6em;
+    background: #fff;
+    border: 1px solid #000;
+    "></div>
+    <script>
+      {
+        const L = Q('.no_birds_logo.l5')
+        const S = 6
+        let s = list('no_birds', '')
+        let s_i = 0
+        console.debug(s)
+        list('0000 ' + '1100 0100 1011 0101' + ' 0000')
+        .map((x, r) => 
+          list('0'+x+'0', '')
+          .map(Number)
+          .map((y, c) => {
+            L.append(node(`<div class='middle-row' style="
+            position: absolute;
+            top: ${r}em; left: ${c}em;
+            height: 1em; width: 1em;
+
+            color: #fff;
+            background: ${y ? '#000' : 'transparent'};
+            font-weight: bold;
+            border: inherit;
+            "></div>`))
+          }))
+      }
+    </script>
+
+    <div class="no_birds_logo l3" style="
+    position: relative;
+    width: 6em;
+    height: 6em;
+    background: #000;
+    "></div>
+    <script>
+      {
+        const L = Q('.no_birds_logo.l3')
+        const S = 6
+        let s = list('no_birds', '')
+        let s_i = 0
+        console.debug(s)
+        list('0000 ' + '1100 0100 1011 0101' + ' 0000')
+        .map((x, r) => 
+          list('0'+x+'0', '')
+          .map(Number)
+          .map((y, c) => {
+            L.append(node(`<div class='middle-row' style="
+            position: absolute;
+            top: ${r}em; left: ${c}em;
+            height: 1em; width: 1em;
+
+            color: #fff;
+            font-weight: bold;
+            ">${!y ? '' : s.shift() || ''}</div>`))
+          }))
+      }
+    </script>
+
+</body>
+</html>

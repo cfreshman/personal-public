@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>word2vec</title>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div id=info></div>
+  <div class="column" style="align-items: flex-end">
+    <textarea id=target>hello world</textarea>
+    <textarea id=input>hello world</textarea>
+    <button id=input_add>add</button>
+  </div>
+  <div id=vector class="pre"></div>
+  <script>
+    defer(async () => {
+      const log = named_log('word2vec')
+      const embeddings = store.local.get('word2vec-embeddings') || {}
+      if (!embeddings.hello) {
+        log(info.textContent = 'fetching word vectors')
+        const raw = await fetch('tiny.txt').then(r=>r.text())
+        log(info.textContent = 'fetched word vectors')
+        raw.split('\n').map(line => line.trim()).filter(truthy).map(line => {
+          const [token, ...components] = line.split(' ')
+          embeddings[token] = V.ne(components.map(x => maths.round(Number(x), 3)))
+        })
+
+        // store.local.set('word2vec-embeddings', embeddings) // too large
+        // log(entries(embeddings).map(([k,v]) => `${k} ${v.join(' ')}`).join('\n'))
+      }
+
+      let target_vector
+      const phrases = []
+      const handle = {
+        compute: (phrase) => {
+          const tokens = phrase.split(' ').map(x => x.toLowerCase())
+          const vectors = tokens.map(x => embeddings[x])
+          log('compute phrase vector', {phrase, tokens, vectors})
+          const sum = V.ad(...vectors.filter(truthy))
+          const norm = sum.no()
+          return norm
+        },
+        output: () => {
+          const dist_to_target = (vector) => maths.round(vector.ad(target_vector.sc(-1)).ma(), 3)
+          const phrase_vector_pairs = phrases.map(phrase => [phrase, handle.compute(phrase)])
+          const phrase_dist_pairs = phrase_vector_pairs.map(e => [e[0], dist_to_target(e[1])]).sort((a, b) => a[1] - b[1])
+          vector.textContent = phrase_dist_pairs.map(([phrase, dist]) => `${phrase} ${dist}`).join('\n')
+        },
+        add: (phrase) => {
+          phrases.push(phrase)
+          handle.output()
+        },
+        target: (phrase) => {
+          target_vector = handle.compute(phrase)
+          handle.output()
+        },
+      }
+
+      target_vector = handle.compute('hello world')
+      on(target, 'change', () => {
+        handle.target(target.value || target.textContent)
+      })
+      on(input_add, 'click', () => {
+        handle.add(input.value || input.textContent)
+      })
+    })
+  </script>
+
+</body>
+</html>

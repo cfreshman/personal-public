@@ -1,0 +1,9 @@
+# crontab -e and paste
+# or copy under /etc/cron.d
+# - owned by root:root
+# - ends with newline
+# - check $ service cron status
+
+@reboot cd /var/www/personal && yarn db-up
+@reboot git daemon --reuseaddr --base-path=/srv/git/ /srv/git/
+0 4 * * * cyrus /var/www/personal/deploy/backup.sh >/var/www/personal/deploy/backup-output.txt 2>&1

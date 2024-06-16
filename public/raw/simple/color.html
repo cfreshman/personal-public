@@ -1,0 +1,69 @@
+<title>color</title>
+<meta charset=utf-8><meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="manifest" id=manifest>
+<style>
+  html {
+    /* color: #ffbd00; */
+    color: #0061fe;
+    background-color: currentColor;
+    display: flex;
+    font-family: system-ui;
+  }
+  body :is(a, div) {
+    /* color: #fff;
+    mix-blend-mode: difference; */
+    /* filter: hue-rotate(180deg) brightness(3) saturate(0.7); */
+    /* filter: hue-rotate(20deg) brightness(2.5) saturate(0.7); */
+    /* filter: hue-rotate(30deg) brightness(3) saturate(0.33); */
+    /* filter: hue-rotate(-10deg) brightness(2.7) saturate(0.33); */
+    filter: hue-rotate(22deg) brightness(2.7) saturate(0.33);
+    /* filter: hue-rotate(-20deg) brightness(3) saturate(0.4); */
+  }
+  a {
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  @media (min-aspect-ratio: 1/1) {
+    #hint {
+      display: none;
+    }
+  }
+</style>
+<a id=text onclick="color.click()" style="display:block"></a>
+<input id=color type="color" oninput="update(color.value)" onchange="location.reload()" style="visibility:hidden;height:0"/>
+<div id=hint style="display:none">iOS Safari / Andriod Chrome → Add to Home Screen</div>
+<script>
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  canvas.width = canvas.height = 512
+
+  const update = (value=location.hash) => {
+    ctx.fillStyle = document.documentElement.style.color = location.hash = color.value = text.textContent = value || '#0061fe'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    manifest.href = URL.createObjectURL(new Blob([JSON.stringify({
+      name: location.hash,
+      display: `standalone`,
+      icons: [{
+        src: canvas.toDataURL(),
+        sizes: `512x512`,
+      }]
+    })], { type: 'application/json' }))
+    parent.postMessage({ icon: canvas.toDataURL() }, '*')
+  }
+
+  window.addEventListener('beforeinstallprompt', e => e.prompt())
+  ;(async () => await navigator.serviceWorker.register('../index-service-worker.js'))()
+
+  window.addEventListener('keydown', e => {
+    if (e.key === ' ') {
+      update('#'+Math.floor(Math.random() * Math.pow(255, 3)).toString(16))
+    }
+  })
+
+  console.debug(location.hash)
+  update()
+  window.addEventListener('hashchange', update(color.value))
+  if (!window.matchMedia('(display-mode: standalone)').matches) {
+    hint.style.display = ''
+  }
+</script>

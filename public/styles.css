@@ -1,0 +1,37 @@
+:root {
+    --light: rgb(244, 241, 232);
+    --light-d: rgb(232, 228, 218);
+    --dark: rgb(12, 12, 12);
+    --dark-l: rgb(16, 16, 16);
+}
+
+* {
+    box-sizing: border-box;
+    transition: 0.15s, width 0, height 0;
+}
+
+html, body {
+    margin: 0;
+    height: 1px;
+    width: 1px;
+    min-width: 100%;
+    min-height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: var(--light);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-family: 'Lato', sans-serif;
+    text-shadow: 1px 2px 4px #00000020;
+}
+
+.login {
+    display: none;
+}
+.seamless .login {
+    display: initial;
+}

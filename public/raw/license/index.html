@@ -1,0 +1,13 @@
+<script>
+    const default_license = './mit-non-commercial'
+    fetch(default_license).then(r=>r.text()).then(t=>document.write(`
+    <style>
+        html {
+            font-family: monospace;
+            white-space: pre-line;
+        }
+    </style>
+    <a href="${default_license}">${default_license}</a>
+    
+    ${t}`))
+</script>

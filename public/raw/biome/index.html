@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<title>biome demo</title>
+<style>
+  html {
+    background: #f9f8f6;
+    color: #101010;
+    font-size: 12px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5rem 1rem;
+  }
+  .title {
+    font-size: 1.5rem;
+    position: relative;
+    white-space: pre-line;
+  }
+  a {
+    color: inherit;
+  }
+  a:hover {
+    color: #f9f8f6;
+    background: #101010;
+  }
+  input[type="number"] {
+    width: 3em;
+  }
+  canvas {
+    image-rendering: pixelated;
+    width: min(80vw, 80vh);
+    height: min(80vw, 80vh);
+  }
+</style>
+
+<script src="/lib/utils.js"></script>
+</head>
+<body>
+
+  <div class="title">[ biome demo ]
+    ==============
+  </div>
+
+  <p>
+    saw <a href="https://github.com/skeeto/scratch/blob/master/misc/biome.c">this c program by skeeto</a>, thought it looked neat
+  </p>
+
+  <!-- <span style="background:blue">hello</span>
+  <span style="background:red">hello</span>
+  <span style="background:yellow">hello</span>
+  <span style="background:green">hello</span>
+  <span style="background:purple">hello</span> -->
+
+  <canvas id="canvas"></canvas>
+
+  <p style="line-height: 2.5em;">
+    <button id="reset">reset</button> <button id="run">run</button> <span style="white-space: pre;">steps: <input id="steps" type="number" value="6" max="8"></input> click tile to change color</span>
+  </p>
+
+  <script>
+    const s2grid = s => s.split('\n').filter(s=>s).map(l => l.trim().split('').map(Number))
+    const grid2s = grid => grid.map(r => r.join('')).join('\n')
+    let grid = s2grid(`
+    0000
+    0120
+    0340
+    0000`)
+
+    const color = [
+      // 'blue', 'red', 'yellow', 'green', 'purple'
+      'blue', '#ff2f2f', '#ffee0d', '#04b337', '#9e2e9e'
+    ]
+
+    const canvas = Q('#canvas')
+    const ctx = canvas.getContext('2d')
+    function draw() {
+      canvas.width = grid.length
+      canvas.height = grid.length
+      grid.map((row, r_i) => row.map((_, c_i) => {
+        ctx.fillStyle = color[grid[r_i][c_i]]
+        ctx.fillRect(c_i, r_i, 1, 1)
+      }))
+    }
+
+    let i, timeout, start
+    const _expandGrid = () => {
+      if (++i > Q('#steps').value) return clearInterval(timeout)
+      const expandSize = grid.length * 2 - 1
+      const expansion = Array.from({ length: expandSize }).map(() =>
+        Array.from({ length: expandSize }).map(() => 0))
+
+      grid.map((row, r_i) => row.map((_, c_i) => {
+        expansion[r_i*2][c_i*2] = grid[r_i][c_i]
+        if (r_i < grid.length - 1)
+          expansion[r_i*2+1][c_i*2] = randpop([grid[r_i][c_i], grid[r_i+1][c_i]])
+        if (c_i < grid.length - 1)
+          expansion[r_i*2][c_i*2+1] = randpop([grid[r_i][c_i], grid[r_i][c_i+1]])
+        if (r_i < grid.length-1 && c_i < grid.length-1)
+          expansion[r_i*2+1][c_i*2+1] = randpop([
+            grid[r_i][c_i], grid[r_i][c_i+1], grid[r_i+1][c_i], grid[r_i+1][c_i+1]
+          ])
+      }))
+
+      grid = expansion
+      draw()
+    }
+    const runExpansion = () => {
+      clearInterval(timeout)
+      if (grid.length === 4) start = grid2s(grid)
+      i = 0
+      timeout = setInterval(_expandGrid, 700)
+    }
+
+    runExpansion()
+    draw()
+
+    on(canvas, 'click', e => {
+      const bounds = canvas.getBoundingClientRect()
+      const c = Math.floor((e.clientX - bounds.x) / bounds.width * canvas.width)
+      const r = Math.floor((e.clientY - bounds.y) / bounds.height * canvas.height)
+      grid[r][c] = (grid[r][c] + 1) % color.length
+      draw()
+    })
+    on(Q('#reset'), 'click', () => {
+      clearInterval(timeout)
+      grid = s2grid(start)
+      draw()
+    })
+    on(Q('#run'), 'click', () => {
+      runExpansion()
+    })
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>url shortnr</title>
+  <meta name="description" content="" />
+  <script src=/copyright.js></script>
+  <meta charset="utf-8" />
+  <meta data-hydrate data-style />
+  <script src="/lib/punycode.js"></script>
+</style>
+</head>
+<body class="column">
+
+  <div data-hydrate data-title></div>
+  <div id=section-urls><form id=loginDiv></form><span id=listL></span></div>
+  <script type="module">
+    import api from '/lib/modules/site/api.js'
+    import { auth, login, logout } from '/lib/modules/site/auth.js'
+    {
+      const host = punycode.toUnicode(location.host)
+      let urls = undefined
+
+      const handle = {
+        enter: (L, f) => on(L, 'keypress', e => e.key === 'Enter' && f(e)),
+        load: () => {
+          if (auth.user) {
+            api.get('/ly').then(data => {
+              console.log(data)
+              handle.render(data.list)
+            })
+          } else {
+            handle.render([])
+          }
+        },
+        render: (newUrls=undefined) => {
+          urls = newUrls
+
+          if (auth.user) {
+            loginDiv.innerHTML =
+`|
+|–[ <i>user</i> ]
+| &nbsp;${auth.user} <a>log out</a>`
+            on(Q(loginDiv, 'a'), 'click', handle.logout)
+          } else {
+            loginDiv.innerHTML =
+`|
+|–[ <i>log in</i> ]
+| &nbsp;<input type="text" placeholder="user" autoComplete="username" autoCorrect='off' autoCapitalize='off'></input>
+| &nbsp;<input type="password" placeholder="password" autoComplete="current-password"></input>
+| &nbsp;<a>log in</a>`
+            const userL = Q(loginDiv, 'input[placeholder="user"]')
+            const passL = Q(loginDiv, 'input[placeholder="password"]')
+            const loginL = Q(loginDiv, 'a')
+            handle.enter(userL, () => passL.focus())
+            handle.enter(passL, () => loginL.click())
+            on(loginL, 'click', handle.login)
+          }
+
+          if (urls?.length) {
+            listL.innerHTML =
+`|
+|–[ <i>urls</i> ]
+| &nbsp;<input type="text" placeholder="url" autoCorrect='off' autoCapitalize='off'></input> <a id="shrt">shortn</a>
+` + urls.filter(u => u.links.length === 1).reverse().map(url => {
+              const display = url.links[0].replace(/https?:\/\//, '')
+              const maxLen = 9999
+              return `| &nbsp;<a href="/${url.hash}">${host}/${url.hash}</a> => ${display.slice(0, maxLen)}${
+                (display.length >= maxLen ? '...' : '')
+                +
+                (url.links.length > 1 ? ` + ${url.links.length-1} more` : '')
+              }`
+            }).join('\n')
+            const urlL = Q(listL, 'input[placeholder="url"]')
+            handle.enter(urlL, e => handle.shorten(urlL.value))
+            on(Q(listL, '#shrt'), 'click', e => handle.shorten(urlL.value))
+          } else {
+            listL.innerHTML =
+`|
+|–[ not authorized - <a href='https://freshman.dev/contact'>contact</a> if interested ]`
+          }
+        },
+        shorten: url => {
+          if (auth.user && url) {
+            api.put('/ly', { links: [url] }).then(handle.load)
+          }
+        },
+        login: e => {
+          login(
+            Q(loginDiv,'input[placeholder="user"]').value,
+            Q(loginDiv, 'input[placeholder="password"]').value)
+          .then(handle.load)
+        },
+        logout: e => {
+          logout()
+          handle.render([])
+        },
+      }
+      handle.load()
+    }
+  </script>
+  <style>
+    #section-urls {
+      white-space: pre;
+    }
+    #section-urls i {
+      font-weight: bold;
+    }
+    #section-urls input[placeholder="url"] {
+      min-width: min(40rem, 60vw);
+    }
+  </style>
+  <div id=section-demo class=host>
+    <p>|</p>
+    <p>|</p>
+    <p>|–[ <i>short urls</i> ]</p>
+    <!-- <p>| &nbsp;<a href="https://tu.fo">tu.fo</a> <a href="https://nn.fo">nn.fo</a> <a href="https://ý.fo">ý.fo</a> <a href="https://ツ.day">ツ.day</a> <a href="https://ッ.day">ッ.day</a> <a href="https://ö.wtf">ö.wtf</a></p> -->
+    <p>| &nbsp;<a href="https://tu.fo">tu.fo</a> <a href="https://nn.fo">nn.fo</a> <!-- <a href="https://ý.fo">ý.fo</a> <a href="https://ö.wtf">ö.wtf</a></p> -->
+    <p>|</p>
+    <p>|–[ <i>redirect to shortened URLs</i> ]</p>
+    <p>| &nbsp;<a href="https://tu.fo/twitter">tu.fo/twitter</a> => twitter.com/freshman_dev</p>
+    <p>|</p>
+    <p>|–[ <i>subdomain.tu.fo redirects to freshman.dev/subdomain</i> ]</p>
+    <p>| &nbsp;<a href="https://donoboard.tu.fo">donoboard.tu.fo</a> => freshman.dev/donoboard</p>
+    <p>| &nbsp;<a href="https://raw.tu.fo/wwl/app/tappy">raw.tu.fo/wwl/app/tappy</a> => freshman.dev/raw/wwl/app/tappy</p>
+  </div>
+  <style>
+    #section-demo i {
+      font-weight: bold;
+    }
+    #section-demo > p {
+      margin: 0;
+    }
+    #section-demo .demo-api {
+      white-space: pre;
+    }
+  </style>
+
+  <div class="spacer"></div>
+  <div id=section-cube style="
+  /* position: absolute; width: 100%; bottom: .5em; */
+  width: 100%; bottom: .5em;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  ">
+
+    <svg id="cube"></svg>
+    <div><a href="https://about.freshman.dev">freshman.dev</a></div>
+    <script>
+      const cube = {
+        L: document.querySelector('#cube'),
+        render: () => {
+          let points = [  // index
+            [1, 1, 1],    // 0: 1 3
+            [-1, 1, 1],   // 1: 2
+            [-1, -1, 1],  // 2: 3 5
+            [1, -1, 1],   // 3: 4
+            [1, -1, -1],  // 4: 5 7
+            [-1, -1, -1], // 5: 6
+            [-1, 1, -1],  // 6: 7 1
+            [1, 1, -1],   // 7: 0
+          ]
+          const t = Date.now() / 1000 / 12
+          const angleX = -Math.PI*2 * ((t % 4) / 4)
+          const angleY = Math.PI*2 * ((t % 3) / 3)
+          const angleZ = 0 // Math.PI*2 * (performance.now() / 1000 % 4)
+          points = points.map(([x, y, z]) => {
+            let mag, ang
+            const calcMag = (a, b) => Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2))
+            // rotate y & z around X
+            mag = calcMag(y, z)
+            ang = Math.atan2(z, y) + angleX
+            ;[y, z] = [mag * Math.cos(ang), mag * Math.sin(ang)]
+            // rotate z & x around Y
+            mag = calcMag(z, x)
+            ang = Math.atan2(x, z) + angleY
+            ;[z, x] = [mag * Math.cos(ang), mag * Math.sin(ang)]
+            // rotate x & y around Z
+            mag = calcMag(x, y)
+            ang = Math.atan2(y, x) + angleZ
+            ;[x, y] = [mag * Math.cos(ang), mag * Math.sin(ang)]
+
+            return [x, y, z]
+          })
+          // project edges on X/Y plane
+          const edges = Array.from({ length: 8 }).map((_, i) => [i, (i+1)%8])
+          edges.push([0, 3])
+          edges.push([2, 5])
+          edges.push([4, 7])
+          edges.push([6, 1])
+          const dim = Math.sqrt(4)
+          cube.L.setAttribute('viewBox', `${-dim} ${-dim} ${2*dim} ${2*dim}`)
+          cube.L.innerHTML = edges.map(edge => {
+            const a = points[edge[0]]
+            const b = points[edge[1]]
+            return `<line
+              x1="${a[0]}" y1="${a[1]}"
+              x2="${b[0]}" y2="${b[1]}" />`
+          }).join('')
+        },
+        animate: () => {
+          requestAnimationFrame(cube.render)
+          requestAnimationFrame(cube.animate)
+        },
+      }
+      cube.animate()
+    </script>
+    <style>
+      #cube {
+        font-size: 1em;
+        stroke-width: .1;
+        stroke: var(--color);
+
+        width: 3em;
+        border: .1em solid var(--color);
+        border-radius: 50%;
+        margin: 1em;
+        background: #fff;
+      }
+    </style>
+  </div>
+
+</body>
+</html>

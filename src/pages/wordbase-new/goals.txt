@@ -1,0 +1,17 @@
+- tile selection/deselection
+ - adjacent only
+- word submit
+- tile drag to select
+- tile search/disconnect
+- switch turns
+- check word against dictionary
+- progress bar
+- no tile replays
+- (later) game history/chat
+
+- multiplayer
+ - join a challenge
+  - open challenges
+  - challenge link
+  - (later) give them a token to reconnect
+ - socket.io for realtime updates

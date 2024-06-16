@@ -1,0 +1,14 @@
+<script src="/lib/2/wwl/script.js"></script>
+<script>
+  const wwl_js = new URLSearchParams(location.search).get('')
+  if (wwl_js) {
+    console.debug('fetch wwl.js', wwl_js)
+    fetch(wwl_js).then(x => x.text()).then(script => {
+      const render = document.createElement('script')
+      render.innerHTML = script
+      document.body.append(render)
+    })
+  } else {
+    open('/raw/wwl/app/gallery', '_self')
+  }
+</script>

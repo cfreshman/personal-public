@@ -1,0 +1,7 @@
+2022-03-23
+Browser Compute Bank
+
+1. Web clients execute a common compute language
+2. Connected clients form a distributed computation engine
+3. Server orchestrates parallelized workloads from active clients on passive clients
+4. Passive clients earn compute & memory

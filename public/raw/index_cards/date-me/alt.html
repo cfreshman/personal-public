@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    .row {
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+    .img {
+      /* max-height: 40vh; max-width: 50%; width: auto !important; flex-grow: 0 !important; */
+      height: 27.5vh; max-width: 100%; width: auto !important; flex-grow: 0 !important;
+      /* height: max-content; width: max-content; */
+    }
+    .img:nth-child(1) {
+      width: 100%; max-width: 400px;
+      max-height: unset;
+    }
+    img {
+      height: unset !important; width: unset !important;
+      max-height: 100%; max-width: 100%;
+    }
+    .column {
+      min-height: max-content;
+    }
+    .unloaded .row {
+      flex-direction: column !important;
+      align-items: flex-start;
+    }
+    .unloaded .img {
+      height: auto;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+  </style>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div class="column wide tall unloaded">
+    <script>
+      defer(() => {
+        // [Q('.hidden')].map(x => {
+        QQ('.hidden').map(x => {
+          x.classList.remove('hidden')
+        })
+        QQ('.unloaded').map(x => {
+          x.classList.remove('unloaded')
+        })
+        QQ('img').map(x => {
+          const container = node(`<div id=img-${base62(x.title)} class=img></div>`)
+          x.insertAdjacentElement('afterend', container)
+          container.append(x)
+
+          x.src = x.src.replace(/-?unloaded-?/g, '')
+          head.append(node(`<style>
+          #${container.id} {
+            position: relative;
+            z-index: 1;
+            overflow: hidden;
+          }
+          #${container.id}::after {
+            content: "${x.title}";
+            position: absolute; bottom: 0; right: 0;
+            // white-space: pre;
+            pointer-events: none;
+            max-width: calc(90% - 4px);
+            mix-blend-mode: difference; background: #fff; color: #000;
+
+            margin: 2px; background: #000; color: #fff; mix-blend-mode: unset;
+          }
+          </style>`))
+        })
+      })
+    </script>
+    <div class="row wide">
+      <img src="0EC41201-7609-48CB-9B8D-570217383401.jpg-unloaded" title="80s family photo" />
+      <img src="2A158B66-3261-4298-83DF-60F6E5300351_1_105_c.jpeg-unloaded" title="Mt Washington" />
+      <img src="18DB28E5-4265-4FA5-8520-86A37B67E47C_1_105_c.jpeg-unloaded" title="found some Christmas tree worms heck yeah" />
+      <img src="39F0FC48-5761-4918-8D30-10D62D486A6C_1_105_c.jpeg-unloaded" title="climbing stuff heck yeah" />
+      <img src="17A2D83A-B607-419A-BBA1-C04AB58E5504_1_105_c.jpeg-unloaded" title="attempted thirst trap" />
+      <img src="D12819E6-85B5-4ACD-AF76-2A1A0E2FFAEB_1_105_c.jpeg-unloaded" title="post- trivia win glow" />
+      <img src="E0455F67-ED2E-4E7C-933B-413F27948E26_1_105_c.jpeg-unloaded" title="high school" />
+      <img src="4.jpg-unloaded" title="never watched that show" />
+      <img src="2.jpg-unloaded" title="pizza place gone now and the best breadsticks/ranch with it" />
+      <img src="5.jpg-unloaded" title="still have another sister not pictured here" />
+      <img src="1.jpg-unloaded" title="I was really cool in middle school" />
+      <img src="F6C9CB1E-428D-4C9D-B039-58DD7F54E41A_1_105_c.jpeg-unloaded" title="before that" />
+      <img src="3.jpg-unloaded" title="before that" />
+      <!-- <img src="E29666A8-CD26-46E6-9DFF-544750D37D24_1_105_c.jpeg-unloaded" title="pretty much now, attempted thirst trap #3" /> -->
+      <!-- <div>if you like what you see or feel, please send a strongly worded email/message @ <a href='https://contact.tu.fo'>/contact</a></div> -->
+    </div>
+  </div>
+
+</body>
+</html>

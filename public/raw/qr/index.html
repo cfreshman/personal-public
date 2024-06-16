@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<!-- qr
+QR code generator
+- encoded as bytes
+- uh nvm just use library lol
+-->
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>qr</title><meta name=description content="simple generator" />
+  <style>
+    :root {
+      filter: none;
+    }
+    img, video, iframe {
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    textarea {
+      width: -webkit-fill-available;
+    }
+    input, textarea {
+      border: 1px solid currentcolor;
+    }
+  </style>
+
+  <script src="/lib/2/external/qrcode.min.js"></script>
+</head>
+<body class="column gap">
+
+  <div data-hydrate data-title></div>
+  <textarea id=input placeholder="paste/enter url" rows='12' oninput="handle.input(event.target.value)"></textarea>
+  <input id=l_size type="number" oninput="handle.size(event.target.value)"></input>
+  <div class="row gap">
+    <button onclick="
+    event.target.textContent = 'generating'
+    handle.generate(input.value)
+    setTimeout(() => event.target.textContent = 'generate', 1500)
+    ">generate</button> <button onclick="
+    input.value = ''
+    ">clear</button> <button onclick="
+    if (top !== self) {
+      location.reload()
+    } else {
+      open(location.href, '_blank', opener ? `popup,width=${innerWidth},height=${innerHeight},left=${screenX},top=${screenY+135}` : undefined)
+    }
+    ">+</button> <!-- <input id=label placeholder="label" oninput="
+    handle.label(label.value)
+    " style="
+    background: none;
+    border: 1px solid black;
+    border-radius: 5em;
+    padding-left: .5em;
+    "/> -->
+  </div>
+  <div id="ref_qr" style="
+  padding: 16px;
+  border: 16px solid black;
+  border-image-slice: 1;
+  border-image-source: conic-gradient(in hsl decreasing hue from 90deg, red, hsl(180deg 100% 50%), red);
+  "></div>
+
+  <script>
+    const log = named_log('qr')
+    const STORAGE_KEY = {
+      SIZE: 'qr-size',
+    }
+
+    let create_qr, ref_qr = Q('#ref_qr')
+    let size = store.get(STORAGE_KEY.SIZE) || 256
+    // ref_qr.style.width = `${size}px`
+    // ref_qr.style.height = `${size}px`
+
+    const handle = {
+      generate: href => {
+        if (!href) return
+        input.value = href
+
+        ref_qr.innerHTML = ''
+        const { QRCode } = window
+        const qr_instance = new QRCode(ref_qr, {
+          width: size,
+          height: size,
+        })
+        qr_instance.makeCode(href)
+      },
+      
+      _path: ({ search=location.search, hash=location.hash||'' }) => {
+        history.replaceState(0,0, 
+          location.pathname 
+          + (search ? (typeof(search)==='string' ? search : new URLSearchParams(search).toString()).replace(/^\??/, '?') : '') 
+          + (hash ? hash.replace(/^\#/, '#') : '#'))
+      },
+      label: text => {
+        label.value = text
+        handle._path({ hash: `#${text}` })
+      },
+      input: text => {
+        input.value = text
+        handle._path({ search: { '': text } })
+      },
+      size: new_size => {
+        log(new_size)
+        store.set(STORAGE_KEY.SIZE, size = Number(new_size))
+      },
+    }
+
+    handle.label(location.hash.slice(1))
+    l_size.value = size
+    handle.generate(new URLSearchParams(location.search).get('') || '')
+  </script>
+
+</body>
+</html>

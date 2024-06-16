@@ -1,0 +1,177 @@
+<!-- cyrusfreshman 2018 --><!-- DEFAULT --><!DOCTYPE html>
+<html lang="en" prefix="og: http://ogp.me/ns#">
+  <head>
+    <meta comment="cyrusfreshman 2018 / -- DEFAULT --" />
+    <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script>window._hydrate_skip = true</script><script src=/copyright.js></script>
+    <!-- <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><script src='/lib/2/css/script.js'></script> -->
+    <meta name="theme-color" content="#f8f8f8" />
+
+    <title>freshman.dev</title>
+    <link rel="icon" href="/icon.png">
+    <meta name="author" content="Cyrus Freshman">
+    <meta name="description" content="free web apps">
+    <meta name="keywords" content="cyrus, wiggin, freshman, freshman_dev, personal site, about, wordbase, wordle solver leaderboard, capitals, letterpress, greeter, fishbowl, dinder, pico-packet, stream, pea-rice">
+    <link rel="manifest" href="">
+    <!-- Protocols -->
+    <meta property="og:image" content="https://freshman.dev/icon.png">
+    <meta property="og:title" content="freshman.dev">
+    <meta property="og:description" content="freshman.dev">
+    <link rel="apple-touch-icon-precomposed" href="/icon.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:url" content="freshman.dev">
+    <meta name="twitter:site" content="@dj___fresh">
+    <meta name="twitter:creator" content="@dj___fresh">
+    <meta name="twitter:image" content="https://freshman.dev/icon.png">
+    <meta name="twitter:title" content="freshman.dev">
+    <meta name="twitter:description" content="@dj___fresh">
+
+    <style>
+      :root {
+        min-height: 400px;
+
+        --id-color-h: 124deg;
+        --id-color-s: 100%;
+        --id-color-l: 70%;
+        --id-color-d: 100%;
+
+        --id-color: hsl(var(--id-color-h), var(--id-color-s), var(--id-color-l));
+        --id-color-text: hsl(var(--id-color-h), 100%, calc(100% - var(--id-color-d)));
+        --id-color-text-readable: hsl(var(--id-color-h), 100%, var(--id-color-d));
+
+        /* --id-color-text: hsl(
+          var(--id-color-h), 
+          80%, 
+          80%);
+        --id-color-text-readable: hsl(
+          var(--id-color-h), 
+          calc(var(--id-color-l) + .75 * (1 - var(--id-color-l))), 
+          calc(var(--id-color-l) + .75 * (1 - var(--id-color-l)))); */
+      }
+    </style>
+    <script>
+      let id_color_hue
+      fetch(location.origin.replace(':3030', ':5050') + '/api/user_id_color_hue', {
+        mode: 'no-cors',
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'Content-Type',
+        },
+      }).then(r=>r.text()).then(response => {
+        id_color_hue = response
+      }).catch(e => {
+        id_color_hue = 0
+      }).finally(() => {
+        document.head.appendChild((x => {
+          x.innerHTML = `
+          :root {
+            --id-color-h: ${id_color_hue||0}deg;
+          }
+          `
+          return x
+        })(document.createElement('style')))
+      })
+    </script>
+
+    <script src="https://accounts.google.com/gsi/client" async></script>
+
+  </head>
+  <body>
+
+    <div id="root"></div>
+    <script>
+
+window.dependency = src => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('GET', src, false)
+    xhr.onload = () => document.head.append((x => Object.assign(x, { innerHTML:xhr.responseText }))(document.createElement('script')))
+    xhr.send()
+}
+;[
+    '/lib/2/common/script.js',
+].map(dependency)
+
+// window.manifest = (def={}) => 
+//     (x => { document.head.append(x); return x })
+//     (
+//         (x => Object.assign(x, { rel: 'manifest' }, def))
+//         (Q('head [rel=manifest]') || document.createElement('link'))
+//     )
+// window.generate_manifest = async () => {
+//     const name = location.pathname.replace(/^\/-?(raw)?/, '').replace(/\/$/,'') || location.host.split('.').reverse()[2]?.replace(/$/, '.') || location.host
+//     const color = Q('[name=theme_color]')?.content || getComputedStyle(document.documentElement).backgroundColor || getComputedStyle(document.body).backgroundColor || '#fdfcfa'
+//     const text_color = getComputedStyle(document.documentElement).color || getComputedStyle(document.body).color || '#111'
+
+//     if (Q(`[rel=icon]:not([data-keep])`)) return undefined
+
+//     // ;!Q('[rel=manifest]')?.href && 
+//     let icon_href = Q(`[rel=icon]:not([data-keep], [href="${location.href.replace(':3030', ':5050')}"])`)?.href
+//     if (icon_href === `${location.origin}/icon.png`) icon_href = false
+//     return JSON.stringify({
+//         name,
+//         display: `standalone`,
+//         start_url: location.href,
+//         theme_color: Q('[name=theme_color]')?.content || getComputedStyle(document.documentElement).backgroundColor || getComputedStyle(document.body).backgroundColor || '#fdfcfa',
+//         icons: [{
+//             src: icon_href || icon({ color, text:name, text_color, update:true }), // `${origin}/icon.png`,
+//             sizes: `256x256`,
+//             type: `image/png`,
+//         }]
+//     })
+// }
+// setInterval(async () => {
+//     const new_manifest = await generate_manifest()
+//     const old_manifest = undefined // await fetch(manifest().href).then(r=>r.text())
+//     if (new_manifest !== old_manifest) manifest({
+//         href: URL.createObjectURL(new Blob([new_manifest], { type: 'application/json' })),
+//     })
+// }, 1_000)
+
+    </script>
+
+    <noscript>
+      <style type="text/css">
+        a {
+          color: #72afff;
+        }
+        html, body {
+          font-size: min(4vw, 20px);
+          font-family: monospace;
+        }
+      </style>
+
+      <div style="font-size: .67em">
+        <p>
+          <a href="/resume-CyrusFreshman.pdf">rès<span style="display:none;">aSc8BhD</span>umè</a>
+        </p>
+        <p>enable javascript to view projects</p>
+      </div>
+
+      <div style="
+      z-index: 1000000000;
+      position: fixed;
+      bottom: 0; right: 0;
+      color: #fff6;
+      text-shadow: 1px 1px #0008;
+      font-size: 0.5rem;
+      padding: .5rem;
+      pointer-events: none;
+      line-height: 1;
+      font-family: system-ui;
+      ">
+        <span style="position:relative">
+          © 2023 FRESHMAN.DEV
+          <span style="
+          opacity: .5;
+          font-size: .7em;
+          align-self: flex-start;
+          position: absolute;
+          bottom: calc(100% + 0px);
+          right: 0;
+          ">LLC</span>
+        </span>
+      </div>
+    </noscript>
+
+  </body>
+</html>

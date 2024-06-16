@@ -1,0 +1,149 @@
+### END RESULT ###
+before: scrabble.txt 1.8M 2.0s
+after: scrabble-count.txt.gz 248K 207ms
+
+from console:
+loaded 191854 english words in 430ms total (104ms + 326ms)
+
+basic scheme: delimit by common prefix length
+  ab
+  ache
+  aches
+  ack
+  bar
+  bat
+  cab
+
+  =>
+
+  ab
+  1che
+  4s
+  2k
+  bar
+  2t
+  cab
+
+  result: 268K bytes
+
+further improvement: newlines aren't needed
+  ab1che4s2k
+  bar2t
+  cab
+
+  equivalent to: ab1che4s2k0bar2t0cab (simplifies logic)
+
+  result: 248K bytes
+
+  client-side decode:
+    reference: 430ms total (104ms + 326ms)
+      => cached performance? ignore pre-fetch
+    initial attempt (bad!): 1295ms total (330ms + 965ms)
+    basic text: 800ms total (313 430 57)
+
+    only post-fetch:
+      reference: 326ms
+      initial attempt: 1137ms
+      unparsed text: 395ms
+      => now I'm convinced I should encode in binary
+
+
+more complicated decode: a-indexed relative following letters
+=> this increased compressed size - it disrupts natural letter frequencies
+  ab
+  1(c-a=b)he
+  4(s-e)
+  2(k-h)
+  (b-a)ar
+  2(t-r)
+  (c-a=b)ab
+
+  result: 260K
+
+(still relying on gz for efficient compression of actual tokens)
+
+###
+
+
+
+# plain: loaded 191852 english words in 626ms total (254ms + 372ms)
+                                        724ms total (344ms + 380ms)
+                                        878ms total (588ms + 290ms)
+# gzip: loaded 191853 english words in 734ms total (457ms + 277ms)
+                                       833ms total (524ms + 309ms)
+                                       732ms total (424ms + 308ms)
+ab
+abs
+ace
+ache
+ack
+bar
+bat
+cab
+
+# dash: intermediate stage
+ab
+--s
+-ce
+--he
+--k
+bar
+--t
+cab
+
+# count: loaded 191852 english words in 728ms total (323ms + 405ms)
+                                        1076ms total (264ms + 812ms)
+                                        709ms total (155ms + 554ms)
+                                        739ms total (305ms + 434ms)
+# gzip: loaded 191852 english words in 1399ms total (287ms + 1112ms)
+                                       741ms total (199ms + 542ms)
+                                       912ms total (417ms + 495ms)
+                                       733ms total (273ms + 460ms)
+ab
+2s
+1ce
+2he
+2k
+bar
+2t
+cab
+
+
+# result
+network
+before: scrabble.txt 1.9M 2.0s
+after: scrabble-count.txt.gz 275K 1.1s
+
+
+ab
+0s
+2ce
+he
+2k
+3bar
+t
+3cab
+
+
+
+nope:
+
+a
+ b
+  .
+  s
+ c
+  e
+  h
+   e
+  k
+b
+ a
+  r
+  t
+c
+ a
+  b
+
+
+a<b+s>c<eh<e>k>>b<a<rt>>c<a<b>>

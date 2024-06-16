@@ -1,0 +1,24 @@
+# redirect all http to https, error page fallback
+server {
+    server_name _;
+    include sites-available/fragments/personal-ssl;
+    location @dynamic {
+        proxy_pass http://[::1]:5000$request_uri;
+        include sites-available/fragments/proxy;
+        proxy_set_header Host $host;
+    }
+    location / {
+        try_files $uri $uri/ @dynamic;
+    }
+}
+server {
+    server_name _;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    location /.well-known {
+        try_files $uri =404;
+    }
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>ninja</title><meta name=description content="" />
+</head>
+<body class="middle-row">
+  <div id=root class="middle-column" style="
+  flex-grow: 1;
+  "></div>
+  <script>
+    const log = named_log('ninja')
+    const S = 1024, T = S / 32
+    const PROJECTILE_SPEED = T * 16, ENEMY_BASE_SPEED = T * 2
+    const svg = node(`<svg viewBox="-${S} -${S} ${S * 2} ${S * 2}" style="
+    flex-grow: 1;
+    aspect-ratio: 1/1;
+    border: 1px solid #000;
+    font-size: ${T * 3};
+    "></svg>`)
+    const svg_node = (tag_or_node, properties) => {
+      const svg_node = typeof tag_or_node === 'string' ? document.createElementNS('http://www.w3.org/2000/svg', tag_or_node) : tag_or_node
+      svg_node.innerHTML = properties.innerHTML || properties.textContent || svg_node.innerHTML
+      entries(properties.on || {}).map(([k, v]) => on(svg_node, k, v))
+      entries(properties).map(([k, v]) => svg_node.setAttribute(k, v))
+      return svg_node
+    }
+    const State = {
+      MENU: 'menu',
+      PLAY: 'play',
+      END: 'end',
+    }
+    const state = {
+      state: State.MENU,
+      rendered: false,
+      player: undefined, // { angle node }[]
+      projectiles: undefined, // { p angle node }[]
+      enemies: undefined, // { p speed node }[]
+      wait: undefined,
+    }
+    const render = {
+      svg: () => {
+        svg.innerHTML = `
+<style>
+  @scope {
+    text {
+      
+    }
+  }
+</style>`
+        if (state.state === State.MENU) {
+          svg.append(svg_node('text', {
+            x: 0, y: 0,
+            'dominant-baseline': 'middle', 'text-anchor': 'middle',
+            style: `
+            text-decoration: underline;
+            cursor: pointer;
+            `,
+            innerHTML: 'play',
+            on: {
+              click: () => {
+                log('play')
+                handle.init(State.PLAY)
+              }
+            }
+          }))
+        } else if (state.state === State.PLAY) {
+          svg.append(state.player.node)
+        }
+        state.rendered = true
+      }
+    }
+    const handle = {
+      update: (dt, t) => {
+        if (state.state === State.MENU) {
+          if (!state.rendered) {
+            render.svg()
+          }
+        } else if (state.state === State.PLAY) {
+          // state.player.angle += maths.TAU * .25 * dt
+          svg_node(state.player.node, {
+            transform: `rotate(${A.de(state.player.angle + maths.TAU/4)} 0 0)`,
+          })
+          state.projectiles = state.projectiles.filter(x => {
+            if (x.p.ma() > S * 2) {
+              x.node.remove()
+              return false
+            } else {
+              return true
+            }
+          })
+          const hits = new Set()
+          state.projectiles.map(x => {
+            const v = V.p(x.angle, PROJECTILE_SPEED).sc(dt)
+            x.p = x.p.ad(v)
+            svg_node(x.node, {
+              cx: x.p.x, cy: x.p.y,
+            })
+            hits.add(...state.enemies.filter(y => V.ma(x.p, y.p) < T * 3/2).map(y => y.id))
+          })
+          // log(hits)
+          state.enemies = state.enemies.filter(x => {
+            if (hits.has(x.id)) {
+              x.node.remove()
+              return false
+            } else {
+              return true
+            }
+          })
+          state.enemies.map(x => {
+            const v = V.p(Math.atan2(0 - x.p.y, 0 - x.p.x), ENEMY_BASE_SPEED).sc(dt)
+            x.p = x.p.ad(v)
+            svg_node(x.node, {
+              cx: x.p.x, cy: x.p.y,
+            })
+          })
+          state.wait -= dt
+          if (state.wait <= 0) {
+            const angle = rand.f(maths.TAU)
+            const enemy_node = svg_node('circle', {
+              cx: 0, cy: 0, r: T,
+            })
+            svg.append(enemy_node)
+            state.enemies.push({
+              id: rand.alphanum(8),
+              p: V.p(angle, S * Math.sqrt(2)),
+              node: enemy_node,
+            })
+            state.wait = rand.s(3, 2)
+          }
+          const attacked = state.enemies.filter(x => V.ma(x.p) < T * 2)
+          if (attacked.length) {
+            handle.init(State.END)
+          }
+        }
+      },
+      init: (new_state) => {
+        const old_state = state.state
+        state.state = new_state
+        state.rendered = false
+        if (new_state === State.MENU) {
+          render.svg()
+        } else if (new_state === State.PLAY) {
+          const player_node = (() => {
+            const result = svg_node('g', {
+              x: 0, y: 0,
+            })
+            result.append(svg_node('circle', {
+              cx: 0, cy: 0, r: T,
+            }))
+            result.append(svg_node('path', {
+              d: `
+              M 0,${T}
+              l ${T},0
+              l ${-T},${T}
+              l ${-T},${-T}
+              l ${T},0
+              z
+              `
+            }))
+            return result
+          })()
+          state.player = {
+            angle: 0,
+            node: player_node,
+          },
+          state.projectiles = []
+          state.enemies = []
+          state.wait = 0
+          window.onpointermove = e => {
+            const a = V.ne(e.clientX, e.clientY)
+            const r = player_node.getBoundingClientRect()
+            const b = V.ne(r.x + r.width/2, r.y + r.height/2)
+            state.player.angle = Math.atan2(b.y - a.y, b.x - a.x)
+
+            // log(document.elementsFromPoint(a.x, a.y))
+          }
+          window.onpointerdown = e => {
+            const a_raw = V.ne(e.clientX, e.clientY)
+            const outer = svg.getBoundingClientRect()
+            const a = V.ne((a_raw.x - outer.x) / outer.width * 2 - 1, (a_raw.y - outer.y) / outer.height * 2 - 1).sc(S)
+            const angle = a.an()[0]
+            const projectile_node = svg_node('circle', {
+              cx: 0, cy: 0, r: T/2,
+            })
+            svg.append(projectile_node)
+            state.projectiles.push({
+              p: V.ne(0, 0),
+              angle,
+              node: projectile_node,
+            })
+            log(projectile_node)
+          }
+          render.svg()
+        } else if (new_state === State.END) {
+          svg.append(svg_node('text', {
+            x: 0, y: T * 2,
+            'dominant-baseline': 'middle', 'text-anchor': 'middle',
+            style: `
+            text-decoration: underline;
+            cursor: pointer;
+            background: #fff;
+            `,
+            innerHTML: 'menu',
+            on: {
+              click: () => {
+                log('menu')
+                handle.init(State.MENU)
+              }
+            }
+          }))
+        }
+      },
+      _start_ms: performance.now(),
+      _prev_ms: performance.now(),
+      loop: () => {
+        const now = performance.now()
+        const dt = (now - handle._prev_ms) / 1_000
+        const t = (now - handle._start_ms) / 1_000
+        handle._prev_ms = now
+        handle.update(dt, t)
+        // render.svg()
+        requestAnimationFrame(handle.loop)
+      }
+    }
+    root.append(svg)
+    requestAnimationFrame(handle.loop)
+  </script>
+</body>
+</html>

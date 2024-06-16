@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>qr generator</title>
+<style>
+body, input, textarea, button, select {
+  font-family: 'Courier New', Courier, monospace;
+  background: black;
+  color: white;
+  font-size: 16px;
+}
+body {
+  max-width: 500px;
+  margin: 20px auto;
+  padding: 20px;
+  border: 1px solid #333;
+}
+h1, h3 {
+  margin: 0 0 20px 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #333;
+  text-transform: lowercase;
+  font-size: 24px;
+}
+textarea, select, input[type="text"] {
+  width: 100%;
+  background: black;
+  border: 1px solid #333;
+  padding: 10px;
+  margin-bottom: 10px;
+  box-sizing: border-box;
+}
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+button {
+  background: black;
+  border: 1px solid #333;
+  padding: 5px 10px;
+  cursor: pointer;
+  text-transform: lowercase;
+}
+button:hover {
+  background: #222;
+}
+#toggle-rainbow {
+  width: 100%;
+  margin-top: 5px;
+}
+#ref_qr {
+  background: white;
+  padding: 20px;
+  display: inline-block;
+  margin-top: 10px;
+}
+#ref_qr.rainbow {
+  padding: 0;
+  border: 20px solid;
+  border-image: conic-gradient(
+    from 90deg, 
+    red, 
+    yellow, 
+    lime, 
+    aqua, 
+    blue, 
+    magenta, 
+    red
+  ) 1;
+}
+#history {
+  list-style-type: none;
+  padding: 0;
+  margin: 10px 0 0 0;
+}
+#history li {
+  cursor: pointer;
+  padding: 5px;
+  border-bottom: 1px solid #333;
+}
+#history li:hover {
+  background: #111;
+}
+.color-picker {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.color-picker label {
+  display: flex;
+  align-items: center;
+}
+.color-picker input {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  background: none;
+  margin-left: 10px;
+}
+</style>
+<script src="/lib/2/external/qrcode.min.js"></script>
+</head>
+<body>
+<h1>qr generator</h1>
+
+<textarea id="input" placeholder="enter text or url" rows="3"></textarea>
+
+<select id="l_size">
+  <option value="128">Small (128x128)</option>
+  <option value="256" selected>Medium (256x256)</option>
+  <option value="512">Large (512x512)</option>
+  <option value="1024">Extra Large (1024x1024)</option>
+</select>
+
+<div class="color-picker">
+  <label>
+    Foreground:
+    <input type="color" id="color-dark" value="#000000">
+  </label>
+  <label>
+    Background:
+    <input type="color" id="color-light" value="#ffffff">
+  </label>
+</div>
+
+<input type="text" id="logo-url" placeholder="Logo URL (optional)">
+
+<div class="button-group">
+  <button id="generate">generate</button>
+  <button id="clear">clear</button>
+  <button id="invert">invert</button>
+  <button id="download">download</button>
+  <button id="paste">paste</button>
+</div>
+<button id="toggle-rainbow">toggle rainbow</button>
+
+<div id="ref_qr"></div>
+
+<h3>history</h3>
+<ul id="history"></ul>
+
+<script>
+const STORAGE_KEY = { SIZE: 'qr-size', HISTORY: 'qr-history' };
+const ref_qr = document.getElementById('ref_qr');
+const input = document.getElementById('input');
+const l_size = document.getElementById('l_size');
+const colorDark = document.getElementById('color-dark');
+const colorLight = document.getElementById('color-light');
+const logoUrl = document.getElementById('logo-url');
+let size = parseInt(localStorage.getItem(STORAGE_KEY.SIZE)) || 256;
+l_size.value = size;
+
+let qrcode = null;
+let isRainbowBorder = false;
+
+const handle = {
+  generate: (saveToHistoryFlag = false) => {
+    const text = input.value.trim();
+    if (!text) return;
+    
+    ref_qr.innerHTML = '';
+    qrcode = new QRCode(ref_qr, {
+      text: text,
+      width: size,
+      height: size,
+      colorDark: colorDark.value,
+      colorLight: colorLight.value,
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    
+    if (saveToHistoryFlag) {
+      saveToHistory(text);
+    }
+    
+    if (logoUrl.value) {
+      setTimeout(() => {
+        const img = ref_qr.querySelector('img');
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0);
+        
+        const logo = new Image();
+        logo.onload = () => {
+          const logoSize = canvas.width * 0.2;
+          const x = (canvas.width - logoSize) / 2;
+          const y = (canvas.height - logoSize) / 2;
+          ctx.drawImage(logo, x, y, logoSize, logoSize);
+          img.src = canvas.toDataURL();
+        };
+        logo.src = logoUrl.value;
+      }, 50);
+    }
+  },
+  clear: () => {
+    input.value = '';
+    logoUrl.value = '';
+    ref_qr.innerHTML = '';
+    qrcode = null;
+  },
+  size: () => {
+    size = Number(l_size.value);
+    localStorage.setItem(STORAGE_KEY.SIZE, size);
+    if (input.value.trim()) {
+      handle.generate();
+    }
+  },
+  invert: () => {
+    if (!qrcode) return;
+    const img = ref_qr.querySelector('img');
+    img.style.filter = img.style.filter ? '' : 'invert(1)';
+  },
+  download: () => {
+    if (!qrcode) return;
+    const img = ref_qr.querySelector('img');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const borderSize = isRainbowBorder ? 20 : 0;
+    
+    canvas.width = img.width + borderSize * 2;
+    canvas.height = img.height + borderSize * 2;
+    
+    if (isRainbowBorder) {
+      const gradient = ctx.createConicGradient(0, canvas.width / 2, canvas.height / 2);
+      gradient.addColorStop(0, 'red');
+      gradient.addColorStop(0.17, 'yellow');
+      gradient.addColorStop(0.33, 'lime');
+      gradient.addColorStop(0.5, 'aqua');
+      gradient.addColorStop(0.67, 'blue');
+      gradient.addColorStop(0.83, 'magenta');
+      gradient.addColorStop(1, 'red');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    
+    ctx.drawImage(img, borderSize, borderSize);
+    
+    if (img.style.filter === 'invert(1)') {
+      ctx.globalCompositeOperation = 'difference';
+      ctx.fillStyle = 'white';
+      ctx.fillRect(borderSize, borderSize, img.width, img.height);
+    }
+    
+    const link = document.createElement('a');
+    link.download = 'qr.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  },
+  paste: async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      input.value = text;
+      handle.generate(true);
+    } catch (err) {
+      console.error('Failed to read clipboard contents: ', err);
+    }
+  },
+  toggleRainbow: () => {
+    isRainbowBorder = !isRainbowBorder;
+    ref_qr.classList.toggle('rainbow');
+  }
+};
+
+const saveToHistory = (text) => {
+  let history = JSON.parse(localStorage.getItem(STORAGE_KEY.HISTORY) || '[]');
+  if (history[0] !== text) {
+    history.unshift(text);
+    history = history.slice(0, 5);
+    localStorage.setItem(STORAGE_KEY.HISTORY, JSON.stringify(history));
+    updateHistoryUI();
+  }
+};
+
+const updateHistoryUI = () => {
+  const history = JSON.parse(localStorage.getItem(STORAGE_KEY.HISTORY) || '[]');
+  const historyList = document.getElementById('history');
+  historyList.innerHTML = '';
+  history.forEach(text => {
+    const li = document.createElement('li');
+    li.textContent = text;
+    li.onclick = () => {
+      input.value = text;
+      handle.generate(true);
+    };
+    historyList.appendChild(li);
+  });
+};
+
+document.getElementById('generate').addEventListener('click', () => handle.generate(true));
+document.getElementById('clear').addEventListener('click', handle.clear);
+document.getElementById('invert').addEventListener('click', handle.invert);
+document.getElementById('download').addEventListener('click', handle.download);
+document.getElementById('paste').addEventListener('click', handle.paste);
+document.getElementById('toggle-rainbow').addEventListener('click', handle.toggleRainbow);
+colorDark.addEventListener('change', () => handle.generate());
+colorLight.addEventListener('change', () => handle.generate());
+
+input.addEventListener('keyup', (e) => {
+  if (e.key === 'Enter') {
+    handle.generate(true);
+  }
+});
+l_size.addEventListener('change', handle.size);
+
+updateHistoryUI();
+if (input.value.trim()) {
+  handle.generate();
+}
+</script>
+</body>
+</html>

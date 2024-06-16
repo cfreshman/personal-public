@@ -1,0 +1,77 @@
+<div id="container" style="
+height: fit-content;
+overflow: hidden;
+position: relative;
+padding: 1em 0;
+">
+  <div>#f008</div>
+  <div>#f008 #fff</div>
+  <div>#f008 linear-gradient(#fff 0 0)</div>
+  <div>linear-gradient(#f008 0 0) #fff</div>
+</div>
+
+<br/>
+<code>{
+  background: linear-gradient(<span id="example" contenteditable onpointerdown="input.click()">#f008</span><input style="display:none" type="color" oninput="update(event.target.value)"/> 0 0) #fff;
+}</code>
+<br/>
+
+<script>
+  const container = document.querySelector('#container')
+  const example = document.querySelector('#example')
+  const input = document.querySelector('input[type=color]')
+
+  ;[container].forEach(x => {
+    const node = document.createElement('div')
+    node.innerHTML = `
+    <span id="background" style="
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    font-size: .5em;
+    z-index: -1;
+    ">${'background '.repeat(1000)}</span>`
+    x.append(node.children[0])
+  })
+  document.querySelectorAll('#container > div').forEach(x => {
+    x.innerHTML = `
+    <span style="background: ${x.textContent}"></span>
+    <code>${x.textContent.replace(
+      example.textContent,
+      `<span contenteditable onpointerdown="input.click()">${example.textContent}</span>`)}</code>`
+  })
+
+  const update = hue => {
+    localStorage.setItem('hue', hue)
+    container.innerHTML = container.innerHTML.replaceAll(example.textContent, hue + '88')
+    example.textContent = hue + '88'
+    input.value = hue
+  }
+  (x => {
+    if (x) update(x)
+    else input.value = '#ff0000'
+  })(localStorage.getItem('hue'))
+</script>
+<style>
+  :root {
+    font-family: monospace;
+    font-size: 12px;
+    word-break: break-all;
+    background: white;
+  }
+  #container > div {
+    margin: 1em;
+    border: 1px solid black;
+    display: flex;
+    align-items: stretch;
+  }
+  #container > div > :first-child {
+    flex-grow: 1;
+  }
+  code {
+    display: block; white-space: pre;
+    background: #222; color: #eee;
+    padding: .25em;
+    font-size: .9em;
+    user-select: all;
+  }
+</style>

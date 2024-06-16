@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<title>bloom filter demo</title>
+<style>
+  html {
+    background: #f9f8f6;
+    color: #101010;
+    font-size: 12px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5rem 1rem;
+  }
+  .title {
+    font-size: 1.2em;
+  }
+  a {
+    color: inherit;
+  }
+  a:hover {
+    color: #f9f8f6;
+    background: #101010;
+  }
+  input[type="number"] {
+    width: 3em;
+  }
+  pre {
+    margin: 0;
+  }
+  pre code {
+    /* display: block;
+    background: white;
+    border-radius: 2px;
+    padding: 1em;
+    width: fit-content; */
+
+    display: block;
+    border-radius: 2px;
+    padding: 1em;
+    margin: 0.5em 0 0;
+    border: 1px dashed currentColor;
+  }
+</style>
+
+<script src="/lib/utils.js"></script>
+</head>
+<body>
+
+  <div style="display:flex;align-items:center;margin-bottom:.5em;white-space:pre">
+    <span class="title">[ bloom filter ]</span> <span style="font-style:italic;opacity:.7"> demo of string filtering method</span>
+  </div>
+  <div id="edit" style="
+  display: none;
+  white-space: pre;
+  ">
+m = <input id="m" type="number" max="99"></input> strings
+<textarea id="S" rows="9"></textarea>
+(<span id="bits"></span> bits)
+<!-- allow up to 35 = 9 + 26 (1-9A-Z) hash functions -->
+k = <input id="k" type="number" max="35"></input> hash functions
+n = m•k/ln(k) • <input id="n_c" type="number" max="20"></input> = <span id="n"></span> bits
+trade-off between k and n: higher k => more computation, but lower n for same accuracy
+<button id="cancel">cancel</button> <button id="update">update</button>
+  </div>
+  <div id="content" style="white-space: pre;"></div>
+  <script type="module">
+    import api from '/lib/modules/site/api.js'
+    // Math.seed('seed')
+
+    const constants = {
+      m: 5,
+      k: 9,
+      n_c: 3,
+    }
+    let dict
+
+    const editL = Q('#edit')
+    const parseS = value => Array.from(new Set(Q(editL, '#S').value.split(/[ \n]+/g).filter(s=>s)))
+    const outS = S => {
+      Q(editL, '#S').value = S.join('\n')
+      Q(editL, '#S').rows = Math.min(9, S.length)
+      Q(editL, '#S').scrollTop = 999_999
+      Q(editL, '#bits').textContent = S.map(s => s.length * 8).reduce((a, v) => a + v)
+    }
+    const computeN = n_c => prime_atleast(n_c * Math.ceil(constants.m * constants.k / Math.log(constants.k)))
+    function writeDemo(S) {
+      Q(editL, '#m').value = constants.m
+      outS(S)
+      // Q(editL, '#S').rows = Math.min(9, constants.m)
+      Q(editL, '#k').value = constants.k
+      Q(editL, '#n_c').value = constants.n_c
+      Q(editL, '#n').textContent = computeN(constants.n_c)
+    }
+    function readDemo() {
+      constants.m = Number(Q(editL, '#m').value)
+      const S = parseS()
+      constants.k = Number(Q(editL, '#k').value)
+      constants.n_c = Number(Q(editL, '#n_c').value)
+      demo(dict, S)
+    }
+
+    function demo(dict, S=undefined) {
+    const binary = x => (x >>> 0).toString(2)
+
+    const L = Q('#content')
+
+    const range = dict.length
+    const m = constants.m
+    S = S ?? Array.from({ length: m }).map((_, i) => dict[randi(range)])
+    writeDemo(S)
+    const k = constants.k
+    const hkDisplay = x => x > 9 ? String.fromCharCode('A'.charCodeAt(0) + (x - 10)) : x
+    const n = computeN(constants.n_c)
+
+    // JS computes binary ops with 32 bits, need n/32 numbers for filter, n/31 to set first bit for display
+    const filter = {
+      blocks: Array.from({ length: Math.ceil(n/31) }).map(() => 1 << 31),
+      get: i => filter.blocks[Math.floor(i/31)] >> (i % 31) & 1,
+      mark: i => filter.blocks[Math.floor(i/31)] |= 1 << (i % 31),
+      toString: () => filter.blocks.map(b => binary(b).slice(1))
+        .reverse()
+        .join('')
+        .slice(31 * filter.blocks.length - n)
+        .split('')
+        .reverse()
+        .join(''),
+    }
+
+    // support ignorecase alphanumeric up to length 20
+    // ignore non-alphanumeric
+    const s_prime = prime_atleast(26 + 10)
+    const s_prime_pow = Array.from({ length: 20 }).map((_, i, arr) =>
+      arr[i] = i ? s_prime * arr[i-1] : 1)
+    const str2num = s => s.split('')
+      .map(c => {
+        const ord = c.toUpperCase().charCodeAt(0)
+        // 0-9A-Z: '0' = 48 'Z' = 90
+        return (48 <= ord && ord <= 90) ? ord - 48 + 1 : 0
+      })
+      .filter(c => c)
+      .map((x, i) => x * s_prime_pow[i])
+      .reduce((acc, v) => acc + v) & ((1 << 30) - 1)
+
+    // return i for each hash function
+    // polys with random coeffs for k-independent hash functions
+    const k_primes = primes(k * k, [n, s_prime])
+    const hks = Array.from({ length: k }).map((_, i) =>
+      Array.from({ length: k }).map((_, j) => k_primes[k*(k-j-1) + i]))
+    const runHk = (hk, x) => hk
+      .map((c, i) => c * Math.pow(x, i))
+      .reduce((sum, x) => sum + x)
+      % n
+    const runHks = x => hks.map(hk => runHk(hk, x))
+
+    // create filter for S by writing 1 to each hash function result i for each el
+    S.map(el => runHks(str2num(el)).map(filter.mark))
+    const filterString = filter.toString()
+
+    // return bloom filter check - all hash function i's are set to 1
+    // short circuit once 0 is hit
+    const bloom = s => {
+      const x = str2num(s)
+      let i = 0
+      while (filter.get(runHk(hks[i], x))) i++
+      return i === k
+    }
+    // return evaluated hash functions for display
+    const bloomDisplay = s => {
+      const x = str2num(s)
+      const results = []
+      for (let i = 0; i < k; i++) {
+        const result = runHk(hks[i], x)
+        results.push(result)
+        if (!filter.get(result)) return [false, results]
+      }
+      return [true, results]
+    }
+
+    const hksResultToHTML = (result, filterString=undefined) => {
+      // visualize indices across filter bits
+      let base = filterString ?? '0'.repeat(n)
+      let hk_i = {}
+      if (result && result.length < 36) {
+        result.slice().reverse().map((x, i) => {
+          hk_i[x] = (result.length-i-1) + 1
+        })
+      }
+      result = result || base.split('').map((b,i)=>[b,i]).filter(e=>e[0]==='1').map(e=>e[1])
+
+      Array.from(new Set(result)).sort((a, b) => b - a).map(x => {
+        base = base.slice(0, x) + `<span class="hks-match" style="color:${!filterString || filterString[x] === '1' ? 'green' : 'red'}">${hkDisplay(hk_i[x] ?? filterString[x])}</span>` + base.slice(x + 1)
+      })
+      return `<span style="color:#0002">${base}</span>`
+    }
+
+    const actual = new Set(S)
+    let s_i = 1
+    let words_i = -1
+    let header = false
+    const words2lines = (words) => {
+      let html = ''
+      if (!header) {
+        words = ['header'].concat(words)
+        header = true
+      }
+      let collapsed = words.length > 10
+      if (collapsed) {
+        words_i += 1
+        html += `(<span id="words-toggle-${words_i}" href="#" onclick="
+        const wordsL = Q('#words-${words_i}');
+        const wordsToggleL = Q('#words-toggle-${words_i}');
+        const collapse = wordsToggleL.textContent === 'collapse'
+        
+        wordsL.style.display = collapse ? 'none' : '';
+        wordsToggleL.textContent = collapse ? 'expand' : 'collapse'
+        " style="text-decoration:underline; cursor:pointer">expand</span>)`
+      }
+      html += `<div id="words-${words_i}" style="display:${collapsed?'none':''}">${words.map(word => {
+        if (word === 'header') return `<span class="word-result">  <span class="word"><code>${'s'.padEnd(maxLen)}</code></span>  <span><code>f(s)</code></span></span>`
+        const result = word instanceof Array
+        const m = result ? word : [word, 1, runHks(str2num(word))]
+
+        return `<span class="word-result">${
+          result && actual.has(m[0]) ? s_i++ : m[1] ? ' ' : 'X'
+        } <span class="word">${m[0].padEnd(maxLen)}</span>  ${(str2num(m[0])+'').padEnd(10)}  ${
+          hksResultToHTML(m[2], result ? filterString : undefined)
+        }</span>`
+      }).join('\n')}</div>`
+      return html
+    }
+
+    const maxLen = 16
+    const hashTableBits = S.map(s => s.length * 8).reduce((a, v) => a + v)
+    L.innerHTML = `
+problem: how to filter strings (words, IDs, etc)
+
+set of ${m} filter strings (<a id="open-edit" href="#">edit</a>)
+  ${S.join('  ')}
+would require hash table with > ${hashTableBits} bits
+
+bloom filter: ${n} bits (<${Math.ceil(n / hashTableBits * 100)}%) ${filterString}
+
+<i>an alternative approximation</i>
+initialize bloom filter of all 0's.
+hash input filter strings <code>k</code> times and mark a 1 in each spot.
+<b>and only match test strings that hit all 1's when hashed the same way.</b>
+useful for saving space when you need to allow all in a set and block *most* others
+(when you have millions/billions of filter strings - this is just a demo)
+
+to construct filter of <code>n</code> bits:
+<pre><code>filter = n bits set to 0
+for each filter string s:
+  # f maps string to int identifier (with few collisions)
+  x = f(s)
+  for each hash function h<sub>i</sub>:
+    # h<sub>i</sub> maps int to uniform distribution [0, n)
+    filter[h<sub>i</sub>(x)] = 1
+</code></pre>
+string to int f(s):
+  <code>f(s) = s<sub>0</sub> + s<sub>1</sub>•${s_prime} + s<sub>2</sub>•${s_prime}<sup>2</sup> + ... + s<sub>n-1</sub>•${s_prime}<sup>n-1</sup></code>
+  where <code>s<sub>i</sub></code> is mapped to 0-9A-Z index (ignore non-alphanumeric)
+
+hash functions (<code>k</code> polynomials of degree <code>k-1</code> with unique prime coefficients):
+${hks
+  .map(hk =>
+    hk.map((c, i) => i ? i > 1 ? `${c}x<sup>${i}</sup>` : c+'x' : c)
+      .join(' + '))
+  .map((l, i) => `  <code>h<sub>${hkDisplay(i+1)}</sub>(x) = ${l} mod ${n}</code>`)
+  .join('\n')}
+
+${'' && 'filter determined from members:'.padEnd(maxLen + 2*3 + 10)}${1?'':hksResultToHTML(false, filterString)
+}filter determined from members: ${words2lines(S)}
+${1?'':' '.repeat(maxLen + 2*3 + 10) + filterString.replaceAll('1', '^').replaceAll('0', ' ')}
+${'filter '.padStart(maxLen + 2*3 + 10) + hksResultToHTML(false, filterString).replaceAll('1', 'X')}
+
+
+to test string <code>s</code>:
+<pre><code>x = f(s)
+i = 1
+while filter[h<sub>i</sub>(x)]: i++
+return i - 1 == k
+</code></pre>
+
+test string: <input id="test-input" type="text"></input> <button id="test-input-add" >add</button>
+<span id="test-input-list"></span>
+
+<span id="results">running filter on dictionary of ${dict.length} words ...</span>
+
+<style>
+.word-result {
+  cursor: pointer;
+}
+.hash-row:nth-child(2n) {
+  background: #aaa1;
+}
+</style>
+`
+
+    // run filter async to load page first
+    setTimeout(() => {
+      // run filter on entire dictionary
+      const sampleSize = dict.length
+      const membership = dict.map(x => [x, ...bloomDisplay(x)])
+
+      // filter to matched
+      const matched = membership.filter(([_, m]) => m)
+
+      const S_set = new Set(S)
+      const false_positives = membership.filter(x => x[1] && !S_set.has(x[0])).map(x => x[0])
+
+      // some non-matches
+      const all_non_matches = membership.filter(([_, m]) => !m)
+      const display_non_matches = Array.from({ length: 3 }).map(() =>
+        all_non_matches[randi(all_non_matches.length)])
+
+      Q(L, '#results').innerHTML = // ${((matched.length - S.length) / S.length).toFixed(0)}x as many false positives as true matches
+`bloom filter results: ${matched.length - S.length}/${sampleSize - S.length} false positives (${((matched.length - S.length) / (sampleSize - S.length) * 100).toFixed(2)}%)
+
+some false positives: ${words2lines(false_positives.slice(0, 3))}
+some excluded strings: ${words2lines(display_non_matches)}
+all matched strings: ${words2lines(matched.slice(0, 2_000)) + (matched.length > 2_000 ? `+${matched.length - 2_000} more` : '')}`
+
+      QQ(Q(L, '#results'), '.word-result').map(wordL => on(wordL, 'click', e =>
+        showComputeDisplay(wordL)))
+    })
+
+    let computeDisplay = document.createElement('div')
+    function showComputeDisplay(wordL) {
+      const parent = computeDisplay.parentNode
+      computeDisplay?.remove()
+      if (parent === wordL) return
+      const word = Q(wordL, '.word').textContent.trim()
+      const hashResults = bloomDisplay(word)[1]
+      const grid = hashResults.map(_ => ' '.repeat(n).split(''))
+      hashResults.slice().reverse().map((result, i) => {
+        let row = hashResults.length - i - 1
+        const bit = filterString[result]
+        grid[row][result] = `<span style="color:${bit === '1' ? 'green' : 'red'}">${bit}</span>`
+        while (row) grid[--row][result] = '<span style="color:#0002">|</span>'
+      })
+      computeDisplay.innerHTML = hashResults.map((result, i) =>
+        ' '.repeat(2*2 + maxLen)+`<span class="hash-row">${`<code>h<sub>${hkDisplay(i+1)}</sub></code>: ${(result+'').padEnd(10 - 4)}`}  ${grid[i].join('')}</span>`)
+        .join('\n') + '\n'
+      wordL.append(computeDisplay)
+    }
+    QQ(L, '.word-result').map(wordL => on(wordL, 'click', e => showComputeDisplay(wordL)))
+
+    const addTestString = e => {
+      const x = Q(L, '#test-input').value
+      if (x) {
+        const result = [x, ...bloomDisplay(x)]
+        let resultL = document.createElement('span')
+        resultL.innerHTML = words2lines([result])
+        resultL = resultL.children[0]
+        resultL.style.display = 'block'
+        Q(L, '#test-input-list').append(resultL)
+        on(resultL, 'click', e => showComputeDisplay(resultL))
+        Q(L, '#test-input').value = ''
+        resultL.click()
+      }
+    }
+    on(Q(L, '#test-input-add'), 'click', addTestString)
+    on(Q(L, '#test-input'), 'keypress', e => e.key === 'Enter' && addTestString(e))
+
+    on(Q(L, '#open-edit'), 'click', e => editL.style.display = 'block')
+    }
+
+    fetch('/lib/dict/scrabble.txt').then(res => res.text()).then(text => {
+      dict = text.split('\n').filter(s => s && s[0] !== '#')
+      demo(dict)
+
+      on(Q(editL, '#S'), 'keypress change', e => {
+        const S = parseS()
+        Q(editL, '#m').value = S.length
+        outS(S)
+      })
+      on(Q(editL, '#m'), 'keypress change', e => {
+        let S = parseS()
+        const m = Number(e.target.value)
+        if (S.length !== m) {
+          if (S.length > m) {
+            S = S.slice(0, m)
+          } else {
+            S.push(...Array.from({ length: m - S.length }).map(_ => dict[randi(dict.length)]))
+          }
+          outS(S)
+        }
+      })
+      ;['m', 'k', 'n_c'].map(id => on(Q(editL, '#'+id), 'keypress change', e => {
+        setTimeout(() => {
+          constants[id] = Number(e.target.value)
+          Q(editL, '#n').textContent = computeN(constants.n_c)
+        })
+      }))
+      on(Q(editL, '#cancel'), 'click', e => editL.style.display = 'none')
+      on(Q(editL, '#update'), 'click', e => {
+        e.target.textContent = Q('#content').textContent = '...'
+        setTimeout(() => {
+          readDemo()
+          editL.style.display = 'none'
+          e.target.textContent = 'update'
+        })
+      })
+    })
+
+  </script>
+
+</body>
+</html>

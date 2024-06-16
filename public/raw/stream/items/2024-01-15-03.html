@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>dot-boxes</title><meta name=description content="" />
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div id=root class="column" style="
+  background: #fff;
+  border: 1px solid #fff;
+  gap: 1px;
+  "></div>
+  <div>
+    <span><a href="https://twitter.com/okazz_/status/1746347187225895390">inspiration</a> by @okazz_/Twitter</span>
+  </div>
+
+  <script>
+    const S = 15
+
+    const slides = list('slide-right slide-down slide-left slide-up')
+    root.append(node(`<style>${slides.map((slide, i) => {
+      const angle = i / 4 * maths.TAU
+      const translates = V.ne(V.p(angle).sc(200).map(Math.round))
+      const scales = V.p((angle + maths.TAU/4) % Math.PI).sc(3).ad(V.ne(1, 1))
+      return `
+      @keyframes ${slide}-out {
+        0% {
+          translate: 0 0;
+          scale: 1 1;
+        }
+        50% {
+          translate: ${translates.x / 2}% ${translates.y / 2}%;
+          scale: ${1 / scales.x} ${1 / scales.y};
+        }
+        100% {
+          translate: ${translates.x}% ${translates.y}%;
+          scale: ${1 / scales.x} ${1 / scales.y};
+        }
+      }
+      .${slide}-out {
+        animation: .5s linear ${slide}-out forwards;
+      }
+      @keyframes ${slide}-in {
+        0% {
+          translate: ${translates.x}% ${translates.y}%;
+          scale: ${1 / scales.x} ${1 / scales.y};
+        }
+        50% {
+          translate: ${translates.x / 2}% ${translates.y / 2}%;
+          scale: ${1 / scales.x} ${1 / scales.y};
+        }
+        100% {
+          translate: 0 0;
+          scale: 1 1;
+        }
+      }
+      .${slide}-in {
+        animation: .5s linear ${slide}-in forwards;
+      }`
+    }).join('\n')}</style>`))
+
+    const grid = V.ra(S).map(r => V.ra(S).map(c => {
+      const dot = node(`<div class style="
+      width: 50%;
+      height: 50%;
+      border-radius: 50%;
+      background: hsl(${rand.f(360)}deg 70% 70%);
+      position: absolute;
+      "></div>`)
+      const square = node(`<div class="middle-row" style="
+      background: #000;
+      border-radius: 4px;
+      width: 24px;
+      aspect-ratio: 1/1;
+      overflow: hidden;
+      position: relative;
+      "></div>`)
+      square.append(dot)
+      return {
+        dot, next_dot:undefined, square, node: square,
+        t: 0,
+      }
+    }))
+    grid.map(row => {
+      const row_node = node(`<div class="row" style="
+      gap: 1px;
+      "></div>`)
+      row.map(cell => row_node.append(cell.node))
+      root.append(row_node)
+    })
+    const cells = grid.flatMap(pass)
+
+    const full_slides = ['out', 'in'].flatMap(dir => slides.map(slide => [slide, dir].join('-')))
+    setInterval(() => {
+      let cell
+      do {
+        cell = rand.sample(cells)
+      } while (Date.now() - cell.t < 1_000)
+      cell.t = Date.now()
+
+      if (cell.next_dot) {
+        cell.dot.remove()
+        cell.dot = cell.next_dot
+      }
+      cell.square.append(cell.next_dot = node(`<div class style="
+      width: 50%;
+      height: 50%;
+      border-radius: 50%;
+      background: hsl(${rand.f(360)}deg 70% 70%);
+      position: absolute;
+      "></div>`))
+      
+      cell.dot.classList.remove(...full_slides)
+      const pick_slides = slides.slice()
+      cell.dot.classList.add(rand.pick(pick_slides)+'-out')
+      cell.next_dot.classList.add(rand.pick(pick_slides)+'-in')
+    }, 12.5)
+  </script>
+
+</body>
+</html>

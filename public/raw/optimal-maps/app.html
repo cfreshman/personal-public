@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>optimal-maps - WIP</title><meta name=description content="" /><link rel="icon" href="icon-64.png">
+  <style>
+    :root {
+      filter: none;
+    }
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body class="column gap">
+
+  <div data-hydrate data-title></div>
+  <div><span id=l_country_name>loading a lot of map data</span> @ <span id=l_degrees>??</span>° → <a onclick="
+  
+  // download_canvas(Q('#map canvas'), `${l_country_name.textContent}.png`)
+
+  const mapCanvas = document.createElement('canvas');
+  const size = map.getSize();
+  mapCanvas.width = size[0];
+  mapCanvas.height = size[1];
+  const mapContext = mapCanvas.getContext('2d');
+  Array.prototype.forEach.call(
+    map.getViewport().querySelectorAll('.ol-layer canvas, canvas.ol-layer'),
+    function (canvas) {
+      if (canvas.width > 0) {
+        const opacity =
+          canvas.parentNode.style.opacity || canvas.style.opacity;
+        mapContext.globalAlpha = opacity === '' ? 1 : Number(opacity);
+        let matrix;
+        const transform = canvas.style.transform;
+        if (transform) {
+          // Get the transform parameters from the style's transform matrix
+          matrix = transform
+            .match(/^matrix\(([^\(]*)\)$/)[1]
+            .split(',')
+            .map(Number);
+        } else {
+          matrix = [
+            parseFloat(canvas.style.width) / canvas.width,
+            0,
+            0,
+            parseFloat(canvas.style.height) / canvas.height,
+            0,
+            0,
+          ];
+        }
+        // Apply the transform to the export map context
+        CanvasRenderingContext2D.prototype.setTransform.apply(
+          mapContext,
+          matrix,
+        );
+        const backgroundColor = canvas.parentNode.style.backgroundColor;
+        if (backgroundColor) {
+          mapContext.fillStyle = backgroundColor;
+          mapContext.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        mapContext.drawImage(canvas, 0, 0);
+      }
+    },
+  );
+  mapContext.globalAlpha = 1;
+  mapContext.setTransform(1, 0, 0, 1, 0, 0);
+  
+  download_canvas(mapCanvas, `${l_country_name.textContent} @ ${l_degrees.textContent}°.png`)
+  
+  ">.png</a></div>
+  <div id=root class="middle-column"></div>
+  <script src="wkt.js"></script>
+  <link rel="stylesheet" href="/lib/ol/ol.css">
+  <script src="/lib/ol/ol.js"></script>
+  <script src="/lib/jsts/jsts.min.js"></script>
+  <script>
+    const log = named_log('optimal-maps')
+    log('dependencies', {wkt, ol, jsts})
+    const STORE_KEY = {
+      OPTIMIZE_AREA: 'optimal-maps_optimize-area',
+    }
+    const GF = new jsts.geom.GeometryFactory()
+
+    const create_rect = (x1, y1, x2, y2) => GF.toGeometry(new jsts.geom.Envelope(x1, x2, y1, y2))
+
+    let map
+
+    defer(async () => {
+      const georaw_to_wkt_and_names = (georaw) => {
+        const geojson = JSON.parse(georaw)
+        const geowkt = geojson.features.map(feature => wkt.stringify(feature))
+        const shorts = geojson.features.map(feature => feature.properties.name)
+        const names = geojson.features.map((feature, i) => feature.properties.formal_en || shorts[i])
+        return [geowkt, names, shorts]
+      }
+      const geojson_raw = await fetch('high.geo.json').then(x=>x.text())
+      const geojson_high_raw_async = Promise.resolve(geojson_raw) // fetch('high.geo.json').then(x=>x.text())
+      const [geowkt_list, name_list, short_list] = georaw_to_wkt_and_names(geojson_raw)
+      let geowkt_high_list
+      const name_to_data = {}
+      range(geowkt_list.length).map(i => {
+        name_to_data[name_list[i]] = {
+          i,
+          name: name_list[i],
+          short: short_list[i],
+          wkt: geowkt_list[i],
+          high: undefined,
+        }
+      })
+      log({geowkt_list, name_list, short_list})
+
+      const raster = new ol.layer.Tile({
+        source: new ol.source.OSM(),
+      })
+      const format = new ol.format.WKT()
+
+      const source = new ol.source.Vector({
+        features: [],
+      })
+      const vector = new ol.layer.Vector({
+        source,
+        style: [
+          new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: 'blue',
+              width: 3,
+            }),
+            fill: new ol.style.Fill({
+              color: 'rgba(0, 0, 255, 0.1)',
+            }),
+          }),
+        ]
+      })
+
+      const border_source = new ol.source.Vector({
+        features: [],
+      })
+      const border_vector = new ol.layer.Vector({
+        source,
+        style: [
+          new ol.style.Style({
+            stroke: new ol.style.Stroke({
+              color: '#000',
+              width: 1,
+            }),
+          }),
+        ]
+      })
+
+      root.innerHTML = `<div id="map" class="map"></div>`
+      const l_map = Q('#map')
+      map = new ol.Map({
+        layers: [raster, vector],
+        target: 'map',
+        controls: [new ol.control.Rotate()],
+      })
+
+      let done = true
+      const jsts_wkt = {
+        read: (() => {
+          const reader = new jsts.io.WKTReader()
+          return (...x) => reader.read(...x)
+        })(),
+        write: (() => {
+          const writer = new jsts.io.WKTWriter()
+          return (...x) => writer.write(...x)
+        })(),
+        wkt_to_ol: (wkt) => format.readFeature(wkt, {
+          dataProjection: 'EPSG:4326',
+          featureProjection: 'EPSG:3857',
+        }),
+      }
+      let country_i, run_i = -1
+      window.handle = {
+        set_window_fit: (new_optimize_window) => {
+          const new_optimize_area = !new_optimize_window
+          store.set(STORE_KEY.OPTIMIZE_AREA, new_optimize_area)
+          handle.index(country_i, { force:true })
+        },
+        display: (gs, {jsts=false, preserve_view=false, degrees=0, aspect=undefined}={}) => {
+          map.getView().setRotation(degrees / 180 * Math.PI)
+          source.clear()
+          let wkts = []
+          if (jsts) {
+            wkts = gs.map(x => jsts_wkt.write(x))
+          } else {
+            wkts = gs
+          }
+          if (aspect) log('final', {wkts})
+          wkts.map(wkt => source.addFeature(jsts_wkt.wkt_to_ol(wkt)))
+          if (aspect) {
+            // l_map.style['aspect-ratio'] = `${aspect} / 1`
+            // if (root.clientWidth / aspect > root.clientHeight) {
+            //   l_map.style['width'] = 'unset'
+            //   l_map.style['height'] = '100%'
+            // } else {
+            //   l_map.style['width'] = '100%'
+            //   l_map.style['height'] = 'unset'
+            // }
+            l_map.style['width'] = Math.min(root.clientWidth, root.clientHeight * aspect) + 'px'
+            l_map.style['height'] = (l_map.clientWidth / aspect) + 'px'
+          } else {
+            // delete l_map.style['aspect-ratio']
+            // delete l_map.style['width']
+            // delete l_map.style['height']
+            // l_map.style.cssText = ''
+            // l_map.width = undefined
+            // l_map.height = undefined
+            // l_map.style['width'] = '100%'
+
+            l_map.style['width'] = '100%'
+            l_map.style['height'] = '100%'
+          }
+          map.updateSize()
+          // TODO perfect zoom
+          // preserve_view || map.getView().fit((x => {
+          //   x.scale(1.1)
+          //   return x
+          // })(ol.geom.Polygon.fromExtent(source.getExtent())), map.getSize())
+          preserve_view || map.getView().fit((x => {
+            x.scale(1.1)
+            return x
+          })(jsts_wkt.wkt_to_ol(gs[0]).getGeometry()), map.getSize())
+          // defer(() => {
+          //   map.render()
+          //   map.getView().fit((x => {
+          //     x.scale(1.1)
+          //     return x
+          //   })(ol.geom.Polygon.fromExtent(source.getExtent())), map.getSize())
+          // }, 500)
+        },
+        index: async (new_country_i, { force=false } = {}) => {
+          // if (!done) {
+          //   alert('can\'t stop yet. wait until this country is done')
+          //   return
+          // }
+          log('run for country index', {new_country_i, country_i})
+          if (new_country_i === country_i && !force) return
+          country_i = new_country_i
+          const curr_run_i = run_i += 1
+          log('run', curr_run_i)
+          
+          try {
+            done = false
+
+            const country = values(name_to_data).find(x => x.i === country_i)
+            if (!country) {
+              log('couldn\'t find country', country_i, values(name_to_data).sort((a,b)=>a.i-b.i))
+              return
+            }
+            l_country_name.textContent = country.name
+            l_degrees.textContent = '??'
+            Q('#input-select-country').value = country.short
+            if (Q('.combobox-input')) {
+              Q('.combobox-input').value = country.short
+            }
+            log({country})
+            handle.display([country.wkt])
+            location.hash = country.short
+
+            const country_jsts = jsts_wkt.read(country.wkt)
+            const country_area = country_jsts.getArea()
+            log({country_jsts})
+
+            // 1 degree increments
+            const create_rotator = (g) => {
+              const Affine = jsts.geom.util.AffineTransformation
+              const centroid = g.getCentroid().getCoordinate()
+              return (degrees) => new Affine()
+                  .compose(Affine.translationInstance(-centroid.x, -centroid.y))
+                  .compose(Affine.rotationInstance(degrees * maths.PI / 180))
+                  .compose(Affine.translationInstance(centroid.x, centroid.y))
+                  .transform(g)
+            }
+            const create_scaler = (g, sx, sy) => {
+              const Affine = jsts.geom.util.AffineTransformation
+              const centroid = g.getCentroid().getCoordinate()
+              return () => new Affine()
+                  .compose(Affine.translationInstance(-centroid.x, -centroid.y))
+                  .compose(Affine.scaleInstance(sx, sy))
+                  .compose(Affine.translationInstance(centroid.x, centroid.y))
+                  .transform(g)
+            }
+            const _to_degree = create_rotator(country_jsts)
+            const angle_to_area = {}
+
+            // const base_degrees = rand.i(360)
+            // const base_degrees = -45
+            // const base_degrees = -90
+            let start, steps, base_degrees
+            if (store.get(STORE_KEY.OPTIMIZE_AREA)) {
+              steps = 90
+              // steps = 180
+              // base_degrees = -90 + rand.i(90)
+              base_degrees = -45
+            } else {
+              steps = 180
+              base_degrees = -90
+            }
+            // const base_degrees = -steps/2
+
+
+            await defer(async () => {
+              const min = {
+                area: undefined,
+                degrees: 0,
+              }
+              for (let i = 0; i < steps; i++) {
+                // await sleep(250)
+                await sleep(1)
+                if (run_i !== curr_run_i) return
+
+                const degrees = base_degrees + i
+                if (store.get(STORE_KEY.OPTIMIZE_AREA)) {
+                  const rotated_jsts = _to_degree(degrees)
+                  const bounds = rotated_jsts.getEnvelope()
+                  angle_to_area[degrees] = bounds.getArea()
+                  handle.display([bounds, rotated_jsts], { jsts:true, preserve_view:true })
+
+                  const area = bounds.getArea()
+                  if (min.area === undefined || area < min.area) {
+                    min.area = area
+                    min.degrees = degrees
+                  }
+                } else {
+                  handle.display([country.wkt], { degrees })
+  
+                  const area = 1 / map.getView().getZoom() // bounds.getArea()
+                  if (min.area === undefined || area < min.area) {
+                    min.area = area
+                    min.degrees = degrees
+                  }
+
+                  // const rotated_jsts = _to_degree(degrees)
+                  // const bounds = rotated_jsts.getEnvelopeInternal()
+                  // let width = bounds.getWidth()
+                  // let height = bounds.getHeight()
+                  // let outer_aspect = l_map.clientWidth / l_map.clientHeight
+                  // if (width / height > outer_aspect) height = width / outer_aspect
+                  // else width = outer_aspect * height
+                  // // handle.display([rotated_jsts], { jsts:true, preserve_view:true })
+                  // // handle.display([rotated_jsts.getEnvelope(), rotated_jsts], { jsts:true, preserve_view:true })
+                  // const outer = create_scaler(rotated_jsts.getEnvelope(), width / bounds.getWidth(), height / bounds.getHeight())()
+                  // // const outer = jsts.geom.util.AffineTransformation.scaleInstance(width / bounds.getWidth(), height / bounds.getHeight()).transform(rotated_jsts.getEnvelope())
+                  // // create_rect(center.x - width/4, center.y - height/4, width/2, height/2), rotated_jsts]
+                  // handle.display([rotated_jsts.getEnvelope(), outer, rotated_jsts], { jsts:true, preserve_view:true })
+
+                  // const area = Math.abs((bounds.getWidth() / bounds.getHeight()) - outer_aspect)
+                  // log(area, min.area)
+                  // if (min.area === undefined || area < min.area) {
+                  //   min.area = area
+                  //   min.degrees = degrees
+                  //   body.style.background = 'green'
+                  // } else {
+                  //   body.style.background = ''
+                  // }
+                }
+              }
+
+              log({min})
+              
+              const rotated_jsts = _to_degree(-min.degrees)
+              // display vertical or horizontal depending on display
+              let envelope = rotated_jsts.getEnvelopeInternal()
+              // if (l_map.clientHeight > l_map.clientWidth !== envelope.getHeight() > envelope.getWidth()) {
+              //   envelope = _to_degree(min.degrees += 90).getEnvelopeInternal()
+              // }
+              // if (steps === 90 && l_map.clientHeight > l_map.clientWidth !== envelope.getHeight() > envelope.getWidth()) {
+              //   envelope = _to_degree(min.degrees += 90).getEnvelopeInternal()
+              // }
+              log(l_map.clientHeight > l_map.clientWidth ? 'portrait' : 'landscape', min.degrees)
+              if (!geowkt_high_list) {
+                ;[geowkt_high_list, name_high_list] = georaw_to_wkt_and_names(await geojson_high_raw_async)
+                log({geowkt_high_list})
+                range(geowkt_high_list.length).map(i => {
+                  if (name_to_data[name_high_list[i]]) {
+                    name_to_data[name_high_list[i]].high = geowkt_high_list[i]
+                  }
+                })
+              }
+              const country_high_wkt = name_to_data[name_list[country_i]].high
+              log(min, {country_high_wkt})
+              // handle.display([country_high_wkt], { degrees:min.degrees })
+              // handle.display([jsts_wkt.writer.write(create_rotator(_to_degree(min.degrees).getEnvelope())(-min.degrees)), country_high_wkt], { degrees:min.degrees })
+              // handle.display([country_high_wkt], { degrees:min.degrees, aspect: envelope.getWidth() / envelope.getHeight() })
+              // handle.display([jsts_wkt.writer.write(rotated_jsts.getEnvelope()), country_high_wkt], { degrees:min.degrees, aspect: store.get(STORE_KEY.OPTIMIZE_AREA) ? envelope.getWidth() / envelope.getHeight() : undefined })
+              
+              // handle.display([jsts_wkt.writer.write(create_rotator(rotated_jsts.getEnvelope())(-min.degrees)), country_high_wkt], { degrees:min.degrees, aspect: store.get(STORE_KEY.OPTIMIZE_AREA) ? envelope.getWidth() / envelope.getHeight() : undefined })
+              // handle.display([jsts_wkt.writer.write(rotated_jsts.getEnvelope()), country_high_wkt], { aspect: store.get(STORE_KEY.OPTIMIZE_AREA) ? envelope.getWidth() / envelope.getHeight() : undefined })
+              handle.display([country_high_wkt], { degrees: min.degrees, aspect: store.get(STORE_KEY.OPTIMIZE_AREA) ? envelope.getWidth() / envelope.getHeight() : undefined })
+              l_degrees.textContent = -min.degrees
+            })
+          } catch (e) {
+            log(e)
+          } finally {
+            done = true
+          }
+        },
+        random: () => {
+          handle.index(rand.i(name_list.length))
+        },
+        name: (name) => {
+          // const name_i = values(name_to_data).find(x => x.name === name || x.short === name).i
+          log({name, name_list, short_list}, name_list.includes(name), short_list.includes(name))
+          let name_i = name_list.indexOf(name)
+          if (name_i < 0) name_i = short_list.indexOf(name)
+          if (name_i > -1) handle.index(name_i)
+          const name_select_input = Q('.combobox input')
+          if (name_select_input) {
+            // name_select_input.value = ''
+          }
+        },
+      }
+
+      root.insertAdjacentHTML('afterEnd', `
+      <div id=ui class="column gap" style="align-items:stretch">
+        <div class="row gap stretch">
+          <button onclick="handle.random()">random country</button>
+          <select id="input-select-country" onchange="handle.name(event.target.value)" data-combobox data-combobox-above>
+            <option value="">choose country</option>
+            ${short_list.slice().sort().map(x => `<option value="${x}">${x}</option>`).join('')}
+          </select>
+        </div>
+        <div class="row gap stretch">
+          <label class="middle-row gap">
+            <input type="checkbox" data-switch ${store.get(STORE_KEY.OPTIMIZE_AREA) ? '' : 'checked'} onchange="handle.set_window_fit(event.target.checked)" /> <span>fit to window</span>
+          </label>
+        </div>
+      </div>
+      `)
+      if (!devices.is_mobile) {
+        QQ('#ui [data-combobox]').map(hydrates.combobox)
+        QQ('#ui .combobox-input').map(input => {
+          input.style.cssText = `
+          height: 100%;
+          border-radius: 9em !important;
+          padding: .1667em .67em !important;
+          `
+        })
+        QQ('#ui [data-switch]').map(hydrates.switch)
+      }
+
+      const hash_name = decodeURIComponent(location.hash.slice(1))
+      log({hash_name})
+      if (hash_name) {
+        handle.name(hash_name)
+      } else {
+        handle.random()
+      }
+    })
+  </script>
+  <style>
+    #root {
+      width: 100%;
+      height: 0;
+      min-height: 40em;
+      flex-grow: 1;
+    }
+    .map {
+      width: 100%;
+      height: 100%;
+    }
+    .mobile .map {
+      pointer-events: none;
+    }
+    #ui {
+      max-width: 100%;
+    }
+    #ui .row > * {
+      flex-shrink: 0;
+      max-width: 50vw;
+    }
+    .hydrated-switch {
+      margin: 0 !important;
+      margin-right: .25em !important;
+    }
+  </style>
+
+</body>
+</html>

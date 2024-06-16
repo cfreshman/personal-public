@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>hecks.js</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    audio {
+      filter: invert(1);
+      min-height: 4em;
+    }
+    iframe {
+      width: 100%;
+      min-height: 20em;
+    }
+    img {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+    }
+  </style>
+
+  <script src="/lib/2/hecks/script.js"></script>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div id=root></div>
+  <script>
+    const TILE = 16
+    const SIZE = TILE * 32
+    const hf = new hecks.Field(TILE, hecks.Field.Orientation.TOP_FLAT)
+    let dots = SIZE / 2
+
+    const svg = node(`
+    <svg id="svg"
+    width=${SIZE} height=${SIZE} 
+    viewBox="${-SIZE/2} ${-SIZE/2} ${SIZE} ${SIZE}" 
+    xmlns="http://www.w3.org/2000/svg"
+    style="
+    overflow: visible;
+    ">
+    </svg>`)
+    root.append(svg)
+
+    root.append(node(`
+    <div>
+        <button id=button_generate>generate</button>
+        <input id=input_dots type=number value=${dots}>
+    </div>
+    `))
+    button_generate.onclick = () => generate()
+    input_dots.onchange = (e) => {
+        dots = e.target.value
+        generate()
+    }
+
+    const generate = () => {
+        const centered = hf.nearest(dots, hf.center())
+        const carts = centered.map(v => hf.to_cartesian(v))
+        
+        let svg_inner_html = `
+        <style>
+            #svg circle {
+                fill: #000;
+                stroke: #000;
+                stroke-width: 2px;
+            }
+            #svg text {
+                fill: #fff;
+                text-anchor: middle;
+                dominant-baseline: middle;
+            }
+            #svg g {
+                cursor: pointer;
+            }
+            #svg g * {
+                pointer: cursor !important;
+                user-select: none;
+            }
+            #svg g:hover circle {
+                fill: transparent;
+            }
+            #svg g:hover text {
+                fill: #000;
+            }
+        </style>
+        `
+
+        carts.map((cart, i) => {
+            svg_inner_html += `
+            <g id="group_${i}">
+                <circle cx=${cart.x} cy=${cart.y} r=${hf.size / 2} />
+                <text x=${cart.x} y=${cart.y}>${i}</text>
+            </g>
+            `
+        })
+
+        svg.innerHTML = svg_inner_html
+        let clicked = undefined
+        carts.map((cart, i) => {
+            const label = node(`<div style="
+            border: 1px solid #000; background: #fff;
+            position: fixed;
+            margin: 1em;
+            ">
+            q,r: (${centered[i][0]}, ${centered[i][1]})
+            <br/>
+            x,y: (${Math.round(carts[i][0] * 100) / 100}, ${Math.round(carts[i][1] * 100) / 100})</div>`)
+            const place_label = e => {
+                label.remove()
+                label.style.left = e.clientX + 'px'
+                label.style.top = e.clientY + 'px'
+                label.style.background = `hsl(${360 / carts.length * i} 70% 70%)`
+                root.append(label)
+            }
+            const group = Q(svg, `#group_${i}`)
+            group.onpointermove = e => {
+                if (clicked) return
+                place_label(e)
+            }
+            group.onpointerout = e => {
+                if (clicked) return
+                label.remove()
+            }
+            group.onpointerdown = e => {
+                e.stopPropagation()
+                if (clicked) {
+                    clicked.remove()
+                    place_label(e)
+                }
+                clicked = label
+            }
+        })
+        window.addEventListener('pointerdown', e => {
+            clicked?.remove()
+            clicked = undefined
+        })
+    }
+    generate()
+
+  </script>
+
+</body>
+</html>

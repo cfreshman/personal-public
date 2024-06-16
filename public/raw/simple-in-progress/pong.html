@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>pong</title>
+    <style>body{display:flex;flex-direction:column;margin:.5em}</style>
+    <style>
+      #canvas {
+        image-rendering: pixelated;
+        font-smooth: never;
+        -webkit-font-smoothing : none;
+      }
+      @media (hover: hover) and (pointer: fine) { .mobile { display: none } }
+    </style>
+  </head>
+  <body>
+
+    <canvas id=canvas></canvas>
+    <div>
+      <button id=one_player>one-player</button> <button id=two_player>two-player</button>
+    </div>
+    <div class="mobile">Not intended for mobile devices</div>
+
+    <script>
+      const Vector = class {
+        constructor(x, y) {
+          this.x = x
+          this.y = y
+        }
+        add(other) {
+          this.x += other.x
+          this.y += other.y
+        }
+        angle() {
+          return Math.atan2(this.y, this.x)
+        }
+        clone() {
+          return new Vector(this.x, this.y)
+        }
+        static polar(angle, radius=1) {
+          return new Vector(radius * Math.cos(angle), radius * Math.sin(angle))
+        }
+      }
+
+      const Entity = class {
+        constructor(p, v, box) {
+          this.p = p
+          this.v = v
+          this.box = box
+        }
+        update(dt) {
+          this.p.x += this.v.x * dt
+          this.p.y += this.v.y * dt
+
+          const { p, v, box } = this
+          if (p.x <= box.x/2 || p.x >= DIM.x - box.x/2) p.x = Math.max(box.x/2, Math.min(p.x, DIM.x - box.x/2))
+          if (p.y <= box.y/2 || p.y >= DIM.y - box.y/2) p.y = Math.max(box.y/2, Math.min(p.y, DIM.y - box.y/2))
+        }
+        draw(ctx, color) {
+          ctx.fillStyle = color
+          const { p, box } = this
+          ctx.fillRect(Math.floor(p.x - box.x/2), Math.floor(p.y - box.y/2), box.x, box.y)
+        }
+      }
+      const Ball = class extends Entity {
+        constructor() {
+          super(
+            new Vector(DIM.x/2, DIM.y/2),
+            Vector.polar(Math.random() * Math.PI * 2, BALL_MOVE),
+            // new Vector(2, 2))
+            new Vector(1, 1))
+          this.wait = BALL_WAIT
+          this.done = 0
+        }
+        update(dt, score) {
+          if (this.wait) {
+            this.wait = Math.max(0, this.wait - dt)
+          } else {
+            const { p, v, box } = this
+            if (p.x <= box.x/2 || p.x >= DIM.x - box.x/2) this.v = DIR.none
+            if (p.y <= box.y/2 || p.y >= DIM.y - box.y/2) v.y *= -1
+            super.update(dt)
+
+            if (p.x <= box.x/2) {
+              this.done = -1
+              score[1] += 1
+              this.wait = 1e6
+            }
+            if (p.x >= DIM.x - box.x/2) {
+              this.done = 1
+              score[0] += 1
+              this.wait = 1e6
+            }
+          }
+        }
+        draw(ctx, color) {
+          super.draw(ctx, color)
+          if (this.wait) {
+            const dir = Vector.polar(this.v.angle(), 1)
+            const dir_p = this.p.clone()
+            for (let i = 0; i < 10; i++) {
+              dir_p.add(dir)
+              ctx.fillRect(Math.floor(dir_p.x - .5), Math.floor(dir_p.y - .5), 1, 1)
+            }
+          }
+        }
+      }
+      const Player = class extends Entity {
+        constructor(player, ai = false) {
+          super(new Vector(
+            player === 0 ? PAD : DIM.x + 1 - PAD, DIM.y/2),
+            DIR.none,
+            PADDLE)
+          this.player = player
+          this.ai = ai
+        }
+        update(dt, balls) {
+          if (this.ai && balls.length) {
+            const target = balls[0]
+            let dir = target.p.y - this.p.y
+            // const diff = Math.min(MOVE, Math.abs(dir))
+            // dir = dir / Math.abs(dir || 1)
+            // this.v = new Vector(0, dir * diff)
+            this.v = dir < 0 ? DIR.up : dir === 0 ? DIR.none : DIR.down
+          }
+          super.update(dt)
+          balls.map(ball => { 
+            // bounce off paddle
+            const extents = [this.box.x/2 + ball.box.x/2, this.box.y/2 + ball.box.y/2]
+            const bounds = [this.p.y - extents[1], this.p.y + extents[1]]
+            let p_x = this.p.x, b_x = ball.p.x
+            const right = this.player === 1
+            if (right) {
+              p_x = DIM.x - p_x
+              b_x = DIM.x - b_x
+            }
+            if (b_x > ball.box.x
+              && Math.max(bounds[0], Math.min(ball.p.y, bounds[1])) === ball.p.y
+              && b_x <= p_x + extents[0] && b_x > p_x - extents[0] ) {
+                // ball.v.x *= -1
+                ball.p.x = this.p.x + (right ? -1 : 1) * extents[0]
+
+                // set v from back of paddle to front
+                if (ball.v.x !== 0) {
+                  let angle = Math.atan2(ball.p.y - this.p.y, b_x - (p_x - extents[0] * 2))
+                  ball.v = Vector.polar(angle, BALL_MOVE)
+                  if (right) ball.v.x *= -1
+                }
+            }
+          })
+        }
+      }
+      const DIM = new Vector(75, 75)
+      canvas.width = DIM.x
+      canvas.height = DIM.y
+      const ctx = canvas.getContext('2d')
+
+      const PAD = 2
+      const WAIT = 1_000
+      const MOVE = DIM.y * .67
+      const BALL_MOVE = 1.5 * MOVE
+      const BALL_WAIT = 1
+      const PADDLE = new Vector(1, 10)
+      const DIR = {
+        up: new Vector(0, -MOVE),
+        none: new Vector(0, 0),
+        down: new Vector(0, MOVE),
+      }
+      const state = {
+        DIM,
+        t: performance.now(),
+        mode: 0,
+        score: [0, 0],
+        players: [], // {p:{x:5,y:25},paddle:{x:2,y:10},dir:0}
+        balls: [], // {p:{x:50,y:25},v:{x:0,y:0}}
+      }
+
+      let updateTimeout = undefined
+      const handle = {
+        render: () => {
+          ctx.fillStyle = 'black'
+          ctx.fillRect(0, 0, DIM.x, DIM.y)
+
+          ctx.fillStyle = 'white'
+          for (let i = 0; i < DIM.y; i++) {
+            // if (Math.floor(i / (DIM.y / 11)) % 2 === 1) ctx.fillRect(DIM.x/2, i, 1, 1)
+            if (i % 3 === 1) ctx.fillRect(Math.floor(DIM.x/2), i, 1, 1)
+          }
+          ;[...state.players, ...state.balls].map(e => e.draw(ctx, 'white'))
+
+          ctx.font = 'monospaced'
+          ctx.textBaseline = 'top'
+          ctx.textAlign = 'end'
+          ctx.fillText(state.score[0], Math.floor(DIM.x / 2 - 2), 1)
+          ctx.textAlign = 'start'
+          ctx.fillText(state.score[1], Math.ceil(DIM.x / 2 + 2), 1)
+          
+        },
+        spawn: (player_count, score=[0, 0]) => {
+          state.mode = player_count
+          state.score = score
+          state.players = []
+          state.balls = []
+          for (let i = 0; i < player_count; i++) {
+            state.players.push(new Player(i, false))
+          }
+          for (let i = player_count; i < 2; i++) {
+            state.players.push(new Player(i, true))
+          }
+          state.balls.push(new Ball())
+
+          console.debug('spawn', state)
+
+          clearTimeout(updateTimeout)
+          updateTimeout = setInterval(() => {
+            handle.update()
+            handle.render()
+          }, 8)
+        },
+        update: () => {
+          const prev_t = state.t
+          state.t = performance.now()
+          const dt = (state.t - prev_t) / 1_000
+          const done = state.balls.find(ball => ball.done)
+          if (done) {
+            clearTimeout(updateTimeout)
+            setTimeout(() => {
+              handle.spawn(state.mode, state.score)
+            }, BALL_WAIT)
+          } else {
+            state.players.map(player => player.update(dt, state.balls))
+            state.balls.map(ball => ball.update(dt, state.score))
+          }
+        }
+      }
+      handle.spawn(0)
+      handle.render()
+      one_player.onclick = () => handle.spawn(1)
+      two_player.onclick = () => handle.spawn(2)
+
+      // === GAME INPUT ===
+      // move player paddle
+      window.addEventListener('keydown', evt => {
+        if (state.mode === 0) return
+        let i = 0
+        let alt_i = state.mode === 2 ? 1 : 0
+        switch (evt.key) {
+          case 'ArrowUp':i = alt_i
+          case 'w':
+            // state.players[i].v.add(DIR.up)
+            state.players[i].v = DIR.up
+            break
+          case 'ArrowDown':i = alt_i
+          case 's':
+            // state.players[i].v.add(DIR.down)
+            state.players[i].v = DIR.down
+            break
+          case 'ArrowLeft':i = alt_i
+          case 'a':
+            if (i === 0) {
+              // state.players[i].v.add(DIR.up)
+              state.players[i].v = DIR.up
+            } else if (i === 1) {
+              // state.players[i].v.add(DIR.down)
+              state.players[i].v = DIR.down
+            }
+            break
+          case 'ArrowRight':i = alt_i
+          case 'd':
+            if (i === 0) {
+              // state.players[i].v.add(DIR.down)
+              state.players[i].v = DIR.down
+            } else if (i === 1) {
+              // state.players[i].v.add(DIR.up)
+              state.players[i].v = DIR.up
+            }
+            break
+          case ' ':
+            // if (gameover) location.reload()
+            break
+        }
+      })
+      window.addEventListener('keyup', evt => {
+        if (state.mode === 0) return
+        let i = 0
+        let alt_i = state.mode === 2 ? 1 : 0
+        switch (evt.key) {
+          case 'ArrowUp':i = alt_i
+          case 'w':
+            // state.players[i].v.add(DIR.down)
+            state.players[i].v = DIR.none
+            break
+          case 'ArrowDown':i = alt_i
+          case 's':
+            // state.players[i].v.add(DIR.up)
+            state.players[i].v = DIR.none
+            break
+          case 'ArrowLeft':i = alt_i
+          case 'a':
+            if (i === 0) {
+              // state.players[i].v.add(DIR.down)
+              state.players[i].v = DIR.none
+            } else if (i === 1) {
+              // state.players[i].v.add(DIR.up)
+              state.players[i].v = DIR.none
+            }
+            break
+          case 'ArrowRight':i = alt_i
+          case 'd':
+            if (i === 0) {
+              // state.players[i].v.add(DIR.up)
+              state.players[i].v = DIR.none
+            } else if (i === 1) {
+              // state.players[i].v.add(DIR.down)
+              state.players[i].v = DIR.none
+            }
+            break
+        }
+      })
+
+      // window.addEventListener('pointermove', evt => {
+      //   if (state.mode === 1) {
+      //     const y = evt.clientY
+      //     const {y:c_y,height:c_h} = canvas.getBoundingClientRect()
+      //     const paddle_y = state.players[0].p.y
+      //     dir = ((paddle_y / DIM.y) * c_h + c_y) - y
+      //     dir = dir / Math.abs(dir)
+      //     state.players[0].v = dir > 0 ? DIR.down : dir === 0 ? DIR.none : DIR.up
+      //   }
+      // })
+
+    </script>
+  </body>
+</html>

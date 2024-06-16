@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<title>biome.html</title>
+<style>
+  html {
+    background: #f9f8f6;
+    color: #101010;
+    font-size: 12px;
+    user-select: none;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5em;
+    display: flex;
+  }
+  a {
+    color: inherit;
+  }
+  a:hover {
+    color: #f9f8f6;
+    background: #101010;
+  }
+  input[type="number"] {
+    width: 3em;
+  }
+  canvas {
+    image-rendering: pixelated;
+    max-width: min(80vw, 80vh);
+    max-height: min(80vw, 80vh);
+    cursor: pointer;
+  }
+  #controls {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-left: .25em;
+    row-gap: .125em;
+  }
+</style>
+<script>
+window.Q = (l, s) => s ? l.querySelector(s) : document.querySelector(l)
+window.QQ = (l, s) => Array.from((s ? l.querySelectorAll(s) : document.querySelectorAll(l))||[])
+window.on = (l, es, f, o=undefined) => [l]
+    .flatMap(x=>x)
+    .forEach(li => 
+        (typeof(li) === 'string' ? QQ(li) : [li])
+        .forEach(lii => lii && (typeof(es) === 'string' ? es.split(' ') : es).map(e => lii.addEventListener(e, f, o))))
+window.node = html => (x => {
+    x.innerHTML = html
+    return x.children[0]
+})(document.createElement('div'))
+window.sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+window.range = (a,o,e=1) => Array.from({ length: Math.floor((o===undefined?a:o-a)/e) }).map((_, i) => i*e + (o===undefined?0:a))
+window.randi = (min, max) => {
+  if (min === undefined) [min, max] = [0, 2]
+  else if (max === undefined) [min, max] = [0, min]
+  min = Math.ceil(min)
+  max = Math.floor(max)
+  return Math.floor(Math.random() * Math.floor(max - min)) + min
+}
+window.randalpha = n => range(n).map(_=>String.fromCharCode(Math.floor(randi(26)) + 'A'.charCodeAt(0))).join('')
+window.randpick = x => x[randi(x.length)]
+window.randpop = x => x.splice(randi(x.length), 1)[0]
+window.compose = (...funcs) => (...args) => funcs.slice(1).reduce((v, f) => f(v), funcs[0] && funcs[0](...args))
+window.pipe = (value, ...funcs) => compose(...funcs)(value)
+window.api = (url, ...args) => fetch((url[0] === '/' && location.port ? 'http://localhost:5050' : '')+'/api'+url, ...args)
+</script>
+</head>
+<body>
+
+  <canvas id=canvas></canvas>
+  <div id=controls><button id=reset>reset</button> <button id=run>run</button> <input id=steps type="number" value="5" max="8"></input><div>click to rotate color</div></div>
+
+  <script>
+    const convert = {
+      to: s => s.split('\n').filter(s=>s).map(l => l.trim().split('').map(Number)),
+      from: grid => grid.map(r => r.join('')).join('\n'),
+    }
+    const search = new URLSearchParams(location.search)
+    let start = search.get('s') || `
+    0000
+    0120
+    0340
+    0000`
+    let grid = convert.to(search.get('') || start)
+
+    const color = [
+      // 'blue', 'red', 'yellow', 'green', 'purple'
+      'blue', '#ff2f2f', '#ffee0d', '#04b337', '#9e2e9e'
+    ]
+
+    let i, timeout
+    const STEP_INTERVAL_MS = 700
+    const ctx = canvas.getContext('2d')
+    const handle = {
+      draw: () => {
+        canvas.width = grid.length
+        canvas.height = grid.length
+        grid.map((row, r_i) => row.map((_, c_i) => {
+          ctx.fillStyle = color[grid[r_i][c_i]]
+          ctx.fillRect(c_i, r_i, 1, 1)
+        }))
+        canvas.style.width = canvas.style.height = Math.max(window.innerHeight, window.innerWidth)+'px'
+        search.set('', convert.from(grid))
+        history.pushState(0, 0, location.href.replace(location.search ? location.search : /$/, '?'+search.toString()))
+      },
+      expand: () => {
+        if (i >= Number(steps.value)) return clearTimeout(timeout)
+        i += 1
+        const expandSize = grid.length * 2 - 1
+        const expansion = range(expandSize).map(_=>range(expandSize).map(_=>0))
+        grid.map((row, r_i) => row.map((_, c_i) => {
+          expansion[r_i*2][c_i*2] = grid[r_i][c_i]
+          if (r_i < grid.length - 1) expansion[r_i*2+1][c_i*2] = randpick([grid[r_i][c_i], grid[r_i+1][c_i]])
+          if (c_i < grid.length - 1) expansion[r_i*2][c_i*2+1] = randpick([grid[r_i][c_i], grid[r_i][c_i+1]])
+          if (r_i < grid.length-1 && c_i < grid.length-1) expansion[r_i*2+1][c_i*2+1] = randpick([
+            grid[r_i][c_i], grid[r_i][c_i+1], grid[r_i+1][c_i], grid[r_i+1][c_i+1]
+          ])
+        }))
+        grid = expansion
+        handle.draw()
+      },
+      run: () => {
+        clearTimeout(timeout)
+        console.debug(i)
+        if (!i) start = convert.from(grid)
+        handle.expand()
+        timeout = setInterval(handle.expand, STEP_INTERVAL_MS)
+      },
+    }
+
+    i = 0
+    on(canvas, 'click', e => {
+      const bounds = canvas.getBoundingClientRect()
+      const c = Math.floor((e.clientX - bounds.x) / bounds.width * canvas.width)
+      const r = Math.floor((e.clientY - bounds.y) / bounds.height * canvas.height)
+      grid[r][c] = (grid[r][c] + 1) % color.length
+      if (i === 0) search.set('s', convert.from(grid))
+      handle.draw()
+    })
+    on(reset, 'click', () => {
+      i = 0
+      clearTimeout(timeout)
+      grid = convert.to(start)
+      handle.draw()
+    })
+    on(run, 'click', async () => {
+      if (i >= Number(steps.value)) {
+        reset.click()
+        await new Promise(x=>setTimeout(x,STEP_INTERVAL_MS))
+      }
+      handle.run()
+    })
+
+    handle.draw()
+  </script>
+
+</body>
+</html>

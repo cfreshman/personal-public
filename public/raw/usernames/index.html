@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+    <title>usernames</title>
+    <style>
+      #insult-container {
+        margin: 1rem;
+      }
+      #insult {
+        padding: .35rem;
+      }
+      #insult::after {
+        content: "↻";
+        margin-left: .25rem;
+        opacity: .5;
+      }
+      .wait-for-it {
+        opacity: .5;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="insult-container">
+      <button id="insult" class="btn btn-light wait-for-it">wait for it</button>
+    </p>
+    <div id="history-container" class="column gap">
+    </p>
+
+    <script>
+      const q = (s) => document.querySelector(s);
+      const sample = (arr) => arr[Math.floor(Math.random() * arr.length)];
+      const encode = (s) => s.replace(/ /g, '+');
+      const decode = (s) => s.replace(/\+/g, ' ');
+
+      const insultElem = q('#insult');
+      const history_l = q('#history-container');
+
+      let last_insult, nouns, adjs;
+      const doInsult = (insult) => {
+        insult = insult ||  sample(adjs) + ' ' + sample(nouns)
+        if (insult === last_insult) return
+        if (last_insult) {
+          history_l.insertAdjacentElement('afterbegin', node(`<div>${insultElem.innerHTML}</div>`))
+        }
+        insultElem.innerHTML = `<span><b>-</b>&nbsp;<span>@${insult.replace(' ', '_').replace('-', '_')}</span></span>`
+        insultElem.classList.remove('wait-for-it')
+        window.location[window.location.hash[0] ? 'assign' : 'replace'](`#${encode(insult)}`)
+        last_insult = insult
+      }
+
+      const handleHash = () => {
+        const hash = window.location.hash
+        hash.length && doInsult(decode(hash.slice(1)))
+      }
+      handleHash()
+      window.addEventListener('hashchange', handleHash)
+
+      Promise.all(['nouns.txt', 'adjectives.txt'].map(url =>
+        fetch(url).then(r => r.text())
+      )).then(texts => {
+        [nouns, adjs] = texts.map(text => text.split('\n'))
+        q('#insult').addEventListener('click', () => doInsult())
+        window.location.hash || range(5).map(() => doInsult())
+      })
+    </script>
+  </body>
+</html>

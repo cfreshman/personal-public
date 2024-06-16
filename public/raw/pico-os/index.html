@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src=https://freshman.dev/copyright.js></script>
+  <title>pico-os</title>
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    }
+    html {
+      height: 100%;
+      background: #fdfcfa;
+      color: #101010;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+    body {
+      padding: .5em;
+      display: flex;
+      flex-direction: column;
+      row-gap: .5em;
+      flex-grow: 1;
+    }
+    iframe {
+      border: 0;
+      display: block;
+    }
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
+    a:hover {
+      background: #101010;
+      color: #fdfcfa;
+    }
+    button, a, input, *[onclick] {
+      cursor: pointer;
+      font-size: 1em;
+      touch-action: manipulation;
+    }
+    button, input:is(:not([type]), [type=text]) {
+      border: 1px solid black;
+      border-radius: 5em;
+      padding: .1667em .67em !important;
+    }
+    button {
+      background: #eee;
+      user-select: none;
+    }
+    input:is(:not([type]), [type=text]) {
+      background: none;
+    }
+    input:is(:not([type]), [type=text])::placeholder {
+      opacity: .425;
+    }
+
+    .title {
+      font-weight: bold;
+    }
+    .subtitle {
+      font-style: italic;
+      opacity: .5;
+      font-size: .825em;
+    }
+  </style>
+</head>
+<body>
+
+  <div id=title>
+    <span class="title">(pico-os)</span> <span class="subtitle">straight computer science</span>
+  </div>
+
+  <div>
+    coming soon <span data-label="your email" data-hydrate data-toggle="✅︎" onclick>🔔</span>
+  </div>
+
+  <div id=root></div>
+
+</body>
+</html>

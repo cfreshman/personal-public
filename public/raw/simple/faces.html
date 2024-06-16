@@ -1,0 +1,17 @@
+<title>faces.html</title>
+<meta charset=utf-8><meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>body{display:flex;align-items:center;justify-content:center;height:0;flex-grow:1;overflow:hidden;margin:-2em;scale:1.1}</style>
+<div style="font-family:monospace;display:flex;flex-wrap:wrap">
+<span id=face 
+style="
+cursor: pointer;
+padding: 0 .167em;
+"
+onpointermove="
+event.target.textContent = ':<'
+event.target.style.fontWeight = 'bold'
+">:></span>
+</div>
+<script>
+face.outerHTML = face.outerHTML.repeat(1e4)
+</script>

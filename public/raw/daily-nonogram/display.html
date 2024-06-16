@@ -1,0 +1,2282 @@
+<!-- cyrusfreshman 2023 -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8><meta name=viewport content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><meta name=theme-color content=#000>
+<title>daily nonogram</title> <script src=/copyright.js></script><meta data-hydrate data-style />
+<style>
+h1 {
+    text-align: center;
+    font-size: 2rem;
+    margin: 1.5rem 0;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-content: stretch;
+    align-items: center;
+}
+
+img.logo {
+    height: 3rem;
+    width: 3rem;
+    padding-left: 2rem;
+    image-rendering: pixelated;
+}
+
+hr {
+    width: 100%;
+    border-top: 1px solid #8c8b8b;
+}
+
+
+#inputs {
+    /* width: calc(100% - 2rem); */
+    width: 100%;
+    margin: .5rem auto;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+}
+#inputs form {
+    flex-grow: 1;
+}
+input[type=text] {
+    /* width: 700px; */
+    flex-grow: 1;
+    height: 1.3rem;
+    margin: .3rem;
+    text-indent: .15rem;
+    border: 1px solid rgb(121, 121, 121);
+    font-family: sans-serif;
+}
+label {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+.label {
+    padding-right: 5px;
+    min-width: 2.2rem;
+    text-align: right;
+}
+
+button {
+    margin: .3rem;
+    border-radius: .15rem;
+    background-color: #000;
+    color: #fff;
+    border: none;
+}
+button:focus {
+    outline: none;
+}
+
+button.lg {
+    font-size: 1.25rem;
+    padding: 1rem;
+}
+
+button.sm {
+    font-size: 1rem;
+    padding: .5rem;
+}
+
+
+#slider {
+    width: 100%;
+    /* height: .5rem; */
+    padding: .5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+#slider input {
+    flex-grow: 1;
+}
+#slider label {
+    /* min-width: 7rem; */
+    /* margin-right: .5rem; */
+    display: flex;
+    justify-content: center;
+}
+
+#custom-handle {
+    width: 4rem;
+    height: 1.6rem;
+    top: 50%;
+    margin-top: -.8rem;
+    margin-left: -2.075rem;
+    text-align: center;
+    line-height: 1.6rem;
+}
+#custom-handle:focus {
+    outline: none;
+}
+#custom-handle.ui-state-active {
+    border: 1px solid #000;
+    background: #000;
+}
+
+
+/* .board { */
+    /* min-height: 8rem; */
+    /* height: fit-content; */
+    /* margin: 2px 2px 4px; */
+    /* flex-grow: 1; */
+    /* width: calc(100% - 16rem); */
+    /* width: max-content;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+} */
+table {
+  position: relative;
+  user-select: none;
+}
+/* table, tbody, tr, td {
+    border-collapse: collapse;
+} */
+/* default table display bad. very bad. too bad. */
+tbody {
+    display: flex;
+    flex-direction: column;
+}
+tr:not(.numbers) {
+    display: flex;
+    border: 2px solid #000;
+    border-width: 0 2px;
+}
+tr.numbers + tr { border-top-width: 2px }
+tr:last-child { border-bottom-width: 2px }
+
+tr {
+    font-size: 0;
+}
+
+td {
+    /* border: 1px solid #929292; */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    /* width: 24px;
+    height: 23px;
+    font-size: 24px; */
+    width: 1.5rem;
+    height: calc(1.5rem - 1px);
+    /* font-size: 1.5rem; */
+    font-size: 16px;
+}
+td:not(.numbers) {
+    /* border: 1px solid #00000006 !important; */
+    /* margin-bottom: -1px !important; */
+}
+
+td.highlight {
+    /* border-color: #252525; */
+    /* border-color: #0175ff; */
+    background: #0175ff88;
+    /*border-width: 2px;*/
+    border: 0;
+    color: #0175ff !important;
+}
+td.v1.highlight {
+    background: #0175ff !important;
+    border: 0;
+}
+
+tr:not(.numbers) {
+    background: #fff;
+    /* box-shadow: 2px 0 #000, -2px 0 #000; */
+}
+/* table::after, tr:first-child::after {
+    position: absolute;
+    content: "";
+    height: 2px;
+    width: calc(100% + 4px);
+    left: 0;
+    margin-left: -2px;
+    background: #000;
+} */
+tr:first-child {
+    position: relative;
+}
+tr:first-child::after {
+    bottom: 0;
+}
+
+table.composed::after, .composed tr:first-child::after {
+    background: #0002;
+    background: #0000;
+}
+.composed tr:not(.numbers) {
+    box-shadow: 2px 0 #0002, -2px 0 #0002;
+}
+table.composed {
+    /* background: #0002; */
+    border: 2px solid #0000 !important;
+}
+table.composed * {
+    background: #0000;
+    border-color: #0002 !important;
+    border-color: #0000 !important;
+}
+
+/* .unsolved table:not(.composed) tr:not(.numbers) td[data-tile]:hover {
+    background: #000;
+    cursor: pointer;
+} */
+.unsolved .v2 {
+    position: relative;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 16px !important;
+}
+/* .unsolved.mode-v2 table:not(.composed) tr:not(.numbers) td[data-tile]:hover {
+    background: none;
+    font-size: 20px !important;
+} */
+.unsolved .v2::after
+/* , .unsolved.mode-v2 table:not(.composed) tr:not(.numbers) td[data-tile]:hover::after */
+{
+    content: "⨉";
+    position: absolute; align-items: center; justify-content: center;
+    font-size: inherit !important;
+    z-index: 1;
+    text-shadow: 0.25px 0.25px #000, -0.25px -0.25px #000, 0.25px -0.25px #000, -0.25px 0.25px #000, 0px 0.5px #000, 0.5px 0px #000, 0px -0.5px #000, -0.5px 0px #000;
+}
+.unsolved.mode-v2 .numbers.down.across > div {
+    color: #fff;
+    background: #000;
+    padding-right: 0;
+}
+.unsolved [date-tile] {
+    cursor: pointer;
+    pointer-events: all;
+}
+/* tr:not(.numbers) td:hover {
+    background: #000;
+    cursor: pointer;
+} */
+
+/* td.highlight.down {
+    border-right-width: .05rem;
+    border-left-width: .05rem;
+}
+
+td.highlight.across {
+    border-top-width: .05rem;
+    border-bottom-width: .05rem;
+} */
+
+td.selected {
+    background: rgba(0, 0, 0, .5);
+}
+
+
+tr.numbers {
+    border: none;
+}
+td.numbers {
+    border: none;
+    justify-content: flex-end;
+    align-content: center;
+}
+.numbers div {
+    font-size: .7rem;
+    height: .9rem;
+}
+
+tr {
+  position: relative;
+}
+td.numbers.down:not(.across) {
+    height: auto;
+    flex-direction: column;
+    vertical-align: bottom;
+    padding: 0;
+    padding-bottom: .3rem;
+}
+
+td.border.vertical {
+    position: relative;
+}
+td:has(div.numbers.across) {
+    position: absolute;
+    left: calc(100% + .5rem + 2px);
+    width: unset;
+    background: none;
+}
+div.numbers.across {
+    display: flex;
+}
+div.numbers.across div {
+    padding-right: .5rem;
+}
+tr.numbers {
+    display: flex;
+}
+td:has(.numbers.across.down) {
+    /* bottom: .5rem;
+    top: calc(100% - .5rem); height: 0; */
+    /* bottom: .5rem; */
+}
+/* div.numbers.across.down div {
+    font-size: .9rem;
+} */
+td:has(.numbers.across.down) {
+    left: 100%;
+    bottom: 0;
+    /* font-size: .7em; */
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    justify-content: flex-start;
+    line-height: 1;
+    /* text-decoration: none; */
+}
+.numbers.down.across {
+    /* font-size: .7em; */
+    font-size: 1em;
+    margin: 2px;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    justify-content: flex-start;
+    /* text-decoration: underline; */
+}
+.numbers.down.across a {
+    text-decoration: none;
+    border: .5px solid currentColor;
+    border-radius: 10em;
+    padding: 0 .25em;
+    line-height: 1;
+    background: #000; color: #fff;
+}
+.unsolved.mode-v2 .numbers.down.across a {
+    background: #fff; color: #000;
+    text-decoration: none;
+}
+
+
+td.border {
+    padding: 0;
+    border: none;
+    background: #000;
+}
+tr:first-child td.not.border {
+    background: none;
+}
+
+tr.border {
+    display: flex;
+}
+td.border.horizontal {
+    height: .2rem;
+    height: 0;
+    flex: 1 0;
+    border: 0 !important;
+}
+td.not.border.horizontal {
+    flex: 0 0 .15rem;
+}
+td.end.not.border.horizontal {
+    flex: 0 0 0;
+    background: none;
+}
+
+td.border.vertical {
+    /* width: .2rem; */
+    /* display: none; */
+    width: 0;
+    border: 0 !important;
+}
+
+:root {
+    --fill-color-default: #000;
+    --fill-color-0: #6c6c6c;
+    --fill-color-1: red;
+    /* --fill-color-1: #ff2626; */
+    --fill-color-2: #ffb210;
+    /* --fill-color-2: #ffde00; */
+}
+td[data-tile] {
+    --fill-color: var(--fill-color-default);
+}
+:is(td[data-tile].color-0, .board:nth-child(3) td[data-tile]) {
+    --fill-color: var(--fill-color-0);
+}
+:is(td[data-tile].color-1, .board:nth-child(4) td[data-tile]) {
+    --fill-color: var(--fill-color-1);
+}
+:is(td[data-tile].color-2, .board:nth-child(5) td[data-tile]) {
+    --fill-color: var(--fill-color-2);
+}
+.red:not(.colored) :is(td[data-tile].color-0, .board:nth-child(3) td[data-tile]) {
+    --fill-color: var(--fill-color-1);
+}
+.red:not(.colored) :is(td[data-tile].color-1, .board:nth-child(4) td[data-tile]) {
+    --fill-color: var(--fill-color-2);
+}
+.red:not(.colored) :is(td[data-tile].color-2, .board:nth-child(5) td[data-tile]) {
+    --fill-color: var(--fill-color-3);
+}
+.yellow:not(.colored) :is(td[data-tile].color-0, .board:nth-child(3) td[data-tile]) {
+    --fill-color: var(--fill-color-2);
+}
+.yellow:not(.colored) :is(td[data-tile].color-1, .board:nth-child(4) td[data-tile]) {
+    --fill-color: var(--fill-color-0);
+}
+.yellow:not(.colored) :is(td[data-tile].color-2, .board:nth-child(5) td[data-tile]) {
+    --fill-color: var(--fill-color-1);
+}
+
+.v0 {
+
+}
+.v1 {
+    background-color: var(--fill-color) !important;
+    /* border: 1px solid #252525; */
+    border-color: #000;
+}
+
+.v2 {
+    font-family: 'Coiny', 'Roboto Slab', sans-serif;
+    padding: 0;
+}
+.v2.done {
+    color: #00000000;
+    border: 1px solid #9292921f;
+}
+.v2.done.slow {
+    transition: 1s ease-out;
+}
+
+.guess.v1 {
+    font-family: 'Coiny', 'Roboto Slab', sans-serif;
+    padding-top: .4rem;
+    padding-left: .1rem;
+    color: #fff;
+}
+
+
+#examples {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button, #custom-handle {
+    cursor: pointer;
+}
+
+html {
+    overflow: hidden;
+    min-height: fit-content;
+    min-height: 400px;
+}
+body {
+    overflow: auto;
+}
+body > * {
+    flex-shrink: 0;
+}
+@media screen and (max-aspect-ratio: 2/3) {
+    html {
+        overflow: hidden;
+        min-height: fit-content;
+    }
+}
+@media screen and (min-aspect-ratio: 2/3) {
+    .unsolved table:not(.composed) tr:not(.numbers) td[data-tile]:hover {
+        background-color: var(--fill-color) !important;
+        cursor: pointer;
+    }
+    .unsolved .v2 {
+        position: relative;
+        display: inline-flex;
+        align-items: center; justify-content: center;
+        font-size: 20px !important;
+    }
+    .unsolved.mode-v2 table:not(.composed) tr:not(.numbers) td[data-tile]:not(.v1):hover {
+        background: none !important;
+        /* font-size: 1em; */
+        font-size: 20px !important;
+    }
+    .unsolved.mode-v2 table:not(.composed) tr:not(.numbers) td[data-tile]:not(.v1):hover::after {
+        content: "⨉";
+        position: absolute; align-items: center; justify-content: center;
+        font-size: inherit !important;
+        z-index: 1;
+        text-shadow: 0.25px 0.25px #000, -0.25px -0.25px #000, 0.25px -0.25px #000, -0.25px 0.25px #000, 0px 0.5px #000, 0.5px 0px #000, 0px -0.5px #000, -0.5px 0px #000;
+    }
+}
+
+body > * {
+    min-width: max-content;
+}
+.composite-select {
+    position: relative;
+}
+.composite-select select {
+    position: absolute;
+    top: 0; left: 0;
+    z-index: -1;
+}
+#object-container {
+    display: flex; flex-direction: column; flex-grow: 1; width: 100%;
+    position: relative;
+}
+#objects {
+    display: flex; flex-direction: column; gap: 1em;
+}
+#objects * {
+    user-select: none !important;
+}
+#ui {
+    width: -webkit-fill-available;
+    user-select: none;
+}
+#input-controls > .hidden {
+    visibility: hidden;
+}
+#ui > *, #examples {
+    display: flex;
+    justify-content: flex-start;
+    gap: 1px .67em;
+    width: -webkit-fill-available;
+}
+#ui > * > input {
+    width: 100%;
+    border-radius: 0;
+    border: 1px solid currentcolor;
+    margin: -1px;
+    padding: 2px 0;
+    font-family: inherit;
+    outline: 0;
+    font-size: 1em !important;
+}
+#ui > * > select {
+    -webkit-appearance: none;
+    color: #000;
+    background: #fff;
+    font-family: inherit;
+    outline: 0;
+    border: 0;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: 1em !important;
+}
+.input-empty .input-only {
+    opacity: .5;
+    pointer-events: none;
+}
+.unsolved #input-controls .input-only {
+    color: #0000;
+    background: #aaa;
+    pointer-events: none;
+    user-select: none;
+}
+#display-input {
+    margin-bottom: var(--display-pad-outer) !important;
+}
+#input-controls {
+    flex-wrap: wrap;
+    /* align-items: flex-start; */
+    gap: 1em;
+    align-items: center;
+    
+    /* flex-direction: column; gap: 1px; align-items: flex-start; */
+    /* margin-top: .75em; */
+    padding: 0 .35em;
+    margin-top: .67em;
+}
+#input-controls #name-label {
+    text-transform: uppercase;
+}
+#input-controls > :not(:first-child) {
+    font-size: .67em !important;
+    cursor: pointer;
+    padding: 1px;
+    /* padding: 0; */
+    display: flex; align-items: stretch; justify-content: center;
+    /* border-radius: 3px !important; overflow: hidden; */
+}
+#input-controls > :not(:first-child) span {
+    /* padding: 0 .5em !important; */
+    padding-left: .5em !important;
+}
+#input-controls > :not(:first-child):hover {
+    background: #000;
+    color: #fff;
+}
+#input-controls input[type=checkbox], #input-controls > a::before {
+    -webkit-appearance: none;
+    height: 1em; width: 1em;
+    /* margin: 0 0.85em; */
+    margin: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border: 1px solid currentcolor;
+    border: .5px solid currentcolor;
+    /* border-radius: 2px; */
+    /* box-shadow: 0 0 1px currentcolor; */
+    box-sizing: content-box;
+}
+#input-controls :is(#morse-label, #sequential-label) input[type=checkbox]:not(:checked) {
+    background: var(--fill-color-2) !important;
+} 
+#input-controls #placement-label input[type=checkbox]:not(:checked) {
+    background: var(--fill-color-1) !important;
+}
+#input-controls > :not(:first-child) input[type=checkbox]:checked {
+    background: #000 !important;
+    /* border-color: #fff !important; */
+}
+#input-controls > :not(:first-child):hover input[type=checkbox] {
+    background: #fff !important;
+    color: #000 !important;
+}
+#input-controls > a {
+    text-decoration: none;
+}
+#input-controls > a::before {
+    content: ">";
+    /* content: '↗'; */
+    background: #fff;
+    color: #000;
+}
+
+
+:root {
+    --alt: #000;
+    --display-pad-outer: .125em;
+    --display-radius-inner: .375em;
+}
+body {
+    padding: .75em;
+}
+.unsolved #name-label {
+    overflow: hidden;
+    white-space: pre;
+    background: #000000d8 !important; color: #fff !important;
+
+    background: #aaa !important;
+    background: #888 !important;
+    background: var(--alt) !important;
+}
+.unsolved .board:has(.composed) {
+    display: none;
+}
+.unsolved #name-label, #display-input > *, .guide table:not(.composed) tr.numbers::after, .guide table:not(.composed) tr:nth-child(2)::after {
+    border: 0; padding: 0;
+    letter-spacing: .05em;
+    font-family: highway-gothic;
+}
+#ui, #display-input {
+    display: flex;
+    flex-direction: column;
+    /* gap: 4px; */
+    color: var(--alt);
+
+    /* gap: .5rem; */
+    gap: var(--display-pad-outer);
+}
+#display-input > * {
+    display: flex; flex-direction: row;
+    /* gap: .125em; */
+    gap: var(--display-pad-outer);
+    padding: var(--display-pad-outer);
+    border-radius: calc(var(--display-radius-inner) + var(--display-pad-outer));
+    background: var(--fill-color-2);
+    width: fit-content;
+
+    gap: calc(2 * var(--display-pad-outer));
+    border-radius: .5px;
+}
+#display-input > * > * {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* gap: 2px; */
+    width: fit-content;
+
+    background: var(--alt);
+    /* border-radius: inherit; */
+    border-radius: var(--display-radius-inner);
+    /* padding: 0 2px; */
+    /* box-shadow: inset 0 0 0 2px var(--alt); */
+    /* gap: 2px; */
+    /* border-radius: 16px; */
+    border: 1px solid currentcolor;
+}
+#display-input > * > * > *, .guide table:not(.composed) tr.numbers::after, .guide table:not(.composed) tr:nth-child(2)::after {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: highway-gothic;
+    border-radius: 16px;
+    border-radius: 0;
+    font-family: highway-gothic;
+    color: var(--alt);
+}
+#display-input > * > * > :first-child {
+    border-top-left-radius: inherit;
+    border-bottom-left-radius: inherit;
+}
+#display-input > * > * > :last-child {
+    border-top-right-radius: inherit;
+    border-bottom-right-radius: inherit;
+}
+#display-input > * > * > :nth-child(2n + 1) {
+    background: var(--alt); color: #fff;
+}
+.unsolved #name-label {
+    /* font-size: 1.5em !important; */
+}
+#solve-input input {
+    /* font-family: highway-gothic; */
+    font-size: 44px !important;
+}
+#objects .board {
+    order: 0;
+}
+#objects .board:has(.composed) {
+    order: 1;
+}
+#objects {
+    /* gap: .5em; */
+    /* margin-top: 1.5em; */
+    /* flex-grow: 1; */
+
+    scale: 1;
+    /* width: 100%; */
+    display: flex; align-items: flex-start; justify-content: flex-start;
+    flex-direction: column;
+    gap: 5em;
+    gap: 2em; padding-right: 2em;
+    flex-wrap: wrap;
+    transform-origin: 0 0;
+    --scale: 1;
+    scale: var(--scale);
+    max-width: calc(100% / var(--scale));
+}
+
+.morse #name-label {
+    /* color: var(--fill-color-2) !important; */
+}
+
+.guide table:not(.composed) tr.numbers::after, .guide table:not(.composed) tr:nth-child(2)::after {
+    display: flex;
+    /* align-items: center;
+    justify-content: center; */
+    align-items: flex-start;
+    justify-content: flex-start;
+    position: absolute;
+    z-index: 100;
+    /* background: #000; color: var(--fill-color-1) !important; */
+    /* background: var(--fill-color-1); color: #000 !important; */
+    color: #000 !important; background: none;
+    font-size: 12px !important;
+    overflow: visible;
+    font-size: 40px !important;
+    padding: 0 .5em;
+    box-sizing: border-box;
+
+    /* border-radius: var(--display-radius-inner); */
+    /* margin: var(--display-pad-outer); */
+    /* padding: 0; */
+    /* border: 1px solid #000; */
+    /* padding: 0 var(--display-pad-outer); */
+    padding: 0;
+    white-space: pre-wrap;
+}
+.guide table:not(.composed) tr.numbers::after {
+    content: "1:1→";
+    /* bottom: -50%; */
+    left: 0;
+    bottom: 0;
+    /* top: 0; */
+    /* left: var(--display-pad-outer); */
+    width: 100%;
+    height: max-content;
+    /* margin-bottom: 2px; */
+    height: calc(1em + 2 * var(--display-pad-outer));
+    
+    padding: 0; height: 1em;
+    height: max-content; line-height: 1;
+}
+.guide table:not(.composed) tr:nth-child(2)::after {
+    content: "2:1    ↓";
+    /* top: 33%; */
+    top: -2px;
+    /* left: calc(100% + 2px); */
+    left: 100%;
+    /* left: calc(100% - .5em); */
+    /* top: calc(var(--display-pad-outer) - 2px); */
+    /* left: calc(100% - 2px - 3 * var(--display-pad-outer)); */
+    width: max-content;
+    margin-left: 2px;
+    /* line-height: 1.3; */
+    line-height: 1;
+
+    width: 100px;
+    /* display: flex; align-items: center; justify-content: center; */
+}
+.guide .board:nth-child(3) table:not(.composed) tr.numbers::after {
+    content: "1:2→";
+}
+.guide .board:nth-child(3) table:not(.composed) tr:nth-child(2)::after {
+    content: "2:2    ↓";
+}
+.guide .board:nth-child(4) table:not(.composed) tr.numbers::after {
+    content: "1:3→";
+}
+.guide .board:nth-child(4) table:not(.composed) tr:nth-child(2)::after {
+    content: "2:3    ↓";
+}
+.guide table:not(.composed) .numbers {
+    color: #0000 !important;
+}
+.guide table:not(.composed) tr:not(.numbers) {
+    box-shadow: 100px 0 var(--fill-color-1);
+    /* box-shadow: 100px 0 #0004, 100px 0 var(--fill-color-1); */
+}
+.guide table:not(.composed) tr:not(.numbers):nth-child(2n + 1) {
+    box-shadow: 100px 0 #0003, 100px 0 var(--fill-color-1);
+}
+.guide table:not(.composed) td.numbers.down:not(.across) {
+    /* box-shadow: 0 -100px var(--fill-color-1); */
+    /* box-shadow: 100px 0 #0004, 100px 0 var(--fill-color-1); */
+    min-height: calc(2em + 2px + 2 * var(--display-pad-outer));
+    background: var(--fill-color-1);
+}
+.guide table:not(.composed) td.numbers.down:not(.across):nth-child(2n + 1) {
+    background: linear-gradient(#0003 0 0) var(--fill-color-1);
+}
+
+/* .sequential #objects, html:not(.sequential) #sequential {
+    display: none !important;
+} */
+#sequential {
+    flex-grow: 1;
+    width: -webkit-fill-available;
+    background: transparent;
+    pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<!-- <div>[WIP]</div> -->
+<div id=examples style="
+display: none;
+"></div>
+
+<div id=ui>
+    <!-- <br /> -->
+    <!-- <div id=input-controls class=input-empty style="
+    flex-wrap: wrap;
+    ">
+        <span id=name-label class=input-only></span>
+    </div> -->
+    <form id=solve-input style="
+    flex-direction: column;
+    margin: 2px 0;
+    display: none;
+    ">
+        <input type=text id=solve-input-down name=down autocomplete=off contenteditable>
+        <input type=text id=solve-input-across name=across autocomplete=off contenteditable>
+    </form>
+    <div id=display-input style="
+    flex-direction: column;
+    margin: 2px 0;
+    width: fit-content;
+    ">
+        <div id=display-input-down></div>
+        <div id=display-input-across></div>
+    </div>
+</div>
+<div id=object-container>
+    <div id=objects></div>
+    <iframe id=sequential class=fill allowtransparency></iframe>
+</div>
+<!-- <div class=spacer></div> -->
+<!-- <div data-hydrate data-title></div> -->
+<div id=ui>
+    <!-- <br /> -->
+    <div id=input-controls class=input-empty>
+        <span id=name-label class=input-only></span>
+        <!-- <label id=morse-label><input type=checkbox /><span>morse code</span></label> -->
+        <label id=placement-label><input type=checkbox /><span>placement guide</span></label>
+        <label id=sequential-label><input type=checkbox /><span>sequential display</span></label>
+        <!-- <a href=puzzle.html><span>puzzle.html</span></a> -->
+        <a href=puzzle.html onclick="
+        event.stopImmediatePropagation()
+        event.preventDefault()
+        const href = event.target.parentNode.href + location.hash + location.search
+        event.target.href = href
+        url.push(href)
+        location.reload()
+        "><span>puzzle.html</span></a>
+        <a onclick="updateQuery({ print:true })"><span>printout</span></a>
+    </div>
+    <!-- <div>
+        <label id=more-label><input type=checkbox />&nbsp;morse code</label>
+    </div> -->
+    <div style="display:none">
+        <a id=variant-button class=hidden>variant</a>
+        <a id=solve-button class=hidden>solve</a>
+        <div style="flex-basis:100%"></div>
+        <a id=save-button>save</a>
+        <!-- <a id=export-button>export</a> -->
+        <!-- <select id=save-select>
+            <option value="cancel">save</option>
+            <option value="image">image</option>
+            <option value="export">export</option>
+        </select> -->
+        <!-- <span id=save-widget class=composite-select>
+            <a>save</a>
+            <select>
+                <option value="cancel">cancel</option>
+                <option value="image">image</option>
+                <option value="export">export</option>
+            </select>
+        </span> -->
+        <a id=reset-button>reset</a>
+        <!-- <a id=previous-button>←</a><a id=next-button>→</a> -->
+        <a id=first-button>|&lt;</a>
+        <a id=previous-button>&lt;-</a>
+        <a id=random-button>??</a>
+        <a id=next-button>-&gt;</a>
+        <a id=last-button>&gt;|</a>
+        <select id=theme-select class=hidden>
+            <option value="grayscale">grayscale</option>
+            <option value="red">red</option>
+            <option value="yellow">yellow</option>
+        </select>
+    </div>
+</div>
+<div>&nbsp;</div><script>
+const MAX_INPUT_DIM = 31
+
+var allPos = {};
+function getAllPos(size, nums) {
+    if (nums.length === 0 || nums[0] === 0)
+        return [0];
+
+    let key = [size].concat(nums).join();
+    if (allPos[key] !== undefined)
+        return allPos[key];
+
+    let [n, endNums] = [nums[0], nums.slice(1)];
+    let minEndSize = endNums.reduce((acc, n) => acc+n, 0) + endNums.length;
+    let degrees = (size - n) - minEndSize + 1;
+
+    let blockPerms = [];
+    let bit_v = ((1 << n) - 1) << (size - n);
+    for (let i = 0; i < degrees; i++) {
+        if (endNums.length === 0) {
+            blockPerms.push(bit_v);
+        } else {
+            let endSize = size - ((n + 1) + i);
+            let ends = getAllPos(endSize, endNums);
+            for (let e_i = 0; e_i < ends.length; e_i++)
+                blockPerms.push(bit_v | ends[e_i]);
+        }
+
+        bit_v >>>= 1;
+    }
+
+    allPos[key] = blockPerms;
+    return blockPerms;
+}
+
+var moves;
+function solve(down, across, unsolved=false, dryrun=false) {
+    console.debug('solve', down, across)
+    if (down[0] && down[0][0].length && down.length === across.length) return range(down.length).map(i => solve(down[i], across[i], unsolved, dryrun))
+
+    let rows = [];
+    for (let i = 0; i < across.length; i++) rows[i] = [0, 0];
+
+    let cols = [];
+    for (let i = 0; i < down.length; i++) cols[i] = [0, 0];
+
+    let board = {
+        down: down,
+        across: across,
+        rows: rows,
+        cols: cols
+    };
+
+    if (!dryrun) {
+        constructBoard(board, false);
+        document.documentElement.classList[unsolved ? 'add' : 'remove']('unsolved')
+    }
+    if (unsolved) return board
+
+    moves = [];
+    possiblePos = {};
+
+    let downUpdated = updateVectors(false, board);
+    let acrossUpdated = updateVectors(true, board);
+    while (downUpdated || acrossUpdated) {
+        downUpdated = (acrossUpdated) ? updateVectors(false, board) : false;
+        acrossUpdated = (downUpdated) ? updateVectors(true, board) : false;
+    }
+
+    if (!isSolution(board)) board = trySolve(board) || board;
+
+    return board;
+}
+const dims = (board) => Array.isArray(board) ? dims(board[0]) : [board.across.length, board.down.length]
+
+function trySolve(board) {
+    if (Array.isArray(board)) return board.map(trySolve)
+    console.log();
+    console.log("decision point reached");
+    logB(board);
+
+    let allPosCopy = JSON.parse(JSON.stringify(allPos));
+    let possiblePosCopy = JSON.parse(JSON.stringify(possiblePos))
+
+    let size = board.cols.length;
+    for (let r = 0; r < board.rows.length; r++) {
+        let row = board.rows[r];
+        if ((row[0] ^ row[1]) === ((1 << size)-1))
+            continue;
+
+        let unknown_v = ~(row[0] ^ row[1]);
+        for (let c = 0; c < board.cols.length; c++) {
+            if (unknown_v & 1) {
+                let tryBoard = JSON.parse(JSON.stringify(board));
+
+                tryBoard.rows[r][0] |= (1 << c);
+
+                moves.push({
+                    guess: true,
+                    val: 1,
+                    pos: [r, board.cols.length - 1 -c]
+                });
+
+                fixVectors(tryBoard.cols, board.rows.length, tryBoard.rows[r], r);
+
+                console.log(r, c);
+                console.log(b(tryBoard.rows[r][0], size));
+
+                try {
+                    let downUpdated = updateVectors(false, tryBoard);
+                    let acrossUpdated = updateVectors(true, tryBoard);
+                    if (downUpdated || acrossUpdated) {
+                        while (downUpdated || acrossUpdated) {
+                            downUpdated = (acrossUpdated) ? updateVectors(false, tryBoard) : false;
+                            acrossUpdated = (downUpdated) ? updateVectors(true, tryBoard) : false;
+                        }
+
+                        if (!isSolution(tryBoard))
+                            tryBoard = trySolve(tryBoard);
+
+                        if (tryBoard)
+                            return tryBoard;
+                    }
+                } catch (e) {}
+
+                allPos = JSON.parse(JSON.stringify(allPosCopy));
+                possiblePos = JSON.parse(JSON.stringify(possiblePosCopy));
+                moves.push({
+                    reset: JSON.parse(JSON.stringify(board))
+                })
+            }
+
+            unknown_v >>= 1;
+        }
+    }
+
+    return false;
+}
+
+var possiblePos = {};
+function updateVectors(isRow, board) {
+    let vectors = (isRow) ? board.rows : board.cols;
+    let size = (isRow) ? board.cols.length : board.rows.length;
+
+    let isChanged = false;
+    for (let i = 0; i < vectors.length; i++) {
+        let nums = (isRow) ? board.across[i] : board.down[i];
+        let [true_v, false_v] = vectors[i];
+
+        moves.push({
+            isRow: isRow,
+            i: i
+        });
+
+        let key = [isRow, i].join();
+        let prev = possiblePos[key] || getAllPos(size, nums);
+        let possible = prev.filter(
+            v => (v & true_v) === true_v && (v & false_v) === 0
+        )
+        possiblePos[key] = possible;
+
+        if (possible.length === 0) {
+            console.log(isRow, i);
+            logB(board);
+            throw 'Invalid board';
+        }
+
+        true_v |= possible.reduce((acc, v) => acc & v);
+        false_v |= possible.reduce((acc, v) => acc | v) ^ ((1 << size) - 1);
+
+        let diff_true = true_v ^ vectors[i][0];
+        let diff_false = false_v ^ vectors[i][1];
+        let unknown = ~(true_v ^ false_v);
+
+        let toAdd = [];
+        for (let j = size-1; j >= 0; j--) {
+            if ((diff_true & 1) || (diff_false & 1)) {
+                toAdd.push({
+                    isRow: isRow,
+                    i: i,
+                    val: (diff_true & 1) ? 1 : 2,
+                    pos: isRow ? [i, j] : [j, i]
+                });
+            }
+
+            if ((diff_true & 1) || (diff_false & 1) || (unknown & 1)) {
+                toAdd.push({
+                    isRow: isRow,
+                    i: i,
+                    val: 0,
+                    pos: isRow ? [i, j] : [j, i]
+                });
+            }
+
+            diff_true >>= 1;
+            diff_false >>= 1;
+            unknown >>= 1;
+        }
+        moves.push(...toAdd.reverse());
+
+        if (true_v !== vectors[i][0] || false_v !== vectors[i][1]) {
+            isChanged = true;
+            vectors[i] = [true_v, false_v];
+            fixVectors( (isRow) ? board.cols : board.rows, vectors.length, vectors[i], i);
+            moves.push({
+                isRow: isRow,
+                i: i
+            });
+        }
+    }
+
+    // moves = (getMoveTime() > 0) ? moves : [];
+    // console.log(moves);
+
+    return isChanged;
+}
+
+function fixVectors(vectors, size, fix, index) {
+    let [true_v, false_v] = fix;
+    let pos = size - index - 1;
+    for (let i = vectors.length-1; i >= 0; i--) {
+        vectors[i][0] |= ((true_v & 1) << pos);
+        vectors[i][1] |= ((false_v & 1) << pos);
+        true_v >>= 1;
+        false_v >>= 1;
+    }
+}
+
+function isSolution(board) {
+    return board.rows.every(r => (r[0] ^ r[1]) === ((1 << board.cols.length)-1));
+}
+
+function convertBoard(board) {
+    if (board.layers) {
+        return board.layers
+        .map(convertBoard)
+        .reduce((a, v, i) => a.map((a_r, r_i) => a_r.map((x, c_i) => x !== 1 ? v[r_i][c_i] === 1 ? 2 + i : v[r_i][c_i]  : x)))
+    }
+
+    let converted = [];
+    for (let r = 0; r < board.rows.length; r++) {
+        let boxes = [];
+        let [true_v, false_v] = board.rows[r];
+        for (let c = 0; c < board.cols.length; c++) {
+            let val = (true_v & 1) | ((false_v & 1) << 1);
+            boxes.unshift(val);
+            true_v >>= 1;
+            false_v >>= 1;
+        }
+        converted.push(boxes);
+    }
+    return converted;
+}
+
+function logB(board) {
+    let converted = convertBoard(board);
+    for (let i = 0; i < converted.length; i++)
+        console.log(i.toString().padStart(3) + '| ',
+            converted[i].join(' ')
+            .split('0').join('?')
+            .split('1').join('O')
+            .split('2').join(' '));
+    if (!isSolution(board))
+        console.log('Incomplete');
+}
+
+function bl(l, size) {
+    return l.map(v => b(v, size));
+}
+
+function b(v, size) {
+    return ((v >>> 0) & ((1 << size) - 1)).toString(2).padStart(size, '0');
+}
+
+
+function parseNums(line) {
+    if (line.includes('|')) return line.split('|').map(parseNums)
+    
+    let groups = line.trim().split('|')[0].split(/ +/g).filter(g => g);
+    let nums = groups.map(g => g.trim().split(',').map(Number));
+    return nums;
+}
+
+function boardToCanvas(target_table_l=Q('table')) {
+    if (!(/table/i.test(target_table_l.tagName))) target_table_l = target_table_l.querySelector('table')
+    if (!target_table_l) return undefined
+
+    const canvas = node('<canvas style="image-rendering:pixelated"></canvas>')
+    ;[canvas.height, canvas.width] = [QQ(target_table_l, 'tr:not(.numbers, .border)').length, QQ(target_table_l, 'tr:nth-child(2) td').length]
+    const ctx = canvas.getContext('2d')
+    ctx.fillStyle  = '#e5e5e5' // '#fff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    QQ(target_table_l, '[data-tile]').map((x, i) => {
+        const r = Math.floor(i / canvas.width)
+        const c = i % canvas.width
+        ctx.fillStyle = getComputedStyle(x).backgroundColor
+        ctx.fillRect(c, r, 1, 1)
+        console.debug(c, r, ctx.fillStyle, x, i, canvas.width, canvas.height)
+    })
+    console.debug(QQ(target_table_l, '[data-tile]'), canvas.toDataURL())
+    return canvas
+}
+
+var valMap = [' ', '', '⨉'];
+const cleanup = []
+function constructBoard(board, isFinal=true, board_container_l=Q('#objects')) {
+    cleanup.map(apply)
+    lists.clear(cleanup)
+
+    console.debug('construct', board)
+    const _inner = async (board, board_l, i=0) => {
+        let boardVals = convertBoard(board);
+        console.debug(board, boardVals);
+        let innerHTML = `<table${board.layers ? ' class=composed' : ''} onclick="event.preventDefault()">`;
+        let borderAcross = `<tr class="border">
+            <td class="border horizontal"></td>
+            ${(window.chrome || window.parent?.chrome) ? '<td class="numbers end not border horizontal"></td>' : ''}
+        </tr>\n`;
+        let borderDown = '<td class="border vertical"></td>';
+        if (board.layers) {
+            innerHTML += `<tr class="numbers" style="display:none">`
+        } else {
+            innerHTML += `<tr class="numbers">`
+            // innerHTML += `<td class="numbers down across"><div>${board.rows.length}x${board.cols.length}</div></td>`
+            innerHTML += `<td class="not border vertical">
+                <div class="numbers down across"><a>${boardVals.length}x${boardVals[0].length}</a></div>
+            </td>`;
+            for (let c = 0; c < boardVals[0].length; c++) {
+                innerHTML += `<td class="numbers down"><div>${board.down[c].join('</div><div>')}</div></td>`;
+            }
+            innerHTML += '<td class="not border vertical"></td></tr>\n';
+        }
+
+        // innerHTML += borderAcross;
+        for (let r = 0; r < boardVals.length; r++) {
+            innerHTML += '<tr>'
+            // innerHTML += `<td class="numbers across"><div>${board.across[r].join('</div><div>')}</div></td>`
+            if (!board.layers) innerHTML += `<td class="border vertical r${r}">
+                <div class="numbers across"><div>${board.across[r].join('</div><div>')}</div></div>
+            </td>`;
+            for (let c = 0; c < boardVals[0].length; c++) {
+                innerHTML += `<td data-tile=${r}-${c} class="r${r} c${c} v${boardVals[r][c] < 3 ? boardVals[r][c] : `1 color-${i - 0}`}">${valMap[boardVals[r][c]]||''}</td>`;
+            }
+            // innerHTML += `<td class="border vertical r${r}"></td>` + '</tr>';
+            innerHTML += '</tr>'
+        }
+        // innerHTML += borderAcross;
+        innerHTML += '</table>';
+
+        board_l.innerHTML = innerHTML;
+        QQ(board_l, '.r0').map(x => x.classList.add(...list('border-top')));
+        QQ(board_l, '.c0').map(x => x.classList.add(...list(('border-left'))));
+        QQ(board_l, `.r${boardVals.length - 1}`).map(x => x.classList.add(...list(('border-bottom'))));
+        QQ(board_l, `.c${boardVals[0].length - 1}`).map(x => x.classList.add(...list(('border-right'))));
+        if (isFinal) {
+            Q(board_l, '.highlight')?.classList.remove(...list('highlight down across'));
+            if (getMoveTime() > 0) {
+                setTimeout(() => QQ(board_l, '.v2').map(x => x.classList.add(...list(('slow done')))))
+            } else {
+                QQ(board_l, '.v2')?.map(x => x.classList.add(...list('done')))
+            }
+        } else {
+            QQ(board_l, '.v2')?.map(x => x.style.cssText += 'visibilty:visible')
+        }
+
+        if (boardVals[0].length === 1) {
+            QQ(board_l, 'tr.border').map(x => x.style.cssText += 'width:1.9rem');
+        } else {
+            QQ(board_l, 'tr.border').map(x => x.style.cssText += 'width:auto');
+        }
+        Q(board_l, 'table').style.cssText += 'visibility:hidden'
+    }
+
+    board_container_l.innerHTML = ''
+    const compose = Array.isArray(board)
+    if (!compose) board = [board]
+    ;{
+        console.debug('render board', { board })
+        ;(compose
+        ? [{layers:board,...board[0]},...board]
+        : board
+        ).map((part, i) => {
+            const part_l = node(`<div class=board id=board_${i}></div>`)
+            _inner(part, part_l, i)
+            board_container_l.append(part_l)
+        })
+        Q('#theme-select').classList[compose ? 'remove' : 'add']('hidden')
+        Q('#theme-select').click()
+    }
+
+    const MODES = ['v1', 'v2']
+    let example, down, v_remove, action, save, stack, mode = MODES[0]
+    const rotateMode = e => {
+        mode = MODES[(MODES.indexOf(mode) + 1) % MODES.length]
+        console.debug({ mode })
+        html.classList.remove(...MODES.map(mode => `mode-${mode}`))
+        html.classList.add(`mode-${mode}`)
+    }
+    let already_solved = false
+    const renderLabel = () => {
+        // Q('#name-label').textContent = (example && !unsolved && (example?.title || example?.name)) || datetime.yyyymmdd()
+
+        const target_fill_count = QQ(Q('table.composed'), 'td[data-tile]').filter(x => x.classList.contains('v1')).length
+        const actual_fill_count = math.sum(board.flatMap(layer => layer.down.map(math.sum)))
+        console.debug({ target_fill_count, actual_fill_count, board })
+        const unsolved = target_fill_count !== actual_fill_count
+        html.classList[unsolved ? 'add' : 'remove']('unsolved')
+        Q('#name-label').textContent = (!unsolved && (example?.title || example?.name)) || location.hash.slice(1) || datetime.yyyymmdd() // String(Math.floor((puzzle_ms - start_ms) / duration({ d:1 }))).padStart(3, '0')
+        if (!(unsolved || already_solved)) {
+            already_solved = true
+            Q('table.composed').scrollIntoView()
+        }
+
+    }
+    on(window, 'pointerup pointercancel', e => {
+        down = false
+    })
+    cleanup.push(on(window, 'pointerup', e => {
+        // down = false
+        renderLabel()
+        // Q('#name-label') = example?.title ||
+        // const solved_board_l = !isFinal && node('<div></div>')
+        // try {
+        //     // if (!isFinal) constructBoard(trySolve(board), false, solved_board_l)
+        // } catch {}
+        // if (!isFinal && solved_board_l && boardToCanvas()?.toDataURL() === boardToCanvas(solved_board_l)?.toDataURL()) {
+        //     constructBoard(board)
+        //     const example = examples.find(x => compare.stringify(x.down, Q('[name=down]')) && compare.stringify(x.across, Q('[name=across]')))
+        //     Q('#name-label') = example?.title || yyyymmdd()
+        // }
+    }))
+    defer(() => {
+        resizeBoard()
+
+        example = examples.find(x => 
+            x.down === Q('[name=down]').value
+            && x.across === Q('[name=across]').value)
+        defer(renderLabel)
+
+        const composed = Q('table.composed')
+        const layers = QQ('table:not(.composed)')
+        layers.map((table_l, i) => {
+            const cells = QQ(table_l, 'tr:not(.numbers) td[data-tile]')
+            const [height, width] = dims(board)
+            cells.map((x, j) => {
+                const r = Math.floor(j / height)
+                const c = j % width
+                cleanup.push(...ons(x, {
+                    'pointerdown': e => {
+                        down = true
+                        // v_remove = MODES.filter(mode => x.classList.contains(mode))
+                        save = cells.map(cell => [...cell.classList])
+                        stack = []
+                        const action_name = (x.classList.contains(mode) ? 'remove' : 'add')
+                        action = (l) => {
+                            if (!l) return
+                            if (MODES.find(other => l.classList.contains(other) && other !== mode)) return
+                            // l.classList.remove(...MODES)
+                            // l.classList.remove(...v_remove)
+                            l.classList[action_name](mode)
+                            i > 0 && l.classList[action_name](`color-${i - 1}`)
+                            if (composed && mode === MODES[0]) {
+                                // Q(composed, `[data-tile="${l.dataset['tile']}"]`)?.classList[action_name](mode)
+                                // i > 0 && Q(composed, `[data-tile="${l.dataset['tile']}"]`)?.classList[action_name](`color-${i - 1}`)
+                                const cells = QQ(composed, '[data-tile]')
+                                cells.map(cell => cell.classList.remove(...cell.classList))
+                                layers.map(layer => {
+                                    QQ(layer, '[data-tile]').map((cell, i) => cells[i].classList.add(...list(cell.classList)/*.filter(x => !x.startsWith('color-'))*/))
+                                })
+                                cells.map(cell => cell.classList.remove(...MODES.slice(1)))
+                            }
+                        }
+                        action(x)
+                        stack.unshift(x)
+                    },
+                    'pointermove': e => {
+                        const l = e.target
+                        if (down) {
+                            e.preventDefault()
+                            action(document.elementFromPoint(e.clientX, e.clientY))
+                            // if (devices.is_mobile) {
+                            //     action(document.elementFromPoint(e.clientX, e.clientY))
+                            // } else {
+                            //     if (stack[1] === l) {
+                            //         cells.map((cell, i) => {
+                            //             cell.classList.remove(...cell.classList)
+                            //             cell.classList.add(...save[i])
+                            //         })
+                            //         stack.shift()
+                            //         stack.map(cell => action(cell))
+                            //     } else if (stack[0] !== l) {
+                            //         action(document.elementFromPoint(e.clientX, e.clientY))
+                            //         stack.unshift(x)
+                            //     }
+                            // }
+                        }
+                    },
+                }))
+            })
+
+            QQ(table_l, '.numbers.down.across').map(y => {
+                // y.style.cssText += `
+                // cursor: pointer;
+                // text-decoration: underline;
+                // `
+                y.onclick = rotateMode
+            })
+        })
+        cleanup.push(ons(window, {
+            'keydown': e => {
+                console.debug(e, e.key, e.key === 'x')
+                if (e.key === 'x') rotateMode(e)
+            },
+        }))
+    }, 0);
+
+    return board_container_l
+}
+
+function updateBoard(move) {
+    let timeScale = 1;
+    QQ('.selected').map(x => x.classList.remove('selected'));
+    if (move.reset) {
+        let boardVals = convertBoard(move.reset);
+        for (let r = 0; r < move.reset.rows.length; r++) {
+            for (let c = 0; c < move.reset.cols.length; c++) {
+              ;(x => {
+                x.classList.remove(...list('v0 v1 v2'))
+                x.classList.add(...list(`v${boardVals[r][c]}`))
+              })(Q(`.r${r}.c${c}`))
+              ;(x => {
+                x.classList.remove(...list('guess'))
+              })(Q(`.r${r}.c${c}.v0`))
+              ;(x => {
+                x.textContent = valMap[boardVals[r][c]]
+              })(Q(`.r${r}.c${c}:not(.guess)`))
+            }
+        }
+        timeScale = 2;
+    } else {
+        ;(x => {
+          x.classList.remove(...list('highlight down across'))
+        })(Q(`.highlight`))
+        if (move.isRow) {
+          ;(x => {
+            x.classList.add(...list('highlight down across'))
+          })(Q(`.r${move.i}`))
+        } else {
+          ;(x => {
+            x.classList.add(...list('highlight down'))
+          })(Q(`.c${move.i}`))
+        }
+
+        if (move.pos) {
+            let [r, c] = move.pos;
+            if (move.val === 0) {
+                ;(x => {
+                  x.classList.add(...list('selected'))
+                  x.textContent = valMap[move.val]
+                })(Q(`.r${r}.c${c}`))
+            } else {
+              ;(x => {
+                  x.classList.remove(...list('v0'))
+                  x.classList.add(...list(`v${move.val}`))
+                  x.textContent = valMap[move.val]
+                })(Q(`.r${r}.c${c}:not(.guess)`))
+            }
+
+            if (move.guess) {
+              ;(x => {
+                  x.classList.add(...list('guess'))
+                  x.textContent = '?'
+                })(Q(`.r${r}.c${c}`))
+            }
+            timeScale = 0;
+        }
+    }
+    return timeScale;
+}
+
+const errorElement = (l) => {
+    if (!l) return
+    const _t = l.style.cssText
+    l.style.cssText += `
+    background: #f00d;
+    `
+    setTimeout(() => l.style.cssText = _t, 1_000)
+}
+
+var timeoutId;
+function showNextMove(moveTime) {
+    moveTime = moveTime ?? getMoveTime();
+    if (timeoutId) {
+        clearTimeout(timeoutId)
+        timeoutId = undefined
+    }
+
+    let timeScale;
+    while (!timeScale) {
+        if (moveTime === 0) {
+            constructBoard(moves.pop());
+            return;
+        } else if (moves.length === 1) {
+            updateBoard(moves.shift());
+            QQ('.highlight').map(x => x.classList.remove(...list('highlight down across')))
+            setTimeout(() => QQ('.v2').map(x => x.classList.add(...list('slow done'))))
+            return;
+        } else {
+            timeScale = updateBoard(moves.shift());
+        }
+    }
+
+    timeoutId = setTimeout(showNextMove, moveTime * timeScale);
+}
+
+function getMoveTime(sliderVal) {
+    sliderVal = sliderVal || (timeoutId ? document.querySelector('#slider input').value : 0);
+
+    sliderVal = Math.max(0, Math.min(sliderVal, 100))
+
+    return Math.ceil(
+        Math.pow(sliderVal, 3) / 500
+    );
+}
+
+/*
+
+Main Script
+
+*/
+let hello = {
+    title: 'Hello',
+    down: '3 9 11 4,2 2 1 6 3,2 2 6 6 2,3 4,2 2 3,2 10 2,5 2,6,2 4,2 3,2 10 2,5 2,6,2 4,2 2 2 4 6 1,2 2,2 5',
+    across: '2,2,2 2,4,4 2,1,1,1,1 2,1,2,1,2 2,1,2,1,2 2,2,2,1,2,1 2,3,4,2,1,2,1,3 4,2,2,1,4,4,2,2 3,2,2,1,3,3,2,1 2,2,4,2,2,3,1 3,1,3,3,3,4,1 2,4,4,4,4,4 2,2,2,2,2,2'
+}
+
+let board = solve(parseNums(hello.down), parseNums(hello.across));
+constructBoard(board);
+
+let examples = [
+    /*{
+        down: '1 1',
+        across: '1 1'
+    },*/
+    {
+        title: 'Gull',
+        down: '1,1 2,1 1 2',
+        across: '2 1 1,2 1,1'
+    },
+    {
+        title: 'Bug',
+        puzzle: `8x8
+0 1,1 1,4 1 1 1,4 1,1 0
+0 1,1 0 2,2 1,1 2,2 4 0`,
+    },
+    {
+        title: 'Elephant Beetle',
+        puzzle: `8x8
+0 1,1 1,4 1 1 1,4 1,1 0|0 0 0 5 5 0 0 0
+0 1,1 0 2,2 1,1 2,2 4 0|0 2 2 2 2 2 0 0`,
+    },
+    {
+        title: 'Pine Cone',
+        down: '2 5 2,3 1,2,1 6 3,1 5 2',
+        across: '2 5 1,3 6 1,2,1 3,2 5 2'
+    },
+    /*{
+        title: 'Invader',
+        down: '3 2 1,5 2,2,1 4,1 4 4,1 2,2,1 1,5 2 3',
+        across: '1,1 1,1 7 2,3,2 11 1,7,1 1,1,1,1 2,2'
+    },
+    {
+        title: 'Chameleon',
+        down: '1,2 1,4 2,1,1,2 3,1,2 1,5,3 11 4,4 9 8 6 5 3',
+        across: '2 1,4 8 9 1,7 5,4 8 2,7 2,4,1 2,4 5 3'
+    },*/
+    {
+        title: 'Kitty',
+        down: '1,2 4,1,1 3,6 7 3,6 4,4 1,3 2 3,1 2,3',
+        across: '1,1 2,2 5 2,1,2,1 5,2 3,1 6,2 1,5,1 8 2,4'
+    },
+    // {
+    //     title: 'Skull',
+    //     down: '7 2,2,3 2,2,1 1,2 1,1,1 1,2 1,2,1 1,2,3 2,3 2,3 7',
+    //     across: '7 2,2 2,2 1,1 1,1 3,2,1 3,1,2,1 1,2 2,4 1,1,1,3 8'
+    // },
+    {
+        title: 'Panda',
+        down: '2,7 6,5 3,2 4,3,2 3,5,1 2,1,3,1,2 2,4,2,2 1,2,4 2,4,2,2 2,1,3,1,2 3,5,1 4,3,2 3,2 6,5 2,7',
+        across: '2,2 13 7,7 4,4 1,3,3,1 2,2,1,1,2,2 2,4,4,2 1,4,4,1 2,2,1,2,2 2,1,2 2,2,2,2 2,3,2 3,1,3 11 5'
+    },
+    {
+        title: 'Scorpion',
+        down: '5 2,1 2,4 1,1,1 2,2 5 6,2 3,2,2,1 1,3,1,1,1 1,1,2,2,1 2,1,1,1,1,1 1,1,1,1,1,2 3,2,1,1,2,1,2 5,1,5,2 2,1,1,9 3,2,6,1 2,2,2,3,4 1,2,4,1,1 6,4 1',
+        across: '6 1,6 1,2,1,1 1,1,3 2,3 1,1,1 4,5 2,3,2,3 2,3,3,2,1 1,1,4,2,3 1,1,4,4 1,1,1,1,2,7 1,2,3,6,1 2,3,4,1 3,1,1,2 1,1,1,1 1,2,2,2 4,3 1,2,2 5'
+    },
+    {
+        title: 'Man with Pipe',
+        down: '2,2,1 1,6,4,4 3,3,1,1,4 2,2 1,3,3,3 1,1,1,2,1,2 2,1,1,1,1 2,4,3,3 3,1,2,3,1 1,4,2,1 3,1,2 2,1,1 3,3 7,4 5,4 3,2,1,3 3,4,1 9,2 8,3 1,8,2',
+        across: '1,3,2,1 1,2,2 3,4 2,3,2 2,1,6 2,13,1 1,1,8 2,1,1,7 1,2,2,2,3 3,1,1,1,3 1,2,1,1,3 2,1,1,3 1,5,5 1,1,3 4,2 2,2,1,2,1 2,1,2,3,2 4,1,6,1 3,4,3,2 4,2'
+    },
+    {
+        title: 'Bird',
+        down: '0 1 1 4 2,3 7 9,1 6,3,2 4,2,2 3,2,1,3 6,2,5 7,1,2,3 7,3,3 7,2,3 7,1,3 6,1,4 8,5 6,3,3 7,3 3,3,4 3,3,3 3,2,3 4,1,3 3,1,4 2,3 1,3',
+        across: '0 4 6,2 1,5,6 14,7 20 4,10 2,10 1,12 2,14 1,11 2,1 3,5 4,1 1,2,3 2,1,7 2,11 1,11 11 9 7'
+    },
+    /*{
+        title: 'Pterodactyl',
+        down: '1 2 3,1 3,2 5,2,1 6,3,2 14 12 11 5 1,6 2,8 4,4 1,2,5 4,6 1,1,7 1,1,6 1,1,5 1,1,4 1,1,3',
+        across: '3 4 5 6,2 5,4 5,1,6 4,4 4,10 6 6,2 11 13 14 2,3,7 2,5 2,4 2,3 3 2 1'
+    },*/
+    hello,
+]
+const parseCommonNonogramFormat = (str) => str.trim().split('\n').slice(-2)
+const unparseCommonNonogramFormat = (down, across) => {
+    if (!down[0][0].length) {
+        ;[down, across] = [[down], [across]]
+    }
+    console.debug('unparse', down, across)
+    return `${across[0].length}x${down[0].length}\n${lists.joins(down, '|', ' ', ',')}\n${lists.joins(across, '|', ' ', ',')}`
+}
+examples.map(x => {
+    if (x.puzzle) {
+        ;[x.down, x.across] = parseCommonNonogramFormat(x.puzzle)
+    }
+})
+
+const displayPuzzle = (down, across) => constructBoard(solve(down, across, true))
+const query = new URLSearchParams(location.search)
+let show_morse_code = JSON.parse(query.get('mc') || 'false')
+let show_placement_guide = JSON.parse(query.get('pg') || 'false')
+let show_sequential_display = JSON.parse(query.get('sd') || 'false')
+let do_print = JSON.parse(query.get('print') || 'false')
+const updateQuery = ({ mc, pg, sd, print }={}) => {
+    // query.set('mc', Q('#morse-label input').checked = show_morse_code = mc ?? show_morse_code)
+    query.set('pg', Q('#placement-label input').checked = show_placement_guide = pg ?? show_placement_guide)
+    query.set('sd', Q('#sequential-label input').checked = show_sequential_display = sd ?? show_sequential_display)
+    query.set('print', do_print = print ?? do_print)
+    url.query(query, { remove_false:true })
+
+    html.classList[show_morse_code ? 'add' : 'remove']('morse')
+    html.classList[show_placement_guide ? 'add' : 'remove']('guide')
+    html.classList[show_sequential_display ? 'add' : 'remove']('sequential')
+    html.classList[do_print ? 'add' : 'remove']('print')
+    displayExample()
+    if (mc !== undefined && !mc) defer(() => location.reload(), 100)
+
+    QQ('.print-ui')?.map(x => x.remove())
+    if (do_print) {
+        // body.append(node(`<button id=hide_print class=print_ui onclick="updateQuery({ print:false })">back</button>`))
+        // list(body.children).slice(-2)[0].insertAdjacentElement('beforebegin', 
+
+        let label = (last_example && (last_example?.title || last_example?.name)) || location.hash.slice(1) || datetime.yyyymmdd(last_example?.ms ?? puzzle_ms) // String(Math.floor((puzzle_ms - start_ms) / duration({ d:1 }))).padStart(3, '0') // Q('#name-label').textContent
+        // label += '  ' + rand.alpha(80 - 2 - label.length)
+        label = label.toLocaleUpperCase()
+        let char_listset = list(set(label, ''))
+        console.debug(label, char_listset)
+        const shuffled_char_listset_order = rand.shuffle_order(char_listset)
+        char_listset = shuffled_char_listset_order.map(i => char_listset[i])
+        const char_to_order = from(char_listset.map((x, i) => [x, i]))
+        // const shuffled_label_chars = list(label, '').sort((a, b) => char_to_order[a] - char_to_order[b])
+        label = `<div class="column wide print-ui">
+            <div style="
+            align-self: flex-end;
+            text-transform: uppercase;
+            font-size: 2em; font-weight: bold;
+            ">nonogram${last_example.ms ? ` ${datetime.ymd(last_example.ms)}` : ''}</div>
+            <div class="row wide pre" style="
+            width: 100%;
+            border-top: 1px solid currentcolor;
+            ">${list(label, '').map(char => char_to_order[char] + 1).join('-')} <span class=pre style="width:0;overflow:hidden;flex:1">${''&& '-'.repeat(1_000)}</span> DECODE POST-SOLVE</div>
+            <div class="row wide obscured-text" style="justify-content:flex-end">${
+                // shuffled_label_chars
+                list(char_listset, '')
+                .map((x, i) => `<div class=column>${
+                    [
+                        i + 1,
+                        // char_to_order[x],
+                        // '&nbsp;',
+                        // char_listset[i],
+                        x,
+                    ].map(x => `<span class=pre>${x}</span>`).join('')
+                }</div>`)
+                .join('')
+                
+            } ${
+                // `<div class="column tall wide" style="width:0;flex:1 1;overflow:hidden;border-bottom:1px solid currentcolor;">${
+                //     // range(2).map(() => `<span class=pre>${'-'.repeat(1_000)}</span>`).join('')
+                //     '&nbsp;'
+                // }</div>`
+                ''
+            }</div>
+            <br />
+            <br />
+        </div>`
+        console.debug(rand.shuffle_order(char_listset), label)
+
+        // body.prepend(node(`<div>
+        //     <span>${label}</span>
+        // </div>`))
+        body.prepend(node(label))
+
+        body.append(
+        node(`
+        <div id=ui class="print-ui no-print">
+            <div id=input-controls>
+                <a onclick="updateQuery({ print:false })"> <span>back</span></a>
+            </div>
+        </div>`))
+        const style = node(`<style class=print-ui>
+            * {
+                --fill-color-2: gold !important;
+            }
+            .print-ui {
+                overflow: hidden;
+            }
+            .obscured-text {
+                max-width: 100%;
+                gap: calc(.5em + 1px);
+                // border-top: 2px solid currentcolor;
+            }
+            .obscured-text .column {
+                align-items: stretch;
+            }
+            .obscured-text .column > span:nth-child(1) {
+                display: flex; align-items: center; justify-content: center;
+                border: 1px solid currentcolor;
+                border-left: 0;
+                border-right: 0;
+                border-top: 0;
+            }
+            // @media (min-aspect-ratio: 1/1) {
+            //     .print #object-container {
+            //         flex-direction: row;
+            //         align-items: flex-start;
+            //         justify-content: flex-start;
+            //     }
+            //     .print #objects {
+            //         flex-direction: row;
+            //         gap: 4em; padding-right: 4em;
+            //     }
+            // }
+
+            #ui {
+                display: none;
+                white-space: pre;
+            }
+            td[data-tile] {
+                // margin: -.5px;
+                border: .5px solid #000;
+            }
+            .board :not(.v1) {
+                color: #000 !important;
+                background: none !important;
+                font-family: highway-gothic;
+            }
+            .numbers.down.across {
+                margin: .3rem;
+                font-size: unset;
+            }
+            .numbers.down.across a {
+                text-decoration: none;
+                padding: 0;
+                border: 0;
+                font-size: unset;
+            }
+            #ui.print-ui {
+                display: block;
+            }
+            @media print
+            {    
+                .no-print {
+                    display: none !important;
+                }
+            }
+
+            :root, body {
+                filter: unset;
+            }
+        </style>`)
+        head.append(style)
+        print !== undefined && defer(window.print, 500)
+        // style.remove()
+        // updateQuery({ print:false })
+    }
+}
+// on(Q('#morse-label input'), 'change', e => updateQuery({ mc:e.target.checked }))
+on(Q('#placement-label input'), 'change', e => updateQuery({ pg:e.target.checked }))
+on(Q('#sequential-label input'), 'change', e => updateQuery({ sd:e.target.checked }))
+defer(updateQuery, 100)
+
+let last_example
+const displayExample = (example_or_title_or_i=last_example) => {
+    const example = last_example = typeof(example_or_title_or_i) === 'object' ? example_or_title_or_i : examples[examples.findIndex(x => x.title === example_or_title_or_i)] || examples[example_or_title_or_i]
+
+    const board = solve(parseNums(example.down), parseNums(example.across), true, true)
+    document.title = `daily nonogram${example.ms ? ` ${datetime.ymd(example.ms)}` : ''}`[`toLocale${do_print ? 'Upper' : 'Lower'}Case`]()
+    constructBoard(board, false)
+
+    const display_l = Q('#display-input')
+    console.debug(display_l)
+    const display_ls = lists.objectable('down across').map(name => Q(display_l, `:scope > #display-input-${name}`)).object
+    display_ls.down.value = display_ls.down.textContent = example.down
+    display_ls.across.value = display_ls.across.textContent = example.across
+    console.debug('display example', {display_l,display_ls,example})
+
+    const display = { empty: '0', sep: '-', break: '' }
+    values(display_ls).map(x => x.style.cssText = '')
+    display_ls.down.innerHTML = example.down.split('|').map(y => `<span>${y.split(' ').map(x =>`<span>${x === '0' ? display.empty : x.split(',').join(display.sep)}</span>`).join('')}</span>`).join(display.break)
+    display_ls.across.innerHTML = example.across.split('|').map(y => `<span>${y.split(' ').map(x => `<span>${x === '0' ? display.empty : x.split(',').join(display.sep)}</span>`).join('')}</span>`).join(display.break)
+    console.debug(`displayed example`, example, display_ls.down.innerHTML)
+
+    // display_ls.down.innerHTML = example.down.split('|').map(y => `<span>${y.split(' ').map(x =>`<span>${x}</span>`).join('')}</span>`).join('')
+    // display_ls.across.innerHTML = example.across.split('|').map(y => `<span>${y.split(' ').map(x => `<span>${x}</span>`).join('')}</span>`).join('')
+
+    Q('#input-controls').classList.remove('input-empty')
+    // Q('#name-label').textContent = example.title || example.name
+    html.classList[example.color ? 'add' : 'remove']('colored')
+    Q('#example-color-style')?.remove()
+    if (example.color) {
+        const [c_default, c_0, c_1, c_2] = example.color.split('|')
+        head.append(node(`<style id=example-color-style>
+            .board:first-child {
+                --fill-color-default: ${c_default};
+                ${c_0 ? `--fill-color-0: ${c_0};` : ''}
+                ${c_1 ? `--fill-color-1: ${c_1};` : ''}
+                ${c_2 ? `--fill-color-2: ${c_2};` : ''}
+            }
+        </style>`))
+    }
+
+    if (show_morse_code) {
+        dependency('/lib/2/morse.js')
+        const str_for_morse_code = [dims(board).join('x'), example.down, example.across].join('-').replace(/\|/g, '/')
+        const _displayMorse = () => {
+            // morse.for(str_for_morse_code, {
+            //     element: '#display-input > *', unit_ms: 500,
+            //     on_style: '', off_style: 'background: #0000 !important',
+            // })
+            morse.for(str_for_morse_code, {
+                element: 'html', unit_ms: 500,
+                on_style: 'background: #000 !important', off_style: '',
+            })
+        }
+        const morse_code = _displayMorse()
+        const timeout = setInterval(_displayMorse, math.sum(morse_code) * 500)
+        cleanup.push(() => clearTimeout(timeout))
+        console.debug({str_for_morse_code, morse_code})
+    }
+
+    if (show_placement_guide || true) defer(() => {
+        const l = Q('#objects')
+        let scale = 1, _style_l
+        const setDisplayScale = (scale=1) => {
+            Q('#objects-scale-style')?.remove()
+            head.append(node(`<style id=object-scale-style>
+                #objects {
+                    --scale: ${scale};
+                }
+            </style>`))
+        }
+        setDisplayScale()
+        console.debug('SCALE', scale, l.clientHeight, l.parentNode.clientHeight)
+        const max_width = Math.max(...list(l.children).map(x => x.clientWidth))
+        while (scale < 10 && l.clientHeight * scale < l.parentNode.clientHeight && max_width * scale < l.parentNode.clientWidth) {
+            setDisplayScale(scale += 1)
+            console.debug('SCALE', scale, 'height',  l.clientHeight, l.parentNode.clientHeight, 'width', max_width, l.parentNode.clientWidth)
+        }
+        while (l.clientHeight * scale > l.parentNode.clientHeight || max_width * scale > l.parentNode.clientWidth * .85) {
+            setDisplayScale(scale -= .1)
+            console.debug('SCALE', scale, l.clientHeight, l.parentNode.clientHeight)
+        }
+
+        // Object.assign(l.style, {
+        //     'scale': 1,
+        //     'width': '100%',
+        // })
+        // list(l.children).map(lc => Object.assign(lc.style, {
+        //     'scale': 1,
+        //     'width': 'fit-content',
+        // }))
+        // const [first, ...rest] = QQ(l, ':scope > *').filter(x => getComputedStyle(x).display !== 'none').map(x => Object.assign(x.getBoundingClientRect(), {element:x}))
+        // const last = rest.slice(-1)[0]
+        // const rect = l.getBoundingClientRect()
+        // const scale = (rect.height * .95) / (last.bottom - first.top)
+        // // console.debug(scale, rect.height, (last.bottom - first.top), rect, first, last, l)
+        // list(l.children).map(lc => {
+        //     const inner = lc.getBoundingClientRect()
+        //     Object.assign(lc.style, {
+        //         'scale': scale,
+        //         'transform-origin': `${rect.x - inner.x}px ${rect.y - inner.y}px`,
+        //     })
+        // })
+    })
+
+    // Q('#sequential-display-container')?.remove()
+    // if (show_sequential_display) {
+        
+    // }
+    Q('#sequential').src = show_sequential_display ? location.origin + location.pathname.replace('display.html', 'sequential.html') + location.search + location.hash : ''
+}
+Q('#examples').append(...entries(examples).map(([k,v], i) => node(`<a onclick="displayExample(${i})">${k.title?.toLowerCase() || (i+1)}</a>`)))
+
+
+var down, across;
+// let nonogram_format_regex
+// fetch('https://freshman.dev/raw/nonogram/.no').then(r=>r.text()).then(text => nonogram_format_regex = new RegExp(text))
+// on(QQ('#inputs input'), 'input', e => {
+//     const match = nonogram_format_regex.test(e.target.value)
+//     if (match) {
+//         Q('[name=down]').value = match.group(3)
+//         Q('[name=across]').value = match.group(4)
+//     }
+
+//     timeoutId && showNextMove(0)
+
+//     let formData = new FormData(document.querySelector('form'));
+
+//     let downInput = formData.get('down');
+//     let acrossInput = formData.get('across');
+
+//     let re = /^ *\d{1,2}(,\d{1,2})*( (\d{1,2}(,\d{1,2})*)?)*$/
+
+//     down = (downInput.match(re)) ? parseNums(downInput) : down;
+//     across = (acrossInput.match(re)) ? parseNums(acrossInput) : across;
+
+//     // if (!(down.length > 1 && across.length > 0))
+//     if (!down || !across) {
+//         return;
+//     }
+
+//     displayPuzzle(down, across)
+// });
+on('#solve-input input', 'input change', e => {
+    timeoutId && showNextMove(0)
+
+    let formData = new FormData(document.querySelector('form'));
+
+    let downInput = formData.get('down');
+    let acrossInput = formData.get('across');
+
+    let re = /^ *(\d{1,2}(,\d{1,2})*( (\d{1,2}(,\d{1,2})*)?)*\|?)*$/
+    down = (downInput.match(re)) ? parseNums(downInput) : down;
+    across = (acrossInput.match(re)) ? parseNums(acrossInput) : across;
+
+    // if (!(down.length > 1 && across.length > 0))
+    const input = down && across
+    Q('#input-controls').classList[input ? 'remove' : 'add']('input-empty')
+    if (!input) return
+
+    displayPuzzle(down, across)
+});
+ons('#solve-input', {
+    'paste': e => {
+        e.preventDefault()
+        console.debug((event.clipboardData || window.clipboardData).getData('text'))
+        const [down, across] = parseCommonNonogramFormat((event.clipboardData || window.clipboardData).getData('text'))
+        Q('[name=down]').value = down
+        Q('[name=across]').value = across
+        displayPuzzle(parseNums(down), parseNums(across))
+    },
+});
+
+const performSolve = e => {
+    let formData = new FormData(document.querySelector('form'));
+    let downInput = formData.get('down');
+    let acrossInput = formData.get('across');
+
+    let re = /^ *(\d{1,2}(,\d{1,2})*( (\d{1,2}(,\d{1,2})*)?)*\|?)*$/
+    if (!downInput.match(re) || !acrossInput.match(re)) {
+        // $('#inputs').effect('shake')
+        errorElement(document.querySelector('#inputs button'))
+        return;
+    }
+
+    let down = parseNums(downInput);
+    let across = parseNums(acrossInput);
+
+    const showInputError = (i, message) => {
+        const input = document.querySelectorAll('input')[i]
+        const value = input.value
+        input.value = message
+        const _clearInputError = () => {
+            input.value = value
+            clearTimeout(timeoutHandle)
+            input.removeEventListener(listenerHandle)
+        }
+        const timeoutHandle = setTimeout(_clearInputError, 3000)
+        const listenerHandle = input.addEventListener('click', _clearInputError)
+    }
+    if (down.length > MAX_INPUT_DIM) showInputError(0, 'Too many columns');
+    if (across.length > MAX_INPUT_DIM) showInputError(1, 'Too many rows');
+
+    if (down.length <= MAX_INPUT_DIM && across.length <= MAX_INPUT_DIM) {
+        // showSolve(down, across);
+        constructBoard(solve(down, across, false, true))
+    } else {
+        errorElement(document.querySelector('#inputs button'))
+    }
+}
+on('#solve-button', 'click', performSolve);
+on('#copy-button', 'click', e => {
+    const inputs = [Q('[name=down]').value, Q('[name=across]').value]
+    const [down, across] = inputs.map(parseNums)
+    copy(unparseCommonNonogramFormat(down, across))
+    displayStatus(e.target, 'copied!')
+})
+on('#clear-button', 'click', e => {
+    Q('#examples > *:last-child').click()
+    Q('#solve-button').click()
+    Q('[name=down]').value = Q('[name=across]').value = ''
+})
+on('#theme-select', 'change click', e => {
+    document.documentElement.classList.remove(...list('grayscale red yellow'))
+    document.documentElement.classList.add(...list(e.target.value))
+})
+Q('#theme-select').value = 'yellow'
+// on('#copy-button', 'click', e => {
+//     let formData = new FormData(document.querySelector('form'));
+//     let downInput = formData.get('down');
+//     let acrossInput = formData.get('across');
+//     let down = parseNums(downInput);
+//     let across = parseNums(acrossInput);
+//     copy(``)
+
+//     const showInputError = (i, message) => {
+//         const input = document.querySelectorAll('input')[i]
+//         const value = input.value
+//         input.value = message
+//         const _clearInputError = () => {
+//             input.value = value
+//             clearTimeout(timeoutHandle)
+//             input.removeEventListener(listenerHandle)
+//         }
+//         const timeoutHandle = setTimeout(_clearInputError, 3000)
+//         const listenerHandle = input.addEventListener('click', _clearInputError)
+//     }
+//     if (down.length > MAX_INPUT_DIM) showInputError(0, 'Too many columns');
+//     if (across.length > MAX_INPUT_DIM) showInputError(1, 'Too many rows');
+
+//     if (down.length <= MAX_INPUT_DIM && across.length <= MAX_INPUT_DIM) {
+//         // showSolve(down, across);
+//         constructBoard(solve(down, across))
+//     } else {
+//         errorElement(document.querySelector('#inputs button'))
+//     }
+// });
+
+// const save_widget = Q('#save-widget')
+// const save_button = Q(save_widget, 'a')
+// const save_select = Q(save_widget, 'select')
+// on(save_select, 'change', e => {
+//     const l = e.target
+//     switch (l.value) {
+//         case 'image':{
+//             downloadCanvas(boardToCanvas(), `${Q('#name-label').textContent.replace(/ /g, '_')}.png`)
+//         }break
+//         case 'export':{
+//             const [down, across] = [Q('[name=down]').value, Q('[name=across]').value].map(parseNums)
+//             download(unparseCommonNonogramFormat(down, across), `${Q('#name-label').textContent}.no`)
+//             // displayStatus(Q(save_widget, 'a'), 'copied!')
+//         }break
+//     }
+//     l.value = 'cancel'
+//     l.click()
+// })
+// on(save_button, 'click', e => {
+//     console.debug(e)
+//     save_select.click()
+// })
+on('#save-button', 'click', e => {
+    downloadCanvas(boardToCanvas(), `${Q('#name-label').textContent.replace(/ /g, '_')}.png`)
+})
+// const [down, across] = [Q('[name=down]').value, Q('[name=across]').value].map(parseNums)
+// download(unparseCommonNonogramFormat(down, across), `${Q('#name-label').textContent}.no`)
+// on(Q('#save-select'), 'change', e => {
+//     const l = e.target
+//     switch (l.value) {
+//         case 'image':{
+//             downloadCanvas(boardToCanvas(), `${Q('#name-label').textContent.replace(/ /g, '_')}.png`)
+//         }break
+//         case 'export':{
+//             const [down, across] = [Q('[name=down]').value, Q('[name=across]').value].map(parseNums)
+//             download(unparseCommonNonogramFormat(down, across), `${Q('#name-label').textContent}.no`)
+//             // displayStatus(Q(save_widget, 'a'), 'copied!')
+//         }break
+//     }
+//     l.value = 'cancel'
+//     l.click()
+// })
+
+on('#reset-button', 'click', e => {
+    constructBoard(solve(parseNums(Q('[name=down]').value), parseNums(Q('[name=across]').value), true, true))
+})
+
+
+// new board resizing code
+let boardEl = document.querySelector('#objects')
+let bodyEl = document.querySelector('body')
+let rI
+function resizeBoard() {
+    let tableEl = document.querySelector('#objects table')
+    if (tableEl) {
+        // let boardRect = boardEl.getBoundingClientRect()
+        // let bodyRect = bodyEl.getBoundingClientRect()
+        // let tableRect = tableEl.getBoundingClientRect()
+        // console.log(boardRect, tableRect)
+        // let scale = Math.round(Math.min(
+        //     bodyRect.width / (tableRect.width + 120),
+        //     boardRect.height / tableRect.height) * 100)/100;
+        // scale = Math.min(scale, bodyRect.width / (boardRect.width * 1.35))
+        // scale = (scale - 1) * .9 + 1;
+        // console.log(`scale(${scale});`)
+        // rI && clearInterval(rI)
+        // rI = setInterval(() => $('#board table').css('transform', `scale(${scale})`), 100)
+        setTimeout(() => {
+          QQ('#objects table').map(x => x.style.cssText = `
+          visibility: visible;
+          `)
+        }, 50)
+        // $('#board table').css('transform', `scale(${scale})`)y
+
+        // tableEl.style.transform = `scale(${scale});`
+    }
+
+    // const object_l = Q('#objects')
+    // Object.assign(object_l.style, {
+    //     'scale': Math.max(1, (Q('#ui').clientWidth * .6) / (object_l.clientWidth * 1.5)),
+    //     'transform-origin': '0 0',
+    // })
+    // const object_l = Q('#objects')
+    // const object_rect = object_l.getBoundingClientRect()
+    // Object.assign(object_l.style, {
+    //     // 'scale': Math.max(1, (Q('#ui').clientWidth * .6) / (object_l.clientWidth * 1.5)),
+    //     // 'transform-origin': '0 0',
+    //     'scale': Math.max(1, (object_rect.height * .8) / ((rect => {
+    //         return rect.y + rect.height
+    //     })(Q(object_l, '.board:last-child').getBoundingClientRect()) - object_rect.y)),
+    //     'transform-origin': '0 0',
+    // })
+
+    const display_l = Q('#display-input')
+    console.debug('resize display')
+    if (0 && show_sequential_display) {
+        display_l.style.fontSize = 'unset'
+    } else {
+        let fontsize = 20
+        while (display_l.clientWidth < Q('#ui').clientWidth) {
+            display_l.style.fontSize = (fontsize += 1)+'px'
+        }
+        display_l.style.fontSize = (fontsize - 1)+'px'
+    }
+}
+window.addEventListener('resize deviceorientation', resizeBoard)
+displayExample('Elephant Beetle')
+
+const start_ms = Number(datetime.of({ Y:2023, M:7, D:10 }))
+const is_development = location.hostname === 'localhost' || location.port === '3030'
+const today_ms = location.hash?.slice(1) ? Number(datetime.new(location.hash.slice(1))) : Date.now() + (is_development ? datetime.duration({ d:1 }) : 0)
+console.debug({ start_ms, is_development, today_ms, start:datetime.ymd(start_ms), today:datetime.ymd(today_ms) })
+let last_puzzle_ms
+defer(async () => {
+    const format = eval(`/${await api.get(`/raw/nonogram/puzzles/no.format`).then(r=>r.text())}/`)
+
+    let puzzle_ms = today_ms
+    const load_ms = (ms) => {
+        open(location.origin + location.pathname + location.search + '#'+datetime.ymd(ms), '_self')
+        load_puzzle(ms)
+    }
+    const load_puzzle = async t => {
+        // const new_puzzle_ms = Math.max(start_ms, Math.min(t, location.hostname === 'localhost' ? Date.now() + duration({ mo: 1 }) : today_ms))
+        const new_puzzle_ms = Math.max(start_ms, t)
+        const puzzle = await api.get(`/raw/daily-nonogram/puzzles/${datetime.yyyymmdd(new_puzzle_ms)}.no`).then(r=>r.text())
+        console.debug({ puzzle, format })
+
+        const variants = list(puzzle.matchAll(new RegExp(format, 'g'))).map(x => ({...x.groups}))
+        console.debug({ variants })
+        if (!variants.length) return load_ms(last_puzzle_ms ? last_puzzle_ms : Date.now())
+        puzzle_ms = last_puzzle_ms = new_puzzle_ms
+        Q('#variant-button').classList[variants.length > 1 ? 'remove' : 'add']('hidden')
+
+        let variant_i = -1
+        const nextVariant = () => {
+            const object = merge(variants[variant_i = (variant_i + 1) % variants.length], {
+                ms: new_puzzle_ms,
+            })
+            Q('#variant-button').textContent = `variant${variants.length > 1 ? ` ${variant_i + 1}` : ''}`
+            console.debug({ object, new_puzzle_ms, today_ms })
+            displayExample(object)
+            defer(() => {
+                Q('#name-label').textContent = datetime.ymd(t)
+                // url.replace(location.origin + location.pathname + location.search + (new_puzzle_ms === today_ms ? '' : `#${datetime.yyyymmdd(new_puzzle_ms)}`))
+                resizeBoard()
+            }, 100)
+            if (!examples.find(x => (x.title || x.name) === (object.title || object.name))) examples.push(object)
+        }
+        on('#variant-button', 'click', e => nextVariant())
+        Q('#variant-button').click()
+    }
+    load_puzzle(puzzle_ms)
+    // on('#first-button', 'click', e => load_puzzle(start_ms))
+    // on('#previous-button', 'click', e => load_puzzle(puzzle_ms - datetime.duration({ d: 1 })))
+    // on('#random-button', 'click', e => load_puzzle(rand.i(today_ms - start_ms) + start_ms))
+    // on('#next-button', 'click', e => load_puzzle(puzzle_ms + datetime.duration({ d: 1 })))
+    // on('#last-button', 'click', e => load_puzzle(today_ms))
+
+    // const load_ms = (ms) => location.href = location.origin + location.pathname + '#'+datetime.ymd(ms)
+    on('#first-button', 'click', e => load_ms(start_ms))
+    on('#previous-button', 'click', e => load_ms(puzzle_ms - datetime.duration({ d: 1 })))
+    on('#random-button', 'click', e => load_ms(rand.i(today_ms - start_ms) + start_ms))
+    on('#next-button', 'click', e => load_ms(puzzle_ms + datetime.duration({ d: 1 })))
+    on('#last-button', 'click', e => load_ms(today_ms))
+})
+on(window, 'resize deviceorientation', resizeBoard)
+if (is_development) Q('#solve-button').classList.remove('hidden')
+
+  </script>
+
+</body>
+</html>

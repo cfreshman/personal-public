@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>fishbowl</title>
+  <meta name="description" content="a party game for 6-18" />
+  <meta name="author" content="cyrus@freshman.dev" />
+  <link rel="icon" href="/raw/fishbowl/icon.png" />
+
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body>
+  <script src="/lib/socket.io.min.js"></script>
+  <script src="/lib/2/wwl/script.js"></script>
+  <script src=/copyright.js></script><style>:root{filter:none}</style>
+  <script>
+    const log = named_log('fishbowl-app')
+    ;(async _=> {
+      const TEAM_COLORS = ['red', 'green', 'blue'].map((_,i,a) => `hsl(${i / (a.length + .15) * 360 - 5}deg 100% 60%)`)
+
+      // while wwl has built-in synced state management, its BROKEN
+      // /fishbowl/app.html state
+      const KEY = {
+        STORE_STATE: 'fishbowl-app-state',
+        WS: 'fishbowl-app',
+        WS_JOIN: 'join',
+        WS_JOIN_ROOM: 'join-room',
+        WS_ROOM_INFO: 'fishbowl:room-info',
+      }
+      const create_default_settings = () => {
+        return {
+          game: {
+            slips: 2,
+            players: 12,
+            teams: 3,
+            seconds: 60,
+            extra: 0,
+          }
+        }
+      }
+      const create_empty_game = () => {
+        return {
+          id: undefined,
+          version: 0,
+          host: undefined,
+          settings: undefined,
+          players: [],
+          teams: [],
+          slips: [],
+          round: -1,
+          turn: -1,
+          start: 0,
+          guessed: [],
+          over: false,
+        }
+      }
+      const state = Object.assign(store.get(KEY.STORE_STATE) || {
+        // data
+        settings: create_default_settings(),
+        game: create_empty_game(),
+      }, {
+        // functions
+        sync: {
+          down: async () => {
+            const id = state.game.id
+            if (id) {
+              const { room } = await fetch(`/api/fishbowl/${id}`).then(x => x.json())
+              state.game = room
+              log('down', state.game)
+            }
+          },
+          _last_up: undefined,
+          up: async () => {
+            log('up?', state.game)
+            try {
+              if (strings.json.equal(state.game, state.sync._last_up)) return
+              log('up', state)
+              state.game.version = (state.game.version||0) + 1
+              state.ws.emit('fishbowl:set', state.game)
+              store.set(KEY.STORE_STATE, pick(state, 'settings game'))
+            } catch (e) {
+              log(e)
+            }
+          },
+        },
+        is_host: (app) => state.game.id && state.game.host === app.session.id,
+      }, {
+        // socket
+        ws: (() => {
+          let socket
+          if (this.io) {
+            const backend = location.host.replace(':3000', ':5050')
+            console.debug('[socket CONNECT]', backend)
+            socket = io(backend, {
+              closeOnBeforeunload: false,
+            })
+            socket?.on('connect', () => console.debug('[socket CONNECTED]'))
+          }
+          if (socket) {
+            socket.emit(KEY.WS, KEY.WS_JOIN)
+          }
+          return socket
+        })()
+      })
+
+      const { room:initial_room } = state.game
+
+      // TODO better
+      const sync_game = (app) => {
+        state.ws.on('fishbowl:set', (game) => {
+          log('fishbowl:set', game)
+          if ((game.version||1) > (state.game.version||0)) {
+            state.game = {
+              ...state.game,
+              ...game,
+            }
+            app.rerender()
+          }
+        })
+      }
+      const create_game = (settings) => {
+        state.settings.game = settings
+        state.game = {
+          ...create_empty_game(),
+          id: rand.alphanum(4).toUpperCase(),
+          host: app.session.id,
+          settings,
+          teams: range(settings.teams).map(i=> ({ i, slips:[], points:[], color:TEAM_COLORS[i] })),
+        }
+        state.sync.up()
+      }
+      const join_game = async (id=undefined) => {
+        if (id) {
+          state.ws.emit('fishbowl:join', id)
+          state.game.id = id
+          await state.sync.down()
+        } else {
+          state.game = create_empty_game()
+        }
+      }
+
+      const app = wwl.attach({
+        state: 'exit', hash: false,
+        style: app => {
+          let value = `
+          :root {
+            --theme: #0375ff;
+          }
+
+          .large {
+            font-size: 2em;
+            font-weight: bold;
+            color: #fff !important;
+
+            text-shadow: -1px -1px #000, 1px 1px #000, -1px 1px #000, 1px -1px #000, 1px 1px #000;
+            text-shadow: -1px -1px #000, 1px 1px #000, -1px 1px #000, 1px -1px #000, 1px 1px #000, 1.5px 1.5px #ddd, .5px 2.5px #000, 2.5px .5px #000, 2.5px 2.5px #000;
+            text-shadow: -.05em -.05em #000, .05em .05em #000, -.05em .05em #000, .05em -.05em #000, .05em .05em #000, .075em .075em #ddd, .025em .125em #000, .125em .025em #000, .125em .125em #000;
+            
+            text-shadow: -.015em -.015em #000, .015em .015em #000, -.015em .015em #000, .015em -.015em #000, .015em .015em #000, .03em .03em #ddd, .015em .015em #000, .015em .045em #000, .045em .015em #000, .045em .045em #000;
+            font-family: system-ui; letter-spacing: .025em;
+            font-family: monospace; letter-spacing: 0;
+          }
+          .room.large, #timer.large {
+            font-size: 6em;
+            text-shadow: -1px -1px #000, 1px 1px #000, -1px 1px #000, 1px -1px #000, 1px 1px #000, 2px 2px #ddd, 1px 1px #000, 1px 3px #000, 3px 1px #000, 3px 3px #000;
+          }
+          .text-fill.large {
+            width: 100% !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+
+          ` // text-transform: uppercase;
+
+          const { host, id:room, turn, players } = state.game
+          const i = players.findIndex(x => x.id === app.session.id)
+          if (state.is_host(app) && i === undefined && turn < 0) value += 'background: var(--theme);'
+
+          if (!'rules continue'.includes(app.state())) value += `text-align: center;`
+
+          if (!'rules'.includes(app.state())) {
+            const { settings, turn, teams, start, players } = state.game
+            const i = players.findIndex(x => x.id === app.session.id)
+            if ((turn > -1 || i > -1) && teams) {
+              const color = `${TEAM_COLORS[(turn > -1 ? turn : i) % teams.length]}`
+              value += `background: ${color};`
+              const uncolor = color.replace(/hsl(\(.+)\)/, 'hsla$1 / 67%)')
+              // const timeout = setInterval(() => {
+              //   const from_percent = start && turn > -1 ? Math.min(1, ((start - Date.now()) / 1_000  + seconds) / seconds) * 100 : 0
+              //   app.root.style.backgound = `conic-gradient(${uncolor} ${from_percent}%, ${color} 0), #fff;`
+              // }, 500)
+              // app.cleanup.push(() => clearTimeout(timeout))
+            }
+          }
+          return value
+        },
+        states: {
+          exit: app => {
+            const is_host = state.is_host(app)
+            join_game(undefined)
+            app.state(is_host ? 'host' : 0)
+            return ''
+          },
+          0: `
+  <button>host</button>
+  <button>join</button>
+  <div class="full center">host from a watch (or phone)\njoin from a phone (or watch)</div>
+  <button>rules</button>`,
+          host: app => {
+            const { settings:app_settings, game, game: { room } } = state
+            game.settings = app_settings.game
+            const { settings } = game
+
+            defer(() => {
+              _clear.onclick = e => {
+                [...app.root.querySelectorAll('input')].map(x => x.value = '')
+                state.game.settings = strings.json.clone(state.settings.game)
+                app.rerender()
+              }
+              create.onclick = e => {
+                let new_settings = { extra: extra.checked }
+                const setting_args = [players.value, slips.value, teams.value, seconds.value].map(x => Number(x) || undefined)
+                {
+                  const [players=12, slips=2, teams=3, seconds=60] = setting_args
+                  Object.assign(new_settings, { players, slips, teams, seconds })
+                }
+                create_game(new_settings)
+                app.state('lobby')
+                // join_game(rand.alphanum(4).toUpperCase()).then(() => {
+                //   Object.assign(state.game, {
+                //     host: app.session.id,
+                //     settings: new_settings,
+                //     players: [],
+                //     slips: [],
+                //     teams: range(new_settings.teams).map(i=> ({ i, slips:[], points:[], color:TEAM_COLORS[i] })),
+                //     turn: -1, guessed: undefined,
+                //   })
+                //   app.state('lobby')
+                // })
+              }
+            })
+return `
+<button id=exit>back</button>
+${room ? `<div class="center large room">${room}</div>` : ''}
+<div class=row>slips<input type=number id=slips value=${settings.slips}></input>&nbsp;players<input type=number id=players value=${settings.players}></input></div>
+<div class=row><button><input type=checkbox id=extra checked=${settings.extra}></input> allow extra slips</button></div>
+<div class=row>seconds<input type=number id=seconds value=${settings.seconds}></input>&nbsp;teams<input type=number id=teams value=${settings.teams}></input></div>
+<div class=row><button id=_clear>reset</button><button id=create>${room ? 'update' : 'create'}</button></div>`
+          },
+          join: app => {
+            defer(() => {
+              const room_code_characters = new Set(strings.alphanum.toUpperCase())
+              const room = Q('#room')
+              room.oninput = e => {
+                room.value = room.value.toUpperCase().split('').filter(x => room_code_characters.has(x)).join('')
+                if (room.value.length === 4) {
+                  join_game(room.value.toUpperCase()).then(_=> app.state('enter'))
+                }
+              }
+              room.focus()
+            })
+            return `
+  <button id=exit>back</button>
+  <input id=room placeholder="####"></input>`
+          },
+          enter: app => {
+            log('enter', state)
+            let { host, id:room, settings, players, slips } = state.game
+            let i = players.findIndex(x => x.id === app.session.id)
+            if (i < 0) {
+              i = players.length
+              players.push({ id: app.session.id, joined: true, slips: range(settings.slips).map(j => slips.length + j) })
+              slips.push(...range(settings.slips).map(_=> ''))
+            }
+            if (!host) host = app.session.id
+            Object.assign(state.game, { host, players, slips })
+            state.sync.up()
+            app.state('lobby')
+            return ''
+          },
+          lobby: app => {
+            log(state)
+            const { host, id:room, settings, players, slips, start, turn, over } = state.game
+            if (over) {
+              app.state('round')
+              return
+            }
+            const i = players.findIndex(x => x.id === app.session.id)
+            const player = i > -1
+            const player_slips = player && players[i].slips.map(j => slips[j])
+            defer(_=> {
+              ;[...app.root.querySelectorAll('.input')].map((x, j) => {
+                x.onkeydown = x.oninput = () => {
+                  const { players, slips } = state.game
+                  slips[players[i].slips[j]] = x.textContent||x.value
+                  Object.assign(state.game, { slips })
+                  state.sync.up()
+                }
+                extra.onclick = () => app.game_state.update().then(_=> {
+                  const { players, slips } = state.game
+                  players[i].slips.push(slips.length)
+                  slips.push('')
+                  Object.assign(state.game, { players, slips })
+                  state.sync.up()
+                  app.rerender()
+                })
+              })
+            })
+            // defer(async _=> {
+            //   console.debug('rerender on game start')
+            //   while (app.state() === 'lobby' && app.game_state && (!await app.game_state.update().value || start === app.game_state.value.start)) await defer(0, 1_000)
+            //   app.state() === 'lobby' && app.rerender()
+            // })
+            const render_input = x => wwl.smartwatch() ? `
+<input class=input style="
+height: 5.05em;
+flex-shrink: 0;
+" value="${x}"></input>` : `
+<textarea class=input cols=4 style="
+height: 5.05em;
+flex-shrink: 0;
+">${x}</textarea>`
+
+            return `
+${player && state.is_host(app) ? `<button onclick="
+state.game.players = state.game.players.filter(x => x.id !== app.session.id)
+state.sync.up()
+app.state('lobby')
+">exit</button>` : `<button id=exit>back</button>`}
+` + (!player ? false ? `
+<svg viewBox="-1 -1 2 2">
+<filter id=shadow x="0" y="0" width="100%" height="100%">
+<feOffset result="off-up" in="Source" dx="-.025" dy="-.025" />
+<feOffset result="off-down" in="SourceAlpha" dx=".05" dy=".055" />
+<feColorMatrix result="off-down-black" in="off-down" type="matrix" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1 0" />
+<feBlend in="off-up" in2="off-down" mode="normal" />
+</filter>
+<g id=shapes>
+<g>
+  <text x="0" y="0" dominant-baseline="middle" text-anchor="middle" filter="url(#shadow)">${room}</text>
+</g>
+</g>
+<style>
+#shapes text {
+  font-size: 1px;
+  font-family: system-ui;
+  fill: #fff;
+  pointer-events: none;
+  stroke: #fff;
+  stroke-width: .075px;
+  stroke-linejoin: round;
+  overflow: visible;
+}
+</style>
+</svg>
+` : `
+<div class="center large room">${room}</div>
+` : `<div class="center large room">${room}</div>`) + (!player ? `
+<button id=enter>join here</button>
+`: ``) + (state.is_host(app) ? `
+<button>start</button>` : ``) + (!player ? `` : turn > -1 ? `` : `
+${player_slips.map(x => render_input(x)).join('\n')}`) + (player && settings.extra && turn < 0 ? `
+<button id=extra>extra slip</button>` : '')
+          },
+          start: async app => {
+            const { host, settings, players, teams, turn, slips } = state.game
+            const expected = settings.slips * settings.players
+            const joined_players = players.filter(x=>x.joined)
+            const non_empty_slips = slips.filter(pass)
+            if (!non_empty_slips.length) {
+              // defer(_=> app.state() === 'start' && app.state('lobby'), 2_000)
+              return `
+<button id=lobby>back</button>
+<div class="full center large text-fill" data-button=generate>wait for slips</div>
+              `
+            }
+            if (expected !== non_empty_slips.length) {
+              return `
+<button id=lobby>back</button>
+<div class="full center large">${non_empty_slips.length}/${expected} slips\nare you sure?</div>
+<button>continue</button>
+              `
+            }
+            Object.assign(state.game, { players:joined_players })
+            state.sync.up()
+            app.state('continue')
+            return ''
+          },
+          generate: app => {
+            // TODO?
+            
+            // slip generator
+            let generate
+            {
+              const sample = (arr) => arr[Math.floor(Math.random() * arr.length)]
+
+              let nouns, adjectives
+              Promise
+              .all(['/raw/fishbowl/nouns.txt', '/raw/fishbowl/adjectives.txt'].map(url => fetch(url).then(x=>x.text())))
+              .then(texts => [nouns, adjectives] = texts.map(text => text.split('\n').filter(x=>x[0]!=='#')))
+
+              const noun = () => sample(nouns)
+              const adjective = () => sample(adjectives)
+              const insult = () => {
+                const bare = adjective() + ' ' + noun()
+                return ('aeiou'.includes(bare[0]) ? 'an' : 'a') + ' ' + bare
+              }
+
+              generate = { noun, adjective, insult }
+            }
+            defer(_=> {
+              do_generate.onclick = e => {
+                const enabled = [nouns && generate.noun, adjectives && generate.adjective, insults && generate.insult].filter(pass)
+                const { settings, slips } = state.game
+                Object.assign(state.game, { slips:range(settings.slips * settings.players).map(i=> slips[i] || (rand.pick(enabled) || rand.pick(values(generate)))()) })
+                state.sync.up()
+                app.state('lobby')
+              }
+            })
+
+            return `
+<button id=lobby>back</button>
+<div class=row><button><input type=checkbox id=nouns checked=true></input> nouns</button></div>
+<div class=row><button><input type=checkbox id=adjectives checked=true></input> adjectives</button></div>
+<div class=row><button><input type=checkbox id=insults checked=true></input> insults</button></div>
+<button id=do_generate>generate slips</button>`
+          },
+          continue: app => {
+            log(state)
+            const { host, settings, teams, turn, slips, guessed } = state.game
+            state.game.start = 0
+            guessed.splice(0, guessed.length)
+            const round = teams[0].points.length
+            Object.assign(state.game, { teams, turn: turn + 1, guessed: [] })
+            state.sync.up()
+            return (state.is_host(app) && !round ? `
+<button id=lobby>back</button>` : '') + (
+`<div>get your team to guess the most slips!</div>
+<div>round 1: can say any word not on the slip</div>
+<div>round 2: and only one word</div>
+<div>round 3: no words</div>`.split('\n').slice(0, 2 + teams[0].points.length).join('\n')
+            ) + `
+<div>(you can charade across all rounds)</div>
+<button id=pick>ready</button>`
+          },
+          pick: async app => {
+            const { settings, players, slips, start } = state.game
+            if (!start) {
+              const start = Date.now()
+              Object.assign(state.game, { start })
+              // defer(() => {
+              //   if (state.game.start === start) app.state('end')
+              // }, settings.seconds * 1_000)
+            }
+            const reorder = rand.shuffle(range(slips.length))
+            console.debug({ reorder })
+            players.map(x => x.slips = x.slips.map(i => reorder[i]))
+            Object.assign(state.game, {
+              players,
+              slips: range(slips.length).map(i => slips[reorder[i]]),
+            })
+            state.sync.up()
+            app.state('turn')
+            return ''
+          },
+          turn: {
+            html: app => {
+              const { slips } = state.game
+              return `
+  <div class="full center large text-fill">${slips.find(pass)}</div>`
+            },
+            footer: app => {
+              const { settings, slips, start } = state.game
+              const get_countdown = () => Math.max(0, Math.ceil((start + datetime.duration({ s:settings.seconds }) - Date.now()) / 1_000))
+              let timeout = defer(() => {
+                const timer = Q('#timer')
+                if (timer) timer.textContent = get_countdown()
+                timeout = setInterval(() => {
+                  const countdown = get_countdown()
+                  const timer = Q('#timer')
+                  if (timer) {
+                    timer.textContent = countdown
+                    if (countdown === 0) {
+                      clearTimeout(timeout)
+                      app.state('end')
+                    }
+                  } else {
+                    clearTimeout(timeout)
+                  }
+                }, 100)
+              }, (start + datetime.duration({ s:settings.seconds }) - Date.now()) % 1_000)
+              app.cleanup.push(() => clearTimeout(timeout))
+              return `
+  <div class="row" style="width:calc(100% - .5 * var(--corner))"><button id=pick>skip</button><button id=timer>${get_countdown()}</button><button>guessed</button></div>
+  <div style="position:absolute;bottom:0">${slips.filter(pass).length - 1} remaining</div>`
+            },
+          },
+          timer: {
+            html: app => {
+              const { start, settings } = state.game
+              const get_countdown = () => Math.max(0, Math.ceil((start + datetime.duration({ s:settings.seconds }) - Date.now()) / 1_000))
+              let timeout = defer(() => {
+                const timer = Q('#timer')
+                if (timer) timer.textContent = get_countdown()
+                timeout = setInterval(() => {
+                  const countdown = get_countdown()
+                  const timer = Q('#timer')
+                  if (timer) {
+                    timer.textContent = countdown
+                    if (countdown === 0) {
+                      clearTimeout(timeout)
+                      app.state('end')
+                    }
+                  } else {
+                    clearTimeout(timeout)
+                  }
+                }, 100)
+              }, (start + datetime.duration({ s:settings.seconds }) - Date.now()) % 1_000)
+              app.cleanup.push(() => clearTimeout(timeout))
+              return `
+<button style="
+width: fit-content
+">exit</button>
+<div class="full center large text-fill" id=timer>${get_countdown()}</div>`
+            },
+            footer: app => {
+              const { slips } = state.game
+              return `
+  <div class="row" style="width:calc(100% - .5 * var(--corner))"><button id=pick>skip</button><button id=turn>slip</button><button>guessed</button></div>
+  <div style="position:absolute;bottom:0">${slips.filter(pass).length} remaining</div>`
+            },
+          },
+          guessed: app => {
+            const { slips, guessed } = state.game
+            guessed.push(slips.shift())
+            Object.assign(state.game, { slips, guessed })
+            state.sync.up()
+            slips.length ? app.state('pick') : app.state('end')
+            return ''
+          },
+          skip: app => {
+            defer(() => app.state('pick'), 500)
+            return ''
+          },
+          end: {
+            html: app => {
+              const { slips, teams, turn, guessed } = state.game
+              const n_guessed = guessed.length
+              // teams[turn % teams.length].slips.push(...guessed)
+              // Object.assign(state.game, { start: undefined, teams, guessed: [] })
+              // state.sync.up()
+              // if (!slips.length) {
+              //   app.state('score')
+              //   return ''
+              // }
+              teams[turn % teams.length].slips.push(...guessed)
+              state.game.teams = teams
+              state.game.start = 0
+              state.sync.up()
+              // state.game.guessed = []
+              // Object.assign(state.game, { start: undefined, teams, guessed: [] })
+              if (!slips.length) {
+                app.state('score')
+                return ''
+              }
+              const _guessed = []
+              guessed.map(guess => _guessed.push(guess))
+              // log('end', guessed.splice(0, guessed.length))
+              // guessed.splice(0, guessed.length)
+              log('end', _guessed)
+              return `
+<div>turn over</div>
+<div class="full center large">${n_guessed} slip${'s '[+(n_guessed===1)]}</div>
+<div>${slips.filter(pass).length} remaining</div>
+<button id=${slips.length ? 'continue' : 'score'}>next</button>`
+              // return 'done'
+//               const { slips, teams, turn, guessed } = state.game
+//               const n_guessed = guessed.length
+//               teams[turn % teams.length].slips.push(...guessed)
+//               Object.assign(state.game, { start: undefined, teams, guessed: [] })
+//               state.sync.up()
+//               if (!slips.length) {
+//                 app.state('score')
+//                 return ''
+//               }
+//               return `
+// <div>turn over</div>
+// <div class="full center large">${n_guessed} slip${'s '[+(n_guessed===1)]}</div>
+// <div>${slips.filter(pass).length} remaining</div>
+// <button id=${slips.length ? 'continue' : 'score'}>next</button>`
+            },
+            style: 'background: #fff',
+          },
+          score: app => {
+            const { host, teams, guessed } = state.game
+            guessed.splice(0, guessed.length)
+            const slips = teams.flatMap(team => team.slips)
+            teams.map(team => {
+              team.points.push(team.slips.length)
+              team.slips = []
+            })
+            Object.assign(state.game, { slips, teams, start:0 })
+            state.sync.up()
+            app.state('round')
+            return ''
+          },
+          round: {
+            html: app => {
+              const { host, teams } = state.game
+              const over = teams[0].points.length > 2
+              if (over && !state.game.over) {
+                state.game.over = true
+                state.sync.up()
+              }
+              const point_sums = teams.map(team => team.points.reduce((a,v)=>a+v, 0))
+              let total_points = 0
+              const point_cumm_percents = point_sums.map(x => total_points += x).map(x => x && x/total_points * 100)
+              Object.assign(state.game, { start:0 })
+              state.sync.up()
+              return (
+  // (over
+  // ? `
+  // <div>game over</div>` 
+  // : ``) +
+`
+<div class="row center full">
+  <div style="
+  position: absolute; top: 0; left: 0; height: 100%; width: 100%;
+  background: conic-gradient(${teams.map((team,i) => `${team.color} ${(point_cumm_percents[i-1]||0)}%, ${team.color} ${point_cumm_percents[i]}%`).join(', ')});
+  z-index: -2;
+  "></div>
+  <div style="
+  height: 100%; aspect-ratio: 1/1;
+  margin: auto;
+  background: conic-gradient(${teams.map((team,i) => `${team.color} ${(point_cumm_percents[i-1]||0)}%, ${team.color} ${point_cumm_percents[i]}%`).join(', ')});
+  background: #fff;
+  border-radius: 50%;
+  z-index: -2;
+  
+  // border: 1px solid #000;
+  box-shadow: -1px -1px #000, 1px 1px #000, -1px 1px #000, 1px -1px #000, 1px 1px #000, 2px 2px #ddd, 1px 3px #000, 3px 1px #000, 3px 3px #000;
+
+  position: relative; overflow: visible;
+  display: flex; flex-direction: row; align-items: center; justify-content: center;
+  font-size: 12px;
+  ">
+    ${teams.map((team,i) => `<div class="row points" style="
+    background: linear-gradient(90deg, #fff0 25%, #fff4 25%, #fff4 75%, #fff0 75%), linear-gradient(0deg, #fff0 25%, ${team.color} 25%, ${team.color} 75%, #fff0 75%);
+    background: none;
+    padding: 0 .2em;
+    font-size: 1.5em;
+    text-shadow: 1px 1px #fffb;
+    border-radius: 1em;
+    display: flex; flex-direction: column;
+    ">${point_sums[i]}<span style="
+    color: ${team.color};
+    ">—</span>${range(3).map(i=> `<span>${team.points[i] ?? '•'}</span>`).join(' ')}</div>`).join('\n')}
+  </div>
+</div>
+`)
+          },
+          // footer: app => {
+          //   // const { host } = app.session.value.fishbowl
+          //   // const { teams } = app.game_state.value
+          //   // const over = teams[0].points.length > 2
+          //   return 'test'
+          // },
+          footer: app => {
+            const { host, teams } = state.game
+            const over = teams[0].points.length > 2
+            return (state.is_host(app)
+? `
+<div class=row>${over ? '<button id=exit>menu</button><button>replay</button>' : '<button id=continue>next round</button>'}</div>`
+:'')
+            },
+          },
+          replay: app => {
+            const { settings, players, teams } = state.game
+            players.map((x,i) => x.slips = range(settings.slips).map(j => i*settings.slips + j))
+            Object.assign(state.game, {
+              slips: range(settings.slips * players.length).map(_=> ''),
+              teams: teams.map(team => ({ ...team, slips:[], points:[] })),
+              turn: -1, guessed: undefined,
+            })
+            state.sync.up()
+            app.state('lobby')
+            return ''
+          },
+          rules: `
+<button id=exit>back</button>
+<div>get your team to guess the most slips!</div>
+<div>round 1: can say any word not on the slip</div>
+<div>round 2: and only one word</div>
+<div>round 3: no words</div>
+<div>(you can charade across all rounds)</div>
+<div></div>`,
+        },
+      })
+
+      console.debug({ initial_room })
+      if (initial_room) defer(_=> join_game(initial_room).then(({value:{players,teams,start,guessed}})=> {
+        if (players?.find(x => x.id === app.session.id)) {
+          app.state('enter')
+        } else {
+          // app.session.update({ fishbowl: { host: true } })
+          state.game.host = app.session.id
+          app.state('lobby')
+        }
+        defer(_=> {
+          if (start) app.state('turn')
+          else if (!start && !guessed.length && teams[0].points.length) app.state('round')
+        })
+      }))
+
+      sync_game(app)
+
+    })()
+  </script>
+</body>
+</html>

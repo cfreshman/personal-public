@@ -1,0 +1,107 @@
+<head>
+  <meta charset="utf-8" />
+  <title>gymnastic dots</title>
+  <meta name="description" content="like nothing else" />
+  <meta name="author" content="cyrus@freshman.dev">
+  <link rel="icon" href="/raw/wwl/app/gymnastic-dots/icon.png" />
+</head>
+<body>
+  <script src="/lib/2/wwl/script.js"></script>
+  <script>
+    wwl.dependencies([
+      '/lib/2/common/script.js',
+    ])
+    const name_to_color = name => ({ 'yellow':'#fe0' }[name] || name)
+    wwl.attach({
+      state: 'next',
+      data: {
+        last: undefined,
+      },
+      states: {
+        // back: '<button>rules</button><div class=full></div><button>next</button>',
+        next: {
+          state: app => `action-${app.data.last = Math.floor(Math.random() * (2 * 2 * 4))}`,
+        },
+        last: {
+          state: app => app.data.last !== undefined ? `action-${app.data.last}` : 'next',
+        },
+        rules: `<button id=last>back</button>
+setup: 6x4 colored dots
+<div class=column style="
+padding: .25em; border-radius: .25em; border: 1px solid #000; width: fit-content;
+gap: .25em;
+">${range(6).map(i => `<div class=row style="
+gap: .25em;
+">${list('red blue yellow green').map(c => `<span style="
+height: 1em; width: 1em; border-radius: 50%; background: ${name_to_color(c)};
+"></span>`).join('')}</div>`).join('')}
+</div>
+to win: don't fall
+<div></div>
+`,
+        ...Object.fromEntries(
+          list('left right').flatMap(a => list('hand foot').flatMap(b => list('red blue yellow green').map(c => [a, b, c].join(' '))))
+          .map((x, i) => {
+            const [side, part, color] = x.split(' ')
+            const flip = (side === 'left' && part === 'hand') || (side === 'right' && part === 'foot')
+            return [`action-${i}`, {
+              // html: `
+              // <div class="full large" style="
+              // display: flex; align-items: center; justify-content: center;
+              // ">
+              //   <span style="
+              //   background: ${color};
+              //   width: fit-content;
+              //   border-radius: 10em;
+              //   padding: 0 .25em;
+              //   ">${x}</span>
+              //   <span style="transform-origin: 0 0; scale: ${flip ? -1 : 1} 1">${[side === 'left' ? 'L' : 'R', {
+              //     'hand': '✋', // 🖐✋
+              //     'foot': '🦶',
+              //   }[part]].join('')}</span>
+              // </div>
+              // <button>next</button>
+              // `
+              html: `<style>
+              #action {
+                animation: appear 100ms;
+              }
+              @keyframes appear {
+                0% { visibility: hidden }
+                100% { visibility: hidden }
+              }
+              </style><button>rules</button>
+              <div id=action class="tall column" style="
+              display: flex; align-items: center; justify-content: center;
+              ">
+                <span class=large style="
+                background: ${name_to_color(color)};
+                width: fit-content;
+                border-radius: 10em;
+                padding: 0 .25em;
+                font-size: 64px;
+                ">${[side === 'left' ? 'L' : 'R', `<span style="
+                display: inline-block;
+                scale: ${flip ? -1 : 1} 1;
+                ">${{
+                  'hand': '✋', // 🖐✋
+                  'foot': '🦶',
+                }[part]}</span>`].join('')}</span>
+                <span>${x}</span>
+              </div>
+              <button>next</button>
+              `
+            }]
+          })),
+      },
+      prefix: `<style>
+        ${css.common.base}
+        .large {
+          color: #fff;
+          font-size: 6em;
+          text-shadow: -1px -1px #000, 1px 1px #000, -1px 1px #000, 1px -1px #000, 1px 1px #000, 2px 2px #ddd, 1px 1px #000, 1px 3px #000, 3px 1px #000, 3px 3px #000;
+        }
+      </style>`,
+    })
+  </script>
+</body>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>resolved-circle</title><meta name=description content="" />
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <svg id=root viewBox="-1 -1 2 2" style="
+  min-height: 200px;
+  "></svg>
+
+  <script>
+    S = 256
+    let selected
+    const circles = [selected = {
+      p: V.ne(0, 0),
+      r: 1,
+    }]
+
+    const svg_node = (tag_or_node, properties) => {
+      const svg_node = typeof tag_or_node === 'string' ? document.createElementNS('http://www.w3.org/2000/svg', tag_or_node) : tag_or_node
+      svg_node.innerHTML = properties.innerHTML || properties.textContent || svg_node.innerHTML
+      entries(properties.on || {}).map(([k, v]) => on(svg_node, k, v))
+      entries(properties).map(([k, v]) => svg_node.setAttribute(k, v))
+      return svg_node
+    }
+    render = () => {
+      root.innerHTML = ''
+      circles.map(({ p:{ x, y }, r }) => {
+        root.append(svg_node('circle', {
+          cx: x, cy: y, r,
+          fill: '#000',
+        }))
+      })
+    }
+    render()
+
+    let r_inv = 1
+    setInterval(() => {
+      r_inv = 2 * r_inv
+      if (r_inv < 2048) {
+        const new_circles = range(4).map(i => {
+          const angle = i * maths.TAU / 4 + maths.TAU / 8
+          return {
+            p: selected.p.ad(V.p(angle, 1 / r_inv * Math.sqrt(2))),
+            r: 1 / r_inv
+          }
+        })
+        lists.remove(circles, selected)
+        circles.push(...new_circles)
+        selected = rand.sample(new_circles)
+      } else {
+        r_inv = 1
+        circles.splice(0, circles.length, selected = {
+          p: V.ne(0, 0),
+          r: 1,
+        })
+      }
+      render()
+    }, 250)
+
+  </script>
+
+</body>
+</html>

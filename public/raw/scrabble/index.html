@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src=/copyright.js></script> <meta data-hydrate data-style />
+
+    <title>scrabble</title>
+    <style>body{display:flex;margin:.5em}</style>
+    <style>
+      #game-canvas {
+        width: min(30rem, calc(100vh - 1em));
+        height: min(30rem, calc(100vh - 1em));
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
+  <body>
+
+    <div class="pre-wrap">window.scrabble = (<span id=loading>loading scrabble dictionary</span>)</div>
+
+    <script>
+        defer(async () => {
+            const scrabble_raw = await fetch('/lib/dict/scrabble.txt').then(x => x.text())
+            window.scrabble = scrabble_raw.split('\n')
+            loading.textContent = `loaded ${scrabble.length} words`
+        })
+    </script>
+  </body>
+</html>

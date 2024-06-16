@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>error</title>
+</head>
+<body><span id="error">not found</span>
+
+→ <a id="home" href="https://freshman.dev">freshman.dev</a>
+<script>
+    document.querySelector('#error').textContent = `not found (${location.href.replace(
+        location.origin,
+        '',
+    )})`
+    document.querySelector('#home').href = 'http://'+location.host
+</script>
+<style>
+    html {
+        font-family: monospace;
+        white-space: pre;
+        padding: 1em;
+    }
+</style>
+
+</body>
+</html>

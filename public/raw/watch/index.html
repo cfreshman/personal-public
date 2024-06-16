@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<!-- watch
+smartwatch UI experiments
+- defines outer safe area w/ rounded corners to match watch exterior
+- dynamically generated button components
+- QR code generator for login, etc
+-->
+<html>
+<head>
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <title>watch</title>
+  <meta name="description" content="smartwatch UI experiments">
+  <link rel="icon" href="https://freshman.dev/raw/wwl/icon-js.png">
+</head>
+<body>
+  <script src="/lib/2/wwl/script.js"></script>
+  <script>
+    const sleep = (ms=0) => new Promise(x=>setTimeout(x,ms))
+    const range = n => Array.from({ length: n }).map((_,i)=>i)
+    const sum = a => a.reduce((x,y)=>x+y,0)
+
+    const State = {
+      '': 'demos',
+      DEMOS: 'demos',
+      INFO: 'info',
+      SAFE: 'safe',
+      SHAPES: 'shapes',
+      BUTTONS: 'buttons',
+      BUTTONS_DEMO: 'buttons_demo',
+      COMPUTER: "computer",
+    }
+    const config = {
+      buttons: 4,
+    }
+    const app = wwl.attach({
+      title: 'watch', subtitle: 'smartwatch experiments',
+      handle: {
+        reload: app => app.reload(),
+        button: (app, e) => {
+          const n = e.target.value || e.target.dataset['value']
+          config.buttons = n
+          console.debug('button', n, config)
+          app.state(State.BUTTONS_DEMO)
+        },
+      }
+    })
+
+    // basic demos
+    app.states({
+      [State.INFO]: () => {
+        fetch('https://freshman.dev/api/ip').then(x=>x.text()).then(x => ip.textContent = x)
+        return `
+<button>reload</button>
+<button id=demos>back</button>
+<div>Screen: ${screen.width}x${screen.height} ${devicePixelRatio}dpr
+Inner: ${innerWidth}x${innerHeight}</div>
+<div>${navigator.userAgent}</div>
+<div>WebSockets? ${'WebSocket' in window}</div>
+<div>Wake Lock? ${'wakeLock' in navigator}</div>
+<div>BarcodeDetector? ${'BarcodeDetector' in window}</div>
+<div><b>Smartwatch: ${wwl.smartwatch()}</b></div>
+<div id=ip></div>
+<div id=id></div>`
+      },
+      [State.DEMOS]: () => `
+<button>reload</button>
+<button>info</button>
+<button>hello</button>
+<button id=safe>safe area</button>
+<!-- <button>shapes</button> -->
+<button>buttons</button>
+<!-- <button id=computer>console</button> -->
+<button>fishbowl</button>
+`     ,
+      [State.SAFE]: { 
+        title: 'safe area', subtitle: 'with matching corner radii',
+        style: `
+        background: #bfd;
+        /* by default, the safe area has .5em of side padding */
+        padding-left: 0; padding-right: 0;
+        `,
+        html: 
+  `<div style="
+  background: #4f8;
+  padding: 0 .5em;
+  flex-grow: 1;
+  white-space: pre-line;
+  display: flex; flex-direction: column; align-items: stretch;
+  "><button id=demos>back</button>
+  <div style="display: flex; flex-direction: row; justify-content: space-between">
+    <div style="
+    text-align: left;
+    ">var(--width)
+    var(--height)
+    var(--aspect)
+    var(--corner-ratio)
+    var(--corner)
+    var(--safe)
+    var(--safe-aspect)</div>
+    <div style="
+    text-align: left;
+    ">browser width
+    browser height
+    browser aspect ratio
+    corner radius ratio
+    width * corner ratio
+    rectangular height
+    safe aspect ratio</div>
+  </div>
+  </div>`,
+      },
+      [State.SHAPES]: `
+<svg viewBox='-1.1 -1.1 2.2 2.2'>
+<rect x="-1" y="-1" height="2" width="2" fill="red" />
+<circle data-button=demos rx="0" ry="0" r="1" fill="blue" />
+</svg>
+`     ,
+      [State.BUTTONS]: { title: 'buttons', html: app => {
+        setTimeout(() => {
+          custom_buttons.onchange = e => app.handle['button'](app, e)
+        })
+        return `
+<button>reload</button>
+<button data-button=demos>back</button>
+${range(4).map(x=>x+1).map(i => {
+  const n = (i + 1) * i / 2
+  const n_n1 = i * (i - 1) / 2
+  return (x => '<div style="display:flex">'+x+'</div>')(range(n - n_n1).map(x=>x+n_n1+1).map(j => `<button style="flex:1" data-button="button" data-value="${j}">${j}</button>`).join(''))
+}).join('')}
+<input id=custom_buttons type="number" placeholder="# " value=${config.buttons}></input>
+`
+      } },
+      [State.BUTTONS_DEMO]: { title:'', subtitle:'', buttons: () => config.buttons },
+      [State.COMPUTER]: { title: 'console', subtitle: 'computer.html', html: () => {
+        setTimeout(() => {
+          const frame = app.root.querySelector('iframe')
+          frame.onload = () => {
+            frame.contentWindow.window.document.body.style.zoom = '.875'
+          }
+        })
+        return `
+  <button data-button=demos>back</button>
+  <iframe id=frame src="/raw/simple/computer.html" style="
+  flex-grow: 1;
+  "></iframe>
+  `
+      } },
+    })
+
+    // hello demo
+    app.states({
+      'hello': {
+        text: app => {
+          setTimeout(() => app.state('hello-world'), 500)
+          return '...'
+        },
+        align: 'center',
+        title: 'please wait'
+      },
+      'hello-world': {
+        html: `<button id="hello-0">hello world</button>`,
+        align: 'stretch center',
+        title: 'watch'
+      },
+    })
+    app.states(Array.from({ length: 4 }).map((_, i, a) => {
+      const n = a.length
+      return {
+        id: 'hello-'+i,
+        align: 'stretch center',
+        style: `
+        background: hsl(${i / (n + 1) * 360 - 15}deg 100% 50%);
+        `,
+        html: app => {
+          app.cleanup.push((x => _=>clearTimeout(x))(setTimeout(_=> app.state('hello-'+((i + 1) % n)), 500)))
+          return `<button id=demos>exit</button>`
+        },
+      }
+    }))
+    
+    app.state('fishbowl', {
+      state: () => {
+        open('/raw/fishbowl', '_self')
+      },
+    })
+
+    app.state(location.hash.slice(1) || State.DEMOS)
+  </script>
+</body>
+</html>

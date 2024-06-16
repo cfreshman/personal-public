@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<!-- 
+
+snake_ultra_hydra.html: Snake as simple as possible for the web
+
+code style note: when i'm in charge, JavaScript is written without trailing semi-colons
+pros
+- speeds up dev time
+- prettier
+- 50% file size wait no um 98-99% whatever it's a cool language feature
+cons
+- cases where u have to put semi-colon at start of line to avoid indexing or calling previous line
+- some people hate it
+=> pros outweigh cons for me
+
+-->
+<html>
+  <head>
+    <meta charset=utf-8><meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SNAKE ULTRA HYDRA</title>
+    <link rel="icon" href="https://freshman.dev/raw/images/snake-ultra-hydra-icon.jpg">
+    
+    <script> // GENERIC FUNCTIONS/CLASSES
+
+      // truthy: interpret value as boolean
+      const truthy = (x) => Boolean(x)
+
+      // ListNode: linked list node, store reference to first node to access entire list
+      // - to_array: construct array of values from this node to end of linked list
+      class ListNode {
+        constructor(value, next=undefined) {
+          this.value = value
+          this.next = next
+        }
+        to_array() {
+          const array = []
+          for (let curr = this; curr; curr = curr.next) array.push(curr.value)
+          return array
+        }
+      }
+
+      // V2: two-dimensional vector
+      // - add: calculate new vector = this + other
+      // - equals: check this and other have equal components (e.g. same position)
+      class V2 {
+        constructor(x, y) {
+          this.x = x
+          this.y = y
+        }
+        add(other) {
+          return new V2(this.x + other.x, this.y + other.y)
+        }
+        equals(other) {
+          return this.x === other.x && this.y === other.y
+        }
+      }
+
+      // Board: a pixel canvas of width, height, background color
+      // - clear: clear canvas
+      // board.Pixel: drawable position on a Board
+      // - randomize: move to random position on board
+      // - add: new pixel of same color at offset
+      // - draw: draw pixel to board
+      class Board {
+        constructor({ canvas, size, width=size, height=size, background='#fff' }) {
+          this.canvas = canvas
+          this.graphics = this.canvas.getContext('2d')
+
+          this.canvas.width = width
+          this.canvas.height = height
+          this.canvas.style.background = background
+
+          const board = this
+          this.Pixel = class extends V2 {
+            constructor(x, y, color) {
+              super(x, y)
+              this.color = color
+            }
+            randomize() {
+              this.x = Math.floor(Math.random() * board.canvas.width)
+              this.y = Math.floor(Math.random() * board.canvas.height)
+              return this
+            }
+            add(offset) {
+              const new_vector = super.add(offset)
+              return new board.Pixel(new_vector.x, new_vector.y, this.color)
+            }
+            draw() {
+              board.graphics.fillStyle = this.color
+              board.graphics.fillRect(this.x, this.y, 1, 1)
+            }
+          }
+        }
+        clear() {
+          this.graphics.clearRect(0, 0, this.canvas.width, this.canvas.height)
+        }
+      }
+    </script>
+    
+    <style>
+      body {
+        margin: .5em;
+        display: flex;
+        flex-direction: column;
+        font-family: system-ui;
+      }
+      #board_canvas {
+        image-rendering: pixelated;
+        /* 30em by default, but shrink to min window dimension w/ .5em margin */
+        width: min(30em, calc(min(100vh, 100vw) - 1em));
+        height: min(30em, calc(min(100vh, 100vw) - 1em));
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id=board_canvas></canvas>
+    <div>
+      <b>WASD or ARROW KEYS to move. any other key to replay</b>
+      <br/>
+      play then view source to figure out how it works
+      <br/>
+      (desktop only)
+    </div>
+
+    <script> // MAIN GAME SCRIPT
+
+      // === globals & setup ===
+      const BOARD_SIZE = 20 // board size 20x20 pixels
+      const DIRS = { // cardinal directions the snake can move in
+        RIGHT: new V2(1, 0),
+        DOWN: new V2(0, 1),
+        LEFT: new V2(-1, 0),
+        UP: new V2(0, -1),
+      }
+      const COLORS = { // game colors
+        BACKGROUND: '#000',
+        SNAKE: '#34eb7d',
+        APPLE: '#f00',
+      }
+
+      // instantiate game board
+      const board = new Board({ canvas:board_canvas, size:BOARD_SIZE, background:COLORS.BACKGROUND })
+
+      // === snake behaviors/functions ===
+      function snake_move(head, dir, do_grow) {
+        // moving the snake:
+        // body nodes don't actually change
+        // a new head is added to the front (in input direction)
+        // if the snake isn't growing, the last node is removed
+        const new_head = new ListNode(head.value.add(dir), head)
+        if (!do_grow) {
+          let curr = head
+          while (curr.next.next) curr = curr.next
+          curr.next = undefined
+        }
+        return new_head
+      }
+      function snake_intersects(head, position) {
+        // true iff any body parts are placed at the position
+        return head ? head.to_array().map(part => part.equals(position)).some(truthy) : false
+      }
+      function snake_intersects_verbose_and_efficient(head, position) {
+        // UNNECESSARY CODE - FOR DEMONSTRATION
+        // true iff any body parts are placed at the position
+        // verbose/efficient version - exits early when matching part is found
+
+        let curr = head
+        while (curr) {
+          if (position.equals(curr.value)) return true
+          curr = curr.next
+        }
+        return false
+      }
+
+      // === GAME STATE ===
+      // start the snake heading towards the right
+      let head = new ListNode(new board.Pixel(BOARD_SIZE/4, BOARD_SIZE/2, COLORS.SNAKE))
+      let direction = DIRS.RIGHT
+      // how many new segments to grow
+      let growth = 2
+      // place the apple at a random position
+      const apple = new board.Pixel(0, 0, COLORS.APPLE).randomize()
+      // is the game over
+      let gameover = false
+      // last direction is used to avoid letting the snake do a 180
+      let last = direction
+
+      // === GAME LOOP ===
+      function loop() {
+        if (gameover) return
+        // we check against 'last' in the input handler to prevent a 180
+        last = direction
+
+        // move the snake
+        // gameover if snake intersects itself or went out of bounds
+        head = snake_move(head, direction, growth > 0)
+        if (growth > 0) growth--
+        if (snake_intersects(head.next, head.value)
+          || head.value.x < 0 || head.value.x > BOARD_SIZE-1
+          || head.value.y < 0 || head.value.y > BOARD_SIZE-1) {
+
+          gameover = true
+          alert(`gameover. final length: ${head.to_array().length}`)
+          return // do not continue update if gameover - to avoid drawing snake at intersecting / out of bounds position (for aesthetics)
+        }
+
+        // is head at apple's position?
+        // if so, grow the body and move the apple to new position (not in the snake)
+        if (head.value.equals(apple)) {
+          growth += 1
+          do {
+            apple.randomize()
+          } while (snake_intersects(head, apple))
+        }
+
+        // draw the scene:
+        // 1) clear board
+        // 2) draw each snake segment
+        // 3) draw the apple
+        board.clear()
+        head.to_array().map(part => part.draw())
+        apple.draw()
+      }
+
+      // === GAME INPUT ===
+      // listen for pressed keys to re-direct the snake
+      const ZERO_VECTOR = new V2(0, 0)
+      window.addEventListener('keydown', e => {
+        let new_direction
+        switch (e.key) {
+          case 'w': case 'ArrowUp':
+            new_direction = DIRS.UP
+            break
+          case 'a': case 'ArrowLeft':
+            new_direction = DIRS.LEFT
+            break
+          case 's': case 'ArrowDown':
+            new_direction = DIRS.DOWN
+            break
+          case 'd': case 'ArrowRight':
+            new_direction = DIRS.RIGHT
+            break
+          default:
+            if (gameover) location.reload()
+            break
+        }
+        if (new_direction && !ZERO_VECTOR.equals(last.add(new_direction))) {
+          direction = new_direction
+        }
+      })
+
+      // run loop() 10 times per second (every 100ms) (snake moves 10 cells/sec)
+      setInterval(loop, 100)
+
+    </script>
+  </body>
+</html>

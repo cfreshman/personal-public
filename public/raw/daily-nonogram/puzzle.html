@@ -1,0 +1,1693 @@
+<!-- cyrusfreshman 2023 -->
+<!DOCTYPE html>
+<html class="mode-v1">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>daily nonogram</title> <script src=/copyright.js></script><meta data-hydrate data-style />
+<script>
+    const log = named_log('nonogram')
+    on(window, 'touchend', e => e.preventDefault())
+</script>
+<style>
+:root {
+  min-height: 40em;
+}
+a {
+    text-decoration: underline !important;
+    cursor: pointer;
+}
+* {
+    touch-action: manipulation !important;
+}
+
+table {
+  position: relative;
+  user-select: none;
+}
+/* default table display bad. very bad. too bad. */
+tbody {
+    display: flex;
+    flex-direction: column;
+}
+tr:not(.numbers) {
+    display: flex;
+    border-width: 0 2px;
+}
+tr:nth-child(2) { border-top-width: 2px }
+tr:last-child { border-bottom-width: 2px }
+
+tr:nth-child(2) td[data-tile] {
+    border-top: 2px solid #000;
+}
+td[data-tile]:nth-child(2) {
+    border-left: 2px solid #000;
+}
+td[data-tile]:last-child {
+    border-right: 2px solid #000;
+}
+tr:last-child td[data-tile] {
+    border-bottom: 2px solid #000;
+}
+td[data-tile] {
+    background: #fff;
+}
+table:not(.composed) tr:nth-child(2n) td[data-tile]:nth-child(2n + 1), table:not(.composed) tr:nth-child(2n + 1) td[data-tile]:nth-child(2n) {
+    background: #eee;
+}
+tr:nth-child(n) td[data-tile]:hover {
+    cursor: pointer;
+}
+/* tr:nth-child(n) td[data-tile]:hover::after {
+    content: "";
+    position: absolute; height: 100%; width: 100%; top: 0; left: 0;
+    z-index: 1;
+    background: #8888;
+} */
+:not(.mobile).mode-v1 tr:nth-child(n) td[data-tile]:not(.v2):hover::after {
+    content: "";
+    position: absolute; height: 100%; width: 100%; top: 0; left: 0;
+    z-index: 1;
+    background: var(--fill-color);
+}
+:not(.mobile).mode-v2 tr:nth-child(n) td[data-tile]:not(.v1):hover::after {
+    content: "⨉";
+    position: absolute; height: 100%; width: 100%; top: 0; left: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: inherit !important;
+    z-index: 1;
+    text-shadow: 0.25px 0.25px #000, -0.25px -0.25px #000, 0.25px -0.25px #000, -0.25px 0.25px #0f0808, 0px 0.5px #000, 0.5px 0px #000, 0px -0.5px #000, -0.5px 0px #000;
+}
+
+tr {
+    font-size: 0;
+}
+
+td {
+    /* border: 1px solid #929292; */
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    /* width: 24px;
+    height: 23px;
+    font-size: 24px; */
+    width: 1.5rem;
+    height: calc(1.5rem - 1px);
+    /* font-size: 1.5rem; */
+    font-size: 16px;
+}
+td:not(.numbers) {
+    /* border: 1px solid #00000006 !important; */
+    /* margin-bottom: -1px !important; */
+}
+
+td.highlight {
+    /* border-color: #252525; */
+    /* border-color: #0175ff; */
+    background: #0175ff88;
+    /*border-width: 2px;*/
+    border: 0;
+    color: #0175ff !important;
+}
+td.v1.highlight {
+    background: #0175ff !important;
+    border: 0;
+}
+
+tr:not(.numbers) {
+    background: #fff;
+    /* box-shadow: 2px 0 #000, -2px 0 #000; */
+}
+/* table::after, tr:first-child::after {
+    position: absolute;
+    content: "";
+    height: 2px;
+    width: calc(100% + 4px);
+    left: 0;
+    margin-left: -2px;
+    background: #000;
+} */
+tr:first-child {
+    position: relative;
+}
+tr:first-child::after {
+    bottom: 0;
+}
+
+table.composed::after, .composed tr:first-child::after {
+    background: #0002;
+    background: #0000;
+}
+/* .unsolved .composed tr:not(.numbers) {
+    box-shadow: 2px 0 #0002, -2px 0 #0002;
+} */
+table.composed {
+    /* background: #0002; */
+    /* border: 2px solid #0000 !important; */
+    border-color: #0000 !important;
+    border: 0 !important;
+}
+table.composed * {
+    background: #0000;
+    border-color: #0002 !important;
+    border-color: #0000 !important;
+    border: 0 !important;
+}
+
+/* .unsolved table:not(.composed) tr:not(.numbers) td[data-tile]:hover {
+    background: #000;
+    cursor: pointer;
+} */
+.unsolved .v2 {
+    position: relative;
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    font-size: 16px !important;
+}
+/* .unsolved.mode-v2 table:not(.composed) tr:not(.numbers) td[data-tile]:hover {
+    background: none;
+    font-size: 20px !important;
+} */
+.unsolved .v2::after
+/* , .unsolved.mode-v2 table:not(.composed) tr:not(.numbers) td[data-tile]:hover::after */
+{
+    content: "⨉";
+    position: absolute; align-items: center; justify-content: center;
+    font-size: inherit !important;
+    z-index: 1;
+    text-shadow: 0.25px 0.25px #000, -0.25px -0.25px #000, 0.25px -0.25px #000, -0.25px 0.25px #000, 0px 0.5px #000, 0.5px 0px #000, 0px -0.5px #000, -0.5px 0px #000;
+}
+.unsolved.mode-v2 .numbers.down.across > div {
+    color: #fff;
+    background: #000;
+    padding-right: 0;
+}
+.unsolved [date-tile] {
+    cursor: pointer;
+    pointer-events: all;
+}
+/* tr:not(.numbers) td:hover {
+    background: #000;
+    cursor: pointer;
+} */
+
+/* td.highlight.down {
+    border-right-width: .05rem;
+    border-left-width: .05rem;
+}
+
+td.highlight.across {
+    border-top-width: .05rem;
+    border-bottom-width: .05rem;
+} */
+
+td.selected {
+    background: rgba(0, 0, 0, .5);
+}
+
+
+tr.numbers {
+    border: none;
+}
+td.numbers {
+    border: none;
+    justify-content: flex-end;
+    align-content: center;
+}
+.numbers div {
+    font-size: .7rem;
+    height: .9rem;
+}
+
+tr {
+  position: relative;
+}
+td.numbers.down:not(.across) {
+    height: auto;
+    flex-direction: column;
+    vertical-align: bottom;
+    padding: 0;
+    padding-bottom: .3rem;
+}
+
+td.border.vertical {
+    position: relative;
+}
+td:has(div.numbers.across) {
+    /* position: absolute; */
+    /* left: calc(100% + .5rem); */
+    width: unset;
+    background: none;
+}
+
+tr {
+    display: flex;
+    background: none !important;
+}
+tr:first-child {
+    align-items: flex-end;
+}
+td:has(div.numbers.across) {
+    order: 1;
+    padding-left: .5rem;
+}
+
+div.numbers.across {
+    display: flex;
+}
+div.numbers.across div {
+    padding-right: .5rem;
+}
+tr.numbers {
+    display: flex;
+}
+td:has(.numbers.across.down) {
+    /* bottom: .5rem;
+    top: calc(100% - .5rem); height: 0; */
+    bottom: .5rem;
+}
+div.numbers.across.down div {
+    font-size: .9rem;
+}
+
+
+td.border {
+    padding: 0;
+    border: none;
+    background: #000;
+}
+tr:first-child td.not.border {
+    background: none;
+}
+
+tr.border {
+    display: flex;
+}
+td.border.horizontal {
+    height: .2rem;
+    height: 0;
+    flex: 1 0;
+    border: 0 !important;
+}
+td.not.border.horizontal {
+    flex: 0 0 .15rem;
+}
+td.end.not.border.horizontal {
+    flex: 0 0 0;
+    background: none;
+}
+
+td.border.vertical {
+    /* width: .2rem; */
+    /* display: none; */
+    width: 0;
+    border: 0 !important;
+}
+
+:root {
+    --fill-color-default: #000;
+    --fill-color-0: #6c6c6c;
+    --fill-color-1: #ff2626;
+    /* --fill-color-2: #ffc310; */
+    /* --fill-color-2: #ffde00; */
+    --fill-color-2: #ffb210;
+}
+td[data-tile] {
+    --fill-color: var(--fill-color-default);
+    scale: 1.01;
+}
+:is(td[data-tile].color-0, .board:nth-child(3) td[data-tile]) {
+    --fill-color: var(--fill-color-0);
+}
+:is(td[data-tile].color-1, .board:nth-child(4) td[data-tile]) {
+    --fill-color: var(--fill-color-1);
+}
+:is(td[data-tile].color-2, .board:nth-child(5) td[data-tile]) {
+    --fill-color: var(--fill-color-2);
+}
+.red:not(.colored) :is(td[data-tile].color-0, .board:nth-child(3) td[data-tile]) {
+    --fill-color: var(--fill-color-1);
+}
+.red:not(.colored) :is(td[data-tile].color-1, .board:nth-child(4) td[data-tile]) {
+    --fill-color: var(--fill-color-2);
+}
+.red:not(.colored) :is(td[data-tile].color-2, .board:nth-child(5) td[data-tile]) {
+    --fill-color: var(--fill-color-3);
+}
+.yellow:not(.colored) :is(td[data-tile].color-0, .board:nth-child(3) td[data-tile]) {
+    --fill-color: var(--fill-color-2);
+}
+.yellow:not(.colored) :is(td[data-tile].color-1, .board:nth-child(4) td[data-tile]) {
+    --fill-color: var(--fill-color-0);
+}
+.yellow:not(.colored) :is(td[data-tile].color-2, .board:nth-child(5) td[data-tile]) {
+    --fill-color: var(--fill-color-1);
+}
+
+.shade {
+    background-color: #0003 !important;
+}
+.v0 {
+
+}
+.v1 {
+    background-color: var(--fill-color) !important;
+    /* border: 1px solid #252525; */
+    border-color: #000;
+}
+
+.v2 {
+    font-family: 'Coiny', 'Roboto Slab', sans-serif;
+    padding: 0;
+}
+.v2.done {
+    color: #00000000;
+    border: 1px solid #9292921f;
+}
+.v2.done.slow {
+    transition: 1s ease-out;
+}
+
+.guess.v1 {
+    font-family: 'Coiny', 'Roboto Slab', sans-serif;
+    padding-top: .4rem;
+    padding-left: .1rem;
+    color: #fff;
+}
+
+
+#examples {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button, #custom-handle {
+    cursor: pointer;
+}
+
+
+html {
+    overflow: hidden;
+    min-height: fit-content;
+}
+body {
+    overflow-y: auto;
+}
+@media screen and (max-aspect-ratio: 2/3) {
+    html {
+        overflow: hidden;
+        min-height: fit-content;
+    }
+    #break {
+        display: unset;
+    }
+}
+@media screen and (min-aspect-ratio: 2/3) {
+    .unsolved table:not(.composed) tr:not(.numbers) td[data-tile]:hover {
+        background-color: var(--fill-color) !important;
+        cursor: pointer;
+    }
+    .unsolved .v2 {
+        position: relative;
+        display: inline-flex;
+        align-items: center; justify-content: center;
+        font-size: 20px !important;
+    }
+    .unsolved.mode-v2 table:not(.composed) tr:not(.numbers) td[data-tile]:not(.v1):hover {
+        background: none !important;
+        /* font-size: 1em; */
+        font-size: 20px !important;
+    }
+    .unsolved.mode-v2 table:not(.composed) tr:not(.numbers) td[data-tile]:not(.v1):hover::after {
+        content: "⨉";
+        position: absolute; align-items: center; justify-content: center;
+        font-size: inherit !important;
+        z-index: 1;
+        text-shadow: 0.25px 0.25px #000, -0.25px -0.25px #000, 0.25px -0.25px #000, -0.25px 0.25px #000, 0px 0.5px #000, 0.5px 0px #000, 0px -0.5px #000, -0.5px 0px #000;
+    }
+}
+
+
+</style>
+</head>
+<body>
+
+<div id=ui>
+    <form id=solve-input style="
+    flex-direction: column;
+    margin: 2px 0;
+    display: none;
+    ">
+        <input type=text id=solve-input-title name=title autocomplete=off contenteditable>
+        <input type=text id=solve-input-down name=down autocomplete=off contenteditable>
+        <input type=text id=solve-input-across name=across autocomplete=off contenteditable>
+    </form>
+    <!-- <br /> -->
+    <div id=input-controls class=input-empty style="
+    flex-wrap: wrap;
+    width: calc(100vw - 1em);
+    ">
+        <!-- <a id=solve-button class=input-only>solve</a> -->
+        <!-- <a id=copy-button class=input-only>copy</a> -->
+        <!-- <a id=download-button>download</a> -->
+        <!-- <a id=clear-button class=input-only>clear</a> -->
+        <span id=name-label class=input-only></span>
+        <a id=variant-button class=removed>variant</a>
+        <a id=solve-button class=removed>solve</a>
+        <!-- <div id=break style="flex-basis:100%" class=mobile></div> -->
+        <a id=save-button>save</a>
+        <!-- <a id=export-button>export</a> -->
+        <!-- <select id=save-select>
+            <option value="cancel">save</option>
+            <option value="image">image</option>
+            <option value="export">export</option>
+        </select> -->
+        <!-- <span id=save-widget class=composite-select>
+            <a>save</a>
+            <select>
+                <option value="cancel">cancel</option>
+                <option value="image">image</option>
+                <option value="export">export</option>
+            </select>
+        </span> -->
+        <a id=reset-button>reset</a>
+        <!-- <a href=display.html onclick="event.target.href = (url => {
+            url.search = location.search
+            url.hash = location.hash
+            return url.toString()
+        })(new URL(event.target.href))">display.html</a> -->
+        <a href=index.html onclick="
+        {
+            event.stopImmediatePropagation()
+            event.preventDefault()
+            const href = event.target.href + location.search + location.hash
+            event.target.href = href
+            url.push(href)
+            location.reload()
+        }
+        ">calendar</a>
+        <a href=display.html onclick="
+        {
+            event.stopImmediatePropagation()
+            event.preventDefault()
+            const href = event.target.href + location.search + location.hash
+            event.target.href = href
+            url.push(href)
+            location.reload()
+        }
+        ">display</a>
+        <a href=/coffee onclick="
+            // const e = event
+            // e.preventDefault()
+            // load_page(Number(datetime.new('2023-10-07')))
+            // setTimeout(() => {
+            //     performSolve()
+            //     setTimeout(() => {
+            //         location.href = location.origin + '/coffee'
+            //     }, 1_000)
+            // }, 100)
+        ">donate</a>
+        <div id=break style="flex-basis:100%" class=mobile></div>
+        <!-- <a id=previous-button>←</a><a id=next-button>→</a> -->
+        <!-- <a id=first-button>|&lt;</a> -->
+        <a id=previous-button style="display:none">&lt;-</a>
+        <a id=random-button style="display:none">??</a>
+        <a id=next-button style="display:none">-&gt;</a>
+        <!-- <a id=last-button>&gt;|</a> -->
+        <select id=theme-select class=hidden>
+            <option value="grayscale">grayscale</option>
+            <option value="red">red</option>
+            <option value="yellow">yellow</option>
+        </select>
+    </div>
+</div>
+<br/>
+<div id=objects></div>
+<div data-hydrate data-title></div>
+<br/>
+
+<style>
+    body > * {
+        min-width: max-content;
+    }
+    .composite-select {
+        position: relative;
+    }
+    .composite-select select {
+        position: absolute;
+        top: 0; left: 0;
+        z-index: -1;
+    }
+    #objects {
+        display: flex; flex-direction: column; flex-grow: 1;
+    }
+    #objects > * {
+        margin-bottom: 1.5em;
+        user-select: none !important;
+    }
+    #ui {
+        width: -webkit-fill-available;
+        user-select: none;
+    }
+    #input-controls > .hidden {
+        visibility: hidden;
+    }
+    #input-controls > .removed {
+        display: none;
+    }
+    #ui > *, #examples {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1px .67em;
+        width: -webkit-fill-available;
+    }
+    #ui > * > input {
+        width: 100%;
+        border-radius: 0;
+        border: 1px solid currentcolor;
+        margin: -1px;
+        padding: 2px 0;
+        font-family: inherit;
+        outline: 0;
+        font-size: 1em !important;
+    }
+    #ui > * > select {
+        -webkit-appearance: none;
+        color: #000;
+        background: none;
+        font-family: inherit;
+        outline: 0;
+        border: 0;
+        cursor: pointer;
+        text-decoration: underline;
+        font-size: 1em !important;
+    }
+    .input-empty .input-only {
+        opacity: .5;
+        pointer-events: none;
+    }
+    .unsolved #input-controls .input-only {
+        color: #0000;
+        background: #aaa;
+        pointer-events: none;
+        user-select: none;
+    }
+    /* .unsolved #input-controls #name-label {
+        position: relative;
+        pointer-events: all; cursor: pointer;
+    }
+    .unsolved #input-controls #name-label:hover {
+        background: #bbb;
+    }
+    .unsolved #input-controls #name-label:hover::after {
+        position: absolute; left: 0;
+        content: "(in progress)";
+        color: #000;
+    } */
+    #name-label {
+        text-transform: uppercase;
+    }
+    /* .unsolved #name-label {
+        width: 7em;
+        overflow: hidden;
+        white-space: pre;
+        color: #aaa !important;
+        background: #fff !important;
+        background: #ccc !important;
+        position: relative;
+    } */
+    /* .unsolved #name-label {
+        width: 7em;
+        overflow: hidden;
+        white-space: pre;
+        border: 1px solid #000; margin: -1px;
+        color: #000 !important;
+        background: #0000 !important;
+        text-align: center;
+    } */
+    .unsolved #name-label {
+        /* width: 7em; */
+        overflow: hidden;
+        white-space: pre;
+        /* border: 1px solid #000; margin: -1px; */
+        background: #000000d8 !important; color: #fff !important;
+    }
+    /* .unsolved #name-label::before { content:'#' } */
+    /* .unsolved #name-label::after {
+        content: '█████████████████#';
+        letter-spacing: .1em; margin-left: .1em;
+        color: #0002;
+        /* position: absolute; */
+        /* left: 0; */
+    /* } */
+
+    html:not(.mobile) .mobile {
+        display: none;
+    }
+</style>
+
+  <script>
+const MAX_INPUT_DIM = 31
+
+var allPos = {};
+function getAllPos(size, nums) {
+    if (nums.length === 0 || nums[0] === 0)
+        return [0];
+
+    let key = [size].concat(nums).join();
+    if (allPos[key] !== undefined)
+        return allPos[key];
+
+    let [n, endNums] = [nums[0], nums.slice(1)];
+    let minEndSize = endNums.reduce((acc, n) => acc+n, 0) + endNums.length;
+    let degrees = (size - n) - minEndSize + 1;
+
+    let blockPerms = [];
+    let bit_v = ((1 << n) - 1) << (size - n);
+    for (let i = 0; i < degrees; i++) {
+        if (endNums.length === 0) {
+            blockPerms.push(bit_v);
+        } else {
+            let endSize = size - ((n + 1) + i);
+            let ends = getAllPos(endSize, endNums);
+            for (let e_i = 0; e_i < ends.length; e_i++)
+                blockPerms.push(bit_v | ends[e_i]);
+        }
+
+        bit_v >>>= 1;
+    }
+
+    allPos[key] = blockPerms;
+    return blockPerms;
+}
+
+var moves;
+function solve(down, across, unsolved=false, dryrun=false) {
+    // console.debug('solve', down, across)
+    let board
+    if (down[0] && down[0][0].length && down.length === across.length) {
+        board = range(down.length).map(i => solve(down[i], across[i], unsolved, true))
+    } else {
+        let rows = [];
+        for (let i = 0; i < across.length; i++) rows[i] = [0, 0];
+
+        let cols = [];
+        for (let i = 0; i < down.length; i++) cols[i] = [0, 0];
+
+        board = {
+            down: down,
+            across: across,
+            rows: rows,
+            cols: cols
+        };
+    }
+
+    if (!dryrun) {
+        constructBoard(board, false);
+        document.documentElement.classList.toggle('unsolved', unsolved)
+    }
+    if (unsolved || Array.isArray(board)) return board
+
+    moves = [];
+    possiblePos = {};
+
+    let downUpdated = updateVectors(false, board);
+    let acrossUpdated = updateVectors(true, board);
+    while (downUpdated || acrossUpdated) {
+        downUpdated = (acrossUpdated) ? updateVectors(false, board) : false;
+        acrossUpdated = (downUpdated) ? updateVectors(true, board) : false;
+    }
+
+    if (!isSolution(board)) board = trySolve(board) || board;
+
+    return board;
+}
+const dims = (board) => Array.isArray(board) ? dims(board[0]) : [board.across.length, board.down.length]
+
+function trySolve(board) {
+    if (Array.isArray(board)) return board.map(trySolve)
+    console.log();
+    console.log("decision point reached");
+    logB(board);
+
+    let allPosCopy = JSON.parse(JSON.stringify(allPos));
+    let possiblePosCopy = JSON.parse(JSON.stringify(possiblePos))
+
+    let size = board.cols.length;
+    for (let r = 0; r < board.rows.length; r++) {
+        let row = board.rows[r];
+        if ((row[0] ^ row[1]) === ((1 << size)-1))
+            continue;
+
+        let unknown_v = ~(row[0] ^ row[1]);
+        for (let c = 0; c < board.cols.length; c++) {
+            if (unknown_v & 1) {
+                let tryBoard = JSON.parse(JSON.stringify(board));
+
+                tryBoard.rows[r][0] |= (1 << c);
+
+                moves.push({
+                    guess: true,
+                    val: 1,
+                    pos: [r, board.cols.length - 1 -c]
+                });
+
+                fixVectors(tryBoard.cols, board.rows.length, tryBoard.rows[r], r);
+
+                console.log(r, c);
+                console.log(b(tryBoard.rows[r][0], size));
+
+                try {
+                    let downUpdated = updateVectors(false, tryBoard);
+                    let acrossUpdated = updateVectors(true, tryBoard);
+                    if (downUpdated || acrossUpdated) {
+                        while (downUpdated || acrossUpdated) {
+                            downUpdated = (acrossUpdated) ? updateVectors(false, tryBoard) : false;
+                            acrossUpdated = (downUpdated) ? updateVectors(true, tryBoard) : false;
+                        }
+
+                        if (!isSolution(tryBoard))
+                            tryBoard = trySolve(tryBoard);
+
+                        if (tryBoard)
+                            return tryBoard;
+                    }
+                } catch (e) {}
+
+                allPos = JSON.parse(JSON.stringify(allPosCopy));
+                possiblePos = JSON.parse(JSON.stringify(possiblePosCopy));
+                moves.push({
+                    reset: JSON.parse(JSON.stringify(board))
+                })
+            }
+
+            unknown_v >>= 1;
+        }
+    }
+
+    return false;
+}
+
+var possiblePos = {};
+function updateVectors(isRow, board) {
+    let vectors = (isRow) ? board.rows : board.cols;
+    let size = (isRow) ? board.cols.length : board.rows.length;
+
+    let isChanged = false;
+    for (let i = 0; i < vectors.length; i++) {
+        let nums = (isRow) ? board.across[i] : board.down[i];
+        let [true_v, false_v] = vectors[i];
+
+        moves.push({
+            isRow: isRow,
+            i: i
+        });
+
+        let key = [isRow, i].join();
+        let prev = possiblePos[key] || getAllPos(size, nums);
+        let possible = prev.filter(
+            v => (v & true_v) === true_v && (v & false_v) === 0
+        )
+        possiblePos[key] = possible;
+
+        if (possible.length === 0) {
+            console.log(isRow, i);
+            logB(board);
+            throw 'Invalid board';
+        }
+
+        true_v |= possible.reduce((acc, v) => acc & v);
+        false_v |= possible.reduce((acc, v) => acc | v) ^ ((1 << size) - 1);
+
+        let diff_true = true_v ^ vectors[i][0];
+        let diff_false = false_v ^ vectors[i][1];
+        let unknown = ~(true_v ^ false_v);
+
+        let toAdd = [];
+        for (let j = size-1; j >= 0; j--) {
+            if ((diff_true & 1) || (diff_false & 1)) {
+                toAdd.push({
+                    isRow: isRow,
+                    i: i,
+                    val: (diff_true & 1) ? 1 : 2,
+                    pos: isRow ? [i, j] : [j, i]
+                });
+            }
+
+            if ((diff_true & 1) || (diff_false & 1) || (unknown & 1)) {
+                toAdd.push({
+                    isRow: isRow,
+                    i: i,
+                    val: 0,
+                    pos: isRow ? [i, j] : [j, i]
+                });
+            }
+
+            diff_true >>= 1;
+            diff_false >>= 1;
+            unknown >>= 1;
+        }
+        moves.push(...toAdd.reverse());
+
+        if (true_v !== vectors[i][0] || false_v !== vectors[i][1]) {
+            isChanged = true;
+            vectors[i] = [true_v, false_v];
+            fixVectors( (isRow) ? board.cols : board.rows, vectors.length, vectors[i], i);
+            moves.push({
+                isRow: isRow,
+                i: i
+            });
+        }
+    }
+
+    // moves = (getMoveTime() > 0) ? moves : [];
+    // console.log(moves);
+
+    return isChanged;
+}
+
+function fixVectors(vectors, size, fix, index) {
+    let [true_v, false_v] = fix;
+    let pos = size - index - 1;
+    for (let i = vectors.length-1; i >= 0; i--) {
+        vectors[i][0] |= ((true_v & 1) << pos);
+        vectors[i][1] |= ((false_v & 1) << pos);
+        true_v >>= 1;
+        false_v >>= 1;
+    }
+}
+
+function isSolution(board) {
+    return board.rows.every(r => (r[0] ^ r[1]) === ((1 << board.cols.length)-1));
+}
+
+function convertBoard(board) {
+    if (board.layers) {
+        return board.layers
+        .map(convertBoard)
+        .reduce((a, v, i) => a.map((a_r, r_i) => a_r.map((x, c_i) => x !== 1 ? v[r_i][c_i] === 1 ? 2 + i : v[r_i][c_i]  : x)))
+    }
+
+    let converted = [];
+    for (let r = 0; r < board.rows.length; r++) {
+        let boxes = [];
+        let [true_v, false_v] = board.rows[r];
+        for (let c = 0; c < board.cols.length; c++) {
+            let val = (true_v & 1) | ((false_v & 1) << 1);
+            boxes.unshift(val);
+            true_v >>= 1;
+            false_v >>= 1;
+        }
+        converted.push(boxes);
+    }
+    return converted;
+}
+
+function logB(board) {
+    let converted = convertBoard(board);
+    for (let i = 0; i < converted.length; i++)
+        console.log(i.toString().padStart(3) + '| ',
+            converted[i].join(' ')
+            .split('0').join('?')
+            .split('1').join('O')
+            .split('2').join(' '));
+    if (!isSolution(board))
+        console.log('Incomplete');
+}
+
+function bl(l, size) {
+    return l.map(v => b(v, size));
+}
+
+function b(v, size) {
+    return ((v >>> 0) & ((1 << size) - 1)).toString(2).padStart(size, '0');
+}
+
+
+function parseNums(line) {
+    if (line.includes('|')) return line.split('|').map(parseNums)
+    
+    let groups = line.trim().split('|')[0].split(/ +/g).filter(g => g);
+    let nums = groups.map(g => g.trim().split(',').map(Number));
+    return nums;
+}
+
+function boardToCanvas(target_table_l=Q('table')) {
+    if (!(/table/i.test(target_table_l.tagName))) target_table_l = target_table_l.querySelector('table')
+    if (!target_table_l) return undefined
+
+    const canvas = node('<canvas style="image-rendering:pixelated"></canvas>')
+    ;[canvas.height, canvas.width] = [QQ(target_table_l, 'tr:not(.numbers, .border)').length, QQ(target_table_l, 'tr:nth-child(2) td').length]
+    const ctx = canvas.getContext('2d')
+    ctx.fillStyle  = '#e5e5e5' // '#fff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    QQ(target_table_l, '[data-tile]').map((x, i) => {
+        const r = Math.floor(i / canvas.width)
+        const c = i % canvas.width
+        ctx.fillStyle = getComputedStyle(x).backgroundColor
+        ctx.fillRect(c, r, 1, 1)
+        console.debug(c, r, ctx.fillStyle, x, i, canvas.width, canvas.height)
+    })
+    console.debug(QQ(target_table_l, '[data-tile]'), canvas.toDataURL())
+    return canvas
+}
+
+// var valMap = [' ', '', '⨉'];
+var valMap = [' ', '', ''];
+const cleanup = []
+function constructBoard(board, isFinal=true, board_container_l=Q('#objects')) {
+    cleanup.map(apply)
+    lists.clear(cleanup)
+
+    // console.debug('construct', board)
+    const _inner = async (board, board_l, i=0) => {
+        let boardVals = convertBoard(board);
+        // console.debug(board, boardVals);
+        let innerHTML = `<table${board.layers ? ' class=composed onclick="event.preventDefault()"' : ' style="cursor:pointer"'}>`;
+        let borderAcross = `<tr class="border">
+            <td class="border horizontal"></td>
+            ${(window.chrome || window.parent?.chrome) ? '<td class="numbers end not border horizontal"></td>' : ''}
+        </tr>\n`;
+        let borderDown = '<td class="border vertical"></td>';
+        if (board.layers) {
+            innerHTML += `<tr class="numbers" style="display:none">`
+        } else {
+            innerHTML += `<tr class="numbers">`
+            // innerHTML += `<td class="numbers down across"><div>${board.rows.length}x${board.cols.length}</div></td>`
+            innerHTML += `<td class="not border vertical">
+                <div class="numbers down across"><div>${boardVals.length}x${boardVals[0].length}</div></div>
+            </td>`;
+            for (let c = 0; c < boardVals[0].length; c++) {
+                innerHTML += `<td class="numbers down"><div>${board.down[c].join('</div><div>')}</div></td>`;
+            }
+            innerHTML += '<td class="not border vertical"></td></tr>\n';
+        }
+
+        // innerHTML += borderAcross;
+        for (let r = 0; r < boardVals.length; r++) {
+            innerHTML += '<tr>'
+            // innerHTML += `<td class="numbers across"><div>${board.across[r].join('</div><div>')}</div></td>`
+            if (!board.layers) innerHTML += `<td class="border vertical r${r}">
+                <div class="numbers across"><div>${board.across[r].join('</div><div>')}</div></div>
+            </td>`;
+            for (let c = 0; c < boardVals[0].length; c++) {
+                innerHTML += `<td data-tile=${r}-${c} class="r${r} c${c} v${isFinal && boardVals[r][c] === 2 ? 0 : boardVals[r][c] < 3 ? boardVals[r][c] : `1 color-${i - 0}`}">${(isFinal && boardVals[r][c] === 2) ? valMap[0] : valMap[boardVals[r][c]]||''}</td>`;
+            }
+            // innerHTML += `<td class="border vertical r${r}"></td>` + '</tr>';
+            innerHTML += '</tr>'
+        }
+        // innerHTML += borderAcross;
+        innerHTML += '</table>';
+
+        board_l.innerHTML = innerHTML;
+        QQ(board_l, '.r0').map(x => x.classList.add(...list('border-top')));
+        QQ(board_l, '.c0').map(x => x.classList.add(...list(('border-left'))));
+        QQ(board_l, `.r${boardVals.length - 1}`).map(x => x.classList.add(...list(('border-bottom'))));
+        QQ(board_l, `.c${boardVals[0].length - 1}`).map(x => x.classList.add(...list(('border-right'))));
+        if (isFinal) {
+            Q(board_l, '.highlight')?.classList.remove(...list('highlight down across'));
+            if (getMoveTime() > 0) {
+                setTimeout(() => QQ(board_l, '.v2').map(x => x.classList.add(...list(('slow done')))))
+            } else {
+                QQ(board_l, '.v2')?.map(x => x.classList.add(...list('done')))
+            }
+        } else {
+            QQ(board_l, '.v2')?.map(x => x.style.cssText += 'visibilty:visible')
+        }
+
+        if (boardVals[0].length === 1) {
+            QQ(board_l, 'tr.border').map(x => x.style.cssText += 'width:1.9rem');
+        } else {
+            QQ(board_l, 'tr.border').map(x => x.style.cssText += 'width:auto');
+        }
+        Q(board_l, 'table').style.cssText += 'visibility:hidden'
+    }
+
+    board_container_l.innerHTML = ''
+    const compose = Array.isArray(board)
+    if (!compose) board = [board]
+    ;{
+        console.debug('render board', { board })
+        ;(compose
+        ? [{layers:board,...board[0]},...board]
+        : board
+        ).map((part, i) => {
+            const part_l = node(`<div class=board id=board_${i}></div>`)
+            _inner(part, part_l, i)
+            board_container_l.append(part_l)
+        })
+        Q('#theme-select').classList[compose ? 'remove' : 'add']('hidden')
+        Q('#theme-select').click()
+    }
+
+    const MODES = ['v1', 'v2']
+    let example, down, v_remove, action, save, stack, mode = MODES[0]
+    const rotateMode = e => {
+        mode = MODES[(MODES.indexOf(mode) + 1) % MODES.length]
+        console.debug({ mode })
+        html.classList.remove(...MODES.map(mode => `mode-${mode}`))
+        html.classList.add(`mode-${mode}`)
+    }
+    const renderLabel = () => {
+        // Q('#name-label').textContent = (example && !unsolved && (example?.title || example?.name)) || datetime.yyyymmdd()
+        // const target_fill_count = QQ(Q('table.composed'), 'td[data-tile]').filter(x => x.classList.contains('v1')).length
+        // const actual_fill_count = math.sum(board.flatMap(layer => layer.down.map(math.sum)))
+        // console.debug({ target_fill_count, actual_fill_count, board })
+        // const unsolved = target_fill_count !== actual_fill_count
+        // html.classList[unsolved ? 'add' : 'remove']('unsolved')
+        const unsolved = format ? !showNonogramSolveState() : true
+        html.classList.toggle('unsolved', unsolved)
+        Q('#name-label').textContent = (!unsolved && (example?.title || example?.name)) || location.hash.slice(1) || datetime.yyyymmdd() // String(Math.floor((puzzle_ms - start_ms) / duration({ d:1 }))).padStart(3, '0')
+    }
+    const composed = Q('table.composed')
+    const layers = QQ('table:not(.composed)')
+    const renderComposed = () => {
+        if (!composed) return
+        const cells = QQ(composed, '[data-tile]')
+        const shaded_cell_indices = new Set()
+        cells.map(cell => cell.classList.remove(...cell.classList))
+        layers.map((layer, layer_i) => {
+            QQ(layer, '[data-tile]').map((cell, cell_i) => {
+                if (cell.classList.contains('v1')) {
+                    cells[cell_i].classList.add('v1', ...(layer_i > 0 ? [`color-${layer_i - 1}`] : []))
+                    shaded_cell_indices.add(cell_i)
+                }
+            })
+        })
+        layers.map((layer, layer_i) => {
+            QQ(layer, '[data-tile]').map((cell, cell_i) => {
+                cell.classList[shaded_cell_indices.has(cell_i) ? 'add' : 'remove']('shade')
+            })
+        })
+        cells.map(cell => cell.classList.remove(...MODES.slice(1)))
+    }
+    on(window, 'pointerup pointercancel', e => {
+        down = false
+    })
+    cleanup.push(on(window, 'pointerup', e => {
+        // down = false
+        renderLabel()
+        // Q('#name-label') = example?.title ||
+        // const solved_board_l = !isFinal && node('<div></div>')
+        // try {
+        //     // if (!isFinal) constructBoard(trySolve(board), false, solved_board_l)
+        // } catch {}
+        // if (!isFinal && solved_board_l && boardToCanvas()?.toDataURL() === boardToCanvas(solved_board_l)?.toDataURL()) {
+        //     constructBoard(board)
+        //     const example = examples.find(x => compare.stringify(x.down, Q('[name=down]')) && compare.stringify(x.across, Q('[name=across]')))
+        //     Q('#name-label') = example?.title || yyyymmdd()
+        // }
+    }))
+    defer(() => {
+        resizeBoard()
+        renderComposed()
+
+        example = examples.find(x => 
+            x.down === Q('[name=down]').value
+            && x.across === Q('[name=across]').value)
+        defer(() => {
+            renderLabel()
+            // if (format) showNonogramSolveState()
+        })
+
+        layers.map((table_l, i) => {
+            const cells = QQ(table_l, 'tr:not(.numbers) td[data-tile]')
+            const [height, width] = dims(board)
+            cells.map((x, j) => {
+                const r = Math.floor(j / height)
+                const c = j % width
+                cleanup.push(...ons(x, {
+                    'pointerdown': e => {
+                        down = true
+                        // v_remove = MODES.filter(mode => x.classList.contains(mode))
+                        save = cells.map(cell => [...cell.classList])
+                        stack = []
+                        const action_name = (x.classList.contains(mode) ? 'remove' : 'add')
+                        action = (l) => {
+                            if (!l) return
+                            if (MODES.find(other => l.classList.contains(other) && other !== mode)) return
+                            // l.classList.remove(...MODES)
+                            // l.classList.remove(...v_remove)
+                            l.classList[action_name](mode)
+                            i > 0 && l.classList[action_name](`color-${i - 1}`)
+                            if (composed && mode === MODES[0]) {
+                                renderComposed()
+                            }
+                            // if (format) showNonogramSolveState()
+                        }
+                        action(x)
+                        stack.unshift(x)
+                    },
+                    'pointermove': e => {
+                        const l = e.target
+                        if (down) {
+                            e.preventDefault()
+                            action(document.elementFromPoint(e.clientX, e.clientY))
+                            // if (devices.is_mobile) {
+                            //     action(document.elementFromPoint(e.clientX, e.clientY))
+                            // } else {
+                            //     if (stack[1] === l) {
+                            //         cells.map((cell, i) => {
+                            //             cell.classList.remove(...cell.classList)
+                            //             cell.classList.add(...save[i])
+                            //         })
+                            //         stack.shift()
+                            //         stack.map(cell => action(cell))
+                            //     } else if (stack[0] !== l) {
+                            //         action(document.elementFromPoint(e.clientX, e.clientY))
+                            //         stack.unshift(x)
+                            //     }
+                            // }
+                        }
+                    },
+                }))
+            })
+
+            QQ(table_l, '.numbers.down.across').map(y => {
+                y.style.cssText += `
+                cursor: pointer;
+                text-decoration: underline;
+                `
+                y.onclick = rotateMode
+            })
+        })
+        cleanup.push(ons(window, {
+            'keydown': e => {
+                console.debug(e, e.key, e.key === 'x')
+                if (e.key === 'x') rotateMode(e)
+            },
+        }))
+    }, 0);
+
+    return board_container_l
+}
+
+/*
+
+Main Script
+
+*/
+let board, format
+let examples = [
+    {
+        title: 'Elephant Beetle',
+        puzzle: `8x8
+0 1,1 1,4 1 1 1,4 1,1 0|0 0 0 5 5 0 0 0
+0 1,1 0 2,2 1,1 2,2 4 0|0 2 2 2 2 2 0 0`,
+    },
+]
+const parseCommonNonogramFormat = (str) => str.trim().split('\n').slice(-2)
+const unparseCommonNonogramFormat = (down, across) => {
+    if (!down[0][0].length) {
+        ;[down, across] = [[down], [across]]
+    }
+    console.debug('unparse', down, across)
+    return `${across[0].length}x${down[0].length}\n${lists.joins(down, '|', ' ', ',')}\n${lists.joins(across, '|', ' ', ',')}`
+}
+examples.map(x => {
+    if (x.puzzle) {
+        ;[x.down, x.across] = parseCommonNonogramFormat(x.puzzle)
+    }
+})
+
+const displayPuzzle = (down, across) => constructBoard(solve(down, across, true))
+const displayExample = (example_or_title_or_i) => {
+    const example = typeof(example_or_title_or_i) === 'object' ? example_or_title_or_i : examples[examples.findIndex(x => x.title === example_or_title_or_i)] || examples[example_or_title_or_i]
+    console.debug(example)
+    constructBoard(solve(parseNums(example.down), parseNums(example.across), true, true), false)
+    Q('[name=title]').value = example.title
+    Q('[name=down]').value = example.down
+    Q('[name=across]').value = example.across
+    Q('#input-controls').classList.remove('input-empty')
+    // Q('#name-label').textContent = example.title || example.name
+    html.classList[example.color ? 'add' : 'remove']('colored')
+    Q('#example-color-style')?.remove()
+    if (example.color) {
+        const [c_default, c_0, c_1, c_2] = example.color.split('|')
+        head.append(node(`<style id=example-color-style>
+            .board:first-child {
+                --fill-color-default: ${c_default};
+                ${c_0 ? `--fill-color-0: ${c_0};` : ''}
+                ${c_1 ? `--fill-color-1: ${c_1};` : ''}
+                ${c_2 ? `--fill-color-2: ${c_2};` : ''}
+            }
+        </style>`))
+    }
+}
+
+var down, across;
+on('#solve-input input', 'input change', e => {
+    timeoutId && showNextMove(0)
+
+    let formData = new FormData(document.querySelector('form'));
+
+    let downInput = formData.get('down');
+    let acrossInput = formData.get('across');
+
+    let re = /^ *(\d{1,2}(,\d{1,2})*( (\d{1,2}(,\d{1,2})*)?)*\|?)*$/
+    down = (downInput.match(re)) ? parseNums(downInput) : down;
+    across = (acrossInput.match(re)) ? parseNums(acrossInput) : across;
+
+    // if (!(down.length > 1 && across.length > 0))
+    const input = down && across
+    Q('#input-controls').classList[input ? 'remove' : 'add']('input-empty')
+    if (!input) return
+
+    displayPuzzle(down, across)
+});
+ons('#solve-input', {
+    'paste': e => {
+        e.preventDefault()
+        console.debug((event.clipboardData || window.clipboardData).getData('text'))
+        const [down, across] = parseCommonNonogramFormat((event.clipboardData || window.clipboardData).getData('text'))
+        Q('[name=down]').value = down
+        Q('[name=across]').value = across
+        displayPuzzle(parseNums(down), parseNums(across))
+    },
+});
+
+const performSolve = e => {
+    let formData = new FormData(document.querySelector('form'));
+    let downInput = formData.get('down');
+    let acrossInput = formData.get('across');
+
+    let re = /^ *(\d{1,2}(,\d{1,2})*( (\d{1,2}(,\d{1,2})*)?)*\|?)*$/
+    if (!downInput.match(re) || !acrossInput.match(re)) {
+        // $('#inputs').effect('shake')
+        errorElement(document.querySelector('#inputs button'))
+        return;
+    }
+
+    let down = parseNums(downInput);
+    let across = parseNums(acrossInput);
+
+    const showInputError = (i, message) => {
+        const input = document.querySelectorAll('input')[i]
+        const value = input.value
+        input.value = message
+        const _clearInputError = () => {
+            input.value = value
+            clearTimeout(timeoutHandle)
+            input.removeEventListener(listenerHandle)
+        }
+        const timeoutHandle = setTimeout(_clearInputError, 3000)
+        const listenerHandle = input.addEventListener('click', _clearInputError)
+    }
+    if (down.length > MAX_INPUT_DIM) showInputError(0, 'Too many columns');
+    if (across.length > MAX_INPUT_DIM) showInputError(1, 'Too many rows');
+
+    if (down.length <= MAX_INPUT_DIM && across.length <= MAX_INPUT_DIM) {
+        // showSolve(down, across);
+        constructBoard(solve(down, across, false, true), true)
+    } else {
+        errorElement(document.querySelector('#inputs button'))
+    }
+}
+on('#solve-button', 'click', performSolve);
+on('#copy-button', 'click', e => {
+    const inputs = [Q('[name=down]').value, Q('[name=across]').value]
+    const [down, across] = inputs.map(parseNums)
+    copy(unparseCommonNonogramFormat(down, across))
+    displayStatus(e.target, 'copied!')
+})
+on('#clear-button', 'click', e => {
+    Q('#examples > *:last-child').click()
+    Q('#solve-button').click()
+    Q('[name=down]').value = Q('[name=across]').value = ''
+})
+on('#theme-select', 'change click', e => {
+    document.documentElement.classList.remove(...list('grayscale red yellow'))
+    document.documentElement.classList.add(...list(e.target.value))
+})
+Q('#theme-select').value = 'yellow'
+// on('#copy-button', 'click', e => {
+//     let formData = new FormData(document.querySelector('form'));
+//     let downInput = formData.get('down');
+//     let acrossInput = formData.get('across');
+//     let down = parseNums(downInput);
+//     let across = parseNums(acrossInput);
+//     copy(``)
+
+//     const showInputError = (i, message) => {
+//         const input = document.querySelectorAll('input')[i]
+//         const value = input.value
+//         input.value = message
+//         const _clearInputError = () => {
+//             input.value = value
+//             clearTimeout(timeoutHandle)
+//             input.removeEventListener(listenerHandle)
+//         }
+//         const timeoutHandle = setTimeout(_clearInputError, 3000)
+//         const listenerHandle = input.addEventListener('click', _clearInputError)
+//     }
+//     if (down.length > MAX_INPUT_DIM) showInputError(0, 'Too many columns');
+//     if (across.length > MAX_INPUT_DIM) showInputError(1, 'Too many rows');
+
+//     if (down.length <= MAX_INPUT_DIM && across.length <= MAX_INPUT_DIM) {
+//         // showSolve(down, across);
+//         constructBoard(solve(down, across))
+//     } else {
+//         errorElement(document.querySelector('#inputs button'))
+//     }
+// });
+
+// const save_widget = Q('#save-widget')
+// const save_button = Q(save_widget, 'a')
+// const save_select = Q(save_widget, 'select')
+// on(save_select, 'change', e => {
+//     const l = e.target
+//     switch (l.value) {
+//         case 'image':{
+//             downloadCanvas(boardToCanvas(), `${Q('#name-label').textContent.replace(/ /g, '_')}.png`)
+//         }break
+        // case 'export':{
+        //     const [down, across] = [Q('[name=down]').value, Q('[name=across]').value].map(parseNums)
+        //     copy(unparseCommonNonogramFormat(down, across), `${Q('#name-label').textContent}.no`)
+        //     // displayStatus(Q(save_widget, 'a'), 'copied!')
+        // }break
+//     }
+//     l.value = 'cancel'
+//     l.click()
+// })
+// on(save_button, 'click', e => {
+//     console.debug(e)
+//     save_select.click()
+// })
+on('#save-button', 'click', e => {
+    const original = boardToCanvas()
+    const SAVE_SCALE = 16
+    const scaled = node(`<canvas height=${(original.height + 2) * SAVE_SCALE} width=${(original.width + 2) * SAVE_SCALE}/>`)
+    ;(ctx => {
+        ctx.imageSmoothingEnabled = false
+        ctx.fillStyle = '#e5e5e5' // '#fff'
+        ctx.fillRect(0, 0, scaled.width, scaled.height)
+        ctx.drawImage(original, 0, 0, original.width, original.height, SAVE_SCALE, SAVE_SCALE, original.width * SAVE_SCALE, original.height * SAVE_SCALE)
+    })(scaled.getContext('2d'))
+    downloadCanvas(scaled, `${Q('#name-label').textContent.replace(/ /g, '_')}.png`)
+    console.debug(scaled.toDataURL())
+})
+// const [down, across] = [Q('[name=down]').value, Q('[name=across]').value].map(parseNums)
+// download(unparseCommonNonogramFormat(down, across), `${Q('#name-label').textContent}.no`)
+// on(Q('#save-select'), 'change', e => {
+//     const l = e.target
+//     switch (l.value) {
+//         case 'image':{
+//             downloadCanvas(boardToCanvas(), `${Q('#name-label').textContent.replace(/ /g, '_')}.png`)
+//         }break
+//         case 'export':{
+//             const [down, across] = [Q('[name=down]').value, Q('[name=across]').value].map(parseNums)
+//             download(unparseCommonNonogramFormat(down, across), `${Q('#name-label').textContent}.no`)
+//             // displayStatus(Q(save_widget, 'a'), 'copied!')
+//         }break
+//     }
+//     l.value = 'cancel'
+//     l.click()
+// })
+
+on('#reset-button', 'click', e => {
+    constructBoard(solve(parseNums(Q('[name=down]').value), parseNums(Q('[name=across]').value), true, true))
+})
+
+
+// new board resizing code
+let boardEl = document.querySelector('#objects')
+let bodyEl = document.querySelector('body')
+let rI
+function resizeBoard() {
+    let tableEl = document.querySelector('#objects table')
+    if (tableEl) {
+        let boardRect = boardEl.getBoundingClientRect()
+        let bodyRect = bodyEl.getBoundingClientRect()
+        let tableRect = tableEl.getBoundingClientRect()
+        // console.log(boardRect, tableRect)
+        let scale = Math.round(Math.min(
+            bodyRect.width / tableRect.width,
+            boardRect.height / tableRect.height) * 100)/100;
+        scale = Math.min(scale, bodyRect.width / boardRect.width, bodyRect.height / boardRect.height)
+        // scale = (scale - 1) * .9 + 1;
+        // console.log(`scale(${scale});`)
+        // rI && clearInterval(rI)
+        // rI = setInterval(() => $('#board table').css('transform', `scale(${scale})`), 100)
+        setTimeout(() => {
+            QQ('#objects table').map(x => x.style.cssText = `
+            visibility: visible;
+            `)
+
+            defer(() => {
+                const l = Q('#objects')
+                Object.assign(l.style, {
+                    'scale': 1,
+                    'width': '100%',
+                }) 
+                list(l.children).map(lc => Object.assign(lc.style, {
+                    'scale': 1,
+                    'width': 'fit-content',
+                }))
+                const [first, ...rest] = QQ(l, ':scope > *').filter(x => getComputedStyle(x).display !== 'none').map(x => Object.assign(x.getBoundingClientRect(), {element:x}))
+                const last = rest.slice(-1)[0]
+                const rect = l.getBoundingClientRect()
+                // const scale = Math.min(rect.height / (last.bottom - first.top), rect.width / bodyRect.width)
+                const max_width = Math.max(...list(l.children).map(x => x.clientWidth))
+                const scale = Math.min(rect.height / (last.bottom - first.top), rect.width / max_width)
+                console.debug(
+                    scale,
+                    'height', rect.height, (last.bottom - first.top),
+                    'width', rect.width, bodyRect.width,
+                    'vars', rect, first, last, l)
+                
+                list(l.children).map(lc => {
+                    const inner = lc.getBoundingClientRect()
+                    Object.assign(lc.style, {
+                        'scale': scale,
+                        'transform-origin': `${rect.x - inner.x}px ${rect.y - inner.y}px`,
+                    })
+                })
+            })
+        }, 50)
+        // $('#board table').css('transform', `scale(${scale})`)y
+
+        // tableEl.style.transform = `scale(${scale});`
+    }
+}
+window.addEventListener('resize deviceorientation', resizeBoard)
+displayExample('Elephant Beetle')
+
+const start_ms = Number(datetime.of({ Y:2023, M:7, D:10 }))
+const is_development = location.hostname === 'localhost' || location.port === '3030'
+const today_ms = Date.now() + (is_development ? datetime.duration({ d:1 }) : 0)
+console.debug({ start_ms, is_development, today_ms, sart:datetime.ymd(start_ms), today:datetime.ymd(today_ms) })
+let last_puzzle_ms
+location.hash = location.hash || location.search.slice(2)
+
+let puzzle_ms = location.hash?.slice(1) ? Number(datetime.new(location.hash.slice(1))) : Date.now() + (is_development ? datetime.duration({ d:1 }) : 0)
+const load_page = (ms) => {
+    log('load', datetime.ymd(ms))
+    history.pushState(null, '', location.origin + location.pathname + location.search + '#'+datetime.ymd(ms))
+    load_puzzle(ms)
+}
+const _fetch_puzzle_and_variants = async (ms) => {
+    const puzzle = await api.get(`/raw/daily-nonogram/puzzles/${datetime.yyyymmdd(ms)}.no`).then(r=>r.text())
+    const variants = list(puzzle.matchAll(new RegExp(format, 'g'))).map(x => ({...x.groups}))
+    if (!variants.length) return { puzzle: undefined, variants: undefined }
+    return { puzzle, variants }
+}
+const load_puzzle = async (t) => {
+    const new_puzzle_ms = Math.max(start_ms, Math.min(t, location.hostname === 'localhost' ? Date.now() + duration({ mo: 1 }) : today_ms))
+    const { puzzle, variants } = await _fetch_puzzle_and_variants(new_puzzle_ms)
+    console.debug({ puzzle, format, variants })
+    if (!variants.length) return load_page(last_puzzle_ms ? last_puzzle_ms : Date.now())
+    puzzle_ms = last_puzzle_ms = new_puzzle_ms
+    Q('#variant-button').classList[variants.length > 1 ? 'remove' : 'add']('hidden')
+
+    let variant_i = -1
+    const nextVariant = () => {
+        Q('#variant-button').textContent = `variant${variants.length > 1 ? ` ${variant_i + 1}` : ''}`
+        const object = variants[variant_i = (variant_i + 1) % variants.length]
+        // console.debug({ object })
+        displayExample(object)
+        if (!examples.find(x => (x.title || x.name) === (object.title || object.name))) examples.push(object)
+        history.replaceState(0,0, location.origin + location.pathname + location.search + (new_puzzle_ms === today_ms ? '' : `#${datetime.yyyymmdd(new_puzzle_ms)}`))
+    }
+    on('#variant-button', 'click', e => nextVariant())
+    Q('#variant-button').click()
+}
+defer(async () => {
+    format = eval(`/${await api.get(`/raw/nonogram/puzzles/no.format`).then(r=>r.text())}/`)
+    load_puzzle(puzzle_ms)
+    on('#first-button', 'click', e => load_page(start_ms))
+    // on('#previous-button', 'click', async e => {
+    //     let duration_offset = datetime.duration({ d: -1 })
+    //     let new_puzzle_ms = puzzle_ms
+    //     let puzzle = undefined
+    //     while (!puzzle && new_puzzle_ms > start_ms) {
+    //         puzzle = !(await _fetch_puzzle_and_variants(new_puzzle_ms += duration_offset)).puzzle
+    //     }
+    //     if (!puzzle) new_puzzle_ms = start_ms
+    //     load_page(new_puzzle_ms)
+    // })
+    // on('#random-button', 'click', async e => {
+    //     let new_puzzle_ms
+    //     while (!(await _fetch_puzzle_and_variants(new_puzzle_ms = rand.i(today_ms - start_ms) + start_ms)).puzzle) {}
+    //     load_page(new_puzzle_ms)
+    // })
+    // on('#next-button', 'click', async e => {
+    //     let duration_offset = datetime.duration({ d: 1 })
+    //     let new_puzzle_ms = puzzle_ms
+    //     let puzzle = undefined
+    //     while (!puzzle && new_puzzle_ms < today_ms + (dev ? today_ms + datetime.duration({ m: 2 }) : 0)) {
+    //         puzzle = !(await _fetch_puzzle_and_variants(new_puzzle_ms += duration_offset)).puzzle
+    //     }
+    //     if (!puzzle) new_puzzle_ms = start_ms
+    //     load_page(new_puzzle_ms)
+    // })
+    on('#last-button', 'click', async e => {
+        // let duration_offset = datetime.duration({ d: -1 })
+        // let new_puzzle_ms = today_ms - duration_offset
+        // while (!(await _fetch_puzzle_and_variants(new_puzzle_ms += duration_offset)).puzzle) {}
+        load_page(today_ms)
+    })
+})
+defer(async () => {
+    const format = eval(`/${await api.get(`/raw/nonogram/puzzles/no.format`).then(r=>r.text())}/`)
+    const entries = []
+    for (let ms = start_ms; ms <= today_ms; ms += datetime.duration({ d:1 })) {
+        const yyyymmdd = datetime.yyyymmdd(ms)
+        const in_store = store.get(`daily-nonogram-${yyyymmdd}`)
+        const add_entry = () => entries.push({
+            ms,
+            date: new Date(ms),
+            func: e => {
+                open(`/raw/daily-nonogram/puzzle.html#${yyyymmdd}`, e.metaKey ? '_blank' : '_self')
+            },
+        })
+        if (in_store) {
+            add_entry()
+        } else {
+            const puzzle = await api.get(`/raw/daily-nonogram/puzzles/${yyyymmdd}.no`).then(r=>r.text())
+            const variants = list(puzzle.matchAll(new RegExp(format, 'g'))).map(x => ({...x.groups}))
+            if (variants.length) {
+                store.set(`daily-nonogram-${yyyymmdd}`, { puzzle, variants })
+                add_entry()
+            }
+        }
+    }
+
+    log({entries})
+
+    let entry_i = (x => x < 0 ? 0 : x)(entries.findIndex(x => datetime.yyyymmdd(x.ms) === datetime.yyyymmdd(puzzle_ms)))
+    let new_puzzle_ms = today_ms
+    on('#previous-button', 'click', async e => {
+        entry_i = (entry_i - 1 + entries.length) % entries.length
+        load_page(entries[entry_i].ms)
+    })
+    on('#next-button', 'click', async e => {
+        entry_i = (entry_i + 1 + entries.length) % entries.length
+        load_page(entries[entry_i].ms)
+    })
+    on('#random-button', 'click', async e => {
+        entry_i = rand.i(entries.length)
+        load_page(entries[entry_i].ms)
+    })
+    Q('#previous-button').style.display = 'inline-block'
+    Q('#next-button').style.display = 'inline-block'
+    Q('#random-button').style.display = 'inline-block'
+})
+if (is_development) Q('#solve-button').classList.remove(...list('hidden removed'))
+
+const layerSolveState = (layer, layer_down, layer_across) => {
+    const n = layer_across.length
+    const m = layer_down.length
+    console.debug('layer satisfied?', n, m, layer_down, layer_across)
+    const cols_solve_state = range(m).map(c => {
+        const col = layer.map(row => row[c])
+        const groups = []
+        let group = 0
+        for (let r = 0; r < n; r++) {
+            if (col[r] === 1) {
+                group += 1
+            } else {
+                if (group) groups.push(group)
+                group = 0
+            }
+        }
+        if (group || !groups.length) groups.push(group)
+        console.debug('col', c, layer_down[c], groups)
+        return strings.json.equal(layer_down[c], groups)
+    })
+    const rows_solve_state = range(n).map(r => {
+        const row = layer[r]
+        const groups = []
+        let group = 0
+        for (let c = 0; c < m; c++) {
+            if (row[c] === 1) {
+                group += 1
+            } else {
+                if (group) groups.push(group)
+                group = 0
+            }
+        }
+        if (group || !groups.length) groups.push(group)
+        console.debug('row', r, layer_across[r], groups)
+        return strings.json.equal(layer_across[r], groups)
+    })
+    console.debug(cols_solve_state.every(x=>x) && rows_solve_state.every(x=>x), { layer, cols_solve_state, rows_solve_state })
+    return { down: cols_solve_state, across: rows_solve_state }
+}
+const nonogramSolveState = (puzzle, layers) => {
+    const down = puzzle.down.split('|').map(x => x.split(' ').map(y => y.split(',').map(Number)))
+    const across = puzzle.across.split('|').map(x => x.split(' ').map(y => y.split(',').map(Number)))
+    return layers.map((layer, i) => layerSolveState(layer, down[i], across[i]))
+}
+const showNonogramSolveState = () => {
+    const down = Q('[name=down]').value
+    const across = Q('[name=across]').value
+    const layer_ls = QQ('#objects .board table:not(.composed)')
+    const layers = layer_ls.map(layer_l => {
+        const row_ls = QQ(layer_l, 'tr:has(td[data-tile])')
+        const cell_ls = row_ls.map(row_l => QQ(row_l, 'td[data-tile]'))
+        return cell_ls.map(row_cell_ls => row_cell_ls.map(cell_l => {
+            if (cell_l.classList.contains('v1')) return 1
+            return 0
+        }))
+    })
+    const solve_state = nonogramSolveState({ down, across }, layers)
+    console.debug('show solve state', { down, across, layer_ls, layers, solve_state })
+    solve_state.map((layer_state, li) => {
+        const downs = QQ(layer_ls[li], 'td.down')
+        const acrosses = QQ(layer_ls[li], 'tr:not(.numbers) div.across')
+        layer_state.down.map((state, si) => downs[si].style.opacity = state ? '.5' : '1')
+        layer_state.across.map((state, si) => acrosses[si].style.opacity = state ? '.5' : '1')
+    })
+    const solved = solve_state.every(layer_state => layer_state.down.every(x=>x) && layer_state.across.every(x=>x))
+    // document.documentElement.classList.toggle('unsolved', !solved)
+    return solved
+}
+setTimeout(() => {
+    const example_nonogram = {
+        down: '1 2,1 1 1|0 0 2 2',
+        across: '1 1 1,2 1|2 2 0 0',
+    }
+    const example_layers = [
+        [
+            [0, 1, 0, 0],
+            [0, 1, 0, 0],
+            [1, 0, 1, 1],
+            [0, 1, 0, 0],
+        ],
+        [
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+            [0, 0, 0, 0],
+        ]
+    ]
+    console.debug('NONOGRAM SATISFIED', nonogramSolveState(example_nonogram, example_layers))
+    setTimeout(() => showNonogramSolveState(), 2_000)
+}, 1_000)
+
+  </script>
+
+</body>
+</html>

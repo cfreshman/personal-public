@@ -1,0 +1,518 @@
+
+<!DOCTYPE html>
+<html class="preserve-links">
+  <head>
+    <meta charset=utf-8><meta name="viewport" content="width=device-width,initial-scale=1" />
+    <script src="https://freshman.dev/copyright.js"></script>
+    <style> * { box-sizing: border-box; } :root { --filter-b: 1; --filter-c: 1; --filter-s: 1; --filter: brightness(var(--filter-b)) contrast(var(--filter-c)) saturate(var(--filter-s)); --filter-invert: brightness(calc(1/var(--filter-b))) contrast(calc(1/var(--filter-c))) saturate(calc(1/var(--filter-s))); } html, body { margin: 0; height: 100%; width: 100%; } body { font-family: 'Duospace', monospace; font-family: monospace; filter: var(--filter); } iframe { filter: var(--filter-invert); } .relative{ position: relative;}.absolute{ position: absolute;}.left{ text-align: left;}.right{ text-align: right;}.wide{ width: -webkit-fill-available;}.tall{ height: -webkit-fill-available;}.full{ margin: 0; height: 100%; width: 100%;}.fill{ margin: 0; height: 100%; width: 100%; position: absolute; top: 0; left: 0;}.flex{ display: flex; align-items: flex-start; justify-content: flex-start;}.row{ display: flex; align-items: flex-start; justify-content: flex-start; flex-direction: row;}.column{ display: flex; align-items: flex-start; justify-content: flex-start; flex-direction: column;}.center{ display: flex; align-items: flex-start; justify-content: flex-start; align-items: center; text-align: center;}.center-row{ display: flex; align-items: flex-start; justify-content: flex-start; flex-direction: row; display: flex; align-items: flex-start; justify-content: flex-start; align-items: center; text-align: center;}.center-column{ display: flex; align-items: flex-start; justify-content: flex-start; flex-direction: column; display: flex; align-items: flex-start; justify-content: flex-start; align-items: center; text-align: center;}.middle{ display: flex; align-items: flex-start; justify-content: flex-start; align-items: center; text-align: center; justify-content: center; text-align: center;}.middle-row{ display: flex; align-items: flex-start; justify-content: flex-start; flex-direction: row; display: flex; align-items: flex-start; justify-content: flex-start; align-items: center; text-align: center; justify-content: center; text-align: center;}.middle-column{ display: flex; align-items: flex-start; justify-content: flex-start; flex-direction: column; display: flex; align-items: flex-start; justify-content: flex-start; align-items: center; text-align: center; justify-content: center; text-align: center;}.inline{ display: inline-flex;}.gap{ display: flex; align-items: flex-start; justify-content: flex-start; gap: .25em;}.wrap{ display: flex; align-items: flex-start; justify-content: flex-start; flex-wrap: wrap;}.start{ display: flex; align-items: flex-start; justify-content: flex-start; justify-content: flex-start;}.end{ display: flex; align-items: flex-start; justify-content: flex-start; justify-content: flex-end}.grow{ flex-grow: 1;}.shrink{ flex-shrink: 1;}.monospace{ font-family: 'Duospace', monospace; font-family: monospace;}.uppercase{ text-transform: uppercase;}.lowercase{ text-transform: lowercase;}.capitalize{ text-transform: capitalize;}.solarize{ --filter-b: 1.2; --filter-c: .8; --filter-s: .975; --filter: brightness(var(--filter-b)) contrast(var(--filter-c)) saturate(var(--filter-s)); --filter-invert: brightness(calc(1/var(--filter-b))) contrast(calc(1/var(--filter-c))) saturate(calc(1/var(--filter-s))); filter: var(--filter);} .spacer { flex-grow: 1; } .description { font-size: .7em; } .row img { width: 0; flex-grow: 1; } :root{ --filter-b: 1.2; --filter-c: .8; --filter-s: .975; --filter: brightness(var(--filter-b)) contrast(var(--filter-c)) saturate(var(--filter-s)); --filter-invert: brightness(calc(1/var(--filter-b))) contrast(calc(1/var(--filter-c))) saturate(calc(1/var(--filter-s))); filter: var(--filter);--background:#fdfcfa;--color:#101010;--button:#eee;}*{box-sizing:border-box;font-family:SFMono-Regular,Menlo,Monaco,Consolas,"LiberationMono","CourierNew",monospace;}html,body{display:flex;flex-direction:column;align-items:flex-start}html{height:100%;background:var(--background);color:var(--color);font-size:12px;}body{flex-grow:1;padding:.5em;}iframe{border:0;display:block;}a{color:inherit;text-decoration:underline;}a:hover{background:var(--color);color:var(--background);}button,a,input,*[onclick]{font-size:1em;cursor:pointer;touch-action:manipulation;}button,input:is(:not([type]),[type=text],[type=password],[type=email]){border:1px solid currentColor;border-radius:10em;padding:.1667em.67em;height:calc(100%-1px);margin:.5px 0;}button{background:var(--button);user-select:none;}input:is(:not([type]),[type=text]){background:none;}input:is(:not([type]),[type=text],[type=password],[type=email])::placeholder{opacity:.425;}:root{--background:#fdfcfa;--color:#101010;--button:#eee;}*{box-sizing:border-box;font-family:SFMono-Regular,Menlo,Monaco,Consolas,"LiberationMono","CourierNew",monospace;}html,body{display:flex;flex-direction:column;align-items:flex-start}html{height:100%;background:var(--background);color:var(--color);font-size:12px;}body{flex-grow:1;padding:.5em;}iframe{border:0;display:block;}a{color:inherit;text-decoration:underline;}a:hover{background:var(--color);color:var(--background);}button,a,input,*[onclick]{font-size:1em;cursor:pointer;touch-action:manipulation;}button,input:is(:not([type]),[type=text],[type=password],[type=email]){border:1px solid currentColor;border-radius:10em;padding:.1667em.67em;height:calc(100%-1px);margin:.5px 0;}button{background:var(--button);user-select:none;}input:is(:not([type]),[type=text]){background:none;}input:is(:not([type]),[type=text],[type=password],[type=email])::placeholder{opacity:.425;}</style>
+
+    <style>
+      :root, html, body {
+        overflow-y: hidden;
+        height: 100vh;
+      }
+      * {
+        flex-shrink: 0;
+        font-family: inherit;
+      }
+      a {
+        text-decoration: none !important;
+      }
+      a:not(:has(button)) {
+        color: #1155cc !important;
+        text-decoration: none !important;
+      }
+      a:not(:has(button)):hover {
+        background: #1155cc !important; color: #fff !important;
+        box-shadow: 0 .25px #1155cc;
+        text-decoration: none !important;
+      }
+      a:has(button) {
+        background: none !important;
+      }
+
+      body {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #000;
+      }
+      #resume-container {
+        --font-size-px: 10;
+        font-size: calc(var(--font-size-px) * 1px);
+        height: 11em;
+        width: 8.5em;
+      }
+      #resume-controls {
+        position: fixed; top: 0; left: 0;
+      }
+      #resume {
+        font-size: calc(100% / 8.5);
+        height: 100%;
+        width: 100%;
+
+        background: #fff;
+        padding: calc(60% / 11) calc(15% / 8.5);
+        box-sizing: border-box;
+        line-height: 1.3 !important;
+        font-family: 'Roboto Mono';
+      }
+      #resume > * {
+        font-size: 1.35em;
+      }
+      #resume * {
+        vertical-align: baseline;
+      }
+      .resume-row {
+        text-transform: uppercase;
+      }
+      .resume-row-item:first-child {
+        font-weight: bold;
+      }
+      .resume-description {
+        width: -webkit-fill-available;
+      }
+      .resume-description > * {
+        flex-grow: 1;
+        white-space: pre-wrap !important;
+        margin-left: 1em;
+        
+        font-size: .85em;
+        
+      }
+      .resume-section:first-child .resume-row > :first-child {
+        background: #000; color: #fff; display: inline-block;
+      }
+      .resume-section:not(:last-child)::after {
+        content: "";
+        display: block;
+        white-space: pre;
+      }
+      .resume-spacer {
+        content: "";
+        display: block;
+        height: 0;
+        flex-grow: 1;
+      }
+    </style>
+  </head>
+  <body>
+    <div id=resume-container>
+      <div id=resume class=column><div class="resume-section column wide"><div class="row wide" style="
+          justify-content: space-between;
+          ">
+            <div class="resume-row row" style="
+gap: .67em;
+margin-left: 0;
+"><span class="resume-row-item" style="
+font-weight: bold;
+">AMAZON ROBOTICS</span>•<span class="resume-row-item" style="
+
+">PATH PLANNING TEAM</span>•<span class="resume-row-item" style="
+
+">WESTBOROUGH, MA</span></div>
+            
+          </div>
+          <div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>Software Development Engineer</span>
+              <span style="
+              font-weight: bold;
+              ">SEPTEMBER 2019–APRIL 2022</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>Developed unstructured path planning API for autonomous warehouse vehicles (<a href="https://paths.tu.fo">demo</a>)</div>
+            </div>
+          </div></div><div class=resume-spacer></div><div class="resume-section column wide"><div class="row wide" style="
+          justify-content: space-between;
+          ">
+            <div class="resume-row row" style="
+gap: .67em;
+margin-left: 0;
+"><span class="resume-row-item" style="
+font-weight: bold;
+">MATHWORKS</span>•<span class="resume-row-item" style="
+
+">DATA TOOLS & GRAPHICS TEAMS</span>•<span class="resume-row-item" style="
+
+">NATICK, MA</span></div>
+            
+          </div>
+          <div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>Software Engineering Intern</span>
+              <span style="
+              font-weight: bold;
+              ">SUMMER 2018</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>Developed full-stack feature for MATLAB Online's Import Tool</div>
+            </div>
+          </div>
+<div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>Software Engineering Intern</span>
+              <span style="
+              font-weight: bold;
+              ">SUMMER 2017</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>Implemented several heavy UI elements for MATLAB's Property Inspector, including colormap (<a href="https://freshman.dev/raw/cv/MathWorks/colormap/">detail</a>)</div>
+            </div>
+          </div>
+<div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>Software Engineering Intern</span>
+              <span style="
+              font-weight: bold;
+              ">SUMMER 2016</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>Created graphics performance reporting app for progress tracking</div>
+            </div>
+          </div></div><div class=resume-spacer></div><div class="resume-section column wide"><div class="row wide" style="
+          justify-content: space-between;
+          ">
+            <div class="resume-row row" style="
+gap: .67em;
+margin-left: 0;
+"><span class="resume-row-item" style="
+font-weight: bold;
+">UNIVERSITY OF MASSACHUSETTS, AMHERST</span>•<span class="resume-row-item" style="
+
+">AMHERST, MA</span></div>
+            <div>
+    
+    <span>4.0\</span>
+    
+    <span style="
+    font-weight: bold;
+    
+    background: #000; color: #fff; display: inline-block;
+    
+    ">3.91</span>
+  </div>
+          </div>
+          <div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>Bachelor of Science in Computer Science</span>
+              <span style="
+              font-weight: bold;
+              ">SEPTEMBER 2015–MAY 2019</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>589 Machine Learning – 514 Data Science – 583 Game Programming – 383 Artificial Intelligence
+403 Robotics – 326 Web Programming – 611 Advanced Algorithms – MATH MVCalc LinAlg DiffEq</div>
+            </div>
+          </div></div><div class=resume-spacer></div><div class="resume-section column wide"><div class="row wide" style="
+          justify-content: space-between;
+          ">
+            <div class="resume-row row" style="
+gap: .67em;
+margin-left: 0;
+"><span class="resume-row-item" style="
+font-weight: bold;
+">UNIVERSITY OF AUCKLAND</span>•<span class="resume-row-item" style="
+
+">AUCKLAND, NEW ZEALAND</span></div>
+            <div>
+    
+    <span>8.0\</span>
+    
+    <span style="
+    font-weight: bold;
+    
+    ">8.25</span>
+  </div>
+          </div>
+          <div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>Semester Abroad</span>
+              <span style="
+              font-weight: bold;
+              ">SPRING 2018</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>373 Computer Graphics – 351 Database Systems – 345 Human-Computer Interaction</div>
+            </div>
+          </div></div><div class=resume-spacer></div><div class="resume-section column wide"><div class="row wide" style="
+          justify-content: space-between;
+          ">
+            <div class="resume-row row" style="
+gap: .67em;
+margin-left: 0;
+"><span class="resume-row-item" style="
+font-weight: bold;
+">MEADOWBROOK DAY CAMP</span>•<span class="resume-row-item" style="
+
+">WESTON, MA</span></div>
+            
+          </div>
+          <div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>SENIOR GROUP COUNSELOR</span>
+              <span style="
+              font-weight: bold;
+              ">SUMMER 2019</span>
+            </div>
+            <div class="resume-description column wide">
+              <div></div>
+            </div>
+          </div>
+<div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>JUNIOR GROUP COUNSELOR</span>
+              <span style="
+              font-weight: bold;
+              ">SUMMERS 2013–2015</span>
+            </div>
+            <div class="resume-description column wide">
+              <div></div>
+            </div>
+          </div></div><div class=resume-spacer></div><div class="resume-section column wide"><div class="row wide" style="
+          justify-content: space-between;
+          ">
+            <div class="resume-row row" style="
+gap: .67em;
+margin-left: 0;
+"><span class="resume-row-item" style="
+font-weight: bold;
+">VINNY'S NEW YORK PIZZA</span>•<span class="resume-row-item" style="
+
+">HOPKINTON, MA</span></div>
+            
+          </div>
+          <div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>DELIVERY DRIVER</span>
+              <span style="
+              font-weight: bold;
+              ">2014-2015</span>
+            </div>
+            <div class="resume-description column wide">
+              <div></div>
+            </div>
+          </div></div><div class=resume-spacer></div><div class="resume-section column wide"><div class="row wide" style="
+          justify-content: space-between;
+          ">
+            <div class="resume-row row" style="
+gap: .67em;
+margin-left: 0;
+"><span class="resume-row-item" style="
+font-weight: bold;
+">OTHER PROJECTS & ROLES</span></div>
+            
+          </div>
+          <div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>MERN-based Web Applications</span>
+              <span style="
+              font-weight: bold;
+              ">2021–2023</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>(<a href="https://wordbase.app">wordbase.app</a>) remake of discontinued multiplayer word game
+(<a href="https://wordle.freshman.dev">wordle.freshman.dev</a>) leaderboard for programmatic Wordle solvers
+(<a href="https://dinder.social">dinder.social</a>) make new recipes with random people on the internet
+(<a href="https://pico.cafe">pico.cafe</a>) resources for getting started with the Raspberry Pi Pico
+(<a href="https://follow-sync.freshman.dev">follow-sync.freshman.dev</a>) sync follows between Twitter and Mastodon
+(<a href="https://basin.fish">basin.fish</a>) fishbowl, a party game similar to charades</div>
+            </div>
+          </div>
+<div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>Hierarchical Control System for Simulated Pong-Playing Robot</span>
+              <span style="
+              font-weight: bold;
+              ">2019</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>Composed behavior from low-level PD controllers to integrated gameplay for course competition</div>
+            </div>
+          </div>
+<div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>3D Game Development in Unity</span>
+              <span style="
+              font-weight: bold;
+              ">2019</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>Designed physics-based couch game with Nintendo Joy-Cons for player input (<a href="https://matchbox.zip">link</a>)</div>
+            </div>
+          </div>
+<div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>Hackathon Competition 2018</span>
+              <span style="
+              font-weight: bold;
+              ">2018</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>Won ‘Most Innovative’ for idea with random group while studying at University of Auckland</div>
+            </div>
+          </div>
+<div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>Team Lead, Competitive Programming Interest Group </span>
+              <span style="
+              font-weight: bold;
+              ">2017</span>
+            </div>
+            <div class="resume-description column wide">
+              <div>Achieved 7th place in the ICPC 2017 Northeast North America Regional Contest (<a href="https://icpc.global/regionals/finder/northeast-north-america-2018/standings">scoreboard</a>)
+Qualified at BOSPRE Preliminary as first-time ICPC competitor (<a href="https://hc3.seas.harvard.edu/hc3/bospre/2017/scoreboard.web">scoreboard</a>)</div>
+            </div>
+          </div>
+<div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span>Secretary, Association for Computing Machinery (ACM) Student Chapter</span>
+              <span style="
+              font-weight: bold;
+              ">2017</span>
+            </div>
+            <div class="resume-description column wide">
+              <div></div>
+            </div>
+          </div></div><div class=resume-spacer></div><div class="resume-section column wide"><div class="row wide" style="
+          justify-content: space-between;
+          ">
+            <div class="resume-row row" style="
+gap: .67em;
+margin-left: 0;
+"><span class="resume-row-item" style="
+font-weight: bold;
+">PROGRAMMING LANGUAGES, FRAMEWORKS, TECHNOLOGIES & METHODOLOGIES</span></div>
+            
+          </div>
+          <div class="resume-position column wide" style="
+          margin-bottom: .2em;
+          ">
+            <div style="
+            width: 100%;
+            display: flex; justify-content: space-between;
+            ">
+              <span></span>
+              <span style="
+              font-weight: bold;
+              "></span>
+            </div>
+            <div class="resume-description column wide">
+              <div>Java, JavaScript/TypeScript, Python, C/C++, C#, Kotlin, Ruby, MATLAB, HTML/CSS, SQL
+MERN stack (MongoDB, ExpressJS, ReactJS, NodeJS), Django, Dojo Toolkit
+AWS, Chromium DevTools, Git, Unix shell, REST APIs, Service-Oriented Architecture, Agile</div>
+            </div>
+          </div></div><div class=resume-spacer></div><div class="resume-section column wide"><div class="resume-row row" style="
+gap: .67em;
+margin-left: 0;
+"><span class="resume-row-item" style="
+font-weight: bold;
+">Cyrus Freshman</span>•<span class="resume-row-item" style="
+
+">Boston, MA</span>•<span class="resume-row-item" style="
+
+"><a href="mailto:cyrus@freshman.dev">cyrus@</a>(<a href="http://freshman.dev">freshman.dev</a>)</span></div></div></div>
+    </div>
+
+    <script>
+
+const href = location.href
+const pdf = href.replace('.html', '.pdf')
+fetch(pdf)
+.then(r => body.append(Object.assign(node('<a style="position:fixed;top:0;left:0;margin:.5em;color:#fff"><button>pdf</button></a>'), {
+  href: pdf
+})))
+
+const container = Q('#resume-container')
+const resume = Q('#resume')
+const resize = () => {
+  const style = node('style')
+  head.append(style)
+  let font_size_px = 1
+  style.innerHTML = `#resume-container{--font-size-px:${font_size_px}}`
+  while (container.clientWidth < innerWidth && container.clientHeight < innerHeight && font_size_px < 100) style.innerHTML = `#resume-container{--font-size-px:${font_size_px += 1}}`
+  while (!(container.clientWidth < innerWidth && container.clientHeight < innerHeight && font_size_px < 100)) style.innerHTML = `#resume-container{--font-size-px:${font_size_px -= .1}}`
+  style.innerHTML = `#resume-container{--font-size-px:${font_size_px * .95}}`
+  console.debug(font_size_px)
+}
+resize()
+on(window, 'resize deviceorientation', resize)
+
+    </script>
+  </body>
+</html>

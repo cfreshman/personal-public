@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>two-cam</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  </style>
+</head>
+<body class="column">
+
+  <div data-hydrate data-title></div>
+  <div id=root class="row wide"></div>
+  <div class="row wide" style="
+  flex-grow: 1;
+  align-items: center; justify-content: center;
+  ">
+    <button id=button_start onclick="
+    start()
+    ">start</button>
+  </div>
+  <script>
+    const start = async () => {
+      const log = named_log('two-cam')
+      if (devices.is_mobile) {
+        const canvas = node(`<canvas style="
+        width: 0;
+        flex-grow: 1;
+        "></canvas>`)
+        const ctx = canvas.getContext('2d')
+        root.append(canvas)
+
+        const screenshot = () => {
+          try {
+            log(canvas)
+            canvases.download(canvas, 'two-cam.png')
+          } catch {}
+        }
+        button_start.textContent = 'screenshot'
+        button_start.onclick = screenshot
+
+        let i = 0
+        const dimensions = []
+        setInterval(async () => {
+          const stream = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { exact: i % 2 === 0 ? 'environment' : 'user' },
+            },
+          })
+          const video = await new Promise(resolve => {
+            const video_node = node(`<video webkit-playsinline playsinline style="
+            width: 0;
+            flex-grow: 1;
+            "></video>`)
+            video_node.srcObject = stream
+            video_node.onloadedmetadata = () => {
+              video_node.play()
+              resolve(video_node)
+            }
+          })
+          dimensions[i % 2] = { width: video.videoWidth, height: video.videoHeight }
+          const [width, height] = [maths.sum(dimensions.map(x => x.width)), maths.max(dimensions.map(x => x.height))]
+          if (canvas.width !== width) canvas.width = width
+          if (canvas.height !== height) canvas.height = height
+          let x = 0
+          dimensions.map((dim, dim_i) => {
+            if (dim_i === i % 2) {
+              ctx.drawImage(video, x, 0, dim.width, dim.height)
+            }
+            x += dim.width
+          })
+
+          i += 1
+        }, 1_000)
+      } else {
+        const input_devices = await navigator.mediaDevices.enumerateDevices()
+        log(input_devices)
+        const video_inputs = input_devices.filter(x => x.kind === 'videoinput')
+        const streams = await Promise.all(video_inputs.map(x => navigator.mediaDevices.getUserMedia({
+          video: {
+            deviceId: { exact: x.deviceId },
+          },
+        })))
+        log(streams)
+        const videos = streams.map(x => {
+          const video_node = node(`<video webkit-playsinline playsinline style="
+          width: 0;
+          flex-grow: 1;
+          "></video>`)
+          video_node.srcObject = x
+          video_node.onloadedmetadata = () => video_node.play()
+          return video_node
+        })
+        log(videos)
+        root.append(...videos)
+
+        const screenshot = () => {
+          const canvas = node('canvas')
+          canvas.height = Math.max(...videos.map(x => x.videoHeight))
+          canvas.width = maths.sum(videos.map(x => x.videoWidth))
+          const ctx = canvas.getContext('2d')
+          let x = 0
+          videos.map(video => {
+            ctx.drawImage(video, x, 0, video.videoWidth, video.videoHeight)
+            x += video.videoWidth
+          })
+          log(canvas)
+          canvases.download(canvas, 'two-cam.png')
+        }
+        button_start.textContent = 'screenshot'
+        button_start.onclick = screenshot
+        Object.assign(window, {videos})
+      }
+    }
+  </script>
+
+</body>
+</html>

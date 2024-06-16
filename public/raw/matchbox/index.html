@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<!-- matchbox
+'19 gamedev course project
+-->
+<html>
+<head>
+  <title>matchbox</title>
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * {
+      font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    }
+    html {
+      height: 100%;
+      background: #fdfcfa;
+      color: #101010;
+      font-size: 12px;
+      display: flex;
+      flex-direction: column;
+      white-space: pre-line;
+    }
+    body {
+      padding: .5em;
+      display: flex;
+      flex-direction: column;
+      row-gap: .5em;
+      flex-grow: 1;
+    }
+    a {
+      color: inherit;
+      text-decoration: underline;
+    }
+    a:hover {
+      background: #101010;
+      color: #fdfcfa;
+    }
+    button, a, input {
+      cursor: pointer;
+      font-size: 1em;
+      touch-action: manipulation;
+    }
+    button, input:is(:not([type]), [type=text]) {
+      border: 1px solid black;
+      border-radius: 5em;
+      padding: .1667em .67em !important;
+    }
+    button {
+      background: #eee;
+      user-select: none;
+    }
+    input:is(:not([type]), [type=text]) {
+      background: none;
+    }
+    input:is(:not([type]), [type=text])::placeholder {
+      opacity: .425;
+    }
+
+    .title {
+      font-weight: bold;
+    }
+    .subtitle {
+      font-style: italic;
+      opacity: .5;
+      font-size: .825em;
+    }
+    #title {
+      display: flex;
+      align-items: center;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+
+  <div id=title>
+    <span class="title">(matchbox)</span>&nbsp;<span class="subtitle">joycon couch game</span>
+  </div>
+
+  <div>
+    <span>2-4 players, one Joy-Con each</span>
+    <span>hold reset button → connect in Bluetooth settings</span>
+    <span>launch matchbox</span>
+    <br/>
+    <span><b>macOS:</b> <a href="/raw/matchbox/matchbox.app.zip">matchbox.app.zip</a></span>
+    <span>unzip → right-click → open</span>
+    <br/>
+    <span><span style="text-decoration:line-through"><b>Windows:</b> <a href="/raw/matchbox/matchbox-windows.zip">matchbox-windows.zip</a></span> (broken)</span>
+    <span>unzip → open folder → open .exe</span>
+    <br/>
+    <span>TODO html5 version</span>
+  </div>
+
+  <!-- <video autoplay loop muted playsinline style="
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: .15;
+  z-index: -1;
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  ">
+    <source src="/raw/matchbox//preview.mp4" type="video/mp4" />
+  </video> -->
+  <div class="middle-column" style="
+  position: fixed;
+  top: 0; left: 0;
+  height: 100%; width: 100%;
+  user-select: none;
+  pointer-events: none;
+  opacity: .15;
+  display: flex;
+  justify-content: center;
+  ">
+    <iframe 
+    src="https://www.youtube.com/embed/hS4a11hE9E8?autoplay=1&mute=1&controls=0&loop=1"
+    frameBorder="0"
+    allowFullScreen
+    allow="autoplay" style="
+    height: 100%;
+    aspect-ratio: 1152 / 720;
+    "></iframe>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,4369 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>pixelworld</title>
+    <link rel="manifest">
+    <!-- <link rel="icon" href="data:image/jpeg;base64,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"> -->
+    <link rel="icon" href="/raw/pixelworld/icon.png">
+    
+    <style>
+        * {
+            font-family: monospace;
+            font-size: inherit;
+            box-sizing: border-box;
+            transition: 0.15s;
+            user-select: none;
+        }
+        html, body {
+            margin: 0;
+            height: 1px;
+            width: 1px;
+            min-width: 100%;
+            min-height: 100%;
+            overflow: hidden;
+            background: #fff;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-x: auto;
+            font-size: min(5vh, max(12px, .8rem));
+
+            /* background: #050505; */
+            color: #fff;
+        }
+        canvas {
+            image-rendering: pixelated;
+        }
+        
+        #canvas-container {
+            position: relative;
+            overflow: auto;
+        }
+        #overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            scale: 1 -1;
+            pointer-events: none;
+        }
+        #overlay g {
+            pointer-events: all;
+            fill: none;
+            stroke: none;
+            cursor: pointer;
+        }
+        
+        #info {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            display: block;
+            pointer-events: none;
+
+            padding: 10px;
+        }
+        /* #info > * {
+            padding-bottom: 10px;
+        } */
+        #info a, #info input {
+            pointer-events: all;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: normal;
+        }
+        
+        #curation, .curation {
+            color: #00e4ff88 !important;
+            text-shadow: -.5px .5px 0px #d900ff88;
+            font-style: italic;
+            filter: drop-shadow(0 0 #fff);
+        }
+        #info table * {
+            transition: 0s;
+            font-size: 1em;
+        }
+        #info table :is(th, th *) {
+            font-weight: normal;
+        }
+        #info table b {
+            font-weight: bolder;
+        }
+        #info table {
+            position: relative;
+            left: 0; top: 0;
+        }
+        #info table a, #info table input {
+            color: inherit;
+        }
+        #info .key::before { content:"(" }
+        #info .key::after { content:")" }
+        @media (max-aspect-ratio: 1/1) {
+            #info tr:not(#controls) td:nth-child(2) {
+                display: none;
+            }
+            #info tr#controls td:nth-child(2) {
+                text-align: right;
+            }
+            #info .key::before { content:"" }
+            #info .key::after { content:"" }
+        }
+        @media (min-aspect-ratio: 1/1) {
+            #info #px128-header { display:none!important }
+        }
+        #info :is(th, td) {
+            padding: 0;
+            text-align: left;
+        }
+        #info :is(th, td):not(:first-child) {
+            padding-left: 1em;
+        }
+        
+        #info.hidden tr {
+            display: none;
+        }
+        #info.hidden #controls {
+            display: table-row;
+        }
+        #info #controls-hide, #info.hidden #controls-show {
+            display: initial;
+        }
+        #info.hidden #controls-hide, #info #controls-show {
+            display: none;
+        }
+
+        #info table {
+            background: #000;
+            background-clip: content-box;
+        }
+        .gallery #info table {
+            background: unset;
+        }
+        
+        .option {
+            display: none;
+        }
+        .show-options .option {
+            display: initial;
+        }
+        .show-options #info .option {
+            display: table-row;
+        }
+        .show-options #info .option td {
+            padding-left: 1.2rem;
+        }
+        .show-options #info #more {
+            content: "hide options <";
+        }
+
+        #listing, #loading-container {
+            display: inline-block;
+            z-index: 100;
+            position: fixed;
+            bottom: 0; left: 0;
+            margin: 10px;
+            font-size: 1rem;
+            white-space: pre-line;
+        }
+        .listing-right :is(#listing, #loading-container) {
+            left: unset !important;
+            right: 0 !important;
+            justify-content: flex-end !important;
+            text-align: right !important;
+        }
+        .listing #info tr {
+            display: none;
+        }
+        .listing #info .curate-show {
+            display: unset !important;
+        }
+        .listing #info tr.curate-show {
+            display: table-row !important;
+        }
+        .listing #info table.curate-show {
+            display: table !important;
+        }
+        .listing #info#info .curate-hide {
+            display: none !important;
+        }
+        
+        .gallery #info tr, .gallery.listing #info .curate-show {
+            display: none !important;
+        }
+        .gallery #info .gallery-show, .gallery.listing #info .curate-show.gallery-show, .listing.gallery #info .listing-gallery-show {
+            display: unset !important;
+        }
+        .gallery #info tr.gallery-show, .gallery.listing #info tr.curate-show.gallery-show, .listing.gallery #info tr.listing-gallery-show {
+            display: table-row !important;
+        }
+
+        .gallery #info {
+            display: none !important;    
+        }
+        
+        #loading-container {
+            height: 100%; width: 100%;
+            display: inline-flex;
+            /* align-items: flex-end; justify-content: flex-start; */
+            align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+        #loading {
+            display: inline-block;
+        }
+
+        .loading #info {
+            display: none !important;
+        }
+        
+        #bookmarks {
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 100;
+            margin: 10px;
+        
+            color: #fff;
+        
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        
+            display: none;
+        }
+        #bookmarks #header {
+            display: flex;
+            flex-direction: row-reverse;
+        }
+        #bookmarks #bookmarks-hide {
+            margin-right: 1rem;
+        }
+        #bookmarks #add {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            margin: .5rem 0;
+        }
+        #bookmarks #add input {
+            border: none;
+            background: #fff3;
+            color: #fff;
+            border-radius: .12rem;
+            padding: .2rem;
+            text-align: center;
+            margin-right: .4rem;
+            font-size: max(16px, 1rem);
+            width: min(22rem, calc(100vw - 5rem));
+        
+            background: #fffd;
+            color: #000c;
+            filter: drop-shadow(1px 2px 4px #00000010);
+        }
+        #bookmarks #add input:focus-visible,
+        #bookmarks #add input:active,
+        #bookmarks #add input:focus {
+            outline: none !important;
+            border-color: #fff8;
+            box-shadow: 0px 0px 0px 2px #fff8;
+            filter: drop-shadow(0px 0px 0px 2px #fff8);
+        }
+        #bookmarks #add input::placeholder {
+            color: #fff;
+            opacity: .9;
+        
+            color: #000;
+            opacity: .3;
+            font-size: .8rem;
+        }
+        #bookmarks a {
+            color: #fff;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        #bookmarks #list {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            max-height: calc(90vh - 4rem);
+            overflow-y: auto;
+        }
+        #bookmarks #list > * {
+            margin-bottom: .15rem;
+        }
+    </style>
+  </head>
+  <body class="loading">
+    <div id="info">
+      <table id="px128-header" class="curate-show" style="display:none;margin-bottom:10px">
+        <tr class="curate-show"><th id="curation" colspan="2"><i>px128 curation</i></th></tr>
+      </table>
+      <table>
+
+        <!-- <tr id="controls">
+          <th colspan="2">controls</th>
+        </tr> -->
+
+        <tr>
+          <td><a id="generate">generate</a></td>
+          <td>(spacebar)</td>
+        </tr>
+        <tr>
+          <td><a id="back">previous</a></td>
+          <td>(m / c / back)</td>
+        </tr>
+        <tr class="gallery-show" style="display:none;">
+          <td>
+            <span id="gallery-non-full"><a id="gallery-exit">controls</a>
+            /</span>
+            <a id="gallery-full">full</a>
+          </td>
+        </tr>
+        <tr class="curate-show" style="display:none">
+          <td>
+            <a id="curate-prev">prev</a> <a id="curate-any">any</a> <a id="curate-next">next</a>
+          </td>
+          <td>(a s d)</td>
+        </tr>
+        <tr class="curate-show" style="display:none">
+          <td style="position:relative">
+            <span id="series">series</span> <span id="series-many">
+              <a
+              id="curate-series-prev"
+              style="font-family:sans-serif;line-height:1em;"
+              >←</a>
+              <a
+              id="curate-series-next"
+              style="font-family:sans-serif;line-height:1em;"
+              >→</a>
+            </span>
+            <span id="series-one" style="display:none">only 1 for now</span>
+          </td>
+          <td>(z x)</td>
+        </tr>
+
+        <tr class="curate-show">
+          <td><a id="reroll">reroll</a>
+          <td>(enter)</td>
+        </tr>
+    </table><table>
+        <tr class="curate-show">
+          <td colspan="2">
+            <a id="slideshow-count">s<span class="key">l</span>ideshow</a> / <a id='gallery-view'><span class="key">g</span>allery</a> / <a id="download">do<span class="key">w</span>nload</a>
+          </td>
+        </tr>
+    </table><table style="margin-top:10px">
+        <tr class="curate-show">
+          <td colspan="2">
+            <a  id="curation" class="curate-hide" href="#NmcwX9W">px128</a><a id="random" class="curate-show" style="display:none">random worlds</a><span class="curate-show" id="site"> / <a></a></span>
+          </td>
+        </tr>
+    </table><table style="display:none">
+        <tr>
+          <td colspan="2">
+            <a id="bookmarks-toggle">bookmarks</a>
+          </td>
+        </tr>
+    </table>
+    </div>
+    <div id="canvas-container"></div>
+    <div id="loading-container"><div id="loading"></div></div>
+
+    <div id="bookmarks">
+      <div id="header">
+        <span><b>Bookmarks</b></span>
+        <a id="bookmarks-hide">hide</a>
+      </div>
+      <div id="add">
+        <input type="text" placeholder="enter a nickname" />
+        <a class="button">add</a>
+      </div>
+      <div id="list">
+      </div>
+    </div>
+
+    <div id="listing"></div>
+
+    <script>// noise script (external) - reduced to 2d-only, no other modifications
+/*
+* A speed-improved perlin and simplex noise algorithms for 2D.
+*
+* Based on example code by Stefan Gustavson (stegu@itn.liu.se).
+* Optimisations by Peter Eastman (peastman@drizzle.stanford.edu).
+* Better rank ordering method by Stefan Gustavson in 2012.
+* Converted to Javascript by Joseph Gentle.
+*
+* Version 2012-03-09
+*
+* This code was placed in the public domain by its original author,
+* Stefan Gustavson. You may use it as you see fit, but
+* attribution is appreciated.
+*
+*/
+
+(function(global){
+  var module = global.noise = {};
+
+  function Grad(x, y, z) {
+    this.x = x; this.y = y; this.z = z;
+  }
+  
+  Grad.prototype.dot2 = function(x, y) {
+    return this.x*x + this.y*y;
+  };
+
+  Grad.prototype.dot3 = function(x, y, z) {
+    return this.x*x + this.y*y + this.z*z;
+  };
+
+  var grad3 = [new Grad(1,1,0),new Grad(-1,1,0),new Grad(1,-1,0),new Grad(-1,-1,0),
+              new Grad(1,0,1),new Grad(-1,0,1),new Grad(1,0,-1),new Grad(-1,0,-1),
+              new Grad(0,1,1),new Grad(0,-1,1),new Grad(0,1,-1),new Grad(0,-1,-1)];
+
+  var p = [151,160,137,91,90,15,
+  131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
+  190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
+  88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
+  77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
+  102,143,54, 65,25,63,161, 1,216,80,73,209,76,132,187,208, 89,18,169,200,196,
+  135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,
+  5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,
+  223,183,170,213,119,248,152, 2,44,154,163, 70,221,153,101,155,167, 43,172,9,
+  129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
+  251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
+  49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
+  138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180];
+  // To remove the need for index wrapping, double the permutation table length
+  var perm = new Array(512);
+  var gradP = new Array(512);
+
+  // This isn't a very good seeding function, but it works ok. It supports 2^16
+  // different seed values. Write something better if you need more seeds.
+  module.seed = function(seed) {
+    if(seed > 0 && seed < 1) {
+      // Scale the seed out
+      seed *= 65536;
+    }
+
+    seed = Math.floor(seed);
+    if(seed < 256) {
+      seed |= seed << 8;
+    }
+
+    for(var i = 0; i < 256; i++) {
+      var v;
+      if (i & 1) {
+        v = p[i] ^ (seed & 255);
+      } else {
+        v = p[i] ^ ((seed>>8) & 255);
+      }
+
+      perm[i] = perm[i + 256] = v;
+      gradP[i] = gradP[i + 256] = grad3[v % 12];
+    }
+  };
+
+  module.seed(0);
+
+  /*
+  for(var i=0; i<256; i++) {
+    perm[i] = perm[i + 256] = p[i];
+    gradP[i] = gradP[i + 256] = grad3[perm[i] % 12];
+  }*/
+
+  // Skewing and unskewing factors for 2, 3, and 4 dimensions
+  var F2 = 0.5*(Math.sqrt(3)-1);
+  var G2 = (3-Math.sqrt(3))/6;
+
+  var F3 = 1/3;
+  var G3 = 1/6;
+
+  // 2D simplex noise
+  module.simplex2 = function(xin, yin) {
+    var n0, n1, n2; // Noise contributions from the three corners
+    // Skew the input space to determine which simplex cell we're in
+    var s = (xin+yin)*F2; // Hairy factor for 2D
+    var i = Math.floor(xin+s);
+    var j = Math.floor(yin+s);
+    var t = (i+j)*G2;
+    var x0 = xin-i+t; // The x,y distances from the cell origin, unskewed.
+    var y0 = yin-j+t;
+    // For the 2D case, the simplex shape is an equilateral triangle.
+    // Determine which simplex we are in.
+    var i1, j1; // Offsets for second (middle) corner of simplex in (i,j) coords
+    if(x0>y0) { // lower triangle, XY order: (0,0)->(1,0)->(1,1)
+      i1=1; j1=0;
+    } else {    // upper triangle, YX order: (0,0)->(0,1)->(1,1)
+      i1=0; j1=1;
+    }
+    // A step of (1,0) in (i,j) means a step of (1-c,-c) in (x,y), and
+    // a step of (0,1) in (i,j) means a step of (-c,1-c) in (x,y), where
+    // c = (3-sqrt(3))/6
+    var x1 = x0 - i1 + G2; // Offsets for middle corner in (x,y) unskewed coords
+    var y1 = y0 - j1 + G2;
+    var x2 = x0 - 1 + 2 * G2; // Offsets for last corner in (x,y) unskewed coords
+    var y2 = y0 - 1 + 2 * G2;
+    // Work out the hashed gradient indices of the three simplex corners
+    i &= 255;
+    j &= 255;
+    var gi0 = gradP[i+perm[j]];
+    var gi1 = gradP[i+i1+perm[j+j1]];
+    var gi2 = gradP[i+1+perm[j+1]];
+    // Calculate the contribution from the three corners
+    var t0 = 0.5 - x0*x0-y0*y0;
+    if(t0<0) {
+      n0 = 0;
+    } else {
+      t0 *= t0;
+      n0 = t0 * t0 * gi0.dot2(x0, y0);  // (x,y) of grad3 used for 2D gradient
+    }
+    var t1 = 0.5 - x1*x1-y1*y1;
+    if(t1<0) {
+      n1 = 0;
+    } else {
+      t1 *= t1;
+      n1 = t1 * t1 * gi1.dot2(x1, y1);
+    }
+    var t2 = 0.5 - x2*x2-y2*y2;
+    if(t2<0) {
+      n2 = 0;
+    } else {
+      t2 *= t2;
+      n2 = t2 * t2 * gi2.dot2(x2, y2);
+    }
+    // Add contributions from each corner to get the final noise value.
+    // The result is scaled to return values in the interval [-1,1].
+    return 70 * (n0 + n1 + n2);
+  };
+})(this);
+    </script>
+    <script>// rope physics script (external) - simplified from original
+// source https://github.com/guerrillacontra/html5-es6-physics-rope/blob/master/js/index.js
+
+class V2 {
+  static new = (x, y) => ({ x, y })
+  static of = o => V2.new(o.x, o.y)
+
+  static zer = () => V2.new(0, 0)
+  static uni = (r=0) => V2.new(Math.cos(r), Math.sin(r))
+
+  static dot = (a, b=a) => a.x * b.x + a.y * b.y
+  static cro = (a, b) => V2.new(a.x * b.y, a.y * b.x)
+  static mag = v => Math.sqrt(V2.dot(v))
+  static sca = (v, c) => V2.new(v.x * c, v.y * c)
+  static nor = v => {
+    const mag = V2.mag(v)
+    return mag ? V2.sca(v, 1/mag) : V2.zer()
+  }
+
+  static sub = (a, b) => V2.new(a.x - b.x, a.y - b.y)
+  static add = (a, b) => V2.new(a.x + b.x, a.y + b.y)
+  static mul = (a, b) => V2.new(a.x * b.x, a.y * b.y)
+
+  static ler = (a, b, p) => V2.add(V2.sca(a, p), V2.sca(b, 1 - p))
+}
+
+class RopePoint {
+  static integrate(point, gravity, dt, previousFrameDt) {
+    if (!point.isFixed) {
+      point.velocity = V2.sub(point.pos, point.oldPos)
+      point.oldPos = { ...point.pos }
+      let timeCorrection = previousFrameDt != 0.0 ? dt / previousFrameDt : 0.0
+      let accel = V2.add(gravity, { x: 0, y: point.mass })
+      const velCoef = timeCorrection * point.damping
+      const accelCoef = Math.pow(dt, 2)
+      point.pos.x += point.velocity.x * velCoef + accel.x * accelCoef
+      point.pos.y += point.velocity.y * velCoef + accel.y * accelCoef
+    } else {
+      point.velocity = V2.zer()
+      point.oldPos = { ...point.pos }
+    }
+  }
+  static constrain(point) {
+    if (point.next) {
+      const delta = V2.sub(point.next.pos, point.pos)
+      const len = V2.mag(delta)
+      const diff = len - point.distanceToNextPoint
+      const normal = V2.nor(delta)
+      if (!point.isFixed) point.pos = V2.add(point.pos, V2.sca(normal, diff * .25))
+      if (!point.next.isFixed) point.next.pos = V2.add(point.next.pos, V2.sca(normal, -diff * .25))
+    }
+    if (point.prev) {
+      const delta = V2.sub(point.prev.pos, point.pos)
+      const len = V2.mag(delta)
+      const diff = len - point.distanceToNextPoint
+      const normal = V2.nor(delta)
+      if (!point.isFixed) point.pos = V2.add(point.pos, V2.sca(normal, diff * .25))
+      if (!point.prev.isFixed) point.prev.pos = V2.add(point.prev.pos, V2.sca(normal, -diff * .25))
+    }
+  }
+
+  constructor(initialPos, distanceToNextPoint) {
+    this.pos = initialPos
+    this.distanceToNextPoint = distanceToNextPoint
+    this.isFixed = false
+    this.oldPos = { ...initialPos }
+    this.velocity = V2.zer()
+    this.mass = 1.0
+    this.damping = 1.0
+    this.prev = null
+    this.next = null
+  }
+}
+
+class Rope {
+  static generate(start, end, resolution, mass, damping) {
+      const delta = V2.sub(end, start)
+      const len = V2.mag(delta)
+      let points = []
+      const pointsLen = Math.ceil(len / resolution)
+      resolution = len / pointsLen
+      for (let i = 0; i < pointsLen; i++) {
+        const percentage = i / (pointsLen - 1)
+        points.push(new RopePoint(V2.ler(start, end, percentage), resolution))
+        points[i].mass = mass
+        points[i].damping = damping
+      }
+      for (let i = 0; i < pointsLen; i++) {
+        const curr = points[i]
+        curr.prev = i != 0 ? points[i - 1] : null
+        curr.next = i != pointsLen - 1 ? points[i + 1] : null
+      }
+      if (points.length) {
+        points[points.length - 1].isFixed = true
+        points[0].isFixed = true
+      }
+      return points
+  }
+
+  constructor(points, solverIterations) {
+    this._points = points
+    this.update = this.update.bind(this)
+    this._prevDelta = 0
+    this._solverIterations = solverIterations
+    this.getPoint = this.getPoint.bind(this)
+  }
+
+  getPoint(index) {
+    return this._points[index]
+  }
+
+  update(gravity, dt) {
+    for (let i = 0; i < this._points.length; i++) {
+      let point = this._points[i]
+      let accel = { ...gravity }
+      RopePoint.integrate(point, accel, dt, this._prevDelta)
+    }
+    for (let iteration = 0; iteration < this._solverIterations; iteration++)
+      for (let i = 0; i < this._points.length; i++) {
+        let point = this._points[i]
+        RopePoint.constrain(point)
+      }
+    this._prevDelta = dt
+  }
+}
+
+let lx, ly
+function bline(ctx, x0, y0, x1, y1) {
+  const dx = x1 - x0
+  const dy = y1 - y0
+  const len = Math.abs(dx) + Math.abs(dy)
+  for (let i = 0; i <= len; i++) {
+    const lerp = i / len
+    let x = Math.round(x0 + dx * lerp)
+    let y = Math.round(y0 + dy * lerp)
+    if (lx === x && ly === y) continue
+    ctx.fillRect(x, y, 1, 1)
+    lx = x
+    ly = y
+  }
+}
+
+function drawWire(ctx, start, end) {
+  if (start.x === end.x && start.y === end.y) return
+  const args = {
+    resolution: 8,
+    mass: 0.0001,
+    damping: 0.95,
+    gravity: { x: 0, y: .001 },
+    solverIterations: 500,
+  }
+  const points = Rope.generate(
+    start,
+    end,
+    args.resolution,
+    args.mass,
+    args.damping
+  )
+  let rope = new Rope(points, args.solverIterations);
+  for (let i = 0; i < 20; i++) rope.update(args.gravity, 100)
+  for (i = 1; i < points.length; i++) {
+    let l = points[i-1].pos
+    let r = points[i].pos
+    bline(ctx, l.x, l.y, r.x, r.y)
+  }
+}
+
+    </script>
+    <script>// three.js (external) - reduced to color utils
+/**
+ * @license
+ * Copyright 2010-2023 Three.js Authors
+ * SPDX-License-Identifier: MIT
+ */
+ (function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
+	typeof define === 'function' && define.amd ? define(['exports'], factory) :
+	(global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.THREE = {}));
+})(this, (function (exports) { 'use strict';
+
+	// Color space string identifiers, matching CSS Color Module Level 4 and WebGPU names where available.
+	const NoColorSpace = '';
+	const SRGBColorSpace = 'srgb';
+	const LinearSRGBColorSpace = 'srgb-linear';
+	const DisplayP3ColorSpace = 'display-p3';
+
+	function clamp( value, min, max ) {
+		return Math.max( min, Math.min( max, value ) );
+	}
+
+	// compute euclidean modulo of m % n
+	// https://en.wikipedia.org/wiki/Modulo_operation
+	function euclideanModulo( n, m ) {
+		return ( ( n % m ) + m ) % m;
+	}
+
+	// https://en.wikipedia.org/wiki/Linear_interpolation
+	function lerp( x, y, t ) {
+		return ( 1 - t ) * x + t * y;
+	}
+
+	class Matrix3 {
+
+		constructor() {
+
+			Matrix3.prototype.isMatrix3 = true;
+
+			this.elements = [
+				1, 0, 0,
+				0, 1, 0,
+				0, 0, 1
+			];
+
+		}
+
+		set( n11, n12, n13, n21, n22, n23, n31, n32, n33 ) {
+
+			const te = this.elements;
+
+			te[ 0 ] = n11; te[ 1 ] = n21; te[ 2 ] = n31;
+			te[ 3 ] = n12; te[ 4 ] = n22; te[ 5 ] = n32;
+			te[ 6 ] = n13; te[ 7 ] = n23; te[ 8 ] = n33;
+
+			return this;
+
+		}
+
+		identity() {
+
+			this.set(
+
+				1, 0, 0,
+				0, 1, 0,
+				0, 0, 1
+
+			);
+
+			return this;
+
+		}
+
+		copy( m ) {
+
+			const te = this.elements;
+			const me = m.elements;
+
+			te[ 0 ] = me[ 0 ]; te[ 1 ] = me[ 1 ]; te[ 2 ] = me[ 2 ];
+			te[ 3 ] = me[ 3 ]; te[ 4 ] = me[ 4 ]; te[ 5 ] = me[ 5 ];
+			te[ 6 ] = me[ 6 ]; te[ 7 ] = me[ 7 ]; te[ 8 ] = me[ 8 ];
+
+			return this;
+
+		}
+
+		extractBasis( xAxis, yAxis, zAxis ) {
+
+			xAxis.setFromMatrix3Column( this, 0 );
+			yAxis.setFromMatrix3Column( this, 1 );
+			zAxis.setFromMatrix3Column( this, 2 );
+
+			return this;
+
+		}
+
+		setFromMatrix4( m ) {
+
+			const me = m.elements;
+
+			this.set(
+
+				me[ 0 ], me[ 4 ], me[ 8 ],
+				me[ 1 ], me[ 5 ], me[ 9 ],
+				me[ 2 ], me[ 6 ], me[ 10 ]
+
+			);
+
+			return this;
+
+		}
+
+		multiply( m ) {
+
+			return this.multiplyMatrices( this, m );
+
+		}
+
+		premultiply( m ) {
+
+			return this.multiplyMatrices( m, this );
+
+		}
+
+		multiplyMatrices( a, b ) {
+
+			const ae = a.elements;
+			const be = b.elements;
+			const te = this.elements;
+
+			const a11 = ae[ 0 ], a12 = ae[ 3 ], a13 = ae[ 6 ];
+			const a21 = ae[ 1 ], a22 = ae[ 4 ], a23 = ae[ 7 ];
+			const a31 = ae[ 2 ], a32 = ae[ 5 ], a33 = ae[ 8 ];
+
+			const b11 = be[ 0 ], b12 = be[ 3 ], b13 = be[ 6 ];
+			const b21 = be[ 1 ], b22 = be[ 4 ], b23 = be[ 7 ];
+			const b31 = be[ 2 ], b32 = be[ 5 ], b33 = be[ 8 ];
+
+			te[ 0 ] = a11 * b11 + a12 * b21 + a13 * b31;
+			te[ 3 ] = a11 * b12 + a12 * b22 + a13 * b32;
+			te[ 6 ] = a11 * b13 + a12 * b23 + a13 * b33;
+
+			te[ 1 ] = a21 * b11 + a22 * b21 + a23 * b31;
+			te[ 4 ] = a21 * b12 + a22 * b22 + a23 * b32;
+			te[ 7 ] = a21 * b13 + a22 * b23 + a23 * b33;
+
+			te[ 2 ] = a31 * b11 + a32 * b21 + a33 * b31;
+			te[ 5 ] = a31 * b12 + a32 * b22 + a33 * b32;
+			te[ 8 ] = a31 * b13 + a32 * b23 + a33 * b33;
+
+			return this;
+
+		}
+
+		multiplyScalar( s ) {
+
+			const te = this.elements;
+
+			te[ 0 ] *= s; te[ 3 ] *= s; te[ 6 ] *= s;
+			te[ 1 ] *= s; te[ 4 ] *= s; te[ 7 ] *= s;
+			te[ 2 ] *= s; te[ 5 ] *= s; te[ 8 ] *= s;
+
+			return this;
+
+		}
+
+		determinant() {
+
+			const te = this.elements;
+
+			const a = te[ 0 ], b = te[ 1 ], c = te[ 2 ],
+				d = te[ 3 ], e = te[ 4 ], f = te[ 5 ],
+				g = te[ 6 ], h = te[ 7 ], i = te[ 8 ];
+
+			return a * e * i - a * f * h - b * d * i + b * f * g + c * d * h - c * e * g;
+
+		}
+
+		invert() {
+
+			const te = this.elements,
+
+				n11 = te[ 0 ], n21 = te[ 1 ], n31 = te[ 2 ],
+				n12 = te[ 3 ], n22 = te[ 4 ], n32 = te[ 5 ],
+				n13 = te[ 6 ], n23 = te[ 7 ], n33 = te[ 8 ],
+
+				t11 = n33 * n22 - n32 * n23,
+				t12 = n32 * n13 - n33 * n12,
+				t13 = n23 * n12 - n22 * n13,
+
+				det = n11 * t11 + n21 * t12 + n31 * t13;
+
+			if ( det === 0 ) return this.set( 0, 0, 0, 0, 0, 0, 0, 0, 0 );
+
+			const detInv = 1 / det;
+
+			te[ 0 ] = t11 * detInv;
+			te[ 1 ] = ( n31 * n23 - n33 * n21 ) * detInv;
+			te[ 2 ] = ( n32 * n21 - n31 * n22 ) * detInv;
+
+			te[ 3 ] = t12 * detInv;
+			te[ 4 ] = ( n33 * n11 - n31 * n13 ) * detInv;
+			te[ 5 ] = ( n31 * n12 - n32 * n11 ) * detInv;
+
+			te[ 6 ] = t13 * detInv;
+			te[ 7 ] = ( n21 * n13 - n23 * n11 ) * detInv;
+			te[ 8 ] = ( n22 * n11 - n21 * n12 ) * detInv;
+
+			return this;
+
+		}
+
+		transpose() {
+
+			let tmp;
+			const m = this.elements;
+
+			tmp = m[ 1 ]; m[ 1 ] = m[ 3 ]; m[ 3 ] = tmp;
+			tmp = m[ 2 ]; m[ 2 ] = m[ 6 ]; m[ 6 ] = tmp;
+			tmp = m[ 5 ]; m[ 5 ] = m[ 7 ]; m[ 7 ] = tmp;
+
+			return this;
+
+		}
+
+		getNormalMatrix( matrix4 ) {
+
+			return this.setFromMatrix4( matrix4 ).invert().transpose();
+
+		}
+
+		transposeIntoArray( r ) {
+
+			const m = this.elements;
+
+			r[ 0 ] = m[ 0 ];
+			r[ 1 ] = m[ 3 ];
+			r[ 2 ] = m[ 6 ];
+			r[ 3 ] = m[ 1 ];
+			r[ 4 ] = m[ 4 ];
+			r[ 5 ] = m[ 7 ];
+			r[ 6 ] = m[ 2 ];
+			r[ 7 ] = m[ 5 ];
+			r[ 8 ] = m[ 8 ];
+
+			return this;
+
+		}
+
+		setUvTransform( tx, ty, sx, sy, rotation, cx, cy ) {
+
+			const c = Math.cos( rotation );
+			const s = Math.sin( rotation );
+
+			this.set(
+				sx * c, sx * s, - sx * ( c * cx + s * cy ) + cx + tx,
+				- sy * s, sy * c, - sy * ( - s * cx + c * cy ) + cy + ty,
+				0, 0, 1
+			);
+
+			return this;
+
+		}
+
+		//
+
+		scale( sx, sy ) {
+
+			this.premultiply( _m3.makeScale( sx, sy ) );
+
+			return this;
+
+		}
+
+		rotate( theta ) {
+
+			this.premultiply( _m3.makeRotation( - theta ) );
+
+			return this;
+
+		}
+
+		translate( tx, ty ) {
+
+			this.premultiply( _m3.makeTranslation( tx, ty ) );
+
+			return this;
+
+		}
+
+		// for 2D Transforms
+
+		makeTranslation( x, y ) {
+
+			this.set(
+
+				1, 0, x,
+				0, 1, y,
+				0, 0, 1
+
+			);
+
+			return this;
+
+		}
+
+		makeRotation( theta ) {
+
+			// counterclockwise
+
+			const c = Math.cos( theta );
+			const s = Math.sin( theta );
+
+			this.set(
+
+				c, - s, 0,
+				s, c, 0,
+				0, 0, 1
+
+			);
+
+			return this;
+
+		}
+
+		makeScale( x, y ) {
+
+			this.set(
+
+				x, 0, 0,
+				0, y, 0,
+				0, 0, 1
+
+			);
+
+			return this;
+
+		}
+
+		//
+
+		equals( matrix ) {
+
+			const te = this.elements;
+			const me = matrix.elements;
+
+			for ( let i = 0; i < 9; i ++ ) {
+
+				if ( te[ i ] !== me[ i ] ) return false;
+
+			}
+
+			return true;
+
+		}
+
+		fromArray( array, offset = 0 ) {
+
+			for ( let i = 0; i < 9; i ++ ) {
+
+				this.elements[ i ] = array[ i + offset ];
+
+			}
+
+			return this;
+
+		}
+
+		toArray( array = [], offset = 0 ) {
+
+			const te = this.elements;
+
+			array[ offset ] = te[ 0 ];
+			array[ offset + 1 ] = te[ 1 ];
+			array[ offset + 2 ] = te[ 2 ];
+
+			array[ offset + 3 ] = te[ 3 ];
+			array[ offset + 4 ] = te[ 4 ];
+			array[ offset + 5 ] = te[ 5 ];
+
+			array[ offset + 6 ] = te[ 6 ];
+			array[ offset + 7 ] = te[ 7 ];
+			array[ offset + 8 ] = te[ 8 ];
+
+			return array;
+
+		}
+
+		clone() {
+
+			return new this.constructor().fromArray( this.elements );
+
+		}
+
+	}
+
+	const _m3 = /*@__PURE__*/ new Matrix3();
+
+	function SRGBToLinear( c ) {
+
+		return ( c < 0.04045 ) ? c * 0.0773993808 : Math.pow( c * 0.9478672986 + 0.0521327014, 2.4 );
+
+	}
+
+	function LinearToSRGB( c ) {
+
+		return ( c < 0.0031308 ) ? c * 12.92 : 1.055 * ( Math.pow( c, 0.41666 ) ) - 0.055;
+
+	}
+
+	/**
+	 * Matrices converting P3 <-> Rec. 709 primaries, without gamut mapping
+	 * or clipping. Based on W3C specifications for sRGB and Display P3,
+	 * and ICC specifications for the D50 connection space. Values in/out
+	 * are _linear_ sRGB and _linear_ Display P3.
+	 *
+	 * Note that both sRGB and Display P3 use the sRGB transfer functions.
+	 *
+	 * Reference:
+	 * - http://www.russellcottrell.com/photo/matrixCalculator.htm
+	 */
+
+	const LINEAR_SRGB_TO_LINEAR_DISPLAY_P3 = /*@__PURE__*/ new Matrix3().fromArray( [
+		0.8224621, 0.0331941, 0.0170827,
+		0.1775380, 0.9668058, 0.0723974,
+		- 0.0000001, 0.0000001, 0.9105199
+	] );
+
+	const LINEAR_DISPLAY_P3_TO_LINEAR_SRGB = /*@__PURE__*/ new Matrix3().fromArray( [
+		1.2249401, - 0.0420569, - 0.0196376,
+		- 0.2249404, 1.0420571, - 0.0786361,
+		0.0000001, 0.0000000, 1.0982735
+	] );
+
+	function DisplayP3ToLinearSRGB( color ) {
+
+		// Display P3 uses the sRGB transfer functions
+		return color.convertSRGBToLinear().applyMatrix3( LINEAR_DISPLAY_P3_TO_LINEAR_SRGB );
+
+	}
+
+	function LinearSRGBToDisplayP3( color ) {
+
+		// Display P3 uses the sRGB transfer functions
+		return color.applyMatrix3( LINEAR_SRGB_TO_LINEAR_DISPLAY_P3 ).convertLinearToSRGB();
+
+	}
+
+	// Conversions from <source> to Linear-sRGB reference space.
+	const TO_LINEAR = {
+		[ LinearSRGBColorSpace ]: ( color ) => color,
+		[ SRGBColorSpace ]: ( color ) => color.convertSRGBToLinear(),
+		[ DisplayP3ColorSpace ]: DisplayP3ToLinearSRGB,
+	};
+
+	// Conversions to <target> from Linear-sRGB reference space.
+	const FROM_LINEAR = {
+		[ LinearSRGBColorSpace ]: ( color ) => color,
+		[ SRGBColorSpace ]: ( color ) => color.convertLinearToSRGB(),
+		[ DisplayP3ColorSpace ]: LinearSRGBToDisplayP3,
+	};
+
+	const ColorManagement = {
+
+		enabled: false,
+
+		get legacyMode() {
+
+			console.warn( 'THREE.ColorManagement: .legacyMode=false renamed to .enabled=true in r150.' );
+
+			return ! this.enabled;
+
+		},
+
+		set legacyMode( legacyMode ) {
+
+			console.warn( 'THREE.ColorManagement: .legacyMode=false renamed to .enabled=true in r150.' );
+
+			this.enabled = ! legacyMode;
+
+		},
+
+		get workingColorSpace() {
+
+			return LinearSRGBColorSpace;
+
+		},
+
+		set workingColorSpace( colorSpace ) {
+
+			console.warn( 'THREE.ColorManagement: .workingColorSpace is readonly.' );
+
+		},
+
+		convert: function ( color, sourceColorSpace, targetColorSpace ) {
+
+			if ( this.enabled === false || sourceColorSpace === targetColorSpace || ! sourceColorSpace || ! targetColorSpace ) {
+
+				return color;
+
+			}
+
+			const sourceToLinear = TO_LINEAR[ sourceColorSpace ];
+			const targetFromLinear = FROM_LINEAR[ targetColorSpace ];
+
+			if ( sourceToLinear === undefined || targetFromLinear === undefined ) {
+
+				throw new Error( `Unsupported color space conversion, "${ sourceColorSpace }" to "${ targetColorSpace }".` );
+
+			}
+
+			return targetFromLinear( sourceToLinear( color ) );
+
+		},
+
+		fromWorkingColorSpace: function ( color, targetColorSpace ) {
+
+			return this.convert( color, this.workingColorSpace, targetColorSpace );
+
+		},
+
+		toWorkingColorSpace: function ( color, sourceColorSpace ) {
+
+			return this.convert( color, sourceColorSpace, this.workingColorSpace );
+
+		},
+
+	};
+
+	const _colorKeywords = { 'aliceblue': 0xF0F8FF, 'antiquewhite': 0xFAEBD7, 'aqua': 0x00FFFF, 'aquamarine': 0x7FFFD4, 'azure': 0xF0FFFF,
+		'beige': 0xF5F5DC, 'bisque': 0xFFE4C4, 'black': 0x000000, 'blanchedalmond': 0xFFEBCD, 'blue': 0x0000FF, 'blueviolet': 0x8A2BE2,
+		'brown': 0xA52A2A, 'burlywood': 0xDEB887, 'cadetblue': 0x5F9EA0, 'chartreuse': 0x7FFF00, 'chocolate': 0xD2691E, 'coral': 0xFF7F50,
+		'cornflowerblue': 0x6495ED, 'cornsilk': 0xFFF8DC, 'crimson': 0xDC143C, 'cyan': 0x00FFFF, 'darkblue': 0x00008B, 'darkcyan': 0x008B8B,
+		'darkgoldenrod': 0xB8860B, 'darkgray': 0xA9A9A9, 'darkgreen': 0x006400, 'darkgrey': 0xA9A9A9, 'darkkhaki': 0xBDB76B, 'darkmagenta': 0x8B008B,
+		'darkolivegreen': 0x556B2F, 'darkorange': 0xFF8C00, 'darkorchid': 0x9932CC, 'darkred': 0x8B0000, 'darksalmon': 0xE9967A, 'darkseagreen': 0x8FBC8F,
+		'darkslateblue': 0x483D8B, 'darkslategray': 0x2F4F4F, 'darkslategrey': 0x2F4F4F, 'darkturquoise': 0x00CED1, 'darkviolet': 0x9400D3,
+		'deeppink': 0xFF1493, 'deepskyblue': 0x00BFFF, 'dimgray': 0x696969, 'dimgrey': 0x696969, 'dodgerblue': 0x1E90FF, 'firebrick': 0xB22222,
+		'floralwhite': 0xFFFAF0, 'forestgreen': 0x228B22, 'fuchsia': 0xFF00FF, 'gainsboro': 0xDCDCDC, 'ghostwhite': 0xF8F8FF, 'gold': 0xFFD700,
+		'goldenrod': 0xDAA520, 'gray': 0x808080, 'green': 0x008000, 'greenyellow': 0xADFF2F, 'grey': 0x808080, 'honeydew': 0xF0FFF0, 'hotpink': 0xFF69B4,
+		'indianred': 0xCD5C5C, 'indigo': 0x4B0082, 'ivory': 0xFFFFF0, 'khaki': 0xF0E68C, 'lavender': 0xE6E6FA, 'lavenderblush': 0xFFF0F5, 'lawngreen': 0x7CFC00,
+		'lemonchiffon': 0xFFFACD, 'lightblue': 0xADD8E6, 'lightcoral': 0xF08080, 'lightcyan': 0xE0FFFF, 'lightgoldenrodyellow': 0xFAFAD2, 'lightgray': 0xD3D3D3,
+		'lightgreen': 0x90EE90, 'lightgrey': 0xD3D3D3, 'lightpink': 0xFFB6C1, 'lightsalmon': 0xFFA07A, 'lightseagreen': 0x20B2AA, 'lightskyblue': 0x87CEFA,
+		'lightslategray': 0x778899, 'lightslategrey': 0x778899, 'lightsteelblue': 0xB0C4DE, 'lightyellow': 0xFFFFE0, 'lime': 0x00FF00, 'limegreen': 0x32CD32,
+		'linen': 0xFAF0E6, 'magenta': 0xFF00FF, 'maroon': 0x800000, 'mediumaquamarine': 0x66CDAA, 'mediumblue': 0x0000CD, 'mediumorchid': 0xBA55D3,
+		'mediumpurple': 0x9370DB, 'mediumseagreen': 0x3CB371, 'mediumslateblue': 0x7B68EE, 'mediumspringgreen': 0x00FA9A, 'mediumturquoise': 0x48D1CC,
+		'mediumvioletred': 0xC71585, 'midnightblue': 0x191970, 'mintcream': 0xF5FFFA, 'mistyrose': 0xFFE4E1, 'moccasin': 0xFFE4B5, 'navajowhite': 0xFFDEAD,
+		'navy': 0x000080, 'oldlace': 0xFDF5E6, 'olive': 0x808000, 'olivedrab': 0x6B8E23, 'orange': 0xFFA500, 'orangered': 0xFF4500, 'orchid': 0xDA70D6,
+		'palegoldenrod': 0xEEE8AA, 'palegreen': 0x98FB98, 'paleturquoise': 0xAFEEEE, 'palevioletred': 0xDB7093, 'papayawhip': 0xFFEFD5, 'peachpuff': 0xFFDAB9,
+		'peru': 0xCD853F, 'pink': 0xFFC0CB, 'plum': 0xDDA0DD, 'powderblue': 0xB0E0E6, 'purple': 0x800080, 'rebeccapurple': 0x663399, 'red': 0xFF0000, 'rosybrown': 0xBC8F8F,
+		'royalblue': 0x4169E1, 'saddlebrown': 0x8B4513, 'salmon': 0xFA8072, 'sandybrown': 0xF4A460, 'seagreen': 0x2E8B57, 'seashell': 0xFFF5EE,
+		'sienna': 0xA0522D, 'silver': 0xC0C0C0, 'skyblue': 0x87CEEB, 'slateblue': 0x6A5ACD, 'slategray': 0x708090, 'slategrey': 0x708090, 'snow': 0xFFFAFA,
+		'springgreen': 0x00FF7F, 'steelblue': 0x4682B4, 'tan': 0xD2B48C, 'teal': 0x008080, 'thistle': 0xD8BFD8, 'tomato': 0xFF6347, 'turquoise': 0x40E0D0,
+		'violet': 0xEE82EE, 'wheat': 0xF5DEB3, 'white': 0xFFFFFF, 'whitesmoke': 0xF5F5F5, 'yellow': 0xFFFF00, 'yellowgreen': 0x9ACD32 };
+
+	const _hslA = { h: 0, s: 0, l: 0 };
+	const _hslB = { h: 0, s: 0, l: 0 };
+
+	function hue2rgb( p, q, t ) {
+
+		if ( t < 0 ) t += 1;
+		if ( t > 1 ) t -= 1;
+		if ( t < 1 / 6 ) return p + ( q - p ) * 6 * t;
+		if ( t < 1 / 2 ) return q;
+		if ( t < 2 / 3 ) return p + ( q - p ) * 6 * ( 2 / 3 - t );
+		return p;
+
+	}
+
+	class Color {
+
+		constructor( r, g, b ) {
+
+			this.isColor = true;
+
+			this.r = 1;
+			this.g = 1;
+			this.b = 1;
+
+			if ( g === undefined && b === undefined ) {
+
+				// r is THREE.Color, hex or string
+				return this.set( r );
+
+			}
+
+			return this.setRGB( r, g, b );
+
+		}
+
+		set( value ) {
+
+			if ( value && value.isColor ) {
+
+				this.copy( value );
+
+			} else if ( typeof value === 'number' ) {
+
+				this.setHex( value );
+
+			} else if ( typeof value === 'string' ) {
+
+				this.setStyle( value );
+
+			}
+
+			return this;
+
+		}
+
+		setScalar( scalar ) {
+
+			this.r = scalar;
+			this.g = scalar;
+			this.b = scalar;
+
+			return this;
+
+		}
+
+		setHex( hex, colorSpace = SRGBColorSpace ) {
+
+			hex = Math.floor( hex );
+
+			this.r = ( hex >> 16 & 255 ) / 255;
+			this.g = ( hex >> 8 & 255 ) / 255;
+			this.b = ( hex & 255 ) / 255;
+
+			ColorManagement.toWorkingColorSpace( this, colorSpace );
+
+			return this;
+
+		}
+
+		setRGB( r, g, b, colorSpace = ColorManagement.workingColorSpace ) {
+
+			this.r = r;
+			this.g = g;
+			this.b = b;
+
+			ColorManagement.toWorkingColorSpace( this, colorSpace );
+
+			return this;
+
+		}
+
+		setHSL( h, s, l, colorSpace = ColorManagement.workingColorSpace ) {
+
+			// h,s,l ranges are in 0.0 - 1.0
+			h = euclideanModulo( h, 1 );
+			s = clamp( s, 0, 1 );
+			l = clamp( l, 0, 1 );
+
+			if ( s === 0 ) {
+
+				this.r = this.g = this.b = l;
+
+			} else {
+
+				const p = l <= 0.5 ? l * ( 1 + s ) : l + s - ( l * s );
+				const q = ( 2 * l ) - p;
+
+				this.r = hue2rgb( q, p, h + 1 / 3 );
+				this.g = hue2rgb( q, p, h );
+				this.b = hue2rgb( q, p, h - 1 / 3 );
+
+			}
+
+			ColorManagement.toWorkingColorSpace( this, colorSpace );
+
+			return this;
+
+		}
+
+		setStyle( style, colorSpace = SRGBColorSpace ) {
+
+			function handleAlpha( string ) {
+
+				if ( string === undefined ) return;
+
+				if ( parseFloat( string ) < 1 ) {
+
+					console.warn( 'THREE.Color: Alpha component of ' + style + ' will be ignored.' );
+
+				}
+
+			}
+
+
+			let m;
+
+			if ( m = /^(\w+)\(([^\)]*)\)/.exec( style ) ) {
+
+				// rgb / hsl
+
+				let color;
+				const name = m[ 1 ];
+				const components = m[ 2 ];
+
+				switch ( name ) {
+
+					case 'rgb':
+					case 'rgba':
+
+						if ( color = /^\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec( components ) ) {
+
+							// rgb(255,0,0) rgba(255,0,0,0.5)
+							this.r = Math.min( 255, parseInt( color[ 1 ], 10 ) ) / 255;
+							this.g = Math.min( 255, parseInt( color[ 2 ], 10 ) ) / 255;
+							this.b = Math.min( 255, parseInt( color[ 3 ], 10 ) ) / 255;
+
+							ColorManagement.toWorkingColorSpace( this, colorSpace );
+
+							handleAlpha( color[ 4 ] );
+
+							return this;
+
+						}
+
+						if ( color = /^\s*(\d+)\%\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec( components ) ) {
+
+							// rgb(100%,0%,0%) rgba(100%,0%,0%,0.5)
+							this.r = Math.min( 100, parseInt( color[ 1 ], 10 ) ) / 100;
+							this.g = Math.min( 100, parseInt( color[ 2 ], 10 ) ) / 100;
+							this.b = Math.min( 100, parseInt( color[ 3 ], 10 ) ) / 100;
+
+							ColorManagement.toWorkingColorSpace( this, colorSpace );
+
+							handleAlpha( color[ 4 ] );
+
+							return this;
+
+						}
+
+						break;
+
+					case 'hsl':
+					case 'hsla':
+
+						if ( color = /^\s*(\d*\.?\d+)\s*,\s*(\d*\.?\d+)\%\s*,\s*(\d*\.?\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec( components ) ) {
+
+							// hsl(120,50%,50%) hsla(120,50%,50%,0.5)
+							const h = parseFloat( color[ 1 ] ) / 360;
+							const s = parseFloat( color[ 2 ] ) / 100;
+							const l = parseFloat( color[ 3 ] ) / 100;
+
+							handleAlpha( color[ 4 ] );
+
+							return this.setHSL( h, s, l, colorSpace );
+
+						}
+
+						break;
+
+					default:
+
+						console.warn( 'THREE.Color: Unknown color model ' + style );
+
+				}
+
+			} else if ( m = /^\#([A-Fa-f\d]+)$/.exec( style ) ) {
+
+				// hex color
+
+				const hex = m[ 1 ];
+				const size = hex.length;
+
+				if ( size === 3 ) {
+
+					// #ff0
+					return this.setRGB(
+						parseInt( hex.charAt( 0 ), 16 ) / 15,
+						parseInt( hex.charAt( 1 ), 16 ) / 15,
+						parseInt( hex.charAt( 2 ), 16 ) / 15,
+						colorSpace
+					);
+
+				} else if ( size === 6 ) {
+
+					// #ff0000
+					return this.setHex( parseInt( hex, 16 ), colorSpace );
+
+				} else {
+
+					console.warn( 'THREE.Color: Invalid hex color ' + style );
+
+				}
+
+			} else if ( style && style.length > 0 ) {
+
+				return this.setColorName( style, colorSpace );
+
+			}
+
+			return this;
+
+		}
+
+		setColorName( style, colorSpace = SRGBColorSpace ) {
+
+			// color keywords
+			const hex = _colorKeywords[ style.toLowerCase() ];
+
+			if ( hex !== undefined ) {
+
+				// red
+				this.setHex( hex, colorSpace );
+
+			} else {
+
+				// unknown color
+				console.warn( 'THREE.Color: Unknown color ' + style );
+
+			}
+
+			return this;
+
+		}
+
+		clone() {
+
+			return new this.constructor( this.r, this.g, this.b );
+
+		}
+
+		copy( color ) {
+
+			this.r = color.r;
+			this.g = color.g;
+			this.b = color.b;
+
+			return this;
+
+		}
+
+		copySRGBToLinear( color ) {
+
+			this.r = SRGBToLinear( color.r );
+			this.g = SRGBToLinear( color.g );
+			this.b = SRGBToLinear( color.b );
+
+			return this;
+
+		}
+
+		copyLinearToSRGB( color ) {
+
+			this.r = LinearToSRGB( color.r );
+			this.g = LinearToSRGB( color.g );
+			this.b = LinearToSRGB( color.b );
+
+			return this;
+
+		}
+
+		convertSRGBToLinear() {
+
+			this.copySRGBToLinear( this );
+
+			return this;
+
+		}
+
+		convertLinearToSRGB() {
+
+			this.copyLinearToSRGB( this );
+
+			return this;
+
+		}
+
+		getHex( colorSpace = SRGBColorSpace ) {
+
+			ColorManagement.fromWorkingColorSpace( _color.copy( this ), colorSpace );
+
+			return clamp( _color.r * 255, 0, 255 ) << 16 ^ clamp( _color.g * 255, 0, 255 ) << 8 ^ clamp( _color.b * 255, 0, 255 ) << 0;
+
+		}
+
+		getHexString( colorSpace = SRGBColorSpace ) {
+
+			return ( '000000' + this.getHex( colorSpace ).toString( 16 ) ).slice( - 6 );
+
+		}
+
+		getHSL( target, colorSpace = ColorManagement.workingColorSpace ) {
+
+			// h,s,l ranges are in 0.0 - 1.0
+
+			ColorManagement.fromWorkingColorSpace( _color.copy( this ), colorSpace );
+
+			const r = _color.r, g = _color.g, b = _color.b;
+
+			const max = Math.max( r, g, b );
+			const min = Math.min( r, g, b );
+
+			let hue, saturation;
+			const lightness = ( min + max ) / 2.0;
+
+			if ( min === max ) {
+
+				hue = 0;
+				saturation = 0;
+
+			} else {
+
+				const delta = max - min;
+
+				saturation = lightness <= 0.5 ? delta / ( max + min ) : delta / ( 2 - max - min );
+
+				switch ( max ) {
+
+					case r: hue = ( g - b ) / delta + ( g < b ? 6 : 0 ); break;
+					case g: hue = ( b - r ) / delta + 2; break;
+					case b: hue = ( r - g ) / delta + 4; break;
+
+				}
+
+				hue /= 6;
+
+			}
+
+			target.h = hue;
+			target.s = saturation;
+			target.l = lightness;
+
+			return target;
+
+		}
+
+		getRGB( target, colorSpace = ColorManagement.workingColorSpace ) {
+
+			ColorManagement.fromWorkingColorSpace( _color.copy( this ), colorSpace );
+
+			target.r = _color.r;
+			target.g = _color.g;
+			target.b = _color.b;
+
+			return target;
+
+		}
+
+		getStyle( colorSpace = SRGBColorSpace ) {
+
+			ColorManagement.fromWorkingColorSpace( _color.copy( this ), colorSpace );
+
+			const r = _color.r, g = _color.g, b = _color.b;
+
+			if ( colorSpace !== SRGBColorSpace ) {
+
+				// Requires CSS Color Module Level 4 (https://www.w3.org/TR/css-color-4/).
+				return `color(${ colorSpace } ${ r.toFixed( 3 ) } ${ g.toFixed( 3 ) } ${ b.toFixed( 3 ) })`;
+
+			}
+
+			return `rgb(${( r * 255 ) | 0},${( g * 255 ) | 0},${( b * 255 ) | 0})`;
+
+		}
+
+		offsetHSL( h, s, l ) {
+
+			this.getHSL( _hslA );
+
+			_hslA.h += h; _hslA.s += s; _hslA.l += l;
+
+			this.setHSL( _hslA.h, _hslA.s, _hslA.l );
+
+			return this;
+
+		}
+
+		add( color ) {
+
+			this.r += color.r;
+			this.g += color.g;
+			this.b += color.b;
+
+			return this;
+
+		}
+
+		addColors( color1, color2 ) {
+
+			this.r = color1.r + color2.r;
+			this.g = color1.g + color2.g;
+			this.b = color1.b + color2.b;
+
+			return this;
+
+		}
+
+		addScalar( s ) {
+
+			this.r += s;
+			this.g += s;
+			this.b += s;
+
+			return this;
+
+		}
+
+		sub( color ) {
+
+			this.r = Math.max( 0, this.r - color.r );
+			this.g = Math.max( 0, this.g - color.g );
+			this.b = Math.max( 0, this.b - color.b );
+
+			return this;
+
+		}
+
+		multiply( color ) {
+
+			this.r *= color.r;
+			this.g *= color.g;
+			this.b *= color.b;
+
+			return this;
+
+		}
+
+		multiplyScalar( s ) {
+
+			this.r *= s;
+			this.g *= s;
+			this.b *= s;
+
+			return this;
+
+		}
+
+		lerp( color, alpha ) {
+
+			this.r += ( color.r - this.r ) * alpha;
+			this.g += ( color.g - this.g ) * alpha;
+			this.b += ( color.b - this.b ) * alpha;
+
+			return this;
+
+		}
+
+		lerpColors( color1, color2, alpha ) {
+
+			this.r = color1.r + ( color2.r - color1.r ) * alpha;
+			this.g = color1.g + ( color2.g - color1.g ) * alpha;
+			this.b = color1.b + ( color2.b - color1.b ) * alpha;
+
+			return this;
+
+		}
+
+		lerpHSL( color, alpha ) {
+
+			this.getHSL( _hslA );
+			color.getHSL( _hslB );
+
+			const h = lerp( _hslA.h, _hslB.h, alpha );
+			const s = lerp( _hslA.s, _hslB.s, alpha );
+			const l = lerp( _hslA.l, _hslB.l, alpha );
+
+			this.setHSL( h, s, l );
+
+			return this;
+
+		}
+
+		setFromVector3( v ) {
+
+			this.r = v.x;
+			this.g = v.y;
+			this.b = v.z;
+
+			return this;
+
+		}
+
+		applyMatrix3( m ) {
+
+			const r = this.r, g = this.g, b = this.b;
+			const e = m.elements;
+
+			this.r = e[ 0 ] * r + e[ 3 ] * g + e[ 6 ] * b;
+			this.g = e[ 1 ] * r + e[ 4 ] * g + e[ 7 ] * b;
+			this.b = e[ 2 ] * r + e[ 5 ] * g + e[ 8 ] * b;
+
+			return this;
+
+		}
+
+		equals( c ) {
+
+			return ( c.r === this.r ) && ( c.g === this.g ) && ( c.b === this.b );
+
+		}
+
+		fromArray( array, offset = 0 ) {
+
+			this.r = array[ offset ];
+			this.g = array[ offset + 1 ];
+			this.b = array[ offset + 2 ];
+
+			return this;
+
+		}
+
+		toArray( array = [], offset = 0 ) {
+
+			array[ offset ] = this.r;
+			array[ offset + 1 ] = this.g;
+			array[ offset + 2 ] = this.b;
+
+			return array;
+
+		}
+
+		fromBufferAttribute( attribute, index ) {
+
+			this.r = attribute.getX( index );
+			this.g = attribute.getY( index );
+			this.b = attribute.getZ( index );
+
+			return this;
+
+		}
+
+		toJSON() {
+
+			return this.getHex();
+
+		}
+
+		*[ Symbol.iterator ]() {
+
+			yield this.r;
+			yield this.g;
+			yield this.b;
+
+		}
+
+	}
+
+	const _color = /*@__PURE__*/ new Color();
+
+	Color.NAMES = _colorKeywords;
+
+	exports.Color = Color;
+}));
+    </script>
+    <script>// seeded random (external)
+// source https://stackoverflow.com/a/47593316
+function xmur3(str) {
+    for(var i = 0, h = 1779033703 ^ str.length; i < str.length; i++)
+        h = Math.imul(h ^ str.charCodeAt(i), 3432918353),
+        h = h << 13 | h >>> 19;
+    return function() {
+        h = Math.imul(h ^ h >>> 16, 2246822507);
+        h = Math.imul(h ^ h >>> 13, 3266489909);
+        return (h ^= h >>> 16) >>> 0;
+    }
+}
+function mulberry32(a) {
+    return function() {
+      var t = a += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    }
+}
+function sfc32(a, b, c, d) {
+    return function() {
+      a >>>= 0; b >>>= 0; c >>>= 0; d >>>= 0;
+      var t = (a + b) | 0;
+      a = b ^ b >>> 9;
+      b = c + (c << 3) | 0;
+      c = (c << 21 | c >>> 11);
+      d = d + 1 | 0;
+      t = t + d | 0;
+      c = c + t | 0;
+      return (t >>> 0) / 4294967296;
+    }
+}
+
+const defaultRandom = Math.random
+Math.seed = function seed(str) {
+    const n = xmur3(str)
+    Math.random = sfc32(n(), n(), n(), n())
+    return n()
+}
+Math.unseed = function unseed() {
+    Math.random = defaultRandom
+}
+    </script>
+    <script>// basic util functions
+
+window.Q = (l, s) => s ? l.querySelector(s) : document.querySelector(l)
+window.QQ = (l, s) => Array.from((s ? l.querySelectorAll(s) : document.querySelectorAll(l))||[])
+window.on = (l, es, f, o=undefined) => [l]
+    .flatMap(x=>x)
+    .forEach(li => 
+        (typeof(li) === 'string' ? QQ(li) : [li])
+        .forEach(lii => lii && (typeof(es) === 'string' ? es.split(' ') : es).map(e => lii.addEventListener(e, f, o))))
+window.node = html => (x => {
+    x.innerHTML = html
+    return x.children[0]
+})(document.createElement('div'))
+window.sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+window.range = (a,o,e=1) => Array.from({ length: Math.floor((o===undefined?a:o-a)/e) }).map((_, i) => i*e + (o===undefined?0:a))
+
+function lerp(a, b, t) {
+    return a + (b-a)*t;
+}
+function mag(x, y) {
+    return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+}
+function dist(x1, y1, x2, y2) {
+    return mag(x2 - x1, y2 - y1);
+}
+function mag2(x, y) {
+    return Math.pow(x, 2) + Math.pow(y, 2);
+}
+function dist2(x1, y1, x2, y2) {
+    return mag2(x2 - x1, y2 - y1);
+}
+function bounded(value, lower, upper) {
+    return lower <= value && value <= upper;
+}
+
+// rand() returns [0, 2)
+// rand(n) returns [0, n)
+// rand(min, max) returns [min, max)
+function randi(min, max) {
+    if (min === undefined) {
+        max = 2;
+        min = 0;
+    } else if (max === undefined) {
+        [min, max] = [0, min];
+    }
+    min = Math.ceil(min)
+    max = Math.floor(max)
+    return Math.floor(Math.random() * Math.floor(max - min)) + min;
+}
+
+// rand() returns [0, 1)
+// rand(n) returns [0, n)
+// rand(min, max) returns [min, max)
+function rand(min, max) {
+    if (min === undefined) {
+        max = 1;
+        min = 0;
+    } else if (max === undefined) {
+        [min, max] = [0, min];
+    }
+
+    // console.log(`rand [${min}, ${max}]`);
+    return Math.random()*(max - min) + min;
+}
+
+// rands() returns [-1, 1)
+// rands(n) returns [-n, n)
+// rands(n, m) returns [n-m, n+m)
+function rands(n, m) {
+    let min, max
+    if (n === undefined) {
+        min = -1
+        max = 1
+    } else if (m === undefined) {
+        min = -n
+        max = n
+    } else {
+        min = n - m
+        max = n + m
+    }
+
+    return Math.random()*(max - min) + min;
+}
+
+// chance() returns 1/2 odds
+// chance(x) returns 1/x odds
+// chance(x, n) returns x/n odds
+function chance(x, n) {
+    if (x === undefined) return !!randi(2)
+    if (n === undefined) return !randi(x)
+    return randi(n) < x
+}
+function chancef(x) {
+    return rand() < x
+}
+
+const alphanum = 'qwertyuiopasdfghjklzxcvbnm1234567890QWERTYUIOPASDFGHJKLZXCVBNM'
+    .split('').sort().join('');
+function randAlphanum(n) {
+  let str = '';
+  for (let i = 0; i < n; i++) {
+    str += alphanum[randi(alphanum.length)];
+  }
+  return str;
+}
+function incrementAlphanum(str) {
+    if (!str) str = alphanum[0]
+    let indices = str.split('').map(s => alphanum.indexOf(s)).reverse().concat([-1])
+    indices[0] += 1
+    let i = 0
+    while (indices[i] === alphanum.length) {
+        indices[i] = 0
+        indices[i+1] += 1
+        i++
+    }
+    return indices.map(index => alphanum[index] || '').reverse().join('')
+}
+function decrementAlphanum(str) {
+    if (!str || str === alphanum[0]) return str
+    let indices = str.split('').map(s => alphanum.indexOf(s)).reverse()
+    indices[0] -= 1
+    let i = 0
+    while (indices[i] < 0) {
+        indices[i] = alphanum.length - 1
+        indices[i+1] -= 1
+        i++
+    }
+    return indices.map(index => alphanum[index] || '').reverse().join('')
+}
+Object.assign(window, {
+    alphanum,
+    randAlphanum,
+    incrementAlphanum,
+    decrementAlphanum,
+})
+
+function randpick(array) {
+    return array[randi(array.length)];
+}
+function randpop(array) {
+    return array.splice(randi(array.length), 1)[0];
+}
+function sample(n, method, constraint) {
+    let samples = new Array(n);
+    do {
+        for (let i = 0; i < n; i++) samples[i] = method(i);
+    } while (!constraint(...samples));
+    return samples;
+}
+
+function array(n, initial=()=>0) {
+    return Array.from({ length: n }).map((_, i) => initial(i))
+}
+function matrix(rows, cols, initial=()=>0) {
+    return array(rows, row => array(cols, col => initial(row, col)))
+}
+Array.matrix = (rows, cols, initial) => matrix(rows, cols, () => initial)
+
+// copy text
+async function copy(text) {
+    return new Promise(resolve => {
+       if (navigator.clipboard) {
+          navigator.clipboard.writeText(text)
+             .then(() => resolve(true))
+             .catch(() => resolve(false));
+       } else {
+          let textarea = document.createElement('textarea')
+          textarea.value = text
+          document.body.appendChild(textarea)
+          textarea.select()
+          document.execCommand('copy')
+          document.body.removeChild(textarea)
+          resolve(true)
+       }
+    })
+}
+    </script>
+    <script>// store functions
+function getStored(key) {
+    try {
+        let str = window.localStorage.getItem(key)
+        return str ? JSON.parse(str) : undefined
+    } catch {
+        return undefined
+    }
+}
+function setStored(key, value) {
+    try {
+        window.localStorage.setItem(key, JSON.stringify(value))
+        return value
+    } catch {
+        return undefined
+    }
+}
+    </script>
+    <script>// main pixelworld script
+
+const channel = new BroadcastChannel('pixelworld')
+on(window, 'beforeunload', e => {
+    delete channel.onmessage
+    channel.postMessage(location.href)
+})
+
+try {
+    history.replaceState()
+} catch {
+    history.replaceState = (a, b, href) => {
+        if (href.split('#')[1]) location.hash = href.split('#')[1]
+        else location.hash = ''
+    }
+}
+
+const Color = THREE.Color
+
+class ColorUtil {
+    static compliment(color) {
+        const [r, g, b] = color.toArray()
+        return new Color(1 - r, 1 - g, 1 - b)
+    }
+    static gradient(a, b, steps) {
+        return array(steps + 2, i => a.clone().lerp(b, i / (steps + 1)))
+    }
+    static hsb(h, s, b) {
+        // from https://stackoverflow.com/a/31851617
+        var l = (2 - s) * b / 2;
+
+        if (l != 0) {
+            if (l == 1) {
+                s = 0
+            } else if (l < 0.5) {
+                s = s * b / (l * 2)
+            } else {
+                s = s * b / (2 - l * 2)
+            }
+        }
+
+        return new Color().setHSL(h, s, l)
+    }
+    static rgb(r, g, b) {
+        return new Color(r / 256, g / 256, b / 256)
+    }
+}
+
+const imgs = {
+  powerlines: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAABgCAYAAAB8InCYAAAAAXNSR0IArs4c6QAAAclJREFUaEPtmDFywjAQRZcSirQeatqcIHfhFhwjt+AuOUFa6gxtCijNrOLNaDyO9q+xxuB8Nwwga77err52tRLw2e+2bdNs5P3jtCq9cnjbtefzRY6nr+I4mwMapIP3r9u2eQEFfF/k+DmxAF2ZCoEI1BKAoE0hWIQAQ67YdUUaf/3MH/0tf/Jx9p9H488k1KTLEwnN7v44/V7KG3gXRAQgyRrehuguQLdrWAA6MTqOAuIEwLOgXgj+lQDDaHEyBzQ3HHLAvkPm75R8YdCIhtwLrQeGcqDvqrlY2AnvEVAqYJ5HwOxWjBYaaKjCRvQYAoBqty4BRABYPY8LASAATdZxAoBqF62cKGAUAaTYrBYCdHstsyDR1aeYrcXteo0A0kfqlNBpmASsf9LGa7vzYsbrpEMC9HICWZUKkKsIcplRT4BIambnIdCFa1YBih/xjDoh6PoH714g5IRmQlAS1hBgR+ysAlKjcRX3/i9CC84BqwdRAWpak+4CO+GSEzo3oOaakwqIYKWAZRKI+oAm62Sn4W8x0nkntAs6Ach54BYkYwWY13uCKYAESIAESIAESIAESIAESIAESIAESIAESIAESIAESIAESOAGpUGkjhSrKUEAAAAASUVORK5CYII=',
+}
+let loading = Object.keys(imgs).length
+Object.keys(imgs).forEach(k => {
+  const img = new Image()
+  img.onload = () => {
+    imgs[k] = img
+    loading -= 1
+    if (!loading) init()
+  }
+  img.src = imgs[k]
+})
+window.imgs = imgs
+
+const debug = {
+    seed: false,
+    // jwHKhh6      orange trees & blue water
+    // 3JXUoOq      tall green, shorter purples, orange see
+    // EERaLlT+5    three purple trees in hazardous wasteland
+    // jeepers      emerald trees, ruby seas
+    // CYRUS        normal atmo, many tree types, reminiscent of jelly beans
+    landing: 'zHLDFZj+J',
+    original: false,
+    exact: true,
+}
+let landing = true || location.host.includes('pixelworld.')
+
+function splitUrl() {
+    // return (landing
+    //     ? debug.landing
+    //     : (window.location.hash?.slice(1) || '')
+    //     ).split(/\+(.*)/, 2)
+    let hash = window.location.hash?.slice(1) || ''
+    if (hash) {
+        landing = false
+    } else {
+        hash = debug.landing
+    }
+    return hash.split(/\+(.*)/, 2)
+}
+function getParams() {
+    return new URLSearchParams(location.search)
+}
+
+let WIDTH = 640 // 384
+const HEIGHT = 216
+
+const COLOR = {
+    white: "#DEDED8",
+    dark: "#121216",
+}
+for (let color in COLOR) COLOR[color] = new Color(COLOR[color])
+
+const E = {
+    sky: 0,
+    water: 1,
+    dirt: 2,
+    grass: 3,
+}
+
+const container = document.querySelector('#canvas-container')
+const canvas = document.createElement('canvas')
+const overlay = node(`<svg id="overlay" viewBox="0 0 ${WIDTH} ${HEIGHT}"></svg>`)
+const overlay_style = document.createElement('style')
+const label = node(`<div style="
+position: relative;
+background: black;
+white-space: pre;
+width: fit-content;
+margin: 0;
+">
+</div>`)
+container.append(canvas, overlay, overlay_style, label)
+
+canvas.width = WIDTH
+canvas.height = HEIGHT
+const ctx = canvas.getContext('2d')
+const save = document.createElement('img')
+
+const hit = range(WIDTH).map(x => range(HEIGHT).map(y => 0))
+let species = {}
+let species_info = {}
+let species_down = false
+const eventToXY = e => {
+    const rect = canvas.getBoundingClientRect()
+    const offset = [rect.x, rect.y]
+    let [x, y] = [e.clientX, e.clientY].map((x, i) => Math.floor((x - offset[i]) * (canvas.width / rect.width)))
+    y = HEIGHT + 16 - y - 1
+    return [x, y]
+}
+const highlightSpecies = e => {
+    const [x, y] = eventToXY(e)
+    const species_id = species[hit[x][y]]
+
+    overlay_style.innerHTML = species_id ? `
+#overlay {
+    background: #fff8;
+}
+#overlay g.species-${species_id} {
+    fill: #000;
+    shape-rendering: crispEdges;
+}
+` : ''
+    if (species_id) {
+        const info = species_info[species_id]
+        label.innerHTML = `${info.type}`
+    }
+
+    return species_id
+}
+const setLabel = (target) => {
+    if (target) {
+        label.style.display = ''
+        const { x, y, width, height } = target.parentElement.getBoundingClientRect()
+        const { width:label_width, height:label_height } = label.getBoundingClientRect()
+        label.style.left = (x + width/2 - label_width/2 + document.body.scrollLeft)+'px'
+        // label.style.top = y+height+(window.innerHeight / HEIGHT)+'px'
+        label.style.top = (y - label_height - 2 * (window.innerHeight / HEIGHT) - document.body.clientHeight)+'px'
+    } else {
+        label.style.display = 'none'
+    }
+}
+on([canvas, overlay], 'pointerdown', e => {
+    const prev_species_down = species_down
+    species_down = e.target
+    if (prev_species_down === species_down) species_down = false
+    const species_id = highlightSpecies(e)
+    setLabel(species_id ? e.target : false)
+    if (species_id || prev_species_down) e.stopImmediatePropagation()
+    if (!species_id) species_down = false
+})
+on(overlay, 'pointermove', e => {
+    if (species_down) return
+
+    // console.debug('species', `(${x}, ${y})`, species_id, species)
+    const species_id = highlightSpecies(e)
+    setLabel(species_id ? e.target : false)
+})
+
+let world
+// let hashlen = getStored('debug.hashlen') ?? 7
+debug.hashlen = 7
+class World {
+    seed
+    reseed
+    C = {
+        sky: undefined,
+        liquid: undefined,
+        dirt: undefined,
+        chlorophyll: undefined,
+        light: undefined,
+        mineral: undefined,
+    }
+
+    static reseed(seed=undefined) {
+        seed = seed || debug.seed || randAlphanum(debug.hashlen)
+        debug.seed = false
+        noise.seed(Math.seed(seed))
+        this.reseeded = seed
+        return seed
+    }
+    static reseedRefresh(offset) {
+        if (!debug.original || debug.extended) {
+            World.reseed(this.reseeded)
+            for (let i = 0; i < offset * 10; i++) rand()
+        }
+    }
+    constructor(seed=undefined) {
+        seed = World.reseed(seed)
+        this.seed = seed
+        const [hash, _] = splitUrl()
+        const params = getParams()
+        if (landing) {
+            // skip
+        } else if (seed === hash) {
+            const expectedHash = `#${seed}`
+            if (!window.location.hash.includes(expectedHash)) {
+                window.location.hash = expectedHash
+            }
+        } else {
+            window.location.hash = `#${seed}`
+        }
+
+        const listing = LS_o['#'+seed]
+        debug.listing = listing
+        debug.original = listing || hash.length === 7
+
+        this.C = {}
+        this.C.light = ColorUtil.hsb(rand(), rand(.2, .95), rand(.6, .9))
+        this.C.liquid = ColorUtil.hsb(rand(), rand(.4, .65), rand(.6, .8))
+        this.C.sky = this.C.light.lerp(this.C.liquid, rand(.2, .6))
+        this.C.chlorophyll = ColorUtil.compliment(this.C.liquid)
+        // if (!randi(3)) {
+        //     this.C.chlorophyll =
+        //         ColorUtil.hsb(rand(.24) + .2, rand(.4, .65), rand(.6, .8))
+        // }
+        this.C.dirt = ColorUtil.hsb(rand(.01, .09), rand(.65, .9), rand(.1, .4))
+        this.C.mineral = ColorUtil.hsb(rand(0, .08), rand(0, .05), rand(.35, .6))
+
+        this.earthLayers = randi(5, 10)
+        this.palette = []
+
+        this.palette.push(
+            this.C.sky,
+            this.C.liquid,
+            this.C.dirt.lerp(this.C.mineral, .1),
+            this.C.chlorophyll)
+
+        // add rock layers
+        for (let i = 0; i < this.earthLayers; i++) {
+            const newRock = this.C.mineral.clone().lerp(this.C.dirt, rand(.2, .85))
+            this.palette.push(newRock)
+        }
+
+        // add flora
+        this.flora = []
+        let grassSpawn = false
+        for (let floraTypes = randi(16); floraTypes >= 0; floraTypes--) {
+            let floraType, floraArgs, floraColors
+
+            // floraType = randi(9)
+            // floraType = randi(2) ? randi(9) : 9
+            floraType = (debug.extended && !grassSpawn) ? randi(10) : randi(9)
+            switch (floraType) {
+                case 0: // flower
+                case 1:
+                    let flowerFreq = randi(2, 14)
+                    floraArgs = [flowerFreq]
+
+                    let flower = ColorUtil.hsb(rand(), rand(.65, .95), rand(.7, .95)).lerp(
+                        this.C.chlorophyll,
+                        rand(.1, .3))
+                    floraColors = [flower]
+                    break;
+
+                case 2: // tree
+                case 3:
+                case 4:
+                // case 5:
+                    let treeFreq = randi(1, 6)
+                    let treeSize = randi(4, 16)
+                    let branches = randi(2)
+                    let spotted = randi(4) > 0
+                    floraArgs = [treeFreq, treeSize, branches, spotted]
+
+                    let trunk = ColorUtil.hsb(rand(.01, .09), rand(.12, .57), rand(.35, .95))
+                    let top = this.C.chlorophyll.clone().lerp(ColorUtil.hsb(rand(), rand(.3, .95), rand(.65, 1)), rand(.1, .3))
+                    let spots = ColorUtil.hsb(rand(), rand(.1, .6), rand(.65, 1)).lerp(top, rand(.1, .45))
+                    floraColors = [trunk, top, spots]
+                    break;
+
+                case 5:
+                    {
+                    let treeFreq = randi(1, 6)
+                    let treeSize = randi(4, 16)
+                    let branches = randi(2)
+                    let spotted = randi(4) > 0
+                    floraArgs = [treeFreq, treeSize, branches, spotted]
+
+                    let trunk = ColorUtil.hsb(rand(.01, .09), rand(.12, .57), rand(.35, .95))
+                    let top = this.C.chlorophyll.clone().lerp(ColorUtil.hsb(rand(), rand(.3, .95), rand(.65, 1)), rand(.1, .3))
+                    let spots = ColorUtil.hsb(rand(), rand(.1, .6), rand(.65, 1)).lerp(top, rand(.8, .9))
+                    let back = ColorUtil.hsb(0, 0, 0).lerp(top, .9)
+                    floraColors = [trunk, top, spots, back]
+                    }
+                    break;
+
+                case 6: // cacti
+                    let cactusFreq = randi(2, 10)
+                    floraArgs = [cactusFreq]
+
+                    let cactus = this.C.light.clone().lerp(
+                        ColorUtil.hsb(rand(), rand(.3, .8), rand(.65, 1)),
+                        rand(.4, .65))
+                    floraColors = [cactus]
+                    break;
+
+                case 7: // coral, special, no color bc all are random
+                case 8:
+                    let coralFreq = randi(8, 24)
+                    floraArgs = [coralFreq]
+                    floraColors = []
+                    break;
+
+                case 9: // tall grass / reeds
+                    grassSpawn = true
+                    let grassType = randi(2)
+                    // let grassType = 0
+                    let grassFreq = randi(1, 4)
+                    let edgeSlope = .25 // 0 // Math.max(0, randi(-2, 8))
+                    let short = randi(2)
+                    let clearing = short ? randi(2) : randi(3)
+                    floraArgs = [grassType, grassFreq, clearing, edgeSlope, short]
+
+                    // tall grass
+                    if (grassType === 0) {
+                        // let baseGrass = ColorUtil.rgb(239, 217, 117).lerp(this.C.sky, .3)
+                        // let darkGrass = ColorUtil.rgb(229, 209, 116).lerp(this.C.sky, .3)
+                        let baseGrass = this.C.light.clone().lerp(
+                            ColorUtil.hsb(rand(), rand(.3, .8), rand(.65, 1)),
+                            rand(.4, .65))
+                        let bgHSL = baseGrass.getHSL({})
+                        baseGrass.setHSL(bgHSL.h, bgHSL.s / 2, bgHSL.l)
+                        let darkGrass = baseGrass.clone().lerp(new Color(0, 0, 0), .05)
+                        // floraColors = [baseGrass, darkGrass]
+                        floraColors = [darkGrass, baseGrass]
+
+                    // reeds
+                    } else {
+                        // let reed = ColorUtil.rgb(74, 116, 65).lerp(this.C.sky, .15)
+                        // let tail = ColorUtil.rgb(77, 62, 26).lerp(this.C.sky, .15)
+                        // let reed = this.C.chlorophyll.clone().lerp(ColorUtil.hsb(rand(), rand(.3, .95), rand(.65, 1)), rand(.1, .3)).lerp(this.C.sky, .15)
+                        // const turfHSL = this.C.chlorophyll.getHSL()
+                        // console.log(turfHSL)
+                        // let reed = new Color().setHSL(turfHSL.h, turfHSL.s / 2, turfHSL.l)
+                        let reed = this.C.chlorophyll.clone()
+                            .lerp(this.C.liquid, .3)
+                            .lerp(this.C.sky, .3)
+                        let tail = this.C.dirt.lerp(this.C.sky, .15)
+                        // let reed = this.C.liquid
+                        // let tail = this.C.liquid.lerp(this.C.dirt, .2)
+                        floraColors = [reed, tail]
+                    }
+                    break;
+            }
+
+            this.flora.push([floraType, floraArgs, floraColors])
+            this.palette.push(...floraColors)
+        }
+
+        this.skyDirection = randi(2) || true
+
+        // powerlines
+        this.powerlines = !randi(4)
+        if (params.get('pl') !== null) this.powerlines = JSON.parse(
+            params.get('pl') || 'false')
+
+        // clouds
+        this.clouds = !randi(2)
+        if (seed === 'zHLDFZj') this.clouds = false
+        if (params.get('cl') !== null) this.clouds = JSON.parse(
+            params.get('cl') || 'false')
+
+        this.isDaytime = true
+        if (params.get('dt') !== null) this.isDaytime = JSON.parse(
+            params.get('dt') || 'false')
+
+        if (this.clouds === true) {
+            this.clouds = 1 + rand()
+        }
+
+        world = this
+    }
+
+    generate(reseed=undefined) {
+        delete save.src
+        label.innerHTML = overlay.innerHTML = overlay_style.innerHTML = ''
+        species_down = false
+        
+        // console.debug('GENERATE')
+        if (reseed === this.reseed) return
+        this.reseed = reseed
+        if (reseed) {
+            const gen = `${this.seed}+${this.reseed}`
+                .split('+').reverse().slice(0, 2).reverse().join('+')
+            World.reseed(gen.replace(/\+$/, ''))
+            const [hash, _] = splitUrl()
+            // window.location.hash = `#${hash}+${reseed}`
+            landing || window.location.replace(
+                window.location.href.replace(
+                    window.location.hash,
+                    `#${hash}+${this.reseed}`))
+        } else {
+            // allow for replicating original seed, but losing existing :/
+            World.reseed(this.seed)
+            landing || window.location.replace(
+                window.location.href.replace(
+                    window.location.hash,
+                    `#${this.seed}`))
+        }
+        hit.map(y => y.fill(0)) // flora hitmap for species highlighting
+
+        this.params = location.search
+        this.reseed
+            ? console.log('[REROLL]', `#${this.seed}+${this.reseed}`)
+            : console.log('[GENERATE]', `#${this.seed}`)
+        // console.log('[GENERATE]',
+        //     this.reseed? `#${this.seed}+${this.reseed}` : `#${this.seed}`)
+        // console.log('[GENERATE]',
+        //     this.reseed? `#${this.seed}+${this.reseed}` : `#${this.seed}`)
+        if (!debug.exact) {
+            // reseed = reseed || World.reseed(reseed)
+            // const [hash, _] = (window.location.hash?.slice(1) || '').split('+')
+            // window.location.hash = [hash, reseed].join('+')
+            // console.log('[RESEED]', reseed)
+        }
+        const worldHeight = HEIGHT + 16
+        const worldWidth = WIDTH
+        const world = matrix(worldWidth, worldHeight)
+        // keep earthLayers
+        const earthLayers = this.earthLayers
+        const heightMap = matrix(earthLayers, WIDTH)
+        const avgHeight = randi(worldHeight / 6, worldHeight / 2)
+        let maxDiff
+        do {
+            maxDiff = randi(16, 16 + worldHeight/3*2)
+        } while (maxDiff > avgHeight)
+        maxDiff += 16
+        const featureSize = randi(64, 576)
+        const changeFreq = rand(.3, .5)
+        const noiseOffset = 1e6 + randi(1e6)
+        // const getHeight = (x, y) =>
+        //     featureSize * noise.simplex2(
+        //         changeFreq * x + noiseOffset,
+        //         changeFreq * y + noiseOffset)
+        // const getHeight = (x, y) =>
+        //     noise.simplex2(
+        //         changeFreq * x + noiseOffset,
+        //         changeFreq * y + noiseOffset)
+        // const getHeight = (x, y) =>
+        //     noise.simplex2(
+        //         x / featureSize,
+        //         y / featureSize)
+        function getHeight(x, y) {
+            const zoom = featureSize/changeFreq;
+            const huge = noise.simplex2(x/zoom/4 - 10000, y/zoom/4 - 10000);
+            const large = noise.simplex2(x/zoom*2 + 10000, y/zoom*2 + 10000);
+            const medium = noise.simplex2(x/zoom*4 + 20000, y/zoom*4 + 20000)
+            const small = noise.simplex2(x/zoom*10 + 30000, y/zoom*10 + 30000);
+            const value = Math.pow(huge*0.3 + large*0.5 + medium*0.15 + small*0.05, 3);
+            // return value
+            let height
+            if (value > 0) {
+                height = lerp(0, 1, Math.sqrt(value));
+            } else {
+                height = lerp(0, -1, Math.sqrt(-value));
+            }
+            // if (value > 0) {
+            //     height = lerp(seaLevel, maxHeight, Math.sqrt(value));
+            // } else {
+            //     height = lerp(seaLevel, minHeight, Math.sqrt(-value));
+            // }
+            return height;
+        }
+
+        // generate terrain heights
+        let minHeight = avgHeight;
+        let maxHeight = avgHeight;
+        const layerDiff = randi(1, 5);
+        for (let i = 0; i < earthLayers; i++) {
+            for (let x = 0; x < WIDTH; x++) {
+                heightMap[i][x] = Math.floor(getHeight(i*layerDiff, x)*maxDiff + avgHeight);
+                if (heightMap[i][x] < minHeight)
+                    minHeight = heightMap[i][x];
+                if (heightMap[i][x] > maxHeight)
+                    maxHeight = heightMap[i][x];
+            }
+        }
+
+        let pL = 0
+
+        // generate dirt, grass, & water
+        const dirtDepth = randi(4, 8);
+        // const seaLevel = randi(worldHeight/6, worldHeight/2);
+        // const seaLevel = randi(minHeight * .9, maxHeight * 1.1);
+        const seaLevel = randi(minHeight, maxHeight);
+
+        for (let x = 0; x < WIDTH; x++) {
+            for (let y = heightMap[0][x]-dirtDepth; y < worldHeight; y++) {
+                hit[x][y] = -1
+                if (y >= heightMap[0][x] && y <= seaLevel)
+                    world[x][y] = pL + 1; // water
+                else if (y < heightMap[0][x])
+                    world[x][y] = pL + 2; // dirt
+                else if (y == heightMap[0][x]) {
+                    world[x][y] = pL + 3; // grass
+                    if (randi(4) == 0) world[x][y+1] = pL + 3;
+                } else {
+                    y = worldHeight; // sky is default
+                    hit[x][y] = 0
+                }
+            }
+        }
+        // include original palette
+        pL += (debug.shroomy || this.seed === 'CYRUS') ? 4 : 3
+
+        // generate rock layers
+        let layerDepth = array(earthLayers - 1, () => randi(maxHeight)) // # of rock layers
+            .sort((a, b) => a - b) // ordering depth array
+        for (let x = 0; x < WIDTH; x++) { // write layers into world array
+            for (let y = heightMap[0][x]-dirtDepth-1; y >= 0; y--) {
+                hit[x][y] = -1
+                for (let i = 0; i < earthLayers - 1; i++) {
+                    if (y >= heightMap[i+1][x] - layerDepth[i] || i == earthLayers-2) {
+                        world[x][y] = pL + 1 + i;
+                        i = earthLayers - 1;
+                    }
+                }
+            }
+        }
+        // include rock layers
+        pL += earthLayers
+
+
+        const crossed = (curr, prev, lower) => {
+            return (curr <= lower && prev > lower) || (prev <= lower && curr > lower)
+        }
+
+        // find flat areas for grass (widest inflection points)
+        let grassFlats = []
+        {
+            let x = 0, currLeft = 0, last = heightMap[0][0]
+            while (x < WIDTH) {
+                let y = heightMap[0][x]
+                let left = (heightMap[0][x - 8] || y), right = (heightMap[0][x + 7] || y)
+                // if (Math.abs(y - last) > 1 || x === WIDTH-1 || y <= seaLevel) {
+                if (Math.abs(y - left) > 1 || Math.abs(y - right) > 1
+                    || x === WIDTH-1 || crossed(y, last, seaLevel)) {
+                    const width = x - currLeft
+                    const midPoint = Math.floor(currLeft + width/2)
+                    if (width > 24 && heightMap[0][midPoint] > seaLevel) {
+                        grassFlats.push([width, currLeft + (currLeft === 0 ? 0 : 1), x - (x === WIDTH-1 ? 0 : 1)])
+                    }
+                    currLeft = x + 1
+                }
+                x += 1
+                last = y
+            }
+            grassFlats.sort((a, b) => b[0] - a[0])
+        }
+
+        // find flat shoreline (2-3 deep)
+        let shorelineFlats = []
+        {
+            let x = 0, currLeft = 0, last = heightMap[0][0]
+            while (x < WIDTH) {
+                let y = heightMap[0][x]
+                // if (Math.abs(y - last) > 1 || x === WIDTH-1
+                // || y > seaLevel || y < seaLevel - 1) {
+                //     const width = x - currLeft
+                //     const midPoint = Math.floor(currLeft + width/2)
+                //     const midHeight = heightMap[0][midPoint]
+                //     if (width > 4 && midHeight <= seaLevel && midHeight >= seaLevel - 1) {
+                //         shorelineFlats.push([width, currLeft + 1, x - 1])
+                //     }
+                //     currLeft = x + 1
+                // }
+                if (Math.abs(y - last) > 1 || x === WIDTH-1
+                || crossed(y, last, seaLevel - 1) || crossed(y, last, seaLevel - 4)) {
+                    const width = x - currLeft
+                    const midPoint = Math.floor(currLeft + width/2)
+                    const midHeight = heightMap[0][midPoint]
+                    if (width > 4 && midHeight <= seaLevel - 1 && midHeight > seaLevel - 4) {
+                        shorelineFlats.push([width, currLeft + 1, x - 1])
+                    }
+                    currLeft = x + 1
+                }
+                x += 1
+                last = y
+            }
+            shorelineFlats.sort((a, b) => b[0] - a[0])
+        }
+
+        // if extended & reeds, mark shallow areas to prevent coral spawns
+        const anyReeds = this.flora.some(([floraType, floraArgs]) =>
+            floraType === 9 && floraArgs[0] === 1)
+        let shallows = []
+        if (anyReeds && debug.extended) {
+            let x = 0, currLeft = 0, last = heightMap[0][0]
+            while (x < WIDTH) {
+                let y = heightMap[0][x]
+                if (x === WIDTH-1
+                    || crossed(y, last, seaLevel) || crossed(y, last, seaLevel - 4)) {
+                    const width = x - currLeft
+                    const midPoint = Math.floor(currLeft + width/2)
+                    const midHeight = heightMap[0][midPoint]
+                    if (midHeight <= seaLevel && midHeight > seaLevel - 4) {
+                        for (let sx = currLeft; sx < x; sx++) {
+                            shallows[sx] = true
+                        }
+                    }
+                    currLeft = x + 1
+                }
+                x += 1
+                last = y
+            }
+        }
+
+        const floraAfter = []
+
+        species = {}
+        species_info = {}
+        const species_count = {}
+        const groups = {}
+        let group = ''
+        const setFlora = (x, y, value, skipGroup=false) => {
+            hit[x][y] = world[x][y] = value;
+            species[value] = pL
+            if (!skipGroup) group += `<rect class="species-${pL}" x="${x}" y="${y - 16}" width="1" height="1" />`
+        }
+        const groupFlora = () => {
+            groups[pL] = (groups[pL] || '') + `<g class="species-${pL}">${group}</g>`
+            group = ''
+        }
+        const closeFlora = (floraColors, info) => {
+            species_info[pL] = info
+            pL += floraColors.length
+        }
+
+        this.flora.forEach(([floraType, floraArgs, floraColors]) => {
+            switch (floraType) {
+                case 0: // flower
+                case 1:
+                    let [flowerFreq] = floraArgs
+                    for (let x = 1; x < WIDTH-1; x++) {
+                        let y = heightMap[0][x];
+                        if (world[x][y] == 3 && world[x][y+1] == 0)
+                            if (world[x-1][y+1] == 0 && world[x+1][y+1] == 0)
+                                if (randi(flowerFreq) == 0) {
+                                    if (randi(5) == 0) {
+                                        setFlora(x, y+1, pL+1);
+                                        setFlora(x, y+2, pL+1);
+                                    } else {
+                                        setFlora(x, y+1, pL+1);
+                                    }
+                                    groupFlora()
+                                }
+                    }
+
+                    closeFlora(floraColors, {
+                        type: 'low flora',
+                    })
+                    break;
+                case 2: // tree
+                case 3:
+                case 4:
+                // case 5:
+                    let [treeFreq, treeSize, branches, spotted] = floraArgs
+                    for (let x = 4; x < WIDTH - 4; x++) {
+                        let y = heightMap[0][x];
+                        if (randi(treeFreq) == 0) {
+                        if (world[x][y] == 3) {
+                        if (world[x][y+1] == 0) {
+                        if (world[x+1][y] == 3) {
+                        if (world[x-1][y] == 3) {
+                        if (world[x+1][y+2] == 0) {
+                        if (world[x-1][y+2] == 0) {
+                        if (world[x+2][y+2] == 0) {
+                        if (world[x-2][y+2] == 0) {
+                            let t = randi(2, 7) + treeSize;
+                            for (let i = 1; i < t; i++) {
+                                setFlora(x, y+i, pL+1);
+                                if (branches && i > t/2 && i < t-1 && i%2 == 0 && randi(5) == 0) {
+                                    setFlora(x, y+i, pL+2);
+                                    setFlora(x-1, y+i, pL+2);
+                                    setFlora(x+1, y+i, pL+2);
+                                }
+                            }
+
+                            setFlora(x, y+t, pL+2); setFlora(x-1, y+t, pL+2); setFlora(x+1, y+t, pL+2); setFlora(x-2, y+t, pL+2); setFlora(x+2, y+t, pL+2); //bottom
+                            t++;
+                            setFlora(x, y+t, pL+2); setFlora(x-1, y+t, pL+2); setFlora(x+1, y+t, pL+2); setFlora(x-2, y+t, pL+2); setFlora(x+2, y+t, pL+2); //middle
+                            t++;
+                            setFlora(x, y+t, pL+2); setFlora(x+1, y+t, pL+2); setFlora(x-1, y+t, pL+2); //top
+                            if (randi(7) == 0) {
+                                t--; t--;
+                                setFlora(x-3, y+t, pL+2); setFlora(x+3, y+t, pL+2); t++;
+                                setFlora(x-3, y+t, pL+2); setFlora(x+3, y+t, pL+2); t++;
+                                setFlora(x-2, y+t, pL+2); setFlora(x+2, y+t, pL+2);
+                                setFlora(x-3, y+t, pL+2); setFlora(x+3, y+t, pL+2); t++;
+                                setFlora(x, y+t, pL+2); setFlora(x+1, y+t, pL+2); setFlora(x-1, y+t, pL+2);
+                                setFlora(x+2, y+t, pL+2); setFlora(x-2, y+t, pL+2);//extra
+                            }
+                            groupFlora()
+                        }}}}}}}}}
+                    }
+
+                    // mushroom spots
+                    if (spotted) { // determining if spots are generated
+                        for(let x = 0; x < WIDTH; x++) {
+                            for(let y = 0; y < worldHeight; y++) {
+                                if (world[x][y] == pL+2) { // randomly changing top to spot
+                                    if (randi(4) == 0) {
+                                        setFlora(x, y, pL+3, true);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    closeFlora(floraColors, {
+                        type: 'tall flora',
+                    })
+                    break;
+
+                case 5:
+                    {
+                    let [treeFreq, treeSize, branches, spotted] = floraArgs
+                    for (let x = 4; x < WIDTH - 4; x++) {
+                        let y = heightMap[0][x];
+                        if (randi(treeFreq) == 0) {
+                        if (world[x][y] == 3) {
+                        if (world[x][y+1] == 0) {
+                        if (world[x+1][y] == 3) {
+                        if (world[x-1][y] == 3) {
+                        if (world[x+1][y+2] == 0) {
+                        if (world[x-1][y+2] == 0) {
+                        if (world[x+2][y+2] == 0) {
+                        if (world[x-2][y+2] == 0) {
+                            let t = randi(2, 5) + (treeSize > 8 && branches
+                                ? randi(5, 7)
+                                : 0);
+                            for (let i = 1; i < t; i++) {
+                                setFlora(x, y+i, pL+1);
+                            }
+
+                            let ty = y + t
+                            let flipped = randi(2)
+                            // let sx = randi(2)
+                            for (let i = Math.round(randi(2, treeSize/2)); i > 1; i--) {
+                                // let right = 1 - i % 2
+                                let right = i % 2
+                                // let ox = -Math.round(i/2) + (i + sx) % 2
+                                let ox = -Math.round(i/2) + 1 + (flipped
+                                    ? -1
+                                    : 0)
+                                let tx = x + ox
+                                // for (let j = randi(2, treeSize / 3); j >= 0; j--) {
+                                for (let j = randi(1, treeSize / 2); j >= 0; j--) {
+                                    for (let k = 0; k < i; k++) {
+                                        setFlora(tx + k, ty, pL+2);
+                                    }
+                                    // setFlora(tx, ty, pL+3);
+                                    // setFlora(tx, ty, pL+4);
+                                    // setFlora(tx + i - 1, ty, pL+4);
+                                    // for (let k = 0; k <= i; k++) {
+                                    //     setFlora(x + k + tx, ty, pL+2);
+                                    //     if (k < i) {
+                                    //         setFlora(x - k + tx, ty, pL+2);
+                                    //     }
+                                    // }
+                                    if (j === 0) {
+                                        for (let k = 0; k < i - 1; k++) {
+                                            // setFlora(tx + k + right * (flipped ? 1 : -1), ty, pL+3);
+                                            setFlora(tx + k + right, ty, pL+3);
+                                        }
+                                    }
+                                    ty += 1
+                                }
+                            }
+                            groupFlora()
+                        }}}}}}}}}
+                    }
+
+                    // mushroom spots
+                    if (true) { // determining if spots are generated
+                        for(let x = 0; x < WIDTH; x++) {
+                            for(let y = 0; y < worldHeight; y++) {
+                                if (world[x][y] == pL+2) { // randomly changing top to spot
+                                    if (randi(12) == 0) {
+                                        setFlora(x, y, pL+3, true);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    closeFlora(floraColors, {
+                        type: 'tall flora',
+                    })
+                    }
+                    break;
+
+                case 6: // cacti
+                    let [cactusFreq] = floraArgs
+                    for (let x = 1; x < WIDTH-1; x++) {
+                        let y = heightMap[0][x];
+                        if (world[x][y] == 3 && world[x][y+1] == 0)
+                            if (world[x-1][y+1] == 0 && world[x+1][y+1] == 0)
+                                if (randi(cactusFreq) == 0) {
+                                    for (let i = randi(2, 7); i >= 1; i--) setFlora(x, y+i, pL+1);
+                                    groupFlora()
+                                }
+                    }
+
+                    closeFlora(floraColors, {
+                        type: 'mid flora',
+                    })
+                    break;
+
+                case 7: // coral
+                case 8:
+                    floraAfter.push([floraType, floraArgs])
+                    break;
+
+                case 9: // tall grass / reeds
+                    let [grassType, grassFreq, clearing, edgeSlope, short] = floraArgs
+
+                    // tall grass
+                    if (grassType === 0) {
+
+                        for (let i = 0; i < grassFreq; i++) {
+                            const flat = grassFlats.shift()
+                            if (!flat) continue
+
+                            const midPoint = Math.round((flat[1] + flat[2]) / 2)
+                            const rise = [randi(flat[1], midPoint), randi(midPoint, flat[2])]
+                            // console.log(seaLevel, flat, heightMap[0][flat[1]])
+                            if (clearing) {
+                                const clear = clearing === 1
+                                    ? [flat[1], flat[2]]
+                                    : rise
+                                for (let fx = clear[0]; fx < clear[1]; fx++) {
+                                    let y = 1 + heightMap[0][fx]
+
+                                    // run BFS to clear other pixels
+                                    const p2h = s => s.join(',')
+                                    const explored = new Set()
+                                    const frontier = [[fx, y]]
+                                    while (frontier.length) {
+                                        const curr = frontier.pop()
+                                        const hash = p2h(curr)
+                                        if (world[curr[0]][curr[1]] > 3 && !explored.has(hash)) {
+                                            world[curr[0]][curr[1]] = 0
+                                            explored.add(hash)
+                                            frontier.push(...[
+                                                [-1, 0], [1, 0], [0, 1], [0, -1]
+                                            ].map(o => [curr[0] + o[0], curr[1] + o[1]]))
+                                        }
+                                    }
+                                }
+                            }
+                            // for (let fx = flat[1]; fx < flat[2]; fx++) {
+                            //     let isRise = rise[0] <= fx && fx < rise[1]
+                            //     let taller = randi(2)
+                            //     let height = randi(3, 6) + (taller ? 1 : 0) + (isRise ? 2 : 0)
+                            //     let y = 1 + heightMap[0][fx]
+                            //     for (let fy = y; fy < y + height && fy < HEIGHT; fy++) {
+                            //         hit[fx][fy] = world[fx][fy] = taller ? pL+2 : pL+1
+                            //     }
+                            // }
+                            // continue
+                            for (let fx = flat[1]; fx < flat[2]; fx++) {
+                                let isRise = rise[0] <= fx && fx < rise[1]
+                                // let variant = !randi(8)
+                                // let height = randi(3, 6) + (isRise ? 2 : 0)
+                                // let y = 1 + heightMap[0][fx]
+                                // for (let fy = y; fy < y + height && fy < HEIGHT; fy++) {
+                                //     hit[fx][fy] = world[fx][fy] = isRise
+                                //         ? variant ? pL+2 : pL+1
+                                //         : variant ? pL+1 : pL+2
+                                //     if (isRise && !variant && randi(4) > 0) {
+                                //         hit[fx][fy + 1] = world[fx][fy + 1] = pL+2
+                                //         hit[fx][fy + 2] = world[fx][fy + 2] = pL+2
+                                //     }
+                                // }
+
+                                // let variant = !randi(8)
+                                // let height = randi(3, 5) + (isRise ? 2 : 0)
+                                // let y = 1 + heightMap[0][fx]
+                                // for (let fy = y; fy < y + height && fy < HEIGHT; fy++) {
+                                //     hit[fx][fy] = world[fx][fy] = isRise
+                                //         ? pL+2
+                                //         : variant ? pL+1 : pL+2
+                                //     // if (isRise && randi(4) > 0) {
+                                //     //     const top = rand() > .2 ? 1 : 2
+                                //     //     hit[fx][fy + 1] = world[fx][fy + 1] = pL+top
+                                //     //     hit[fx][fy + 2] = world[fx][fy + 2] = pL+top
+                                //     // }
+                                //     if (isRise) {
+                                //         // const top = rand() > .2 ? 1 : 2
+                                //         const top = 1
+                                //         hit[fx][fy + 1] = world[fx][fy + 1] = pL+top
+                                //         hit[fx][fy + 2] = world[fx][fy + 2] = pL+top
+                                //     }
+                                // }
+
+                                // let variant = randi(4)
+                                // let variant = randi(3)
+                                // let height = randi(3, 5) + (isRise ? 3 : 0)
+                                // let y = 1 + heightMap[0][fx]
+                                // for (let fy = y; fy < y + height && fy < HEIGHT; fy++) {
+                                //     hit[fx][fy] = world[fx][fy] = variant ? pL+1 : pL+2
+                                //     // if (!variant) hit[fx][fy+1] = world[fx][fy+1] = pL+2
+                                // }
+
+                                if (short) {
+                                    let taller = randi(2)
+                                    let height = randi(2, 5) + (taller ? 1 : 0)
+                                    let y = 1 + heightMap[0][fx]
+                                    for (let fy = y; fy < y + height && fy < HEIGHT; fy++) {
+                                        hit[fx][fy] = world[fx][fy] = taller ? pL+2 : pL+1
+                                    }
+                                    continue
+                                }
+
+                                let variant = isRise ? randi(2) : randi(6)
+                                // let height = randi(3, 5) + (isRise ? 5 : 0) - 1
+                                let riseAdd = randi(4, 6)
+                                let height = randi(3, 5) + (isRise
+                                    ? (edgeSlope
+                                        ? Math.ceil(Math.sqrt(1/edgeSlope * Math.min(
+                                            riseAdd * edgeSlope,
+                                            Math.abs(rise[0] - fx),
+                                            Math.abs(rise[1] - fx))) * Math.sqrt(riseAdd))
+                                        : riseAdd)
+                                    : 0) - 1
+                                let y = 1 + heightMap[0][fx]
+                                for (let fy = y; fy < y + height && fy < HEIGHT; fy++) {
+                                    hit[fx][fy] = world[fx][fy] = variant ? pL+1 : pL+2
+                                    if (!variant) hit[fx][fy+1] = world[fx][fy+1] = pL+2
+                                }
+
+                                // let taller = randi(2)
+                                // let height = isRise
+                                //     ? randi(6, 8) + (taller ? 1 : 0)
+                                //     : randi(2, 5) + (taller ? 1 : 0)
+                                // let y = 1 + heightMap[0][fx]
+                                // for (let fy = y; fy < y + height && fy < HEIGHT; fy++) {
+                                //     hit[fx][fy] = world[fx][fy] = taller ? pL+2 : pL+1
+                                // }
+                            }
+                        }
+
+                    // reeds
+                    } else {
+
+                        for (let i = 0; i < grassFreq; i++) {
+                            const flat = shorelineFlats.shift()
+                            if (!flat) continue
+                            let prevSpecial = false
+                            for (let fx = flat[1]; fx <= flat[2]; fx += (randi(4) ? 1 : 2)) {
+                            // for (let fx = flat[1]; fx <= flat[2]; fx += 1 + randi(2)) {
+                                if (randi(2) > 0) continue
+                                let tail = !prevSpecial && !randi(3)
+                                let taller = !prevSpecial && !tail && randi(2)
+                                let height = randi(4, 8) + (taller ? 2 : 0)
+                                let y = heightMap[0][fx]
+                                for (let fy = y; fy < y + height; fy++) {
+                                    hit[fx][fy] = world[fx][fy] = pL+1
+                                    if (tail) {
+                                        hit[fx][fy+1] = world[fx][fy+1] = pL+2
+                                        hit[fx][fy+2] = world[fx][fy+2] = pL+2
+                                    }
+                                }
+                                prevSpecial = tail || taller
+                            }
+                        }
+                    }
+                    groupFlora()
+
+                    closeFlora(floraColors, {
+                        type: 'mid flora',
+                    })
+                    break;
+            }
+        })
+
+        const palette = this.palette.slice()
+        floraAfter.forEach(([floraType, floraArgs]) => {
+            switch (floraType) {
+                case 7: // coral
+                case 8:
+                    let [coralFreq] = floraArgs
+                    for(let x = 1; x < WIDTH - 1; x++) {
+                        let y = heightMap[0][x];
+                        if (world[x][y] == 1 && world[x][y-1] == 2 && world[x][y+1] == 1 && !shallows[x]) {
+                            if (randi(coralFreq) == 0) {
+                                if (randi(2) == true) {
+                                    world[x][y] = pL+1; world[x][y+1] = pL+1; world[x + randi(3) - 1][y+1] = pL+1;
+                                    let size = 1; let grow = true;
+                                    while (grow == true && x > 2 && x < WIDTH - 2) {
+                                        if (randi(4) == 0 || world[x + randi(3) - 1][y+size+1] != 1) {
+                                            grow = false;
+                                        } else {
+                                            size++;
+                                            world[x + randi(3) - 1][y+size] = pL+1;
+                                        }
+                                    }
+                                } else {
+                                    let s = 0;
+                                    while (world[x+s][y-1] == 2 && randi(5) != 1) {
+                                        if (x + s + 1 < WIDTH) {
+                                            s++;
+                                        }
+                                    }
+                                    for (let i = 0; i < s; i++) {
+                                        for (let j = randi(5); j >= 0; j--) {
+                                            if (world[x+i][y+j] == 1) {
+                                                world[x+i][y+j] = pL+1;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                let coral = this.C.chlorophyll.clone().lerp(
+                                    ColorUtil.hsb(rand(), rand(.2, .85), rand(.5, .85)),
+                                    rand(.2, .45))
+                                palette.push(coral)
+                                pL += 1
+                            }
+                        }
+                    }
+                    break;
+            }
+        })
+
+        ctx.fillStyle = this.C.sky.getStyle()
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        const styles = palette.map(color => color.getStyle())
+        const nightSky = new Color('#312a32')
+        const skyGradient = this.isDaytime
+        // ? ColorUtil.gradient(this.C.sky.clone().lerp(COLOR.white, .3), COLOR.white, 2) // 8) // (canvas.height - minHeight)/2)
+        ? ColorUtil.gradient(this.C.sky.clone().lerp(COLOR.white, .3), COLOR.white, (canvas.height - minHeight)/2)
+        : [...Array.from({ length: 4 }).map(() =>
+            this.C.chlorophyll.clone().lerp(COLOR.white, .5)),
+            ...ColorUtil.gradient(
+                this.C.chlorophyll.clone().lerp(COLOR.white, .5),
+                nightSky,
+                4)]
+        // : [...ColorUtil.gradient(
+        //     this.C.chlorophyll.clone().lerp(COLOR.white, .55),
+        //     this.C.chlorophyll.clone().lerp(COLOR.white, .4),
+        //     5).slice(0, -1),
+        //     ...ColorUtil.gradient(
+        //         this.C.chlorophyll.clone().lerp(COLOR.white, .4),
+        //         nightSky,
+        //         4)]
+        const mellowLiquid = this.C.liquid.clone().lerp(this.C.sky, .5).lerp(COLOR.dark, .05).getStyle()
+
+        // sky
+        {
+            for (let i = 0; i < WIDTH; i++) {
+                for (let j = seaLevel; j < worldHeight; j++) {
+                    if (world[i][j] === 0) {
+                        const absolute = (j / worldHeight) * (skyGradient.length - 1)
+                        ctx.fillStyle = skyGradient[Math.floor(absolute)].getStyle()
+                        ctx.fillRect(i, worldHeight-j-1, 1, 1)
+                    }
+                    ctx.globalAlpha = 1
+                }
+            }
+        }
+
+        // clouds
+        {
+            World.reseedRefresh(1)
+            ctx.fillStyle = '#eee'
+            ctx.fillStyle = new Color('#eee').lerp(skyGradient[skyGradient.length - 1], .7).getStyle()
+            if (this.clouds) {
+                if (!this.isDaytime) ctx.globalAlpha = .5
+                const flipped = randi(2)
+                const baseHeight = Math.round(Math.max(seaLevel,
+                    (this.clouds - 1) * (HEIGHT * 7/8 - (seaLevel - HEIGHT / 12)) + seaLevel - HEIGHT / 12))
+                let y = worldHeight - baseHeight - 1
+                const baseColor = skyGradient[Math.floor(
+                    Math.max(0, Math.min(baseHeight + HEIGHT / 3, worldHeight)) / worldHeight
+                    * (skyGradient.length - 1)
+                    )];
+                ctx.fillStyle = new Color('#eee').lerp(baseColor, .5).getStyle()
+                const start = -128
+                const end = WIDTH + 128
+                for (let x = start; x < end; ) {
+                    let cx = x
+                    let radius = Math.round(randi(HEIGHT / 12) + HEIGHT / 12)
+                    for (let i = randi(3, 7); i >= 0 && radius > HEIGHT / 24; i--) {
+                        ctx.fillRect(
+                            flipped ? WIDTH - cx : cx, y,
+                            (flipped ? -1 : 1) * radius * 2, -radius * 2)
+                        cx += radius
+                        cx += radius
+                        radius = Math.round(radius * rand(.5, 1.2))
+                    }
+                    x = cx
+                }
+            }
+            ctx.globalAlpha = 1
+        }
+
+        // item spawning logic
+        const spawnHeight = (x) => {
+            x = Math.round(x)
+            const y = heightMap[0][x] ?? heightMap[0][x > 0 ? WIDTH-1 : 0]
+            return (y > seaLevel)
+                ? y + 1
+                : seaLevel - Math.floor((seaLevel - y)/2)
+        }
+        const minSpawnHeight = (x, left, right) => Math.min(...[
+            left,
+            left*4/5 + right*1/5,
+            left*2/3 + right*1/3,
+            left*3/5 + right*2/5,
+            left*2/5 + right*3/5,
+            left*1/3 + right*2/3,
+            left*1/5 + right*4/5,
+            right,
+        ].map(offset => spawnHeight(x + offset)))
+
+        const specialBlocked = []
+        const spawnSpecial = (img, left, right, options={}) => {
+            let { diff, padding, lower, upper, fallbackLower } = options
+            diff = diff ?? [0, HEIGHT]
+            padding = padding ?? 0
+            lower = lower ?? seaLevel - 1
+            upper = upper ?? worldHeight - img.height
+            fallbackLower = fallbackLower ?? lower
+
+            // find good spawn (away from edges & deep water)
+            let spawn, x, y
+            for (let i = 0; i < 64; i++) {
+                x = randi(-padding, WIDTH-1 - img.width + padding)
+
+                const lh = spawnHeight(x + left)
+                const rh = spawnHeight(x + right)
+                if (Math.abs(rh - lh - diff[0]) > diff[1]) continue
+
+                y = minSpawnHeight(x, left, right)
+                if (diff[0]) {
+                    let request = diff[0]
+                    let actual = rh - lh
+                    let off = request - actual
+                    console.log(x, y, request, actual, -Math.abs(off))
+                    y -= Math.abs(off)
+                }
+                if ((y >= lower || (y > 32 && y >= fallbackLower)) && y < upper
+                    && !(specialBlocked[x + left] || specialBlocked[x + right])) {
+                    spawn = true
+                    break
+                }
+            }
+            if (spawn) {
+                y = worldHeight-y - img.height
+                ctx.drawImage(img, x, y)
+                for (let i = left; i <= right; i++) specialBlocked[x + i] = true
+                return [x, y]
+            }
+            return true
+        }
+
+        // powerline towers
+        const powerlines = []
+        {
+            World.reseedRefresh(3)
+            if (this.powerlines) {
+                for (let x = -256; x < WIDTH + 256; x += randi(32) + 112) {
+                    let y
+                    if (x + 23 < 0) {
+                        y = heightMap[0][0]
+                    } else if (x + 8 > WIDTH - 1) {
+                        y = heightMap[0][WIDTH - 1]
+                    } else {
+                        y = Math.min(
+                            heightMap[0][x + 8] ?? HEIGHT,
+                            heightMap[0][x + 23] ?? HEIGHT)
+                    }
+                    y = Math.max(y, seaLevel - 16)
+                    y = worldHeight-y-1 - 49
+                    powerlines.push([x, y])
+                    ctx.drawImage(imgs.powerlines, x, y)
+                }
+            }
+        }
+
+        // add powerline wires
+        {
+            ctx.fillStyle = '#000'
+            ctx.globalAlpha = .03
+            for (let i = 1; i < powerlines.length; i++) {
+                const l = powerlines[i-1]
+                const r = powerlines[i];
+                [
+                    [6, 6],
+                    [24, 6],
+                    [5, 16],
+                    [25, 16],
+                ].forEach(off => {
+                    window.drawWire(ctx,
+                        { x: l[0] + off[0], y: l[1] + off[1] },
+                        { x: r[0] + off[0], y: r[1] + off[1] })
+                })
+            }
+            ctx.globalAlpha = 1
+        }
+
+        // unused - special background spawns
+        {
+            // World.reseedRefresh(5)
+            // this.four_legged = false
+            // const sleeping_guardian_spawn = this.sleeping_guardian && this.sleeping_guardian !== true
+            // if (debug.extended && randi(sleeping_guardian_spawn ? 3 : 12) === 0) {
+            //     this.four_legged = true
+            // }
+            // let four_legged_variant = false
+            // if (this.four_legged) {
+            //     const variant = imgs.four_legged
+            //     // const variant = randi(2)
+            //     //     ? imgs.four_legged
+            //     //     : imgs.four_legged_antler
+            //     if (sleeping_guardian_spawn) {
+            //         const [x, y] = this.sleeping_guardian
+            //         // ctx.drawImage(variant, x + 49, y - 48 + variant.height)
+            //         ctx.drawImage(variant, x + 49, y + 16 - variant.height)
+            //     } else {
+            //         if (!this.powerlines && randi(2)) {
+            //             // large
+            //             spawnSpecial(imgs.four_legged_antler_large, 12, 28, {
+            //                 diff: [0, 1],
+            //                 lower: seaLevel - 8,
+            //             })
+            //         } else {
+            //             // spawnSpecial(four_legged_variant, 6, 14, {
+            //             //     diff: [0, 1],
+            //             // })
+            //             // don't spawn here, spawn later in front of flora
+            //             four_legged_variant = variant
+            //         }
+            //     }
+            // } else if (!debug.listing && !this.powerlines && !randi(24)) {
+            //     // chance to spawn forest god on non-extended
+            //     spawnSpecial(imgs.four_legged_antler_large, 12, 28, {
+            //         diff: [0, 1],
+            //         lower: seaLevel - 8,
+            //     })
+            // }
+
+            // if (true) {
+            //     spawnSpecial(imgs.stone_panda, 10, 54, {
+            //         diff: [3, 3],
+            //         lower: seaLevel - 8,
+            //     })
+            // }
+        }
+
+        // flora
+        {
+            for (let i = 0; i < WIDTH; i++) {
+                const base = Math.max(seaLevel + 1, heightMap[0][i])
+                for (let j = base; j < worldHeight && j < base + 48; j++) {
+                    if (world[i][j] !== 0) {
+                        ctx.fillStyle = styles[world[i][j]]
+                        ctx.fillRect(i, worldHeight-j-1, 1, 1)
+                    }
+                }
+            }
+        }
+
+        // unused - nightime
+        {
+            // World.reseedRefresh(4)
+            // ctx.fillStyle = '#ffffee'
+            // if (!this.isDaytime) {
+            //     for (let x = 0; x < WIDTH; x++) {
+            //         // for (let y = 0; y < HEIGHT/9; y++) {
+            //         //     if (randi(512) === 0) {
+            //         //         ctx.globalAlpha = rand(.1, .9)
+            //         //         ctx.fillRect(x, y, 1, 1)
+            //         //         if (randi(2)) {
+            //         //             ctx.fillRect(x-1, y, 1, 1)
+            //         //             ctx.fillRect(x+1, y, 1, 1)
+            //         //             ctx.fillRect(x, y-1, 1, 1)
+            //         //             ctx.fillRect(x, y+1, 1, 1)
+            //         //         }
+            //         //     }
+            //         // }
+            //         // for (let y = HEIGHT/9; y < HEIGHT*2/9; y++) {
+            //         //     if (randi(512) === 0) {
+            //         //         ctx.globalAlpha = rand(.5, .9)
+            //         //         ctx.fillRect(x, y, 1, 1)
+            //         //     }
+            //         // }
+            //         for (let y = 0; y < HEIGHT*3/9; y++) {
+            //             if (randi(512) === 0) {
+            //                 ctx.globalAlpha = rand(.1, .9)
+            //                 ctx.fillRect(x, y, 1, 1)
+            //                 if (rand() > y / (HEIGHT*3/9)) {
+            //                     ctx.fillRect(x-1, y, 1, 1)
+            //                     ctx.fillRect(x+1, y, 1, 1)
+            //                     ctx.fillRect(x, y-1, 1, 1)
+            //                     ctx.fillRect(x, y+1, 1, 1)
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            // ctx.globalAlpha = 1
+        }
+
+        // unused - special foreground spawns
+        {
+            // spawn small four-legged variants in front of flora
+            // if (four_legged_variant) {
+            //     spawnSpecial(four_legged_variant, 6, 14, {
+            //         diff: [0, 1],
+            //     })
+            // }
+        }
+
+        // remaining - grass / sea / ground
+        {
+            for (let i = 0; i < WIDTH; i++) {
+                for (let j = 16; j <= Math.max(seaLevel, heightMap[0][i]); j++) {
+                    if (j < heightMap[0][i]) {
+                        ctx.fillStyle = COLOR.dark.clone().lerp(
+                            palette[world[i][j]] || palette[world[i][j] - 1],
+                            (j / maxHeight)*.85+.15).getStyle()
+                    } else {
+                        ctx.fillStyle = styles[world[i][j]]
+                    }
+                    if (world[i][j] == 1) {
+                        if (j - seaLevel < (heightMap[0][i] - seaLevel) / 2) {
+                            ctx.fillStyle = COLOR.dark.clone().lerp(
+                                palette[4],
+                                (j / maxHeight)*.85+.15).getStyle()
+                            ctx.fillRect(i, worldHeight-j-1, 1, 1)
+                            ctx.fillStyle = mellowLiquid
+                        }
+                        ctx.globalAlpha = lerp(.5, .9, 1 - 1 / (seaLevel - j + 1))
+                    }
+                    if (j <= heightMap[0][i] || j <= seaLevel) {
+                        ctx.fillRect(i, worldHeight-j-1, 1, 1)
+                    }
+                    ctx.globalAlpha = 1
+                }
+            }
+        }
+    
+        // overlay.innerHTML = hit.flatMap((c, x) => c.map((t, y) => species[t] ? `
+        // <rect class="species-${species[t]}" x="${x}" y="${y - 16}" width="1" height="1" />` : '')).join('')
+        // const groups = {}
+        // hit.map((c, x) => c.map((t, y) => {
+        //     const species_id = species[t]
+        //     if (species_id) {
+        //         const item = `<rect class="species-${species_id}" x="${x}" y="${y - 16}" width="1" height="1" />`
+        //         groups[species_id] = (groups[species_id] || '') + item
+        //     }
+        // }))
+
+        overlay.innerHTML = Object.entries(groups).map(e => `<g class="species-${e[0]}">${e[1]}</g>`).join('')
+        let species_type_counts = {}
+        Object.entries(species_info).map(e => species_info[e[0]]).map(info => {
+            species_type_counts[info.type] = 1 + (species_type_counts[info.type] || 0)
+        })
+        Object.entries(species_type_counts).map(e => {
+            if (e[1] > 1) e[1] = 0
+            else e[1] = undefined
+        })
+        Object.entries(species_info).map(e => species_info[e[0]]).map(info => {
+            if (species_type_counts[info.type] !== undefined) {
+                info.type += ' '+(species_type_counts[info.type] = 1 + (species_type_counts[info.type] || 0))
+            }
+        })
+    }
+}
+
+let slideshow = 0, slideshowHandle, slideshowOptions = [0, 15, 60, 300, 3600], slideshowSelect = 0
+const bookmarksToggleL = document.querySelector('#bookmarks-toggle')
+function init() {
+    resize()
+    on(window, 'resize', resize, false)
+    on(window, 'deviceorientation', resize, false)
+    on(window, 'fullscreenchange', () => setTimeout(resize, 250), false)
+
+    const handle = {
+        _prevHashPage: 0,
+        hash: () => {
+            let [hash, page] = splitUrl()
+            const key = location.search + location.hash
+            if (key !== handle._prevHashPage) {
+                // if (world && world.seed === hash && world.reseed == page) return
+                // console.log('[HASH]', hash, page)
+                handle._prevHashPage = key
+                handle.generate(hash, page)
+            }
+        },
+        generate: (hash=false, page=false, force=false) => {
+            clearTimeout(slideshowHandle)
+
+            // if (!hash) Math.unseed()
+            // if (world) console.log(hash, world.seed, page, world.reseed)
+            // if (world && world.seed === hash && world.reseed == page) console.log('repeat')
+            if (world && world.seed === hash && world.reseed == page && world.params === location.search) return
+            if (!hash) {
+                if (!debug.exact || landing) {
+                    Math.unseed()
+                    landing = false
+                } else if (world) {
+                    Math.seed(world.seed)
+                }
+                hash = randAlphanum(debug.hashlen)
+            }
+            const listing = LS_o[hash ? '#'+hash : location.hash]
+            const listingL = document.querySelector('#listing')
+            listingL.innerHTML = ''
+            // document.body.classList.remove('listing', 'loading')
+            document.body.classList.remove('listing', 'listing-left', 'listing-right')
+
+            const vertical = window.innerWidth < window.innerHeight
+            const loadingL = document.querySelector('#loading')
+
+            if (listing) {
+                document.title = 'px128 '+listing[2]
+                document.body.classList.add('listing', `listing-${listing[7] || 'left'}`)
+
+                const series = LS_l.filter(r => r[3] === listing[3])
+                const i = series.findIndex(r => r[1] === listing[1])
+                const seriesCount = `${listing[3]} ${i+1}/${series.length}`
+                // listingL.innerHTML =
+                // `px${(listing[0]+'').padStart(3, '0')} ${listing[2]}
+                // ${listing[0]+1}/128 | ${seriesCount} | ${listing[1]}
+                // ${listing[4] ? `<a href="${listing[4]}" style="color:white;position:relative">opensea` : `<a href="https://opensea.io/collection/pixelworld-f8n-co" style="color:white;position:relative">collection`}<svg
+                // xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 24 24"
+                // style="fill:#fff;width: 1em;height: 1em;position: absolute;margin-left: .2rem;bottom: 0;">
+                // <path d="M 5 3 C 3.9069372 3 3 3.9069372 3 5 L 3 19 C 3 20.093063 3.9069372 21 5 21 L 19 21 C 20.093063 21 21 20.093063 21 19 L 21 12 L 19 12 L 19 19 L 5 19 L 5 5 L 12 5 L 12 3 L 5 3 z M 14 3 L 14 5 L 17.585938 5 L 8.2929688 14.292969 L 9.7070312 15.707031 L 19 6.4140625 L 19 10 L 21 10 L 21 3 L 14 3 z"></path></svg></a>
+                // `
+                // listingL.innerHTML =
+                // `px${(listing[0]+'').padStart(3, '0')} ${listing[2]}
+                // ${listing[0]+1}/128 | ${seriesCount} | ${listing[1]}`
+                listingL.innerHTML =
+                `px${(listing[0]+'').padStart(3, '0')} ${listing[2]}
+                ${listing[0]+1}/128 | ${seriesCount} | ${listing[1]}
+                ${
+                // listing[5] ? `<a href="${listing[5]}" style="color:white;position:relative;margin-right:1em;">objkt<svg
+                // xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 24 24"
+                // style="fill:#fff;width: 1em;height: 1em;position: absolute;margin-left: .2rem;bottom: 0;">
+                // <path d="M 5 3 C 3.9069372 3 3 3.9069372 3 5 L 3 19 C 3 20.093063 3.9069372 21 5 21 L 19 21 C 20.093063 21 21 20.093063 21 19 L 21 12 L 19 12 L 19 19 L 5 19 L 5 5 L 12 5 L 12 3 L 5 3 z M 14 3 L 14 5 L 17.585938 5 L 8.2929688 14.292969 L 9.7070312 15.707031 L 19 6.4140625 L 19 10 L 21 10 L 21 3 L 14 3 z"></path></svg></a>
+                // ` : ''
+                // ''
+                // window.innerWidth < window.innerHeight ? '' : '\n&nbsp;'
+                vertical ? '' : '\n'
+                }`
+                // `
+                // ${listing[5] ? `<a href="${listing[5]}" style="color:white;position:relative;margin-right:1em;">objkt` : `<a href="https://objkt.com/collection/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF" style="color:white;position:relative">collection`}<svg
+                // xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" viewBox="0 0 24 24"
+                // style="fill:#fff;width: 1em;height: 1em;position: absolute;margin-left: .2rem;bottom: 0;">
+                // <path d="M 5 3 C 3.9069372 3 3 3.9069372 3 5 L 3 19 C 3 20.093063 3.9069372 21 5 21 L 19 21 C 20.093063 21 21 20.093063 21 19 L 21 12 L 19 12 L 19 19 L 5 19 L 5 5 L 12 5 L 12 3 L 5 3 z M 14 3 L 14 5 L 17.585938 5 L 8.2929688 14.292969 L 9.7070312 15.707031 L 19 6.4140625 L 19 10 L 21 10 L 21 3 L 14 3 z"></path></svg></a>
+                // `
+
+                document.querySelector('#series').textContent = listing[3]
+                const displays = series.length > 1 ? ['initial', 'none'] : ['none', 'initial']
+                document.querySelector('#series-many').style.display = displays[0]
+                document.querySelector('#series-one').style.display = displays[1]
+
+                // daytimeL.style.display = 'none'
+            } else {
+                document.title = 'pixelworld '+location.hash
+
+                if (bookmarksL.style.display !== 'flex') {
+                    // daytimeL.style.display = ''
+                }
+            }
+            const bookmarked = bookmarks.filter(b => b.link === location.href)
+            // bookmarksToggleL.innerHTML = bookmarked.length ? `bookmarked! ${}` : 'bookmark'
+            if (bookmarked.length) {
+                const labelL = document.createElement('span')
+                labelL.textContent = ` "${bookmarked[0].label}"`
+                bookmarksToggleL.innerHTML = 'bookmarked!'
+                bookmarksToggleL.append(labelL)
+                labelL.style.textDecoration = 'none !important'
+                labelL.style.position = 'absolute'
+                labelL.style.whiteSpace = 'pre'
+            } else {
+                bookmarksToggleL.innerHTML = 'bookmark'
+            }
+
+            setTimeout(() => {
+                loadingL.parentElement.style.alignItems = 'flex-end'
+                loadingL.parentElement.style.justifyContent = 'flex-start'
+                if (hash === 'unlisted') {
+                    loadingL.textContent = `[coming 4/${Math.floor(listing[0] / 4) - 5}]`
+                    canvas.width = canvas.width
+                } else {
+                    const loading_bottom_spacing = vertical && listing ? '\n&nbsp\n&nbsp;' : ''
+
+                    loadingL.innerHTML = '[generating]' + loading_bottom_spacing
+                    loadingL.style.zIndex = '100'
+                    let start = Date.now()
+                    sleep(10).then(() => {
+                        new World(hash).generate(page)
+                        search = getParams()
+                        const scroll = JSON.parse(search.get('s') || '0')
+                        rescroll(scroll || (listing ? Number(listing[6] || 0) : 0))
+                        document.body.classList.remove('loading')
+                        // loadingL.style.zIndex = '-1'
+
+                        if (scroll) {
+                            search.delete('s')
+                            updateHref(search)
+
+                            // setTimeout(() => rescroll(scroll), 100)
+                        }
+
+                        resize()
+
+                        setTimeout(() => {
+                            slideshow = slideshowOptions[slideshowSelect]
+                            handle.slideshow()
+                        }, (start + 1_000) - Date.now())
+                    })
+                }
+            })
+        },
+        forward: () => {
+            const currHref = window.location.href
+            setTimeout(() => {
+                if (currHref === window.location.href) {
+                    handle.generate()
+                }
+            }, 100)
+            window.history.forward()
+            handle._roll = []
+        },
+        back: () => {
+            const params = new URLSearchParams(location.search).toString()
+            setTimeout(() => {
+                const path = location.protocol + "//" + location.host
+                + location.pathname + (params ? '?' + params : '') + location.hash
+                history.replaceState({ path }, null, path)
+                handle.hash()
+            }, 100)
+            window.history.back()
+        },
+        _roll: [],
+        reroll: () => {
+            // if (debug.seed) World.reseed()
+            if (world) {
+                // let page = String(1 + (Number(world.reseed) || 0))
+                let [back, front] = (world.reseed || '').split(/(.*)\+/).reverse().slice(0, 2)
+                // console.log(world.reseed, front, back)
+                if (!debug.exact) handle._roll.push(back)
+                let page = (front ? front + '+' : '') + (debug.exact
+                    ? incrementAlphanum(back)
+                    : randAlphanum(7))
+                // console.log(page)
+                world.generate(page)
+                rescroll()
+            }
+        },
+        unroll: () => {
+            // if (debug.seed) World.reseed()
+            if (world) {
+                // let page = String(Math.max(0, (Number(world.reseed) || 0) - 1))
+                let [back, front] = (world.reseed || '').split(/(.*)\+/).reverse().slice(0, 2)
+                // back = decrementAlphanum(back)
+                // if (back === alphanum[0]) {
+                //     if (world.reseed) new World(world.seed)
+                //         .generate(front ? front + '+' : '')
+                // } else {
+                //     world.generate((front ? front + '+' : '') + back)
+                // }
+                if (debug.exact) {
+                    back = decrementAlphanum(back)
+                    if (back === alphanum[0]) {
+                        back = ''
+                    }
+                } else {
+                    back = handle._roll.pop()
+                    if (!back) return
+                }
+                world.generate((front ? front + '+' : '') + back)
+                rescroll()
+            }
+        },
+        download: () => {
+            const link = document.createElement('a');
+            link.download = `px-${location.hash.replace('#', '')}.png`;
+            link.href = canvas.toDataURL()
+            link.click();
+        },
+        share: () => {
+            const params = getParams()
+            params.set('s', getScroll())
+            search = params.toString()
+            const path = location.protocol + "//" + location.host
+                + location.pathname
+                + (search ? '?' + search : '')
+                + location.hash
+            history.replaceState({ path }, null, path)
+
+            copy(path).then(() => {
+                const share = document.querySelector('#share')
+                share.textContent = 'copied!'
+                setTimeout(() => {
+                    share.textContent = 'share'
+                }, 3000)
+            })
+        },
+        exact: (toggle=true) => {
+            const exact = document.querySelector('#exact')
+            if (!exact) return
+            if (toggle) {
+                debug.exact = !debug.exact
+                // setStored('exactLinks', debug.exact)
+            }
+            exact.textContent = debug.exact ? 'on' : 'off'
+        },
+        shroomy: (toggle=true) => {
+            const shroomy = document.querySelector('#shroomy')
+            if (toggle) {
+                debug.shroomy = !debug.shroomy
+                // setStored('shroomy', debug.shroomy)
+                if (world) {
+                    let [hash, page] = [world.seed, world.reseed]
+                    world = undefined
+                    handle.generate(hash, page)
+                }
+            }
+            shroomy.textContent = debug.shroomy ? 'on' : 'off'
+        },
+        hide: () => {
+            const info = document.querySelector('#info')
+            if (info.classList.contains('hidden')) {
+                info.classList.remove('hidden')
+            } else {
+                info.classList.add('hidden')
+                hideOptions()
+                info.style.display = 'none'
+                setTimeout(() => {
+                    info.style.display = 'initial'
+                }, 3000)
+            }
+        },
+        timeString: s => {
+            let x = s, unit = 's'
+            if (x > 99) {
+                x = Math.floor(x / 60)
+                unit = 'm'
+                if (x > 99) {
+                    x = Math.floor(x / 60)
+                    unit = 'h'
+                }
+            }
+            return x ? x + unit : ''
+        },
+        slideshowTime: s => {
+            const slideshowCount = document.querySelector('#slideshow-count')
+            if (slideshowSelect || slideshowCount.textContent[0] !== 's') slideshowCount.textContent = handle.timeString(s) || 'static'
+
+            const fraction = -6.28 * (1 - s / slideshowOptions[slideshowSelect])
+            const timer = Q('#timer')
+            if (timer) {
+                timer.style.display = 'inline-block'
+                timer.style.strokeDashoffset = fraction
+            }
+        },
+        slideshow: () => {
+            clearTimeout(slideshowHandle)
+            slideshow = slideshowOptions[slideshowSelect]
+            handle.slideshowTime(slideshow || slideshowOptions[slideshowSelect])
+            search = getParams()
+            // console.debug('slideshow', slideshow)
+            const timer = Q('#timer')
+            if (slideshowSelect) search.set('slideshow', slideshowSelect)
+            else search.delete('slideshow')
+
+            const listing = LS_o[location.hash]
+            const vertical = window.innerWidth < window.innerHeight
+            const loading_bottom_spacing = vertical && listing ? '\n&nbsp\n&nbsp;' : ''
+            const loadingL = document.querySelector('#loading')
+            if (slideshow) {
+                loadingL.innerHTML = `${handle.timeString(slideshowOptions[slideshowSelect])}&nbsp;<svg id="timer" 
+                viewBox="0 0 2 2"
+                style="
+                    display: ${slideshowSelect || !(window.innerWidth < window.innerHeight) ? 'inline-block' : 'none'};
+                    
+                    width: .75em;
+                    margin-bottom: -.05em;
+                    fill: #0000;
+                    stroke: #fff;
+                    stroke-width: .35;
+                    stroke-linecap: round;
+                    stroke-dasharray: 6.28;
+                    stroke-dashoffset: -6.28;
+                    rotate: -90deg;
+                ">
+                    <circle cx="1" cy="1" r=".825" />
+                </svg>` + loading_bottom_spacing
+            } else {
+                loadingL.innerHTML = (listing)
+                ? (vertical ? '' : ''??`<span id="curation"><i>px128 curation</i></span>`) + loading_bottom_spacing
+                : '[pixelworld]' + loading_bottom_spacing
+            }
+
+            if (slideshow) {
+                slideshowHandle = setInterval(() => {
+                    slideshow -= 1
+                    if (slideshow === 0) {
+                        const listing = LS_o[location.hash]
+                        if (listing) {
+                            curate(1)
+                        } else {
+                            handle.generate()
+                        }
+                        slideshow = slideshowOptions[slideshowSelect]
+                    }
+                    handle.slideshowTime(slideshow)
+                }, 1000)
+                handle.slideshowTime(slideshow)
+                if (timer) timer.style.display = timer.style.visibility = ''
+            } else if (timer) {
+                // if (window.clientWidth < window.clientHeight) timer.style.display = 'none'
+                // else timer.style.visibility = 'hidden'
+                timer.style.visibility = 'hidden'
+            }
+            updateHref(search)
+        },
+        slideshowSelect: () => {
+            // console.debug(slideshowSelect, slideshowOptions.length)
+            slideshowSelect = (1 + slideshowSelect) % slideshowOptions.length
+            handle.slideshow()
+        },
+        openGalleryView: () => {
+            // TODO determine inner width better
+            const widthToHeightRatio = 640 / 216
+            const width = screen.width
+            const height = width / widthToHeightRatio
+            search = getParams()
+            if (search.has('gallery') || window.parent) {
+                handle.startGallery()
+                search.set('gallery', 1)
+                // updateHref(search)
+            } else {
+                const gallerySearch = getParams()
+                gallerySearch.set('gallery', 1)
+                window.open(location.origin + location.pathname + '?'+gallerySearch.toString() + location.hash,
+                    '_blank',
+                    `popup,innerWidth=${width},innerHeight=${height},left=0,top=${screen.height/2 - height/2}`)
+
+                document.body.innerHTML = `
+                <div id="loading-container">
+                    <div id="loading">[close the gallery to return here]</div>
+                </div>
+                `
+                channel.onmessage = e => {
+                    location.href = e.data.replace(/gallery=1\&?/, '')
+                    location.reload()
+                }
+            }
+        },
+        startGallery: () => {
+            // hide everything besides the title
+            handle.slideshow()
+            document.body.classList.add('gallery')
+        },
+        fullscreenGallery: () => {
+            const fullscreen = document.fullscreenElement
+            if (fullscreen) {
+                document.exitFullscreen()
+                document.querySelector('#gallery-full').textContent = 'full'
+                document.querySelector('#gallery-non-full').style.display = 'initial'
+            } else {
+                document.body.requestFullscreen()
+                document.querySelector('#gallery-full').textContent = 'exit'
+                // document.querySelector('#gallery-non-full').style.display = 'none'
+            }
+        },
+    }
+    window.handle = handle
+
+    on(window, 'keydown', e => {
+        if (e.key === ' ') {
+            e.preventDefault()
+            curate(1) || handle.generate()
+        }
+        if (e.key === 'm' || e.key === 'c') {
+            handle.back()
+        }
+        if (e.key === 'Enter') e.shiftKey
+            ? handle.unroll()
+            : handle.reroll()
+        if (e.key === 'Backspace') handle.unroll()
+        if (e.key === ']' && e.metaKey) {
+            e.preventDefault()
+            handle.forward()
+        }
+        if (e.key === '[') curate(-1) || handle.back()
+        if (e.key === ']') curate(1) || handle.generate()
+        if (e.key === 'a') curate(-1) || handle.back()
+        if (e.key === 's') curate(0) || handle.reroll()
+        if (e.key === 'd') curate(1) || handle.generate()
+        if (e.key === 'z') curate(-1, true) || handle.back()
+        if (e.key === 'x') curate(1, true) || handle.generate()
+
+        if (e.key === 'l') handle.slideshowSelect()
+        if (e.key === 'g') handle.openGalleryView()
+        if (e.key === 'w') handle.download()
+        if (e.key === 'Escape') {
+            if (document.body.classList.contains('gallery')) {
+                document.body.classList.remove('gallery')
+                search.set('gallery', 0)
+                updateHref(search)
+            } else {
+                handle.openGalleryView()
+            }
+        }
+        if (e.key === '1') LS_l.find(x => x[1] === location.hash) ? handle.generate() : (location.hash = LS_l[0][1])
+    })
+    on(document.querySelector('#generate'), 'click', e => { handle.generate() })
+    on(document.querySelector('#back'), 'click', e => { handle.back() })
+    on(document.querySelector('#download'), 'click', e => { handle.download() })
+    on(document.querySelector('#reroll'), 'click', e => { handle.reroll() })
+    on(document.querySelector('#unroll'), 'click', e => { handle.unroll() })
+    on(document.querySelector('#random'), 'click', e => { handle.generate() })
+    // on(document.querySelector('#share')?, 'click', e => { handle.share() })
+    on(document.querySelector('#exact'), 'click', e => { handle.exact() })
+    on(document.querySelector('#shroomy'), 'click', e => { handle.shroomy() })
+    on(document.querySelector('#hide'), 'click', e => { handle.hide() })
+    on(document.querySelector('#slideshow'), 'click', e => { handle.slideshow() })
+    on(document.querySelector('#slideshow-count'), 'click', e => { handle.slideshowSelect() })
+    on(document.querySelector('#gallery-view'), 'click', e => { handle.openGalleryView() })
+    on(document.querySelector('#gallery-exit'), 'click', e => {
+        document.body.classList.remove('gallery')
+        search.set('gallery', 0)
+        updateHref(search)
+    })
+    on(document.querySelector('#gallery-full'), 'click', e => { handle.fullscreenGallery() })
+
+    const site = document.querySelector('#site')
+    if (window.self !== window.top) {
+        site.remove()
+    } else {
+        const domain = location.host.split('.').slice(-2).join('.')
+        const site_link_L = Q(site, 'a')
+        site_link_L.textContent = domain
+        site_link_L.href = `http://${domain}/about`
+    }
+
+    on(window, 'hashchange', e => { handle.hash() })
+    handle.hash()
+    handle.exact(false)
+
+    if (search.has('slideshow')) slideshowSelect = Number(search.get('slideshow'))
+
+    // initialize gallery
+    if (search.has('gallery')) {
+        console.debug('gallery view')
+        search.set('gallery', 1)
+        handle.startGallery()
+
+        const loadingL = Q('#loading')
+        const escHintL = node(`
+        <div>&nbsp;(esc) to show controls</div>`)
+        loadingL.parentElement.append(escHintL)
+        setTimeout(() => escHintL.remove(), 3_000)
+    } else {
+        handle.slideshow()
+    }
+    updateHref(search)
+}
+
+function copyCanvas() {
+    const copy = document.createElement('canvas');
+    copy.width = canvas.width;
+    copy.height = canvas.height;
+    copy.getContext('2d').drawImage(canvas, 0, 0);
+    return copy;
+}
+
+function resize() {
+    const save = copyCanvas();
+    const rect = container.parentElement.getBoundingClientRect()
+    const containerWidth = rect.width
+    const containerHeight = rect.height
+
+    const canvasScale = containerHeight / HEIGHT;
+    canvas.style.width = `${canvasScale * WIDTH}px`;
+    canvas.style.height = `${canvasScale * HEIGHT}px`;
+    canvas.width = WIDTH;
+    canvas.height = HEIGHT;
+    rescroll()
+
+    const info = document.getElementById('info')
+    if (containerHeight < containerWidth) {
+        info.style.top = `${(containerHeight - (canvasScale * HEIGHT))/2}px`
+    } else {
+        info.style.top = '0'
+    }
+
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(save, 0, 0, canvas.width, canvas.height);
+    save.remove();
+}
+let count = 0
+function rescroll(offset=0) {
+    count += 1
+    // if (count > 2) throw 'error'
+    container.parentElement.scrollLeft =
+        canvas.clientWidth/2 + offset - container.parentElement.clientWidth/2;
+}
+function getScroll() {
+    return canvas.parentElement.scrollLeft
+        + canvas.parentElement.clientWidth/2
+        - canvas.clientWidth/2
+}
+
+document.querySelector('head [rel=manifest]').href = URL.createObjectURL(new Blob([JSON.stringify({
+    name: `pixelworld`,
+    display: `standalone`,
+})], {type: 'application/json'}))
+
+/**
+ * BOOKMARKS
+ * [{ link, label }]
+ */
+let bookmarks = getStored('bookmarks') ?? []
+const bookmarksL = document.querySelector('#bookmarks')
+const bookmarkInputL = document.querySelector('#bookmarks #add input')
+const bookmarkAddL = document.querySelector('#bookmarks #add .button')
+const bookmarkListL = bookmarksL.querySelector('#bookmarks #list')
+const infoL = document.querySelector('#info')
+const hideInfoOnBookmark = document.body.clientWidth < document.body.clientHeight
+function toBookmark(i) {
+    const path = bookmarks[i].link
+    history.replaceState({ path }, null, path)
+    handle.hash()
+}
+function showBookmarks() {
+    bookmarkListL.innerHTML = bookmarks
+        .map((item, i) => `
+        <div>
+            <a href="${item.link}"
+            onclick="
+            if (!event.shiftKey && !event.metaKey) {
+                event.stopPropagation()
+                toBookmark(${i})
+            }
+            ">
+                ${item.label}</a>
+            <a onclick="removeBookmark(${i})">del</a>
+        </div>`)
+        .join('\n')
+    bookmarksL.style.display = 'flex'
+    if (hideInfoOnBookmark) infoL.style.display = 'none'
+}
+function addBookmark() {
+    const link = window.location.href
+    const label = bookmarkInputL.value
+    if (label) {
+        bookmarks.unshift({ link, label })
+        setStored('bookmarks', bookmarks)
+        showBookmarks()
+        bookmarkInputL.value = ''
+        bookmarkInputL.blur()
+
+        const labelL = document.createElement('span')
+        labelL.textContent = ` "${bookmarked[0].label}"`
+        bookmarksToggleL.innerHTML = 'bookmarked!'
+        bookmarksToggleL.append(labelL)
+        labelL.style.textDecoration = 'none !important'
+        labelL.style.position = 'absolute'
+        labelL.style.whiteSpace = 'pre'
+    }
+}
+function removeBookmark(i) {
+    bookmarks.splice(i, 1)
+    setStored('bookmarks', bookmarks)
+    showBookmarks()
+    bookmarksToggleL.textContent = 'bookmark'
+}
+on(bookmarkInputL, 'keydown', e => {
+    e.stopPropagation();
+    if (e.key === 'Enter') addBookmark()
+})
+on(bookmarkAddL, 'click', addBookmark)
+on(bookmarkInputL, 'pointerdown', e => {
+    bookmarkInputL.focus()
+})
+
+function hideBookmarks() {
+    bookmarksL.style.display = 'none'
+    infoL.style.display = 'initial'
+}
+function toggleBookmarks() {
+    if (bookmarksL.style.display === 'none') {
+        showBookmarks()
+    } else {
+        hideBookmarks()
+    }
+}
+hideBookmarks()
+on(document.querySelector('#bookmarks-toggle'), 'click', toggleBookmarks)
+on(document.querySelector('#bookmarks-hide'), 'click', hideBookmarks)
+
+/**
+ * MORE OPTIONS
+ */
+function hideOptions() {
+}
+
+
+let search = getParams()
+function updateHref(search) {
+    const params = search.toString()
+    const path = location.origin + location.pathname + (params ? '?' + params : '') + location.hash
+    history.replaceState({ path }, null, path)
+}
+
+const states = ['random', 'on', 'off']
+function bumpState(el, key) {
+    const curr = states.indexOf(el.textContent)
+    const next = states[(curr + 1) % states.length]
+    el.textContent = next
+
+    search = getParams()
+    switch (next) {
+        case 'random':
+            search.delete(key)
+            break
+        case 'on':
+            search.set(key, 1)
+            break
+        case 'off':
+            search.set(key, 0)
+            break
+    }
+    updateHref(search)
+
+    const scroll = canvas.parentElement.scrollLeft
+    handle.hash()
+    canvas.parentElement.scrollLeft = scroll
+}
+function initState(key) {
+    const el = infoL.querySelector('#' + key)
+    if (!el) return
+    if (search.get(key)) {
+        el.textContent = JSON.parse(search.get(key)) ? states[1] : states[2]
+    } else {
+        el.textContent = states[0]
+    }
+    on(el, 'click', () => bumpState(el, key))
+}
+
+initState('cl')
+initState('pl')
+
+function setToggle(key, value, elOn, elOff, initial=true) {
+    search = getParams()
+    switch (value) {
+        case true:
+            value === initial ? search.delete(key) : search.set(key, 1)
+            elOn.style.display = 'none'
+            elOff.style.display = 'initial'
+            break
+        case false:
+            value === initial ? search.delete(key) : search.set(key, 0)
+            elOn.style.display = 'initial'
+            elOff.style.display = 'none'
+            break
+    }
+    return search
+}
+
+console.debug(`CONFIGURATION
+debug.hashlen: number=${debug.hashlen}
+debug.exact: boolean=${debug.exact}
+=> handle.generate()
+`)
+
+/**
+ * LISTINGS
+ */
+const LS_s = `#NmcwX9W,coastal powerlines,novelty,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724545923001614337,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/0
+#WGPMxeW,greenery #1,greenery,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724547022513242113,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/1,296
+#7yvu6wR,three towers,novelty,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724548122024869889,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/2,-140
+#3vSfkRI,faery forest,novelty,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724549221536497665,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/3,129
+#6KLCX6V,feeling small,islands,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724550321048125441,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/4,-487
+#u4tXeFM,red-orange bits,bits,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724551420559753217,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/5
+#ArFmhel,peach sea,seas,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724552520071380993,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/6,543
+#JTEgll1,watering hole,novelty,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724553619583008769,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/7,-200
+#3p2jJk9,strawberry jam,jams,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724554719094636545,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/8,15
+#DcHyFTn,horned beast,beast,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724555818606264321,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/9,400
+#q1DUbbE,rusted fangs,beast,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724556918117892097,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/10,680
+#B2l6aSc,unsaturated mix,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724558017629519873,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/11
+#D9QEZb5,calm sea,seas,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724559117141147649,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/12,-588
+#q6vGqHI,greenery #2,greenery,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724581107373703169,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/14
+#4Uhshoq,dominant species,novelty,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724561316164403201,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/15,250
+#4vj0crV,mariana trench,seas,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724562415676030977,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/16,-78
+#CZzrGbf,mostly mauve,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724563515187658753,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/17,680
+#s3GskKJ,red pines,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724564614699286529,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/32,-262
+#y5DCVlt,purple desert skies,barren,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724565714210914305,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/18
+#okO1ysX,twin islands,islands,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724566813722542081,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/19,30
+#D3JSKem,pine island,islands,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724567913234169857,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/20,-428
+#nLNwd6C,rainbow corn,barren,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724569012745797633,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/33,303
+#Yi5YF3G,blue mix,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724570112257425409,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/21,308
+#H58B8pD,vibrant earth tones,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724571211769053185,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/22,434
+#9ogc3Ab,pumpkin,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724572311280680961,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/34,71
+#ZZZj0AI,brick canopy,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724573410792308737,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/23,20,right
+#5cN5QbX,cone mix,novelty,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724574510303936513,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/24
+#oKMwrLQ,purple sea,seas,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724575609815564289,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/35,328
+#0nrKICv,yellow mix,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724576709327192065,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/25
+#yYEQo1G,modest island,islands,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724577808838819841,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/36
+#v6SrMbs,redtooth island,islands,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724578908350447617,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/26,161
+#xN22WQK,low clouds,barren,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724580007862075393,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/27
+#aZLINRp,mucus,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724582206885330945,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/29,258
+#4bKu7V0,yellow pockets,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724583306396958721,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/28,-350
+#r1YVXT8,olive spires,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724584405908586497,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/30,212
+#LLF4JxQ,two brackish pools,color,https://opensea.io/assets/matic/0x2953399124f0cbb46d2cbacd8a89cf0599974963/86976331243770107752100965327296399820463953046858462055890724585505420214273,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/31,340
+#8EId9rx,the red really brings out your eyes,color,,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/39,122
+#34yPOfe,mixed red silhouette,color,,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/40,-64
+#iFhBWv5,emerald shore,color,,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/41,-288
+#wzkT1oI,overcast,color,,https://objkt.com/asset/KT1EmZUbKHHvTrqhh3hnYH6YWbqeZ7PNc1dF/42,602
+#dq0Bq5c,two dots,novelty
+#eV34JkQ,blue silhouetted,color
+#apW9K6e,two trunk tones,color
+#zntJA6X,rolling purples,color
+#apvD9Zw,windswept,novelty
+#wiLcpXP,four nubs,barren
+#mNMFxd5,green and tan,color
+#AjIkzc7,greenery #3,greenery
+#gUYeKsW,turquoise and lavender,color
+#8VQpIQq,grape soda,color
+#XCI523b,tan seaside,color
+#SkClBFj,across the water,novelty
+#RL51rGQ,greenery #8,greenery
+#WoOKkFn,shortstack,novelty
+#ZhGn7Sy,simple island,islands
+#WeoBBeS,rocky purple,color
+#yQHBduq,three blue stands,islands
+#mmWRxom,dull mix,color
+#9HObtlR,tropical island,islands
+#XXOpNwI,aqua pines orange puddles,color
+#bgScKQS,somewhere out west,barren
+#JlI5S1I,jagged sea,seas
+#VEcORqY,tan forest lake,color
+#ExkwqAZ,green over orange turf,color
+#4OvHvIC,can you feel the electricity,color
+#FwE2RbI,copper pools,barren
+#50duyt3,favored island,islands
+#0Mo2fMx,raspberry jam,jams
+#OOGmaWo,primordial island,islands
+#rMxTKAS,creamsicle,color
+#4x5aRDZ,heavy pink and orange,color
+#sqLJV66,orange fringe,color
+#HWphm9u,greenery #7,greenery
+#SxkDnRb,salmon spires,color
+#YJCFYfn,blue sea,seas
+#HqQfKVa,shallow sea,seas
+#O71o9oB,solid rock,novelty
+#iZk4PUQ,muddy plateaus,color
+#6UiAPs6,too much green,color
+#aXpB9M8,orange birch under purple sky,color
+#J04Sv26,light green and blue,color
+#uXWIHec,dark green and blue,color
+#RPdMaP3,burnt umber,color
+#jb7aATM,greenery #4,greenery
+#Bw5aOZk,salmon mix,color
+#fcywCZq,red pools,color
+#lgBHOUy,yellow cypress,color
+#thxpWI8,greenery #6,greenery
+#QH6bnoR,green desert skies,barren
+#NLIqjGA,fairly brown,color
+#v6XvAnT,paired island,islands
+#0R4b2hw,cloud cover,novelty
+#DnVifrb,lichen,color
+#tqGprVH,wildflowers,barren
+#oWbKgNa,scattered purple,color
+#Sd4Ahp8,above the wires,novelty
+#TOrl2ld,bright island,islands
+#zFnyAsv,banana pepper lake,barren
+#e4bi2XI,blue bits,bits
+#0ea1ser,blue and rust,color
+#iTbm6ek,deep peach sky,color
+#fnoz74n,a calm summer's day,novelty
+#FksB3fW,red flats,color
+#aCNIsY2,yellow sea,seas
+#t52ZxnP,toxic purple,color
+#mjK1XfH,glum island,islands
+#w37CEbC,earth tones,color
+#SpEAjnf,red and purple,color
+#j61iNtu,unappetizing,color
+#diNh1pB,charming mix,color
+#5wjrmi1,open skies,barren
+#g8tDopG,apple blossoms,color
+#x5hMjPf,brown bits,bits
+#JIrCVDH,brown sea,seas
+#tpXcUtJ,mint chip,color
+#mxz6bMn,saturated sky,color
+#3rHo6GG,hippopotamus,color
+#1XlsPIy,tower island,islands
+#YhQRTMk,liquid gemstone,novelty
+#3DyKJBz,purple and orange,color
+#ueRjuE9,yellow desert skies,barren
+#nCfQoy8,muted purple and slime,color
+#hn4WPPI,muddy island,islands
+#oo6UPF1,marmalade,jams
+#noz2Vbe,green and brown,color
+#LvQ7fWx,greenery #5,greenery
+#MV2aMZp,infection,novelty
+#T63ixdW,shrubbery,novelty`
+const LS_l = LS_s.split('\n').map((r, i) => [i, ...r.split(',')])
+const LS_o = {}
+LS_l.forEach(e => LS_o[e[1]] = e)
+
+function curate(diff, series=false) {
+    const seed = location.hash.split('+')[0]
+    const curr = LS_l.find(r => r[1] === seed)
+    if (!curr) return false
+    const list = (series ? LS_l.filter(r => r[3] === curr[3]) : LS_l).filter(r => r[1])
+    const i = list.indexOf(curr)
+    const rand = performance.now() % 1000 / 1000
+    const offset = diff ? diff : 1 + Math.floor(rand * (list.length - 1))
+    let next = (i + list.length + offset) % list.length
+    if (!diff && !series && next === list.length - 1) next -= 1
+    location.hash = list[next][1]
+    return true
+}
+on(document.querySelector('#curate-prev'), 'click', e => curate(-1))
+on(document.querySelector('#curate-any'), 'click', e => curate(0))
+on(document.querySelector('#curate-next'), 'click', e => curate(1))
+on(document.querySelector('#curate-series-prev'), 'click', e => curate(-1, true))
+on(document.querySelector('#curate-series-any'), 'click', e => curate(0, true))
+on(document.querySelector('#curate-series-next'), 'click', e => curate(1, true))
+if (location.hash === '#128') location.hash = LS_l[0][1]
+
+on(canvas, 'pointerdown', e => curate(1))
+
+
+
+    </script>
+  </body>
+</html>

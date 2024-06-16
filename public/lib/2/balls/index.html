@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>balls.js</title>
+  <meta name=description content="" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    audio {
+      filter: invert(1);
+      min-height: 4em;
+    }
+    iframe {
+      width: 100%;
+      min-height: 20em;
+    }
+    img {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+    }
+  </style>
+
+  <script src="/lib/2/balls/script.js"></script>
+</head>
+<body class="middle-column" style="
+background: #fff;
+color: #000;
+padding: 1em;
+max-height: 100%;
+max-width: 100%;
+min-height: 40em;
+">
+    <!-- <div id=interactions>
+        <button id=button_generate>new path</button>
+    </div> -->
+    <div id=root class="middle-column" style="
+    height: 0;
+    flex-grow: 1;
+    aspect-ratio: 1/1;
+    max-width: calc(100vw - 1em);
+    ">
+    </div>
+    <script>
+      const log = named_log('heap.js path')
+      const S = 1024, Z = 64, T = S / Z
+      const svg = node(`<svg viewBox="${-S} ${-S} ${S*2} ${S*2}" style="
+      width: 100%;
+      aspect-ratio: 1/1;
+      border: 1px solid #000;
+      border-radius: 1e6em;
+      font-size: ${T * 3};
+      "></svg>`)
+      const svg_node = (tag_or_node, properties) => {
+        const svg_node = typeof tag_or_node === 'string' ? document.createElementNS('http://www.w3.org/2000/svg', tag_or_node) : tag_or_node
+        svg_node.innerHTML = properties.innerHTML || properties.textContent || svg_node.innerHTML
+        entries(properties.on || {}).map(([k, v]) => on(svg_node, k, v))
+        entries(properties).map(([k, v]) => svg_node.setAttribute(k, v))
+        return svg_node
+      }
+      root.append(svg)
+
+      const field = balls.field()
+      // field.force(V.ne(0, -T))
+      // field.force(x => V.ne(0, -9.8))
+      field.force(x => x.p.sc(-1))
+      // field.force((x, xs) => {
+      //   let f = V.ne(0, 0)
+      //   xs.map(y => {
+      //     if (x === y) return
+      //     const diff = V.ad(x.p, y.p.sc(-1))
+      //     const angle = diff.an()[0]
+      //     const d2 = diff.do()
+      //     f = f.ad(V.p(angle + maths.TAU / 2, 980 / d2))
+      //   })
+      //   return f
+      // })
+      // field.add({
+      //   p: V.ne(0, Z / 2),
+      //   r: 1,
+      //   v: V.ne(Z / 2, 0),
+      // }, {
+      //   p: V.ne(0, -Z / 2),
+      //   r: 2,
+      //   v: V.ne(Z / 2, 0),
+      // })
+      const n = 8
+      range(n).map(i => {
+        const angle = (i / n) * maths.TAU
+        field.add({
+          p: V.p(angle, Z / 2),
+          r: rand.s(2, 1),
+        })
+      })
+
+      const render = {
+        balls: () => {
+          svg.innerHTML = ''
+          field.balls().map(ball => {
+            const ball_node = svg_node('circle', {
+              cx: ball.p.x * T,
+              cy: -ball.p.y * T,
+              r: ball.r * T,
+            })
+            svg.append(ball_node)
+          })
+        }
+      }
+
+      field.render(render.balls)
+      field.play()
+
+    </script>
+  </body>
+</html>

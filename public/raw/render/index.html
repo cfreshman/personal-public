@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title></title>
+<style>
+  html {
+    background: #f9f8f6;
+    color: #101010;
+    font-size: 10px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5rem 1rem;
+  }
+  a {
+    color: inherit;
+  }
+  a:hover {
+    color: #f9f8f6;
+    background: #101010;
+  }
+</style>
+
+<script src="/lib/utils.js"></script>
+</head>
+<body>
+<script>
+
+document.write(convertLinks(decodeURIComponent((location.search || location.hash).slice(1))) || `(empty)`)
+
+</script>
+</body>
+</html>

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>heap.js path planning example</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    audio {
+      filter: invert(1);
+      min-height: 4em;
+    }
+    iframe {
+      width: 100%;
+      min-height: 20em;
+    }
+    img {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+    }
+  </style>
+
+  <script src="/lib/2/heap/script.js"></script>
+</head>
+<body class="middle-column" style="
+background: #fff;
+color: #000;
+padding: 1em;
+max-height: 100%;
+max-width: 100%;
+min-height: 40em;
+">
+    <div id=interactions>
+        <button id=button_generate>new path</button>
+    </div>
+    <div id=root class="middle-column" style="
+    height: 0;
+    flex-grow: 1;
+    aspect-ratio: 1/1;
+    max-width: calc(100vw - 1em);
+    ">
+    </div>
+    <script>
+      const log = named_log('heap.js path')
+      const S = 1024, T = S / 64
+      const svg = node(`<svg viewBox="0 0 ${S} ${S}" style="
+      width: 100%;
+      aspect-ratio: 1/1;
+      border: 1px solid #000;
+      font-size: ${T * 3};
+      "></svg>`)
+      const svg_node = (tag_or_node, properties) => {
+        const svg_node = typeof tag_or_node === 'string' ? document.createElementNS('http://www.w3.org/2000/svg', tag_or_node) : tag_or_node
+        svg_node.innerHTML = properties.innerHTML || properties.textContent || svg_node.innerHTML
+        entries(properties.on || {}).map(([k, v]) => on(svg_node, k, v))
+        entries(properties).map(([k, v]) => svg_node.setAttribute(k, v))
+        return svg_node
+      }
+      const state = {
+        start: undefined,
+        goal: undefined,
+      }
+      const board = range(S / T).map(r => range(S / T).map(c => {
+        const x = c * T
+        const y = r * T
+        const obstacle = rand.i(5) === 0
+        const tile_node = svg_node('rect', {
+            x, y, width: T, height: T,
+            class: [
+                'tile',
+                obstacle && 'obstacle',
+            ].filter(pass).join(' '),
+        //   on: {
+        //     click: () => {
+        //       log('play')
+        //       handle.init(State.PLAY)
+        //     }
+        //   }
+        })
+        return {
+            r, c,
+            p: V.ne(x, y),
+            obstacle,
+            node:tile_node
+        }
+      }))
+      const tiles = board.flatMap(pass)
+      const non_obstacles = tiles.filter(x => !x.obstacle)
+      const render = {
+        svg: () => {
+          svg.innerHTML = `
+<style>
+    .tile {
+        fill: #fff;
+        stroke: #000;
+    }
+    .tile.obstacle {
+        fill: #000;
+    }
+    .tile.path {
+        fill: blue;
+    }
+    .tile.start {
+        fill: green;
+    }
+    .tile.goal {
+        fill: red;
+    }
+</style>`
+          tiles.map(tile => svg.append(tile.node))
+        }
+      }
+      const handle = {
+        adj: (tile) => {
+            const { r:row, c:col } = tile
+            const DIRS = [[1, 0], [0, 1], [-1, 0], [0, -1]]
+            return DIRS.map(o => {
+                // log(o, row, col, board[row + o[0]])
+                return board[row + o[0]] && board[row + o[0]][col + o[1]]
+            }).filter(truthy)
+        },
+        plan: () => {
+            {
+                tiles.map(tile => {
+                    tile.node.classList.remove('start', 'goal', 'path')
+                })
+            }
+            state.start = rand.sample(non_obstacles)
+            state.goal = rand.sample(non_obstacles)
+            {
+                state.start.node.classList.add('start')
+                state.goal.node.classList.add('goal')
+            }
+
+            const heuristic = tile => V.ma(tile.p, state.goal.p)
+            const frontier = heap.new([{
+                tile: state.start,
+                here: 0,
+                total: heuristic(state.start),
+                parent: undefined,
+            }], node => -node.total)
+            const explored = new Set()
+            let curr
+            while (frontier.length) {
+                curr = frontier.pop()
+                const id = curr.tile.p.st()
+                if (explored.has(id)) continue
+                explored.add(id)
+                if (V.eq(curr.tile.p, state.goal.p)) break
+                const adj = handle.adj(curr.tile)
+                adj.map(tile => {
+                    const here = curr.here + T
+                    frontier.push({
+                        tile,
+                        here,
+                        total: here + heuristic(tile),
+                        parent: curr,
+                    })
+                })
+            }
+            if (V.eq(curr.tile.p, state.goal.p)) {
+                const path = []
+                let path_curr = curr
+                while (path_curr) {
+                    path.unshift(path_curr.tile)
+                    path_curr = path_curr.parent
+                }
+                log(path)
+                path.map(tile => {
+                    tile.node.classList.add('path')
+                })
+            }
+        }
+      }
+      root.append(svg)
+      render.svg()
+      handle.plan()
+      on(button_generate, 'click', () => handle.plan())
+    </script>
+  </body>
+</html>

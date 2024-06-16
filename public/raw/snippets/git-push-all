@@ -1,0 +1,2 @@
+# https://stackoverflow.com/a/18674313
+git config --global alias.pushall '!git remote | xargs -L1 git push --all'

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>spotify-splice</title>
+  <meta name=description content="shuffled snippets from your song library" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    body > * {
+        max-width: 100%;
+    }
+  </style>
+  <script src=/lib/2/spotify_client/script.js></script>
+</head>
+<body class="column gap">
+
+  <div data-hydrate data-title></div>
+  <div id=input_root></div>
+  <div id=player_root></div>
+  <div id=history_root style="
+  height: -webkit-fill-available;
+  "></div>
+  <script>
+const log = named_log('spotify-splice')
+const spotify = spotify_client.new(
+    'spotify-splice',
+    '808887169a0142888449740f4e187c0b',
+    'user-library-read playlist-read-private',
+    'http://freshman.dev/raw/spotify-splice/')
+
+const state = {
+    profile: undefined,
+    entries: [],
+    preview: undefined,
+    history: [],
+    histories: {},
+}
+const render = {
+    input: () => {
+        const loading = (state.profile && !state.tracks) || (state.tracks && state.tracks.length < state.track_total)
+        input_root.innerHTML = `
+${state.profile ? `<button id="disconnect">disconnect ${state.profile.id}</button>` : '<button id="connect">connect to Spotify</button>'}
+${[
+    state.playing ? `now playing ${state.playing}` : '',
+    `${(loading) ? 'loading your tracks' : ''}${loading && state.track_total ? ` ${state.tracks.length}/${state.track_total}` : ''}`,
+].filter(x=>x).join(', ')}
+`
+        QQ(input_root, ':scope > button').map(x => x.onclick = handle[x.id])
+        
+        if (state.played && !state.playing) render.player(true)
+        render.history()
+    },
+    player: (played) => {
+        state.played = played
+        const playlist = state.playlist
+        player_root.innerHTML = `
+        <div class="column gap">
+            <select id=select_playlist data-hydrate data-combobox data-placeholder="select playlist" value="${playlist?.name||''}">
+                <option value="">all liked songs</option>
+                ${state.playlists.map(x => `<option value="${x.name}" ${x.name === playlist?.name ? 'selected' : ''}>${x.name}</option>`)}
+            </select>
+            ${playlist ? `<div class="middle-row gap" style="
+            border: 1px solid #000;
+            min-height: 4em;
+            ">
+                ${playlist.images && playlist.images[0] ? `<img src="${playlist.images[0].url}" style="
+                width: 4em;
+                aspect-ratio: 1/1;
+                " />` : ''}
+                <div style="
+                padding: .25em;
+                padding-right: .5em;
+                ">
+                <a href="${playlist.external_urls.spotify}" target="_blank">${playlist.name}</a>
+                by
+                <a href="${playlist.owner.external_urls.spotify}" target="_blank">${playlist.owner.display_name}</a>
+                </div>
+            </div>` : ''}
+            <div class="row gap">
+                <button id=button_play>${state.playing ? 'pause' : 'play'}</button>
+                <button id=button_skip>skip</button>
+            </div>
+        </div>
+        `
+        button_play.onclick = () => {
+            if (state.preview) {
+                state.preview[state.playing ? 'pause' : 'play']()
+                state.playing = !state.playing
+            } else {
+                const playing = rand.sample(state.entries)
+                playing.func()
+                state.played = true
+                state.playing = true
+            }
+            button_play.textContent = state.playing ? 'pause' : 'play'
+        }
+        button_skip.onclick = () => {
+            if (state.preview) state.preview.pause()
+            state.preview = undefined
+            rand.sample(state.entries).func()
+        }
+        if (played) button_play.click()
+
+        log({select_playlist})
+        on(select_playlist, 'change', e => defer(async () => {
+            if (state.playing) {
+                button_play.click()
+                state.preview = undefined
+            }
+
+            const playlist_name = select_playlist.value || ''
+            if (!playlist_name) select_playlist.blur()
+            const playlist = playlist_name && state.playlists.find(x => x.name === playlist_name)
+            state.histories[state.playlist?.name||''] = state.history
+            state.playlist = playlist && await spotify.playlist(playlist.id)
+            log({playlist_name, playlist:state.playlist})
+            state.entries = await handle.tracklist_to_entries(playlist ? state.playlist.tracks.map(({ track }) => track) : state.tracks)
+            state.history = state.histories[playlist_name] || []
+            render.player()
+            render.history()
+        }))
+
+        hydrate([Q(player_root, '[data-combobox]')], hydrates.combobox)
+    },
+    history: () => {
+        history_root.innerHTML = ``
+        const history_node = node('<div class="column gap"></div>')
+        state.history.slice().reverse().map(track => {
+            // history_node.append(node(`<div>${track.name}</div>`))
+            const album = track.album
+            const artist = track.artists[0]
+            history_node.append(node(`
+            <div class="middle-row gap" style="
+            border: 1px solid #000;
+            min-height: 4em;
+            cursor: pointer;
+            "
+            onclick="
+            if (event.target !== event.currentTarget) return
+            // open('${track.external_urls.spotify}', '_blank')
+            log('${track.external_urls.spotify}')
+            // Q(event.target, '.song-link').click()
+
+            const entry = state.entries.find(x => x.track.uri === '${track.uri}')
+            if (state.preview) state.preview.pause()
+            entry.func()
+            
+            ">
+            ${album.images && album.images[0] ? `<img src="${album.images[0].url}" style="
+            width: 4em;
+            aspect-ratio: 1/1;
+            " />` : ''}
+            <div style="
+            padding: .25em;
+            padding-right: .5em;
+            ">
+                <a class="song-link" href="${track.external_urls.spotify}" target="_blank">${track.name}</a>
+                by
+                <a href="${artist.external_urls.spotify}" target="_blank">${artist.name}</a>
+            </div>
+            </div>`))
+        })
+        history_root.append(history_node)
+    },
+}
+let last_play
+const handle = {
+    connect: () => {
+        spotify.oauth()
+    },
+    disconnect: () => {
+        spotify.disconnect()
+    },
+    tracklist_to_entries: async (tracks) => {
+        return await Promise.all(tracks.map(async track => {
+            const { album } = track
+            return {
+                track,
+                func: () => {
+                    console.debug(track)
+                    if (last_play) {
+                        last_play.pause()
+                        last_play.currentTime = 0
+                        last_play = undefined
+                    }
+                    if (track.preview_url) {
+                        defer(() => {
+                            if (!state.history.length || state.history.at(-1).id !== track.id) state.history.push(track)
+                            const preview = node(`<audio src="${track.preview_url}"></audio>`)
+                            document.body.append(preview)
+                            preview.onended = e => {
+                                state.playing = false
+                                state.preview = undefined
+                                render.input()
+                            }
+                            if (state.playing === track.name) {
+                                state.playing = undefined
+                            } else {
+                                last_play = preview
+                                preview.play()
+                                state.playing = track.name
+                            }
+                            state.preview = preview
+                            render.input()
+                        }) 
+                    } else {
+                        state.playing = false
+                        render.input()
+                        if (!state.played) {
+                            button_play.click()
+                        }
+                    }
+                },
+            }
+        }))
+    },
+    load: async () => {
+        state.profile = await spotify.profile()
+        render.input()
+
+        state.playing = undefined
+        state.tracks = (await spotify.added_tracks_parallel()).map(({ track }) => track)
+        state.entries = state.songs = await handle.tracklist_to_entries(state.tracks)
+        state.playlists = await spotify.playlists_parallel()
+        log({playlists:state.playlists})
+
+        render.input()
+        render.player()
+    }
+}
+
+render.input()
+defer(async () => {
+    await spotify.autogrant()
+    if (spotify.granted()) {
+        await handle.load()
+        navigator.mediaSession.setActionHandler('play', () => {
+            button_play.click()
+        })
+        navigator.mediaSession.setActionHandler('pause', () => {
+            button_play.click()
+        })
+        navigator.mediaSession.setActionHandler('nexttrack', () => {
+            button_skip.click()
+        })
+    }
+})
+
+  </script>
+
+</body>
+</html>

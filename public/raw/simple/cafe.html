@@ -1,0 +1,32 @@
+<title>jk.cafe</title>
+<meta charset=utf-8><meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>body{display:flex;align-items:center;justify-content:center}</style>
+<div style="white-space:pre-wrap;font-family:monospace">
+           <span id=smoke> ."</span>
+  /\____/\ㅈ
+␣␣␣<span id=sign>[ jk ]</span>␣␣␣
+|    __    |
+| O |  | O |
+MMMM|__|MMMM
+<script>
+;[
+  {
+    L: smoke, i: 0, ms: 300, frames: [
+      ` ."`, 
+      `  '`, 
+      `   `, 
+      `#  `,
+      `;" `,
+      ` " `,
+    ],
+  },
+  { 
+    L: sign, i: 0, ms: 1_000, frames: [
+      `[ jk ]`, 
+      `␣[jk]␣`,
+    ],
+  },
+].map(animation => setInterval(() => animation.L.textContent = animation.frames[animation.i = (animation.i + 1) % animation.frames.length], animation.ms))
+if (!location.port) document.title = location.host + location.pathname
+</script>
+</div>

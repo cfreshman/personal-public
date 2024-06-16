@@ -1,0 +1,79 @@
+<title>tr.ink/et</title>
+<meta charset=utf-8><meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>*{user-select:none;-webkit-user-select:none}body{display:flex;align-items:center;justify-content:center}</style>
+<div id=a style="white-space:pre-wrap;font-family:monospace">
+ /<span id=t>-</span>\
+()<span id=m>X</span>()
+ \<span id=b>-</span>/
+<script>
+const replace = [{
+  L: t,
+  with: '-----------',
+}, {
+  L: m,
+  with: ' tr.ink/et ',
+}, {
+  L: b,
+  with: '-----------',
+}]
+const expand_width = Math.max(...replace.map(r => r.with.length))
+let i, interrupt=()=>{}
+window.onpointerdown = a.onmouseover = async e => {
+  if (interrupt(0)) return
+  let interrupted
+  interrupt = i=>{
+    if (i === 0) return true
+    interrupted = true
+  }
+
+  replace.map(async r => r.undo = r.undo || r.L.textContent)
+  for (i = i ?? 1; i < expand_width; i++) {
+    replace.map(async r => r.L.textContent = r.with.slice(0, i) + r.with.slice(-1))
+    await new Promise(s=>setTimeout(s,50))
+    if (interrupted) return
+  }
+  const saves = [a.onmouseover, a.onmouseout]
+  window.onpointerdown = a.onmouseover = window.onpointerup = a.onmouseout = undefined
+  replace.map(async r => r.L.innerHTML = r.with.replace(/([\w./]+)/, '<a href="http://$1">$1</a>'))
+  setTimeout(() => {
+    window.onpointerdown = a.onmouseover = saves[0]
+    window.onpointerup = a.onmouseout = saves[1]
+    interrupt=()=>{}
+  })
+}
+window.onpointerup = a.onmouseout = async e => {
+  if (a.contains(e.relatedTarget)) return
+
+  // delete m.onpointerdown
+  if (interrupt(1)) return
+  let interrupted
+  interrupt = i=>{
+    if (i === 1) return true
+    interrupted = true
+  }
+
+  replace.map(async r => r.undo = r.undo || r.L.textContent)
+  for (i = (i ?? expand_width) - 1; i > 0; i--) {
+    replace.map(async r => r.L.textContent = r.with.slice(0, i) + r.with.slice(-1))
+    await new Promise(s=>setTimeout(s,50/3))
+    if (interrupted) return
+  }
+  replace.map(async r => r.L.textContent = r.undo)
+  i = undefined
+  interrupt=()=>{}
+}
+m.style.cursor = 'pointer'
+i = undefined
+// m.onpointerdown = e => {
+//   e.stopPropagation()
+  
+//   ;(m.textContent === replace.find(x=>x.L===m).with && window === window.top)
+//   ? window.open('https://tr.ink/et', '_self')
+//   :(i) 
+//   ? m.onmouseout(e)
+//   : m.onmouseover(e)
+// }
+// a.onpointerup = e => e.stopPropagation()
+m.onpointerup = e => e.target.click()
+</script>
+</div>

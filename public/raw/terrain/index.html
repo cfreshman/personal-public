@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>terrain</title>
+    <script src=/copyright.js></script>
+    <style>
+      html, body {
+        margin: 0;
+        display: flex; align-items: center; justify-content: center;
+      }
+    </style>
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+  </head>
+  <body>
+    <div id="info" style="right: 0">
+      <table id="controls" style="
+        margin-left: auto;
+
+        margin: auto;
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        line-height: 1.5;">
+        <tr>
+          <td>
+            [ <span id="reload">generate</span> ]
+          </td>
+        </tr>
+      </table>
+      <!-- <table id="show-controls">
+        <tr>
+          <td><span>[?]</span></td>
+        </tr>
+      </table>
+      <table id="controls" style="display: none">
+        <tr>
+          <td><span id="hide-controls">[X]</span></td>
+          <td colspan="2"><b>Controls</b></td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>move</td>
+          <td>click & drag</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>generate</td>
+          <td>spacebar/<span id="reload">reload</span></td>
+        </tr>
+      </table> -->
+    </div>
+    <canvas id="canvas"></canvas>
+
+    <script src="/lib/three.js"></script>
+    <script src="/lib/noise.js"></script>
+    <script src="/lib/OrbitControls.js"></script>
+    <script src="/lib/jsts/jstsES6.js"></script>
+    <script src="/lib/pause.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

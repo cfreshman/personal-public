@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<!-- mouse-text
+
+Use mouse for text input
+- rotary wheel instead of square keyboard
+- different wheels for letters, numbers, symbols
+- hold to spell word
+
+-->
+<html>
+<head>
+  <title>mouse-text demo</title>
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html {
+      background: #f9f8f6;
+      color: #101010;
+      font-size: 12px;
+      height: 100%;
+    }
+    body {
+      font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+      padding: .5em 1em;
+      height: 100%;
+    }
+    a {
+      color: inherit;
+    }
+    a:hover {
+      color: #f9f8f6;
+      background: #101010;
+    }
+    .title {
+      font-size: 1.2em;
+    }
+  </style>
+</head>
+<body>
+
+  <div style="display:flex;align-items:center;margin-bottom:.5em;white-space:pre">
+    <span class="title">[ mouse-text ]</span> <span style="font-style:italic;opacity:.7"> keyboard-less typing tool</span>
+  </div>
+  <br/>
+
+  <textarea
+  placeholder="tap to type, hold to spell"
+  rows='12' style='
+  width: 100%;
+  z-index: 2;
+  ' onkeydown="
+  if (event.key === 'Enter') {
+    Q('#history').textContent = event.target.value + '\n' + Q('#history').textContent
+    event.target.value = ''
+  }
+  "></textarea>
+  <button onclick="
+  navigator.clipboard.writeText(Q('textarea').value)
+  event.target.textContent = 'copied'
+  setTimeout(() => event.target.textContent = 'copy', 1500)
+  ">copy</button> <button onclick="
+  Q('textarea').value = ''
+  ">clear</button>
+  <br/>
+  <div id="history" style="white-space:pre"></div>
+
+  <div id='mouse-text'>
+    <div id='mouse-text-center'>
+      <!-- <div id="mouse-text-active"></div> -->
+      <!-- <div id='mouse-text-outer'></div> -->
+      <div id='mouse-text-single'>
+        <div id="mouse-text-space" style="background:none">␣</div>
+      </div>
+      <div id='mouse-text-inner'>
+        <!-- <div id="mouse-text-space">␣</div> -->
+        <div id="mouse-text-backspace">⌫</div>
+        <!-- <div id="mouse-text-clear">×</div> -->
+        <div id="mouse-text-enter">↵</div>
+        <div id="mouse-text-upp">A</div>
+        <div id="mouse-text-num">1</div>
+        <div id="mouse-text-pun">!</div>
+        <div id="mouse-text-sym">@</div>
+      </div>
+
+      <div id="mouse-text-word"></div>
+      <div id='mouse-text-outer'></div>
+    </div>
+    <style>
+      #mouse-text {
+        /* TODO actual placement */
+        position: fixed;
+        left: 50%; top: 50%;
+        overflow: visible;
+        font-family: system-ui, sans-serif;
+        z-index: 100100100;
+        /* opacity: .7; */
+      }
+      #mouse-text * {
+        box-sizing: border-box;
+      }
+      #mouse-text-center {
+        position: relative;
+        width: 0; height: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #mouse-text-center > * {
+        position: absolute;
+        border-radius: 50%;
+        width: 0; height: 0;
+      }
+      #mouse-text-center > * > div:not(.mouse-text-pointer-target), #mouse-text-active {
+        position: absolute;
+        width: 1.5em; height: 1.5em;
+        translate: -.75em .75em;
+        cursor: pointer;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        user-select: none;
+        z-index: 1;
+        /* pointer-events: none; */
+
+        background: white;
+        border: 1px solid transparent;
+        /* border-color: black; */
+        /* box-shadow: 0 0 0 .5px #0003; */
+        box-shadow: 0 0 0 .5px #0006;
+        /* border: 1px dashed #0008; */
+
+        font-size: 1.5em;
+      }
+      #mouse-text-center > * > div:not(.mouse-text-pointer-target):is(.hover), #mouse-text-active {
+        z-index: 2;
+        /* border-color: black; */
+        /* background: #0001; */
+        /* background: white; */
+        /* background: #fff linear-gradient(#ff02 0 0); color: black; */
+        background: black !important; color: white;
+        /* scale: 1.5 !important;
+        font-size: 1.5em !important; */
+        /* width: 1em; height: 1em; */
+        /* translate: -.5em .5em; */
+      }
+      #mouse-text-center > * > :is(:active, .on) {
+        background: black !important; color: white;
+      }
+      /* #mouse-text-outer > * {
+        font-size: .5em;
+      }
+      #mouse-text-outer > *:hover {
+        font-size: 1em;
+      } */
+      #mouse-text-center > * > .mouse-text-pointer-target {
+        /* pointer target, set font-size to radius */
+        content: "";
+        display: block;
+        position: absolute;
+        width: 2.5em; height: 2.5em;
+        border-radius: 50%;
+        left: -1.25em; top: -1.25em;
+        background: none;
+        cursor: pointer;
+        /* border: 1px dashed #0008; */
+      }
+      #mouse-text-center > #mouse-text-outer > .mouse-text-pointer-target {
+        border: 1px dashed #0008;
+        /* background: #fffa; */
+        background: #0f82;
+      }
+      /* #mouse-text-center > * > .mouse-text-pointer-target:hover {
+        background: #ff02;
+      } */
+      #mouse-text-active {
+        translate: 0 3.5em;
+        font-size: 2em;
+      }
+      /* #mouse-text-inner {
+        display: none;
+      } */
+      #mouse-text-word {
+        display: flex;
+        flex-direction: row-reverse;
+      }
+      #mouse-text-word > div {
+        top: -1.5em;
+        position: relative !important;
+        /* translate: -.25em .75em !important; */
+        flex-shrink: 0;
+      }
+      #mouse-text-center > * > .word {
+        background: black !important; color: white !important;
+      }
+      #mouse-text-outer > div {
+        /* background: #fff linear-gradient(#0f82 0 0) !important; */
+      }
+    </style>
+  </div>
+  <script>
+    const Q = (L, q)=>(q?L:document.body).querySelector(q||L)
+    const QQ = (L, q)=>Array.from((q?L:document.body).querySelectorAll(q||L))
+    const N = x => {
+      const c = document.createElement('div')
+      c.innerHTML = x
+      return c.children[0]
+    }
+
+    const mt = Q('#mouse-text')
+    const mtActive = Q(mt, '#mouse-text-active')
+    const mtSingle = Q(mt, '#mouse-text-single')
+    const mtInner = Q(mt, '#mouse-text-inner')
+    const mtOuter = Q(mt, '#mouse-text-outer')
+    const mtWord = Q(mt, '#mouse-text-word')
+    let mtInput
+    const press = key => {
+      mtInput.focus()
+
+      console.debug(mtInput.selectionStart, mtInput.selectionEnd)
+      let start = mtInput.selectionStart, end = mtInput.selectionEnd, insert
+      if (key === 'Backspace') {
+        if (start === end) start = Math.max(0, start - 1)
+        insert = ''
+      } else if (key === 'Enter') {
+        insert = '\n'
+      } else {
+        insert = key
+      }
+
+      mtInput.value = mtInput.value.slice(0, start) + insert + mtInput.value.slice(end)
+      mtInput.selectionStart = mtInput.selectionEnd = start + insert.length
+
+      // mtInput.selectionStart = mtInput.selectionEnd = mtInput.value.length
+      setTimeout(() => {
+        mtInput.focus()
+        // mtInput.selectionStart = mtInput.selectionEnd = mtInput.value.length
+      })
+
+      mtInput.dispatchEvent(new KeyboardEvent('keydown', { key, code: key, keyCode: {
+        'Enter': 13,
+        'Backspace': 8,
+      }[key] || key.charCodeAt(0) }))
+    }
+
+    const center = x => {
+      const rect = x.getBoundingClientRect()
+      return {
+        width: rect.width, height: rect.height,
+        x: rect.x + rect.width/2,
+        y: rect.y + rect.height/2,
+      }
+    }
+
+    let rendered_items = []
+    let word = []
+    let node = false
+    mt.style.display = 'none'
+    let render_in_progress = false
+    const render = async (items, target=mtOuter) => {
+      // if (render_in_progress) {
+      //   await new Promise(r => setTimeout(r))
+      //   return render(items, target)
+      // }
+      render_in_progress = true
+      await new Promise(r => setTimeout(r, 10))
+      if (!target) return
+      if (typeof items === 'string') items = items.split('')
+      if (items) {
+        target.innerHTML = items.map(x => `<div class="${x.isWord ? 'word' : ''}">${x.letter || x}</div>`).join('')
+        rendered_items = items
+      }
+      await Promise.resolve()
+
+      const Ls = QQ(target, '*')
+      const n = Ls.length + (word.length ? 1 : 0)
+      const circumference = n * 1.7
+      const default_radius = circumference / Math.PI / 2
+      const radius = n === 1 ? 0 : Math.max(word.length || target !== mtOuter ? 1.5 : 4, default_radius)
+      const default_scale = Math.min(1, radius / default_radius)
+
+      target.style.translate = ''
+      const t_off = center(target)
+      if (word.length) {
+        mtWord.innerHTML =
+        `<span style="display:block;min-width:${radius}em;border-bottom:1px dashed black"></span>`
+        + word.map(
+          x => `<div class="${x.node.isWord ? 'word' : ''}">${x.letter}</div>`).join('')
+        const w_off = word[0]
+        // target.style.translate = `${w_off.x - t_off.x}px ${w_off.y - t_off.y}px`
+        // mtWord.style.translate = `${w_off.x - t_off.x}px ${w_off.y - t_off.y}px`
+        mtWord.style.translate = `-1em 0px`
+
+        await Promise.resolve()
+        // console.debug(mtWord.children[0])
+        const last = mtWord.children[1]
+        last.onpointerover = e => {
+          press('Backspace')
+          if (word.length > 1) {
+            word = word.slice(1)
+            Object.assign(word[0], center(last))
+            render(Object.values(word[0].node.get_all()))
+          } else {
+            const isUpper = word.length && /A-Z/.test(word[0].letter)
+            word = []
+            render(isUpper ? alt.upp : alf)
+          }
+        }
+      } else {
+        mtWord.innerHTML = ''
+        mtWord.style.translate = ''
+      }
+
+      // const radius = Math.max(target === mtOuter ? 3 : target === mtInner ? 1.5 : 0, default_radius)
+      // const radius = target === mtOuter ? 3 : target === mtInner ? 1.5 : 0
+      // const radius = target === mtOuter ? 2 : target === mtInner ? 4 : 0
+      // const radius = target === mtOuter ? 3 : target === mtInner ? 5 : 0
+      // const radius = target === mtOuter ? 2 : target === mtInner ? 5 : 0
+      // const radius = target === mtOuter ? 2.5 : target === mtInner ? 4 : 0
+      // const radius = target === mtOuter ? 2 : target === mtInner ? 4 : 0
+      // const radius = target === mtOuter ? 4 : target === mtInner ? 2 : 0
+
+      // start mtOuter from -1,0 CW
+      // start others from 0,1 CW
+      // if word, skip one
+      Ls.map((x, i) => {
+        if (word.length) i += 1
+
+        const angle = 2 * Math.PI * (i / n) + (target === mtOuter ? 0 : Math.PI/2)
+        x.style.left = `${-Math.cos(angle) * radius}em`
+        x.style.bottom = `${Math.sin(angle) * radius}em`
+        if (n > 1) {
+          // x.style.scale = default_scale
+          // x.style.fontSize = default_scale+'em'
+        }
+        // if (x.id) {
+
+        // } else {
+        //   x.onclick = e => {
+        //     mtInput.value += x.textContent
+        //   }
+        // }
+
+        if (word.length) {
+          const last = word[0]
+          x.onpointerover = e => {
+            // console.debug(x)
+            const letter = x.textContent
+            press(letter)
+            const current = Object.assign(center(x), {
+              letter,
+              node: last.node.get(letter.toLowerCase()),
+            })
+            word.unshift(current)
+            render(Object.values(current.node.get_all()))
+          }
+        }
+      })
+      const pointerTarget = N(`<div class='mouse-text-pointer-target' style='font-size:${1.15 * radius - 1}em'></div>`)
+      target.insertAdjacentElement('afterBegin', pointerTarget)
+      await Promise.resolve()
+
+      pointerTarget.onpointerdown = e => press(' ')
+
+      const inners = Ls.map(center)
+      const outer = center(pointerTarget)
+      let ringEl = rings.find(x => x.target === target)
+      if (!ringEl) {
+        ringEl = { target }
+        rings.push(ringEl)
+      }
+      Object.assign(ringEl, {
+        Ls, outer, inners, default_scale,
+      })
+
+      // if (word.length) {
+      //   const actual_off = dist(outer, inners[0])
+      //   // mtWord.style.translate = `${-actual_off + word[0].x - t_off.x}px ${word[0].y - t_off.y}px`
+      //   mtWord.style.translate = `${-actual_off}px 0px`
+      // }
+      render_in_progress = false
+    }
+
+    const dist = (a, b) => {
+      return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2))
+    }
+    const rings = []
+    let hovered = undefined
+    mt.onpointermove = e => {
+      if (down) return
+      // console.debug(e)
+      if (hovered) {
+        hovered.classList.remove('hover')
+        // hovered.style.scale = '1'
+      }
+      const pos = { x: e.clientX, y: e.clientY }
+      let max = { dist: 1_000_000, x: undefined }
+      rings.map(ring => {
+        const { target, Ls, outer, inners, default_scale } = ring
+        // if (target !== mtOuter) return // TODO animate again
+        const radius = dist(outer, inners[0])
+        const angle = Math.atan2(outer.y - pos.y, - (outer.x - pos.x))
+        Ls.map((x, i) => {
+          const d = dist(pos, inners[i])
+          if (d < max.dist) max = { dist: d, x }
+          const ratio = Math.max(0, 1 - (d / 2 / radius))
+          // console.debug(x.textContent, ratio)
+          // x.style.scale = `${ratio}`
+          if (target === mtOuter) {
+            // x.style.fontSize = `${ratio}em`
+            // x.style.fontSize = `${Math.max(default_scale, 1.5 * (ratio + .33))}em`
+            // x.style.scale = `${Math.max(default_scale, 1.5 * (ratio + .33))}`
+            // x.style.fontSize = `${1 + ratio / 3}em`
+            // x.style.scale = `${Math.max(.5, 2 * Math.pow(ratio, 2))}`
+            // x.style.scale = `${Math.max(default_scale, 3 * Math.pow(ratio, 2))}`
+            x.style.zIndex = `${Math.ceil(ratio * 100_000)}`
+            // inners[i].scale = Math.max(default_scale, 2 * Math.pow(ratio, 2))
+          }
+        })
+      })
+      hovered = document.elementFromPoint(pos.x, pos.y)
+      // if (!hovered?.onpointerdown) hovered = max.x
+      // hovered = max.x
+      hovered?.classList.add('hover')
+      // hovered.style.scale = '2'
+      if (hovered && false) { // TODO figure out better magnification
+        rings.map(ring => {
+          const { target, Ls, outer, inners, default_scale } = ring
+          const angle = Math.atan2(outer.y - pos.y, - (outer.x - pos.x))
+          const index = Ls.indexOf(hovered)
+          if (index > -1) {
+            // starting from hovered element, push others aside according to size
+            let shift = inners[index].scale
+            for (let i = 1; i < Ls.length / 2; i++) {
+              const l = (index + i)%Ls.length
+              const x = Ls[l]
+              // rotate nearby away from zoomed: ratio 0.01 => max, ratio 1 => none
+              const off = {
+                x: Number(x.style.left.slice(0, -2)),
+                y: Number(x.style.bottom.slice(0, -2)),
+              }
+              const off_mag = dist(off, { x: 0, y: 0 })
+              const off_angle = Math.atan2(off.y, off.x)
+
+              let angle_diff = angle - off_angle
+              while (angle_diff < -Math.PI) angle_diff += 2 * Math.PI
+              while (angle_diff > Math.PI) angle_diff -= 2 * Math.PI
+              const angle_diff_mag = Math.abs(angle_diff)
+              const angle_diff_sign = angle_diff / (angle_diff_mag || 1)
+
+              // const move_angle_diff_mag = angle_diff / Math.PI
+              // const move_angle = off_angle + move_angle_diff_mag * Math.PI / 6
+              // const move_angle = off_angle - Math.PI / 6 * (angle_diff_sign * (1 - Math.abs(angle_diff_mag)/Math.PI))
+              // const move_angle = off_angle + angle_diff
+              const move_angle = off_angle - shift
+              const moved = {
+                x: off_mag * Math.cos(move_angle),
+                y: off_mag * Math.sin(move_angle),
+              }
+              // x.style.left = `${moved.x}em`
+              // x.style.bottom = `${moved.y}em`
+              x.style.transform = `translate(${moved.x - off.x}em, ${-(moved.y - off.y)}em)`
+              // shift += inners[l].scale
+            }
+          }
+        })
+      }
+
+      if (hovered && mtActive) mtActive.textContent = hovered.textContent
+      mtInput.focus()
+    }
+    mt.onpointerout = e => {
+      hovered?.classList.remove('hover')
+      hovered = undefined
+    }
+    let down = false
+    let cursor = undefined
+    mt.onpointerdown = e => {
+      const instance = Date.now()
+      down = instance
+      x = hovered
+      if (!x) return
+      if (x.id) {
+        // x.onpointerdown()
+      } else {
+        press(x.textContent)
+        if (rendered_items.length === 26) {
+          if (rendered_items[0] === 'A' && !Q('#mouse-text-upp').classList.contains('on')) {
+            render(alf)
+          }
+          setTimeout(() => {
+            if (down === instance) {
+              mtInner.style.display = 'none'
+              mtSingle.style.display = 'none'
+
+              mtOuter.requestPointerLock()
+              let pos = center(mt)
+              cursor = N(
+                `<div style="
+                position: fixed;
+                width: 1em; height: 1em;
+                left: ${pos.x}px;
+                top: ${pos.y}px;
+                "><div style="
+                position: relative;
+                width: 100%; height: 100%;
+                left: -50%; top: -50%;
+                background: #0f88;
+                border: 1px solid black;
+                border-radius: 50%;
+                "></div><div>`)
+              mt.appendChild(cursor)
+              let wait_until = 0
+              document.onpointermove = e => {
+                if (wait_until > Date.now()) return
+                pos.x += e.movementX
+                pos.y += e.movementY
+                cursor.style.left = `${pos.x}px`
+                cursor.style.top = `${pos.y}px`
+                const hovered = document.elementsFromPoint(pos.x, pos.y)
+                hovered.find(x => {
+                  if (x.onpointerover) {
+                    x.onpointerover()
+                    pos = center(mt)
+                    cursor.style.left = `${pos.x}px`
+                    cursor.style.top = `${pos.y}px`
+                    wait_until = Date.now() + 100
+                    return true
+                  }
+                })
+              }
+
+              const letter = hovered.textContent
+              // press('Backspace')
+              // press(' ')
+              // press(letter)
+              const current = Object.assign(center(hovered), {
+                letter,
+                node: trie.get(letter.toLowerCase()),
+              })
+              word.unshift(current)
+              render(Object.values(current.node.get_all()))
+            }
+          }, 200)
+        }
+      }
+    }
+    mt.onpointerup = e => {
+      mtInput.focus()
+    }
+    window.onpointerup = e => {
+      // console.debug('up', word)
+      down = false
+      cursor?.remove()
+      document.exitPointerLock()
+      delete document.onpointermove
+      if (word.length) {
+        // word.reverse().slice(1).map(x => press(x.letter))
+        press(' ')
+        word = []
+        render(Q('#mouse-text-upp').classList.contains('on') ? alt.upp : alf)
+
+        mtInner.style.display = ''
+        mtSingle.style.display = ''
+      }
+    }
+
+    const alf = 'abcdefghijklmnopqrstuvwxyz'
+    const alt = {
+      upp: alf.toUpperCase(),
+      num: '0123456789',
+      pun: '.,!?-;:\'"()|\\/',
+      sym: '@#$%^&*+=_~[]{}<>',
+    }
+    const toggles = []
+    Object.keys(alt).map(k => {
+      const toggle = Q(mt, `#mouse-text-${k}`)
+      toggles.push(toggle)
+      toggle.onpointerdown = e => {
+        // console.debug('toggle')
+        if (toggle.classList.contains('on')) {
+          toggle.classList.remove('on')
+          render(alf)
+        } else {
+          toggles.map(x => x.classList.remove('on'))
+          toggle.classList.add('on')
+          render(alt[k])
+        }
+      }
+    })
+    let _repeated_press_down = false
+    window.addEventListener('pointerup', () => _repeated_press_down = false)
+    const repeated_press = (e, key) => {
+      const instance = Date.now()
+      _repeated_press_down = instance
+      press(key)
+      setTimeout(() => {
+        const handle = setInterval(() => {
+          if (_repeated_press_down === instance) press(key)
+          else clearTimeout(handle)
+        }, 100)
+      }, 500)
+    }
+    Q(mt, '#mouse-text-backspace').onpointerdown = e => repeated_press(e, 'Backspace')
+    // Q(mt, '#mouse-text-space').onclick = e => mtInput.value += ' '
+    Q(mt, '#mouse-text-space').onpointerdown = e => repeated_press(e, ' ')
+    // Q(mt, '#mouse-text-clear').onpointerdown = e => mtInput.value = ''
+    Q(mt, '#mouse-text-enter').onpointerdown = e => repeated_press(e, 'Enter')
+
+    const lock = input => {
+      if (mtInput) {
+        delete mtInput.onblur
+      }
+      input.focus()
+      input.onblur = e => {
+        setTimeout(() => {
+          // console.debug(e, node, document.activeElement)
+          // node = document.activeElement
+          // while (node && ![mtInput, mt].includes(node)) node = node.parent
+          // if (!node) mt.style.display = 'none'
+        }, 200)
+      }
+      mtInput = input
+      mt.style.display = ''
+      render(input.value ? alf : alt.upp)
+      // const pos = center(input)
+      // mt.style.left = pos.x + 'px'
+      // mt.style.top = (pos.y + 200) + 'px'
+      // input.requestPointerLock()
+    }
+    const rect = document.body.getBoundingClientRect()
+    Array.from({ length: 0 }).map((_, i) => {
+      document.body.append(N(`<div style='
+      position: absolute;
+      left: ${Math.random() * rect.width}px;
+      top: ${Math.random() * rect.height/2 + rect.height/2}px;
+      '>
+        <input type='text' placeholder='click me!' onkeydown="
+        if (event.key === 'Enter') {
+          Q('#history-${i}').textContent = event.target.value + '\\n' + Q('#history-${i}').textContent
+          event.target.value = ''
+        }
+        "
+        />
+        <div id="history-${i}" style="white-space:pre"></div>
+      </div>`))
+    })
+
+    setTimeout(async () => {
+      mt.style.visibility = 'hidden'
+      mt.style.display = ''
+      await render(false, mtSingle)
+      await render(false, mtInner)
+      await render(alf)
+      mt.style.display = 'none'
+      mt.style.visibility = 'visible'
+
+      setTimeout(() => {
+        QQ(':is(input[type=text], textarea)').map(input => {
+          input.addEventListener('click', e => {
+            lock(input)
+          })
+        })
+        lock(Q('textarea'))
+      }, 500)
+    })
+  </script>
+
+
+  <script>
+    // trie structure
+    class Trie {
+      static EMPTY_CHILDREN = {}
+      // trie structure encodes entire dictionary
+      // each node consists of letter & isWord flag
+      constructor(letter='', isWord=false) {
+        this.letter = letter
+        this.isWord = isWord
+        this.children = undefined
+      }
+      add(child) {
+        if (!this.children) this.children = {}
+        this.children[child.letter] = child
+        return child
+      }
+      get(letter) {
+        return (this.children) ? this.children[letter] : undefined
+      }
+      get_or_add(letter, isWord=false) {
+        let child = this.get(letter)
+        if (!child) child = this.add(new Trie(letter))
+        if (isWord) child.isWord = isWord
+        return child
+      }
+      get_all() {
+        return this.children || Trie.EMPTY_CHILDREN
+      }
+    }
+    window.trie = new Trie()
+
+    const languages = {
+        english: 'scrabble-count.txt',
+        portuguese: 'lang/portuguese.txt',
+        finnish: 'lang/finnish.txt',
+    }
+    const lang = 'english'
+
+    const start = Date.now()
+    let fetched
+
+    fetch(`/lib/dict/${languages[lang]}`)
+    .then(res => {
+      // dictionaries can be large
+      // optimize storage, read, & representation
+      fetched = Date.now()
+
+      // parse condensed dict - see public/lib/dict/optimizations.txt
+      const reader = res.body.getReader()
+      let prefix = ''
+      const charCode9 = '9'.charCodeAt(0)
+      const textDecoder = new TextDecoder()
+      let words
+      let w_i = 0
+      const decode = () => reader.read().then(async ({ done, value: bytes }) => {
+        if (done) {
+          if (!words) return [] // didn't receive any data
+          words[w_i] = prefix // current prefix is final word
+          return words
+        }
+
+        // defer dict loading until after rest of app to reduce visual load time
+        await Promise.resolve()
+        let begin = 0
+        if (!words) {
+          // initialize list
+          while (bytes[begin] <= charCode9) begin++
+          words = Array.from({ length: Number(textDecoder.decode(bytes.subarray(0, begin))) })
+        }
+
+        // parse bytes as words delimited by common prefix length
+        // (an efficient storage format for a sorted dictionary)
+        // e.g. ab1cd2ef0gh -> [ab, acd, acef, gh]
+        await Promise.resolve()
+        for (let i = begin; i < bytes.length; i++) {
+          if (bytes[i] <= charCode9) {
+              // start of new word, end previous & reset prefix
+              words[w_i] = prefix + textDecoder.decode(bytes.subarray(begin, i))
+              begin = i
+              i++
+              while (bytes[i] <= charCode9) i++
+              prefix = words[w_i].slice(0, Number(textDecoder.decode(bytes.subarray(begin, i))))
+              begin = i
+              w_i++
+          }
+          if (i % 1_000 === 0) await Promise.resolve() // read 1_000 words at a time
+        }
+        if (begin < bytes.length) {
+          // read through end if in middle of word
+          prefix += textDecoder.decode(bytes.subarray(begin))
+        }
+
+        // read next chunk
+        return decode()
+      })
+      return decode()
+    })
+    .then(words => {
+        const parsed = Date.now()
+        window['words'] = words
+        console.debug(words)
+
+        const dict = {
+          loaded: true,
+          lang,
+          words,
+          word_set: new Set(words)
+        }
+
+        const now = Date.now()
+        console.debug('loaded', dict.words.length, dict.lang, `words in ${now - start}ms total`,
+          `(${fetched - start}ms + ${now - fetched}ms (${parsed - fetched} ${now - parsed}))`, dict.letters)
+
+        return dict
+    })
+    .then(dict => {
+      // construct trie
+      for (let i = 0; i < dict.words.length; i++) {
+        const word = dict.words[i]
+        let node = trie
+        for (let j = 0; j < word.length; j++) {
+          node = node.get_or_add(word[j])
+        }
+        node.isWord = true
+      }
+      console.debug(trie)
+    })
+  </script>
+
+  <script>
+    if (/iPhone|iPod|iPad|Android/i.test(navigator.userAgent)) {
+      Q('textarea').placeholder = 'not intended for mobile devices'
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<!-- needs more work -->
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<title>Fourier Transform Demo</title>
+<style>
+  html {
+    background: #f9f8f6;
+    color: #101010;
+    font-size: 12px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5rem 1rem;
+  }
+  .title {
+    font-size: 1.5rem;
+    position: relative;
+    white-space: pre-line;
+  }
+  a {
+    color: inherit;
+  }
+  a:hover {
+    color: #f9f8f6;
+    background: #101010;
+  }
+  input[type="number"] {
+    width: 3em;
+  }
+</style>
+
+<script src="/lib/complex.min.js"></script>
+<script src="/lib/utils.js"></script>
+</head>
+<body>
+
+  <div class="title">[ Fourier Transform Demo ]
+    ==========================
+  </div>
+
+  <div style="
+  white-space: pre-line;
+  ">
+    <i>FFT: Fast Fourier transform (well, regular slow DFT right now)</i>
+    - take input 2-dimensional signal, output frequency breakdown
+
+
+    input: time domain
+    <div id="waves" style="
+    display: inline-flex;
+    align-items: stretch;
+    flex-wrap: wrap;
+    width: 100%;
+    ">
+      <label>clear</label>
+      <label id="add">add&nbsp;<select class="add-arg">
+          <option>sin</option>
+          <option>cos</option>
+        </select>(<input class="add-arg" type="text" value="1" />x +&nbsp;<input class="add-arg" type="text" value="0" />π)/<input class="add-arg" type="text" value="1" />&nbsp;+&nbsp;<input class="add-arg" type="text" value="0" />&nbsp;=>
+      </label>
+      <div style="flex-basis: 100%;"></div>
+    </div>
+    <canvas id="input" style="
+    background:white;
+    width: 100%;
+    /* image-rendering: pixelated; */
+    "></canvas>
+
+    FFT output: frequency domain
+    <canvas id="output" style="
+    background:white;
+    width: 100%;
+    /* image-rendering: pixelated; */
+    "></canvas>
+
+    recreated input
+    <canvas id="recreate" style="
+    background:white;
+    width: 100%;
+    /* image-rendering: pixelated; */
+    "></canvas>
+  </div>
+
+  <style>
+    canvas {
+      width: 100%;
+      background:white;
+      border: 1px solid #0002;
+      border-radius: 2px;
+    }
+    label {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      align-content: center;
+      margin: 0.25rem;
+      background: #0001;
+      border-radius: 0.25rem;
+      padding-right: .25rem;
+      /* padding: .25rem; */
+    }
+    label:nth-child(1), label:nth-child(2) {
+      padding: .25rem;
+      margin-left: 0;
+    }
+    label:not(:last-child) {
+      /* margin-right: .5rem; */
+    }
+    #add input {
+      max-width: 3rem;
+      padding: 0 .2rem;
+      text-align: right;
+    }
+  </style>
+
+
+
+  <script type="module">
+    import api from '/lib/modules/site/api.js'
+
+    const DIM = [1024, 256]
+
+    function initCanvas(id) {
+      const group = { canvas: Q('#'+id) }
+      group.ctx = group.canvas.getContext('2d')
+      group.canvas.width = DIM[0]
+      group.canvas.height = DIM[1]
+      group.ctx.setTransform(1, 0, 0, -.5, 0, DIM[1]/2)
+      return group
+    }
+
+    const input = initCanvas('input')
+    const output = initCanvas('output')
+    const recreate = initCanvas('recreate')
+
+    function readPosition(e) {
+      const rect = input.canvas.getBoundingClientRect()
+      return [
+        (e.clientX - rect.x)/rect.width * DIM[0],
+        ((e.clientY - rect.y)/rect.height) * DIM[1]]
+    }
+    function renderPoints(ctx, points, y0=0, yS=DIM[1]) {
+      const xS = DIM[0] / points.length
+      ctx.strokeStyle = '#000'
+      ctx.lineWidth = 4
+      ctx.clearRect(0, -DIM[1], DIM[0], 2*DIM[1])
+      ctx.moveTo(0, y0)
+      ctx.beginPath()
+      points.map((y, x) => ctx.lineTo(.5 + x * xS, y0 + y * yS))
+      ctx.stroke()
+    }
+    function renderBars(ctx, points, y0=0, yS=DIM[1]) {
+      const xS = DIM[0] / points.length
+      ctx.fillStyle = '#000'
+      ctx.clearRect(0, -DIM[1], DIM[0], 2*DIM[1])
+      points.map((y, x) => ctx.fillRect(x * xS, y0, xS, y * yS || 1))
+      // ctx.moveTo(0, DIM[1]/2)
+      // ctx.beginPath()
+      // points.map((y, x) => ctx.lineTo(.5 + x * xS, y0 + y * yS))
+      // ctx.stroke()
+    }
+    let computeTimeout
+    function renderInput(points) {
+      const p_max = Math.max(1, ...points.map(Math.abs))
+      renderBars(input.ctx, points.map(p => p / p_max))
+      clearTimeout(computeTimeout)
+      computeTimeout = setTimeout(() => {
+        computeFFT(points)
+      }, 200)
+    }
+    function renderOutput(points) {
+      const p_max = Math.max(...points.map(Math.abs))
+      // console.log(p_max, points.map(Math.abs).findIndex(p => Math.abs(p - p_max) < .00001))
+      renderBars(output.ctx, points.map(p => p / p_max))
+    }
+    function renderRecreate(points) {
+      const p_max = Math.max(1, ...points.map(Math.abs))
+      renderBars(recreate.ctx, points.map(p => p / p_max))
+    }
+
+    function computeFFT(points) {
+      const N = 128
+      const ratio = points.length / N
+      const samples = []
+      points.map((p, i) => {
+        if (i % ratio === 0) samples.push(p)
+      })
+      // const samples = points.slice(0, N)
+      // const N = points.length / 8
+      const X = array(N, () => new Complex(0))
+      for (let k = 0; k < N; k++) {
+        for (let n = 0; n < N; n++) {
+          const X_k = new Complex(samples[n]).mul(Complex.E.pow(new Complex(-2).mul(Complex.PI).mul(Complex.I).div(N).mul(n * k)))
+          // console.log(k, n, X_k)
+          X[k] = X[k].add(X_k)
+        }
+      }
+      // console.log(X.map(X => X.re))
+      renderOutput(X.map(X_k => X_k.abs()))
+      invertFFT(X)
+    }
+    function invertFFT(X) {
+      // const N = points.length
+      const N = X.length
+      const x = array(N, () => new Complex(0))
+      for (let n = 0; n < N; n++) {
+        for (let k = 0; k < X.length; k++) {
+          const x_n = X[k].mul(Complex.E.pow(new Complex(2).mul(Complex.PI).mul(Complex.I).div(N).mul(n * k)))
+          // console.log(k, n, X_k)
+          x[n] = x[n].add(x_n)
+        }
+      }
+      // console.log(X)
+      renderRecreate(x.map(x_k => x_k.re / X.length))
+    }
+
+    let down = false
+    const points = Array.from({ length: DIM[0] }).map(_ => 0)
+    on(window, 'pointerdown', e => {
+      down = readPosition(e)
+    })
+    on(input.canvas, 'pointerdown pointermove', e => {
+      if (down) {
+        const prev = down
+        down = readPosition(e)
+        const xs = [prev, down]
+          .map(p => [Math.floor(p[0]), p[1]])
+          .sort((a, b) => a[0] - b[0])
+        console.log(xs)
+        for (let i = 0; i <= xs[1][0] - xs[0][0]; i += 1) {
+          const x = xs[0][0] + i
+          const lerp = i / (xs[1][0] - xs[0][0] || 1)
+          const y = (xs[0][1] * (1 - lerp) + xs[1][1] * lerp)
+          points[x] = (DIM[1] - 2*y)/DIM[1]
+          console.log(points[Math.floor(down[0])], down)
+        }
+        renderInput(points)
+      }
+    })
+    on(window, 'pointerup', e => {
+      down = false
+    })
+    let n_checked = 0
+    const waves = Q('#waves')
+    on(Q(waves, 'label:first-child'), 'click', () => {
+      points.map((_, i) => points[i] = 0)
+      renderInput(points)
+      QQ(waves, 'input').map(L => L.checked = false)
+    })
+    on(Q(waves, '#add'), 'click', e => {
+      if (e.target != Q(waves, '#add')) return
+      const args = QQ(waves, '.add-arg').map(L => L.value)
+
+      let wave = document.createElement('div')
+      const func = args[0]
+      const [x_scale, x_shift, y_scale, y_shift] = args.slice(1).map(Number)
+      wave.innerHTML = `<label><input type="checkbox" id="${func}-${x_scale}-${x_shift}-${y_scale}-${y_shift}"/>${func}(${
+        x_scale != 1 ? x_scale : ''
+      }x${
+        x_shift != 0 ? ` + ${x_shift}π` : ''
+      })${
+        y_scale != 1 ? '/'+y_scale : ''
+      }${
+        y_shift != 0 ? ` + ${y_shift}` : ''
+      }</label>`
+      on(Q(wave, 'input'), 'change', e => {
+        const coef = e.target.checked ? 1 : -1
+        n_checked += coef
+        for (let i = 0; i < points.length; i++) {
+          points[i] += coef * (Math[func](i / points.length * 2 * Math.PI * x_scale + x_shift * Math.PI) / y_scale + y_shift)
+        }
+        renderInput(points)
+      })
+      wave = wave.children[0]
+      waves.appendChild(wave)
+      wave.click()
+    })
+    array(5, i => {
+      const wave = document.createElement('div')
+      const x_scale = i*2 + 1
+      wave.innerHTML = `<label><input type="checkbox" id="sin-${x_scale}-0-${x_scale}-0"/>sin(${i ? x_scale : ''}x)${i ? '/'+x_scale : ''}</label>`
+      on(Q(wave, 'input'), 'change', e => {
+        console.log(e.target.checked)
+        const coef = e.target.checked ? 1 : -1
+        n_checked += coef
+        for (let i = 0; i < points.length; i++) {
+          points[i] += coef / x_scale * Math.sin(i / points.length * 2 * Math.PI * x_scale)
+        }
+        renderInput(points)
+      })
+      waves.appendChild(wave.children[0])
+    })
+    array(5, i => {
+      const wave = document.createElement('div')
+      const x_scale = Math.pow(2, i)
+      wave.innerHTML = `<label><input type="checkbox" id="cos-${x_scale}-0-${x_scale}-0"/>cos(${i ? x_scale : ''}x)${i ? '/'+x_scale : ''}</label>`
+      on(Q(wave, 'input'), 'change', e => {
+        console.log(e.target.checked)
+        const coef = e.target.checked ? 1 : -1
+        n_checked += coef
+        for (let i = 0; i < points.length; i++) {
+          points[i] += coef / x_scale * Math.cos(i / points.length * 2 * Math.PI * x_scale)
+        }
+        renderInput(points)
+      })
+      waves.appendChild(wave.children[0])
+    })
+    // QQ('input[type="checkbox"]').map((cos, i) => {
+    //   const x_scale = i*2 + 1
+    //   console.log(x_scale)
+    //   on(cos, 'change', e => {
+    //     console.log(e.target.checked)
+    //     const coef = e.target.checked ? 1 : -1
+    //     n_checked += coef
+    //     for (let i = 0; i < points.length; i++) {
+    //       points[i] -= coef / x_scale * Math.sin(i / points.length * 4 * Math.PI * x_scale)
+    //     }
+    //     renderInput(points)
+    //   })
+    // })
+    // for (let n = 1; n <= 5; n++) {
+    //   for (let k = 0; k < points.length; k++) {
+    //     points[k] += .04 * n * Math.cos(n * k / points.length * Math.PI * 10)
+    //   }
+    // }
+    renderInput(points)
+    setTimeout(() => {
+      Q('#cos-2-0-2-0').click()
+      Q('#cos-4-0-4-0').click()
+    })
+  </script>
+
+</body>
+</html>

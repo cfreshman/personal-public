@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>heap.js</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    audio {
+      filter: invert(1);
+      min-height: 4em;
+    }
+    iframe {
+      width: 100%;
+      min-height: 20em;
+    }
+    img {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+    }
+  </style>
+
+  <script src="/lib/2/heap/script.js"></script>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <a href="script.js">/lib/2/heap/script.js</a>
+  <div id=root></div>
+  <script>
+    const log = named_log('heap demo')
+    const examples = {
+      [`window['heap.js'].version`]: 0,
+      [`/* new heap */\nh = heap.new(), h.toString()`]: 0,
+      [`/* add to heap */\nh.push(2), h.push(3), h.push(4), h.push(1)`]: 0,
+      [`/* peek heap */\nh.peek()`]: 0,
+      [`/* toString */\nh.toString()`]: 0,
+      [`/* pop heap */\nh.pop()`]: 0,
+      [`h.peek()`]: 0,
+      [`h.toString()`]: 0,
+      [`/* custom evaluator */\nh = heap.new(["b", "aa", "a", "c"], str => str.length), h.peek()`]: 0,
+    }
+
+    const results = []
+    const example_keys = Object.keys(examples)
+    const context = []
+    for (let i  = 0; i < example_keys.length; i++) {
+      const k = example_keys[i]
+      const v = examples[k]
+      let result = undefined
+      const v_k = v || k
+      const cmd = `(() => {
+${context.join('\n')}
+result = (${v_k})
+})()`
+      eval(cmd)
+      results.push(result)
+      context.push(v_k)
+    }
+    
+    root.append(node(`<pre>${
+      entries(examples)
+      .map(([k,v], i) => `<div
+      id=${i} style="
+      display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      max-width: 100%;
+      ">
+        <a href=#${i}>#${i}</a>| <div>${k&&v ? `${k}: ` : ''}${v||k} => \n${
+          (x => typeof(x) === 'string' ? x : JSON.stringify(x, null, 2))(results[i])
+        }</div>
+      </div>`)
+      .join('')}</pre>`))
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>color-tentacles</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    :root, body {
+      filter: none;
+    }
+  </style>
+</head>
+<body class="middle-column" style="
+background: #fff;
+color: #000;
+padding: 1em;
+max-height: 100%;
+max-width: 100%;
+min-height: 40em;
+">
+
+  <div id=canvas-container class="middle-column" style="
+  height: 0;
+  flex-grow: 1;
+  aspect-ratio: 1/1;
+  max-width: calc(100vw - 1em);
+  ">
+    <canvas id=canvas style="
+    width: 100%;
+    aspect-ratio: 1/1;
+    image-rendering: pixelated;
+    border: 1px solid #888;
+    "></canvas>
+  </div>
+  <div id="acknowledgement" class="middle-column">
+    <style>
+      #acknowledgement > span {
+        margin: 2px;
+      }
+    </style>
+    <span>
+      <a href="https://twitter.com/rickyretouch/status/1736446157654568987">inspiration</a>
+      by @rickyretouch/Twitter
+    </span>
+  </div>
+  <script>
+    const log = named_log('blob-tower')
+    const S = 1024, N = 16, T = S / N
+    const ORIGIN = V.ne(1, 1).sc(S/2)
+    canvas.height = canvas.width = S
+    const ctx = canvas.getContext('2d')
+    const fill_canvas = (color) => {
+      ctx.fillStyle = color
+      ctx.fillRect(0, 0, S, S)
+    }
+    const fill_shape = (ps, color) => {
+      ps = ps.map(p => p.ad(ORIGIN))
+      ctx.fillStyle = color
+      ctx.beginPath()
+      ctx.moveTo(...ps[0])
+      ps.map(p => ctx.lineTo(...p))
+      ctx.fill()
+      ctx.closePath()
+    }
+    const stroke_shape = (ps, color, width=1) => {
+      ps = ps.map(p => p.ad(ORIGIN))
+      ctx.strokeStyle = color
+      ctx.lineWidth = width
+      ctx.beginPath()
+      ctx.moveTo(...ps[0])
+      ;[...ps, ps[0]].map(p => ctx.lineTo(...p))
+      ctx.stroke()
+      ctx.closePath()
+    }
+    const stroke_joints = (joints, width=1) => {
+      const stroke_bone = (a, b) => {
+        ctx.lineWidth = width
+        ctx.strokeStyle = `hsl(${a.hue * 360}deg 70% 70%)`
+        ctx.beginPath()
+        ctx.moveTo(...a.point.ad(ORIGIN))
+        ;[a, b].map(p => ctx.lineTo(...p.point.ad(ORIGIN)))
+        ctx.stroke()
+        ctx.closePath()
+      }
+      range(joints.length).map(i => stroke_bone(joints[i], joints[(i + 1)%joints.length]))
+    }
+    const render_line = (ps, color, width=2) => {
+      ps = ps.map(p => p.ad(ORIGIN))
+
+      // ctx.lineWidth = width + 1
+      // ctx.strokeStyle = '#000'
+      // ctx.beginPath()
+      // ctx.moveTo(...ps[0])
+      // ps.map(p => ctx.lineTo(...p))
+      // ctx.stroke()
+      // ctx.closePath()
+
+      ctx.lineWidth = width
+      ctx.strokeStyle = color
+      ctx.beginPath()
+      ctx.moveTo(...ps[0])
+      ps.map(p => ctx.lineTo(...p))
+      ctx.stroke()
+      ctx.closePath()
+    }
+
+    const colors = [
+      '#ffeedd',
+      '#ff8877',
+      '#88cc00',
+      '#228844',
+    ]
+
+    let lines, animation_frame_handler
+    const generate = () => {
+      cancelAnimationFrame(animation_frame_handler)
+
+      fill_canvas('#000')
+
+      lines = []
+      range(S / T + 1).map(x_i => range(S / T + 1).map(y_i => {
+        const x = x_i * T - S/2
+        const y = y_i * T - S/2
+        const color = rand.sample(colors)
+        lines.push({
+          points: range(8).map(i => V.ne(x, y - i * T/2)),
+          // hue: rand.f(1),
+          color,
+        })
+      }))
+      lines = lines.sort((a, b) => a.points[0].y - b.points[0].y)
+
+      loop()
+    }
+    const render = () => {
+      lines.map(({ points, color }) => {
+        // render_line(points, `hsl(${hue * 360}deg 70% 70%)`, T/2)
+        render_line(points, color, T/4)
+      })
+    }
+    const update = (dt) => {
+      lines.map(line => {
+        line.points.map((p, i) => {
+          line.points[i] = p.ad(V.ne(rand.s(T / 16), rand.s(T / 16)).sc(dt))
+        })
+      })
+    }
+    let start_ms = performance.now()
+    const loop = () => {
+      const now = performance.now()
+      const elapsed_ms = now - start_ms
+      const dt = Math.min(elapsed_ms, 500) / 1_000
+      update(dt)
+      render()
+      animation_frame_handler = requestAnimationFrame(loop)
+    }
+
+    on(window, 'keydown', e => e.key === ' ' && generate())
+    generate()
+    setInterval(generate, 10_000)
+
+  </script>
+
+</body>
+</html>

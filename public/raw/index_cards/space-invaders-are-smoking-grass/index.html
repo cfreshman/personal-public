@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>space</title>
+  <meta name="description" content="f*cking consumer" />
+  <script src=/copyright.js></script>
+  
+  <meta data-hydrate data-style />
+  <style>
+    :root {
+      --background: yellow;
+      --color: #0008;
+    }
+  </style>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+
+  <pre id=invader style="
+line-height: 1;
+font-weight: bold;
+">
+     X
+     X
+     X
+    X X
+X  XX XX  X
+XXXXXXXXXXX
+XX  XXX  XX
+     X
+    XXX
+  </pre>
+
+  <script>
+    const WIDTH = 150, HEIGHT = 50, SPEED = [30, 10]
+    defer(() => {
+      window.ruler = {
+        x: range(WIDTH).map(x => x%10 || Math.floor(x/10)%10),
+        y: range(HEIGHT).map(x => x%10 || Math.floor(x/10)%10),
+      }
+      let scale = 1
+      let prev = Date.now()
+      const lines = invader.textContent.split('\n')
+      const W = Math.max(...lines.map(x => x.length))
+      const X = lines.map(x => x.padEnd(W)).join('\n')
+      let [x, y] = [0, 0], [vx, vy] = [0, 0], [ax, ay] = [0, 0]
+      const move = () => {
+        let dt = (Date.now() - prev) / 1_000
+        prev = Date.now()
+        invader.style.fontSize = (scale -= scale <= .33 ? 0 : 1 * dt)+'em' 
+        
+        ;[ax, ay] = [ax + rand.i(5) - 2, ay + rand.i(3) - 1]
+        ax *= .9
+        ay *= .9
+        ;[vx, vy] = [vx + SPEED[0] * ax * dt, vy + SPEED[1] * ay * dt]
+        vx += (WIDTH/2 - x) / WIDTH - vx / WIDTH
+        vy += (HEIGHT/2 - y) / HEIGHT - vy / HEIGHT
+        ;[x, y] = [x + vx * dt, y + vy * dt]
+
+        // const ship = X.split('\n').map(x => Math.abs(vx) > 20 ? [0,1,3,ax>1&&4,5,ax<-1&&6,7,9,10].map(i=>i!==false?x[i]:'').join('') : x).join('\n')
+        const ship = X
+        const field = (
+          '\n'.repeat(Math.max(0, y))+ship.split('\n').slice(-Math.min(y, 0)).map(l => ' '.repeat(Math.max(0, x))+l.slice(-Math.min(x, 0)))
+          .join('\n')
+        ).split('\n')
+        invader.textContent = field.join('\n')
+        // invader.textContent = 
+        //   ruler.x.join('')+'\n' +
+        //   // '\n'+field.join('\n')
+        //   ruler.y.slice(1).map((x, i) => x+' '+(field[i - 1] || '')).join('\n')
+        requestAnimationFrame(move)
+      }
+      move()
+    }, 2_000)
+  </script>
+
+</body>
+</html>

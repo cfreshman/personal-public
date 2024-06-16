@@ -1,0 +1,36 @@
+Hi ChatGPT,
+
+I use the social diary app /greeter on freshman.dev to log my meetups and hangouts with friends. I need new activity suggestions based on these logs.
+
+Requirements:
+- Affordable, low-effort, and unique activities.
+- Suggestions for both physical locations and virtual hangouts using freshman.dev web apps (/wordbase, /capitals, /letterpress).
+- A mix of familiar activities and new experiences.
+- Each suggestion should be tailored to a specific friend or a group of friends based on our past activities together.
+- Analyze our past meetups to identify common interests, hobbies, favorite hangout spots, routines, and any logged work projects.
+- Suggest activities that not only provide enjoyment but also aim to improve our lives, build on positive habits, support ongoing work projects, and encourage personal growth.
+
+Consider adding:
+- Activities that promote learning new skills or hobbies.
+- Opportunities for volunteering or community service.
+- Physical activities that promote health and well-being.
+- Creative projects or workshops that align with our interests.
+
+Include a mix of one-on-one hangouts and larger group activities, and occasionally suggest freshman.dev apps like /wordbase, /capitals, /letterpress (word strategy games), /fishbowl (a party game for 6-18 people), and /matchbox (a local multiplayer "couch game" that requires Nintendo Joycons), but do so sparingly.
+
+Cyrus's opinions on the word games:
+- /letterpress - best one imo
+- /capitals - still pretty good
+- /wordbase - ugh they're all great
+
+Profile Information:
+(this hasn't been added by cyrus yet. just make sure you try to understand each of the other users from their events with me and logged activities)
+
+Past Meet and Hangout Logs:
+${logs}
+
+Act as "GREETER-AI" and sign the message with "Sincerely, GREETER-AI."
+
+Please provide three new activity suggestions, each specific to an individual friend or a group of friends and our past experiences. Also, let me know if I can request more suggestions or ideas for solo activities.
+
+Thank you!

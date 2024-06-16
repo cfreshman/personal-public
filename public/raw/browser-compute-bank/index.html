@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<title>Browser Compute Bank</title>
+<link rel="icon" href="">
+<link rel="apple-touch-icon-precomposed" href="">
+<meta property="og:image" content="">
+<meta property="og:title" content="">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="">
+<style>
+  :root {
+    --background: #f9f8f6;
+    --color: #101010;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  html, body {
+    margin: 0;
+  }
+  html {
+    background: var(--background);
+    color: var(--color);
+    font-size: 14px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    overflow-x: visible;
+  }
+  a {
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  #reference-label {
+    position: fixed; bottom: 0; right: 0;
+    display: flex;
+    justify-content: flex-end;
+    margin: .25rem;
+    font-size: .9em;
+    text-transform: uppercase;
+    z-index: 100100100;
+  }
+  #reference-label a {
+    border: 1px solid #000;
+    padding: .15em .3em;
+    /* border-radius: 2px; */
+    background: #fff;
+    text-decoration: none;
+  }
+  #reference-label a::after {
+    content: " →";
+  }
+  @keyframes loader {
+  100% { transform: rotate(360deg) }
+  }
+  .loader {
+    display: inline-block;
+    border: .15em solid #0000;
+    border-left-color: currentColor;
+    animation: loader 1.5s infinite linear;
+  }
+  .loader, .loader::after {
+    border-radius: 50%;
+    width: .8em;
+    height: .8em;
+  }
+</style>
+
+<script type='text/javascript'>
+  window.Q = (doc, selector) => {
+    if (selector === undefined) {
+      selector = doc
+      doc = document
+    }
+    return doc.querySelector(selector)
+  }
+  window.QQ = (doc, selector) => {
+    if (selector === undefined) {
+      selector = doc
+      doc = document
+    }
+    return Array.from(doc.querySelectorAll(selector))
+  }
+  window.on = (el, evts, func, opts=undefined) => evts.split(' ').map(evt =>
+    el.addEventListener(evt, func, opts))
+</script>
+<script src='./socket.io.min.js'></script>
+<script type="text/javascript">
+  const backend = location.host.replace(':3000', ':5050')
+  console.debug('[SOCKET CONNECT]', backend)
+  const socket = io(backend)
+  socket.on('connect', () => console.debug('[SOCKET CONNECTED]'))
+</script>
+</head>
+<body>
+
+  <div id="input">
+    <div
+    style="
+    position: relative;
+    display: flex;
+    ">
+      <textarea
+      rows="10"
+      class="hljs language-javascript"
+      style="
+      color: transparent;
+      caret-color: #000;
+      outline: none;
+      resize: vertical;
+      "
+      onkeydown="
+      const L = event.target
+      if (event.key === 'Enter') {
+        if (event.shiftKey) {
+          event.preventDefault()
+          localStorage.setItem(VALUE_KEY, input.value)
+          command(input.value)
+          return
+        }
+    
+        const cursor = L.selectionStart
+        let start = cursor
+        let text = L.value
+        while (start && text[start - 1] !== '\n') start -= 1
+        const line = text.slice(start, cursor)
+        if (line.trim()) {
+          event.preventDefault()
+          const indentMatch = /^\s*/.exec(line)
+          const openerMatch = /[{(]\s*$/.exec(line)
+          const indent = indentMatch[0] + (openerMatch ? '  ' : '')
+          console.debug('INDENT', line, indentMatch, openerMatch, indent)
+          document.execCommand('insertText', false, text)
+          text = text.slice(0, cursor) + '\n' + indent + text.slice(cursor)
+          setInputValue(text)
+          L.selectionStart = L.selectionEnd = cursor + 1 + indent.length
+        }
+      } else if ((event.key === 'Tab' && !event.metaKey) || (event.key === '/' && event.metaKey)) {
+        event.preventDefault()
+        const isTab = event.key === 'Tab'
+        const prefix = isTab ? '  ' : '# '
+        let i = L.selectionStart
+        while (i && L.value[i - 1] !== '\n') i -= 1
+        const unprefix = isTab ? event.shiftKey : L.value[i] === '#'
+
+        let lines = L.value.split('\n')
+        let start, end
+        for (let i = 0, l = 0; i <= L.selectionEnd && l < lines.length; i += lines[l].length + 1, l += 1) {
+          if (i <= L.selectionStart) start = l
+          end = l
+        }
+
+        lines = lines.map((x, i) => (i < start || i > end) ? x : unprefix ? x.replace(prefix, '') : prefix + x)
+        setInputValue(lines.join('\n'))
+        setTimeout(() => {
+          for (let i = 0, l = 0; l <= end; i += lines[l].length + 1, l += 1) {
+            if (l === start) L.selectionStart = i
+            if (l === end) L.selectionEnd = i + lines[l].length
+          }
+        })
+      } else if (event.altKey && (event.key === 'ArrowUp' || event.key === 'ArrowDown')) {
+        const lines = L.value.split('\n')
+        let start, end
+        for (let i = 0, l = 0; i <= L.selectionEnd && l < lines.length; i += lines[l].length + 1, l += 1) {
+          console.debug(i, L.selectionStart, L.selectionEnd, l, start, end)
+          if (i <= L.selectionStart) start = l
+          end = l
+        }
+        console.debug('SHIFT', start, end, L.selectionStart, L.selectionEnd, lines, L.value.slice(L.selectionStart, L.selectionEnd), lines.slice(start, end + 1))
+        const up = event.key === 'ArrowUp'
+        const valid = up ? start > 0 : end < lines.length - 1
+        if (valid) {
+          const selection = [L.selectionStart, L.selectionEnd].map(x => x + (up ? -1 : 1) * (lines[up ? start - 1 : end + 1].length + 1))
+          if (up) {
+            lines.reverse()
+            ;[start, end] = [lines.length - 1 - end, lines.length - 1 - start]
+          }
+          lines.splice(start, 0, lines.splice(end + 1, 1))
+          if (up) lines.reverse()
+          setInputValue(lines.join('\n'))
+          console.debug(selection)
+          setTimeout(() => {
+            L.selectionStart = selection[0]
+            L.selectionEnd = selection[1]
+          })
+        }
+      }
+      "
+      oninput="setInputValue(event.target.value)"
+      onscroll="input_display.scrollTop = input.scrollTop"
+      >
+      </textarea>
+      <pre
+      id="input-display"
+      class="language-javascript"
+      style="
+      pointer-events: none;
+      position: absolute; top: 0;
+      background: none;
+      /* border-bottom: 1.5px solid #000; */
+      "><code></code></pre>
+      <link id="syntax-highlighting" rel="stylesheet" href="">
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/languages/javascript.min.js"></script>
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;width:fit-content;margin:auto;align-items:center">
+    <div id="list">
+      <div>
+        <div style="
+        display: flex; white-space: pre-wrap;
+        font-size: .85em;
+        /* align-items: center; */
+        align-items: start;
+        margin-bottom: .5em;
+        margin-top: -.5em;
+        ">
+          <!-- <span id="run-description" style="display:none">distribute tasks across connected clients → </span> -->
+          <button
+          id="run"
+          style="
+          padding: 0 .3em;
+          border: 1px solid #000;
+          font-size: 1rem;
+          /* position: absolute;
+          bottom: 0; right: 0;
+          margin: .5em; */
+          margin: 0;
+          cursor: pointer;
+          user-select: none;
+          color: #000;
+
+          height: 1.5rem;
+          border-radius: 2px;
+          " onclick="
+          run()
+          ">RUN</button>
+          <span style="
+          display: flex;
+          align-items: center;
+          height: fit-content;
+          align-self: flex-start;
+          ">
+            <input id="timeout" type="number" value="5" max="300" placeholder="300"
+            oninput="preview()"
+            style="
+            width: 4em;
+            pointer-events: all;
+            padding: 0;
+            height: 1.35em;
+            margin-left: 0.25em;
+
+            height: 1.5rem;
+            border-radius: 2px;
+            border: 1px solid #000;
+            "/>
+            <span>s</span>
+          </span>
+          <div style="flex-grow:1"></div>
+          <div style="
+          display: flex; flex-direction: column;
+          white-space: pre-wrap;
+          text-align: right;
+          margin-left: 1em;
+          ">
+            <span id="run-description">distribute tasks across connected clients</span>
+            <span style="
+            font-size: .7em;
+            ">compute: <span id="run-compute">30</span>s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading item">
+        <div class="content"><b>Browser Compute Bank</b> @ <a href="https://itj.sh">itj.sh</a> <span style="
+          font-style: italic;
+          opacity: .25;
+          font-weight: 100;
+          ">"you know, idge computing"</span>
+          - clients: (<div class="loader"></div> loading)
+          --- tasks: (<div class="loader"></div> loading)
+          - running: (<div class="loader"></div> loading)
+        </div>
+      </div>
+
+      <!-- rendered items -->
+    </div>
+    <style>
+      #input {
+        z-index: 1;
+        margin-bottom: 2px;
+        border-radius: 0;
+        position: relative;
+        border-bottom: 1px solid #000;
+      }
+      #input textarea, #input-display {
+        display: block;
+        width: 100%; height: 100%;
+        margin: 0;
+        border: 0;
+        padding: .5em 1em;
+        font-size: 11px;
+        white-space: pre-wrap; word-break: break-all;
+        overflow: auto;
+        font-family: monospace;
+      }
+      @media screen and (aspect-ratio: 2/3)  {
+        #input textarea, #input-display {
+          font-size: 16px;
+        }
+      }
+      :is(#input textarea, #input_display)::-webkit-scrollbar {
+        visibility: hidden;
+      }
+      /* #input:not(:focus-within) span { display: none } */
+      #list {
+        padding: .5rem;
+        background: inherit;
+        padding-bottom: 200vh;
+      }
+      #list a:hover {
+        font-weight: bold;
+      }
+      #list .item-container {
+        padding: .25em 0;
+        width: 100%;
+        max-width: calc(100vw - 1rem);
+      }
+      #list .item {
+        position: relative;
+        padding: .5em 1em;
+        background: #fff;
+        color: #000;
+        font-size: .8em;
+        border: 1px solid #000;
+      }
+      #list .item .content {
+        white-space: pre-line;
+      }
+      #list .item .label {
+        font-size: .8em;
+        text-align: right;
+        padding-top: .5em;
+        position: relative;
+        right: -1em;
+        bottom: -0.5em;
+      }
+      #list .item .task {
+        display: flex;
+        flex-wrap: nowrap;
+        white-space: pre;
+      }
+      #list .item :is(.run-result-preview, .task-result-preview) {
+        width: fit-content;
+        user-select: all;
+        flex-shrink: 1;
+        overflow: hidden;
+      }
+      #list .item .task-result {
+        width: fit-content;
+        overflow-wrap: break-word;
+        user-select: all;
+      }
+    </style>
+    <script>
+      const tasks = new Set()
+      const _run = (source, timeout=30_000, id=undefined) => {
+        const outerFrame = document.createElement('iframe')
+        const promise = new Promise(resolve => {
+          outerFrame.style.display = 'none'
+          outerFrame.dataset['id'] = 'i'+id
+          document.body.append(outerFrame)
+
+          const html = 'data:text/html;charset=utf-8,' + encodeURIComponent(source)
+          const frame = document.createElement('iframe')
+          frame.sandbox = 'allow-scripts'
+          frame.src = html
+          
+          outerFrame.contentWindow.onmessage = e => {
+            resolve(e.data)
+            outerFrame.remove()
+          }
+          outerFrame.contentDocument.body.append(frame)
+
+          setTimeout(() => {
+            resolve({ error: 'TIMEOUT' })
+            outerFrame.remove()
+          }, timeout)
+        })
+        return {
+          frame: outerFrame,
+          promise,
+        }
+      }
+      const compute = task => {
+        const end = result => {
+          socket.emit('end', task.id, result)
+          tasks.delete(task.id)
+          Q(`iframe[data-id="i${task.id}"]`)?.remove()
+        }
+        _run(task.data, task.timeout, task.id).promise.then(result => {
+          console.debug('[COMPUTE END]', task.id, result)
+          end(result)
+        })
+        console.debug('[COMPUTE START]', task.id, task.data)
+        socket.emit('start', task.id)
+        tasks.add(task.id)
+        setTimeout(() => {
+          if (tasks.has(task.id)) {
+            console.debug('[COMPUTE TIMEOUT]', task.id)
+            end(undefined)
+          }
+        }, task.timeout)
+        render()
+      }
+
+      const SERVER_KEY = 'itj.sh'.replaceAll('.', '_')
+      const key = (...most_to_least_specific) => {
+        return most_to_least_specific.filter(x=>x).concat([SERVER_KEY]).map(x=>x.replace(/[\.\-]/g, '_')).join('-')
+      }
+
+      let _view_timeout_handle, _clicked, _scrolled
+      const viewItem = (item, ignore_click=false) => {
+        clearTimeout(_view_timeout_handle)
+        // _view_timeout_handle = setTimeout(() => {
+          console.debug('VIEW ITEM', item, _scrolled)
+          if (Array.isArray(item)) item = key(...item)
+          if (item === _scrolled) {
+            // history.replaceState(0, 0, '?=')
+            // _scrolled = undefined
+          } else if (item) {
+            console.debug('CLICK? SCROLL?', item, _clicked, _scrolled)
+            if (item !== _clicked) {
+              const click = !ignore_click && Q(`#click-${item}`)
+              if (click) {
+                console.debug('CLICK', click)
+                _clicked = item
+                click.click()
+              }
+            }
+            
+            let run = item, block = 'start', behavior = 'smooth'
+            const keys = item.split('-')
+            if (keys.length === 4) {
+              // focus individual tasks at run level
+              // Q('#item-'+keys.slice(1).join('-'))?.scrollIntoView({ block, behavior: 'smooth' })
+              block = 'end'
+            } else 
+            if (keys.length === 4 || keys.length === 2) {
+              // focus client at domain
+              run = keys.slice(1).join('-')
+            } else if (item === SERVER_KEY) {
+              // focus actual domain at top of page
+              item = ''
+            }
+            const itemElement = Q(`#item-${run}`)
+            history.replaceState(0, 0, itemElement ? `?=${item}` : '?=')
+            const element = itemElement || Q(`#item-${item}`) || Q(item)
+            if (element) {
+              console.debug('SCROLL', element)
+              _scrolled = item
+              // setTimeout(render)
+              // render()
+              setTimeout(() => {
+                const updated = item ? Q('#'+element.id)?.parentElement : input
+                console.debug('SCROLL UPDATED', updated)
+                if (updated) {
+                  updated.scrollIntoView({ block, behavior })
+                  // _scrolled = item
+                } else {
+                  _scrolled = undefined
+                }
+              })
+            }
+          }
+        // })
+      }
+
+      const input = Q('#input textarea')
+      const input_display = Q('#input #input-display')
+      const timeout = Q('#timeout')
+      timeout.value = localStorage.getItem('bcb-timeout') || timeout.value
+      const run_button = Q('#run')
+      const run_description = Q('#run-description')
+      const run_compute = Q('#run-compute')
+      let run_timeout_handle
+      const run = async () => {
+        console.debug(input.value)
+        localStorage.setItem('bcb-last', input.value)
+        const task_data_list = await _run(`
+        \<script\>
+          parent.postMessage((() => {
+            ${input.value.replace('\<script\>', '\\\<script\\\>').replace('\</script\>', '\\\</script\\\>')}
+          })(), '*')
+        \</script\>
+        `).promise
+        socket.emit('run', task_data_list, timeout.value * 1_000)
+        localStorage.setItem('bcb-timeout', timeout.value)
+        socket.once('status', status => {
+          run_button.innerHTML = '&nbsp;<div class="loader"></div>&nbsp;'
+          setTimeout(() => run_button.textContent = 'RUN', 1000)
+        })
+      }
+      let status = {}
+      const preview = async () => { 
+        const display = task_data_list => {
+          if (run_timeout_handle) return
+          clearTimeout(display_timeout_handle)
+          if (task_data_list?.length <= 1000) {
+            run_button.disabled = false
+            // run_description.textContent = `distribute ${task_data_list.length} task(s) across ${status?.clients || '??'} connected client(s) → `
+            run_description.textContent = `${task_data_list.length} task(s) across ${status ? status.clients+' ' : '' }connected client(s)`
+
+            const timeoutS = timeout.value || 300
+            run_compute.textContent = task_data_list.length * timeoutS
+
+            const required = task_data_list.length * timeoutS
+            const net = Math.floor((status?.client?.net || 0) / 1000)
+            console.debug('PREVIEW REQUIRED COMPUTE', required, net)
+            if (required > net) {
+              status.warning = `${task_data_list.length}x${timeoutS}s tasks require ${required}s reserved (> <span style="background:#f88;white-space:pre"> ${net}s </span>)\nExcess tasks will run locally`
+            } else if (status.warning?.includes('tasks require')) {
+              status.warning = ''
+            }
+          } else {
+            run_button.disabled = true
+            run_description.textContent = 
+            task_data_list ? 'too many tasks' : 'invalid task list'
+          }
+          render()
+        }
+        _run(`
+        \<script\>
+          parent.postMessage((() => {
+            ${input.value.replace('\<script\>', '\\\<script\\\>').replace('\</script\>', '\\\</script\\\>')}
+          })(), '*')
+        \</script\>
+        `).promise.then(display)
+        let display_timeout_handle = setTimeout(display, 250)
+      }
+      const setInputValue = value => {
+        input_display.textContent = (input.value = value).replace(/\n$/, '\n ')
+        input_display.scrollTop = input.scrollTop
+        input_display.style.height = input.clientHeight + 'px'
+        localStorage.setItem('bcb-input', input.value)
+        const _highlight = () => {
+          window.hljs ? window.hljs.highlightElement(input_display) : setTimeout(_highlight, 1000)
+          input_display.style.height = ''
+        }
+        _highlight()
+        preview()
+      }
+      const theme_sheet = document.querySelector('#syntax-highlighting')
+      let theme_timeout_handle
+      const setTheme = theme => {
+        // theme_select.value = theme
+        clearInterval(theme_timeout_handle)
+        theme_timeout_handle = setInterval(() => {
+          input.style.caretColor = getComputedStyle(input_display).caretColor
+        }, 500)
+        theme_sheet.href = theme && `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/${theme}.min.css`
+        localStorage.setItem('bcb-theme', theme)
+      }
+      // setTheme(localStorage.getItem('bcb-theme') || 'isbl-editor-light')
+
+      Object.entries({
+        'client': client_id => {
+          localStorage.setItem('bcb-client', client_id)
+        },
+        'task': (...tasks) => tasks.map(compute),
+        'status': x => {
+          if (JSON.stringify(x) === JSON.stringify(status)) return
+          status = Object.assign(status || {}, x)
+          console.debug(x, status)
+          preview()
+          render()
+
+          if (localStorage.getItem('bcb-client') && !status.client.runs.length) {
+            const timeout_save = timeout.value
+            timeout.value = 15
+            run()
+            timeout.value = timeout_save
+            run()
+          }
+        },
+        'run': async x => {
+          console.debug('STATUS run', status, x)
+          viewItem([x.tasks[0], x.id, x.client])
+        }
+      }).map(([event, handler]) => socket.on(event, handler))
+      setTimeout(() => socket.emit('browser-compute-bank', localStorage.getItem('bcb-client')), 1000)
+
+      const list = Q('#list')
+      let view
+      const renderTimestamp = x => x ? new Date(x).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'long' }) : ''
+      const render = () => {
+        if (!status.client) return
+        const { client, load=[] } = status
+        let viewed = client
+        if (view && view[0]) viewed = client?.runs?.find(x => x.id === view[0])
+        if (view && view[1]) viewed = viewed?.tasks.find(x => x.id === view[1])
+        if (load.length === 1 && load[0]) window['singular-load'] = load[0]
+        else window['singular-load'] = undefined
+        const min = window['singular-load'] ? 0 : Math.min(...load)
+        const max = window['singular-load'] ?? Math.max(...load, 1)
+        const relative_load = load.map(x => (x - min) / max)
+        console.debug(min, max, relative_load)
+        const heat = x => `hsl(${250 + 110 * x} 70% 70%)`
+        // const heat = x => `hsl(${220 + 15 * x} 70% ${90 - 20 * x}%)`
+        // const heat = x => `hsl(20deg 100% ${100 - 50 * x}%)`
+        const even = x => 
+          x.split('\n').map(x=>x.trim()).filter(x=>x).reduce((a, v) => {
+            const [label, value] = /([^:]+):(.*)/.exec(v).slice(1)
+            a[0] = Math.max(a[0], label.length)
+            a.push([label, value])
+            return a
+          }, [0]).map((x, i, a) => i && '-'.repeat(a[0] - x[0].length + 1)+' '+x.join(':')).slice(1).join('\n')
+        Array.from(list.children).slice(1).map(x => x.remove())
+        ;[{
+          [key()]: 
+          `<b>Browser Compute Bank</b> @ <a href="https://itj.sh">itj.sh</a>
+          ${even(`
+          clients: ${status.clients}
+          tasks: ${load.reduce((sum, x) => sum + x, 0)}
+          running: ${tasks.size}
+          `)}
+
+          <div style="
+          display: inline-flex;
+          height: 2em;
+          ">${
+            load.map((x, i) => 
+            `<span style="
+            background: ${heat(relative_load[i])};
+            padding: 0 2px;
+            ">${x}</span>`).join('')
+          }</div>`
+        }, {
+          [key(client.id)]:
+          `<b>client ${client.id}</b>
+          ${even(`
+          compute: ${Math.floor(client.compute / 1000)}s
+          credit: ${Math.floor(client.credit / 1000)}s
+          spent: ${Math.floor(client.spent / 1000)}s
+          net: <span style="${status.warning?.includes('tasks require') ? `background: #f88;white-space: pre;`:''}"> ${Math.floor((client.net) / 1000)}s </span>
+          runs: ${client.runs.length}`)}
+          ${status.error ? `
+          <div><span style="background:#f88">ERROR</span> ${status.error}</div>` : status.warning ? `
+          
+          <div style="
+          display: flex;
+          flex-direction: row;
+          align-items: flex-start;
+          "><span style="background:#ff8">WARNING</span>&nbsp;<span>${status.warning}</span></div>
+          `:''}
+          ${
+            client.runs
+            .slice().reverse()
+            .map((run, i) => {
+              const errors = !run.remaining && run.tasks.map(task => task.result?.error).filter(x=>x)
+              const status = (
+                !run.remaining ? 2 :
+                run.remaining < run.tasks.length ? 1 :
+                0)
+              return `<div class="run"><a onclick="
+                view = ${run === viewed ? `undefined` : `['${run.id}']`}
+                viewItem('${key(run.id, client.id)}')
+                render()
+                ">${run === viewed ? `<b>${run.id}</b>` : run.id}</a>&nbsp;<span><span class="run-result-preview" style="
+                background: ${['#f88', '#ff8', '#8f8'][status]};
+                ">&nbsp;${[
+                  '<div class="loader"></div>&nbsp;',
+                  '<div class="loader"></div>&nbsp;',
+                  ''
+                ][status]}${run.tasks.length - run.remaining}/${run.tasks.length}&nbsp;</span>${
+                  errors.length ? 
+                  `<span class="run-result-preview" style="
+                  background: #f88;
+                  ">&nbsp;${errors.length}&nbsp;</span>`:''
+                }&nbsp;${Math.floor(run.tasks.reduce((s, task)=> s + (task.end ? task.end - task.start : run.timeout)/1000, 0))}s</span></div>`
+            })
+            .join('')
+          }`
+        }, ...client.runs.slice().reverse().flatMap(run => [{
+          [key(run.id, client.id)]: 
+          `<b>run ${run.id} ${run.remaining ? '' : `<span style="
+          cursor: pointer;
+          line-height: 0;
+          height: 0;
+          display: inline-block;
+          font-size: 1.25em;
+          " onclick="
+          socket.emit('run', status.client.runs.find(x => x.id === '${run.id}').tasks.map(task => task.data))
+          viewItem('#input')
+          ">↻</span>`}</b>
+          ${even(`
+          tasks: ${run.tasks.length}
+          remaining: ${run.remaining}
+          start: ${renderTimestamp(run.start)}
+          end: ${renderTimestamp(run.end)}
+          duration: ${run.end ? Math.floor((run.end - run.start) / 1000)+'s' : ''} / <a onclick="timeout.value=${run.timeout / 1000};viewItem('#input')">${Math.floor(run.timeout / 1000)}s</a>
+          compute: ${Math.floor(run.tasks.reduce((s, task)=> s + (task.end ? task.end - task.start : run.timeout)/1000, 0))}s`)}
+
+          ${
+            run.tasks
+            .map((task, i) => {
+              const status = (
+                task.result?.error ? 3 :
+                task.end ? 2 :
+                task.start ? 1 :
+                0)
+              
+              const result_id = `result-${key(task.id, task.run, client.id)}`
+              const render_as_link = /^(https?:|data:)/.test(task.result) // not allowed by browser
+              const rendered_result = render_as_link ? `<a id="${result_id}"></a>` : `<span id="${result_id}"></span>`
+              setTimeout(() => {
+                const result = Q('#'+result_id)
+                result.textContent = task.result
+                if (render_as_link) {
+                  result.href = location.pathname.replace(/\/$/, '')+`/result#${encodeURIComponent(task.result)}` // task.result
+                  // result.onclick = e => {
+                  //   e.preventDefault()
+                  //   window.open(task.result)
+                  // }
+                }
+              })
+
+              return `<div class="task"><a id="click-${key(task.id, task.run, client.id)}" onclick="
+                view = ${viewed === task ? `undefined` : `['${task.run}', '${task.id}']`}
+                render()
+                viewItem('${key(task.id, task.run, client.id)}', true)
+                ">${task === viewed ? `<b>${task.id}</b>` : task.id}</a> => <span class="task-result-preview" style="
+                background: ${['#f88', '#ff8', '#8f8', '#f88'][status]};
+                ">&nbsp;${[
+                  '<div class="loader"></div>',
+                  '<div class="loader"></div>',
+                  rendered_result,
+                  task.result?.error,
+                ][status]}&nbsp;</span></div>`
+            })
+            .join('')
+          }`
+        }, view && view[0] === run.id && view[1] && {
+          [key(viewed.id, viewed.run, client.id)]:
+          `<b>task ${viewed.id} ${run.remaining ? '' : `<span style="
+          cursor: pointer;
+          line-height: 0;
+          height: 0;
+          display: inline-block;
+          font-size: 1.25em;
+          " onclick="
+          const run = status.client.runs.find(x => x.id === '${viewed.run}')
+          socket.emit('run', [run.tasks.find(x => x.id === '${viewed.id}').data], timeout.value * 1_000 || run.timeout)
+          viewItem('#input')
+          ">↻</span>`}</b>
+          ${even(`
+          start: ${renderTimestamp(viewed.start)}
+          end: ${renderTimestamp(viewed.end)}
+          duration: ${viewed.end ? Math.floor((viewed.end - viewed.start) / 1000)+'s' : ''}
+          result: <span class="task-result">${JSON.stringify(viewed.result)}`)}</span>
+
+          <div id="view-source" style="
+          white-space: pre;
+          overflow: auto;
+          background: #000;
+          color: #fff;
+          padding: .33em .67em;
+          user-select: all;
+          "></div>`
+        }])]
+        .filter(x => x)
+        .map(x => Object.entries(x)[0])
+        .map(([label, content]) => `
+        <div class="item-container">
+          <div class="item" id="item-${label}">
+            <div class="content">${content}</div>
+            <div class="label">${label 
+              ? label.split('-').map((x, i, a) => {
+                const item = a.slice(i).join('-')
+                return `<a href="?=item-${item}" onclick="
+                event.stopPropagation()
+                event.preventDefault()
+                viewItem('${item}', true)
+                render()
+                ">${location.search.includes(x) ? `<b>${x}</b>` : x}</a>`
+              }).join('-')
+              : ''}</div>
+          </div>
+        </div>`)
+        .map(x => {
+          const _temp = document.createElement('div')
+          _temp.innerHTML = x
+          list.append(_temp.children[0])
+        })
+
+        if (view && view[1]) {
+          const source = viewed.data.replace(/^\s*\n/, '').replace(/\n\s*$/, '')
+          const indent = source.length - source.replace(/^ +/, '').length
+          Q('#view-source').textContent = source.split('\n').map(x => x.slice(indent)).join('\n')
+        }
+
+        viewItem(new URLSearchParams(location.search).get(''))
+
+        QQ('.loading').map(x => x.remove())
+        list.style.display = ''
+      }
+      let scrolled = false
+
+      const examples = [
+`return Array.from({ length: 6 }).map((_, i) => \`
+\<script\>
+const resolve = x => parent.postMessage(x, '*')
+
+setTimeout(
+  () => resolve('Hello from \${i}'),
+  \${1 + (i * 2)%6}_000)
+
+\</script\>\`)`,
+`return Array.from({ length: 1 }).map((_, i) => \`
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAICAYAAADED76LAAAAAXNSR0IArs4c6QAAABNJREFUKFNj/M/A8J8BD2AcGQoAHRMP+SLCGjwAAAAASUVORK5CYII=" />
+\<script\>
+const resolve = x => parent.postMessage(x, '*')
+
+const img = document.querySelector('img')
+const canvas = document.createElement('canvas')
+const tile = (canvas.height = canvas.width = 256)/2
+const ctx = canvas.getContext('2d')
+ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height)
+ctx.putImageData((x => {
+  const saved = Array.from(x.data)
+  for (let i = 0; i < tile * tile; i++) for (let j = 0; j < 3; j++) x.data[i*4 + j] = saved[i*4 + (j+1)%3]
+  return x
+})(ctx.getImageData(0, 0, tile, tile)), 0, 0)
+resolve(canvas.toDataURL())
+
+\</script\>\`)`,
+      ]
+
+      let example_i = (examples.indexOf(localStorage.getItem('bcb-input')) + 1) % examples.length
+      setInputValue((!example_i && localStorage.getItem('bcb-input')) || examples[example_i])
+    </script>
+
+  </div>
+
+  <div id="reference-label">
+    <a href="https://freshman.dev">freshman.dev</a>
+  </div>
+
+</body>
+</html>

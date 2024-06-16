@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset=utf-8>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>scores</title>
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+  </head>
+  <body>
+
+    <div id="content">
+      <h1 class="title">scores</h1>
+      <div id="user"></div>
+      <div id="scores"></div>
+      <div id="score-form">
+        <input id="score-app" type="text" placeholder="app"/>
+        <input id="score-value" type="number" placeholder="score"/>
+        <button id="score-submit">send</button>
+      </div>
+      <div id="login-form">
+        <input id="login-user" type="text" placeholder="username"/>
+        <input id="login-pass" type="password" placeholder="password"/>
+        <button id="login-submit">log in</button>
+      </div>
+      <div id="logout-form">
+        <div id="logout-user"></div>
+        <button id="logout-submit">log out</button>
+      </div>
+    </div>
+
+    <script src="/lib/utils.js"></script>
+    <script type="module" src="script.js"></script>
+  </body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>kart</title>
+  <script src=/copyright.js></script><meta data-hydrate data-style />
+  <style>
+    :root {
+      font-family: monospace;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <script>
+    defer(() => {
+      const cart = `
+_——_
+oWWo
+ HH
+d{}b
+/——\\`.slice(1)
+
+      document.body.append((x => {
+        x.textContent = cart
+        return x
+      })(node('<pre id=cart_l></pre>')))
+
+      const W = 40, A = .5, L = 10, w = Math.max(...cart.split('\n').map(x => x.length))
+      let x = W/3, v = 0
+      const lane = '   |' + ' '.repeat(W + w - 8) + '|   '
+      const last = [], offsets = range(L).map(() => 2), ov = range(L).map(() => 0)
+      const loop = () => {
+        requestAnimationFrame(loop)
+
+        const a = rand.f(A) - A/2 + A*((W/2) - x)/W/2 - v/64 + (x < 2 ? A/2 : x > W-2 ? -A/2 : 0)
+        v = Math.max(-2, Math.min(v + a, 2))
+        x = Math.max(0, Math.min(x + v, W))
+        if (x === 0) v = Math.max(0, v)
+        if (x === W) v = Math.min(v, 0)
+        
+        // last.map((l,i) => last[i] += -a)
+        ov.map((_,i) => ov[i] = Math.max(-A/2, Math.min(ov[i] + rand.f(A/4) - A/8, A/2)))
+        offsets.map((_,i) => offsets[i] = Math.max(1, Math.min(offsets[i] + ov[i], 4)))
+        last.unshift(x)
+        if (last.length > L) last.pop()
+        
+        cart_l.textContent =
+        last
+        .slice(0, L)
+        .map(
+          (l,i) =>
+          ['\n'.repeat(Math.round(offsets[i])), '', cart, '']
+          .join('\n')
+          .split('\n')
+          .map(y => lane.slice(0, l) + y + lane.slice(l + y.length))
+          .join('\n'))
+        .join('\n')
+      }
+      requestAnimationFrame(loop)
+
+    })
+  </script>
+
+</body>
+</html>

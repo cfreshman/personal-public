@@ -1,0 +1,1497 @@
+<!-- 
+
+    TODO
+    - spot
+    - voice
+
+ -->
+
+<title>computer.html</title>
+<meta charset=utf-8><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<link rel="manifest" id=manifest>
+<style>
+body{margin:.5em}*{font-family:monospace;font-size:inherit}
+@media (max-aspect-ratio: 1/1) {
+    html,body {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    #spacer {
+        display: block;
+        flex-grow: 1;
+    }
+}
+</style>
+<span id="spacer"></span>
+<div style="white-space:pre-wrap;font-family:monospace"><div id=upper_ps></div><div style="display:flex;align-items:center"><span id=ps style="display:flex;align-items:center">$</span>&nbsp;<span id=block>█</span><span style="position:relative;display:inline-flex"><textarea id=input class="resize" autocapitalize="off" style="padding:0;border:0;outline:none;-webkit-appearance:none;resize:none;width:100%;background:transparent"></textarea><span style="position:absolute;top:0;left:0;height:100%;width:100%"><span id=spacing style="visibility:hidden"></span><span id=complete style="opacity:.33;cursor:pointer"></span></span></span></div><span id=options style="opacity:.33;display:block;min-height:1em;margin-bottom:1em;"></span></div>
+<script>
+window.Q = (l, s) => s ? l.querySelector(s) : document.querySelector(l)
+window.QQ = (l, s) => Array.from((s ? l.querySelectorAll(s) : document.querySelectorAll(l))||[])
+window.on = (l, es, f, o=undefined) => [l]
+    .flatMap(x=>x)
+    .forEach(li => 
+        (typeof(li) === 'string' ? QQ(li) : [li])
+        .forEach(lii => lii && (typeof(es) === 'string' ? es.split(' ') : es).map(e => lii.addEventListener(e, f, o))))
+window.node = (html='<div></div>') => (x => {
+    x.innerHTML = html
+    return x.children[0]
+})(document.createElement('div'))
+window.sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+window.range = (a,o,e=1) => Array.from({ length: Math.floor((o===undefined?a:o-a)/e) }).map((_, i) => i*e + (o===undefined?0:a))
+window.randalpha = n => range(n).map(_=>String.fromCharCode(Math.floor(26 * Math.random()) + 'A'.charCodeAt(0))).join('')
+window.compose = (...funcs) => (...args) => funcs.slice(1).reduce((v, f) => f(v), funcs[0] && funcs[0](...args))
+window.pipe = (value, ...funcs) => compose(...funcs)(value)
+window.sha256 = async (message) => location.port ? message : pipe(
+    await crypto.subtle.digest('SHA-256', new TextEncoder().encode(message)),
+    hashBuffer => Array.from(new Uint8Array(hashBuffer)),
+    hashArray => hashArray.map(b => b.toString(16).padStart(2, '0')).join(''))
+window.auth = { user:false, token:undefined }
+window.api = (()  => {
+    const origin = location.port ? 'http://localhost:5050' : location.origin
+    const api = {
+        get:    {},
+        post:   { body: true },
+        put:    { body: true },
+        delete: {},
+
+        catch: ()=>{},
+    }
+    const _request = (url, req) => 
+        fetch(url, req)
+        .then(async res => ({
+            'application/json': () => res.json().then(data => {
+                if (data.error) {
+                    console.debug('api error', data.error)
+                    throw data
+                } else if (res.ok) {
+                    console.debug('ok', url, data)
+                    const { user, token } = data
+                    if (user !== undefined) Object.assign(auth, { user, token })
+                    return data
+                } else {
+                    data.error = `failed ${service} ${path}: ${data.message}`
+                    console.debug('server error', data.error)
+                    throw data
+                }
+            }),
+        }[(res.headers.get('Content-Type') || 'application/json').split(';')[0]] || (()=>res))())
+        .catch(e => {
+            const error = e.error ?? e.message ?? e
+            console.debug('connection error', error)
+            
+            if (api.catch) api.catch({ error, url })
+            else throw { error }
+        })
+        .finally(_=>console.debug(url, req))
+    Object.entries(api).map(([service, { method=service.toUpperCase(), body:has_body=false }]) => api[service] = (url, body={}, options={}) => {
+        if (!has_body) options = body
+        const controller = new AbortController()
+        options.ms && setTimeout(() => controller.abort(), options.ms || 61_000)
+        return _request(origin + url.replace(/^\/*/, '/'), {
+            method,
+            headers: {
+                'Content-Type': has_body ? 'application/json' : undefined,
+                'X-Freshman-Auth-User': auth.user,
+                'X-Freshman-Auth-Token': auth.token,
+            },
+            signal: controller.signal,
+            body: has_body ? JSON.stringify(body) : undefined,
+        })
+    })
+    return api
+})()
+setTimeout(() => {
+    QQ('textarea.resize').map(t => {
+        t.resize = () => {
+            const _temp = node('<div></div>')
+            _temp.style.whiteSpace = t.style.whiteSpace = 'pre-wrap'
+            _temp.style.wordBreak = t.style.wordBreak = 'break-word'
+
+            // TODO don't
+            // t.parentElement.style.width = '-webkit-fill-available' 
+            t.parentElement.style.width = (t.parentElement.parentElement.getBoundingClientRect().width - (t.parentElement.getBoundingClientRect().x - t.parentElement.parentElement.getBoundingClientRect().x))+'px'
+
+            t.style.width = '-webkit-fill-available'
+            const rect = t.getBoundingClientRect()
+            const { fontFamily, fontSize, lineHeight, padding, border, boxSizing, wordBreak } = getComputedStyle(t)
+            Object.assign(_temp.style, {
+                width: rect.width+'px',
+                fontFamily, fontSize, lineHeight, padding, border, boxSizing, wordBreak
+            })
+            
+            // _temp.textContent = t.value || ' '
+            // TODO don't do this
+            _temp.textContent = (t.value || ' ') + '-'.repeat(complete.textContent.length)
+
+            document.body.append(_temp)
+            t.style.height = _temp.getBoundingClientRect().height+'px'
+            // _temp.style.width = ''
+            // t.style.width = _temp.getBoundingClientRect().width+'px'
+            // t.style.height = _temp.getBoundingClientRect().height+'px'
+            // t.parentElement.style.width = _temp.getBoundingClientRect().width+'px' // TODO don't
+            t.parentElement.style.width = rect.width+'px'
+            _temp.remove()
+        }
+        t.resize()
+    })
+    on('textarea.resize', 'input', e => e.target.resize())
+})
+</script><script>
+const inputs = []
+let input_i = 0
+const openKeyboard = async (skip_animation=false)=> {
+    if (!window.block) return // window was replaced
+    if (block.textContent) {
+        if (!skip_animation) {
+            const rect = block.getBoundingClientRect()
+            // input.style.caretColor = block.style.color = '#88f'
+            block.style.width = rect.width+'px'
+            block.style.transition = '.075s'
+            await sleep(0)
+            block.style.width = 0
+            await sleep(75)
+        }
+        // const rect = block.getBoundingClientRect()
+        // const container = node(`<div style="
+        // position: fixed;
+        // top: ${rect.y}px; left: ${rect.x}px;
+        // width: ${rect.width}px; height: ${rect.height}px;
+        // display: flex; align-items: center; justify-content: center;
+        // ">
+        //     <canvas style="image-rendering:pixelated"></canvas>
+        // </div>`)
+        // const canvas = Q(container, 'canvas')
+        // canvas.style.width = canvas.style.height = Math.min(rect.width, rect.height)+'px'
+        // canvas.width = canvas.height = 5
+        // const ctx = canvas.getContext('2d')
+        // ctx.fillStyle = '#000'
+        // ctx.fillRect(1, 1, 3, 3)
+        // ctx.fillStyle = '#fff'
+        // ctx.fillRect(1, 3, 3, 1)
+        // document.body.append(container)
+        // console.debug(container)
+        // await sleep(1_000)
+        // ctx.fillRect(1, 1, 1, 1)
+        // ctx.fillRect(3, 1, 1, 1)
+        // await sleep(1_000)
+        // container.remove()
+        // block.style.whiteSpace = 'nowrap'
+        // for (let i = 0; i < 3; i++) {
+        //     block.innerHTML = '<span style="display:inline-block;width:.25em"></span>'+block.innerHTML
+        //     console.debug(block.textContent)
+        //     await sleep(333)
+        // }
+        handle.complete('')
+    }
+    input.focus()
+    input.setSelectionRange(1e6,1e6)
+    block.textContent = ''
+}
+document.body.style.cursor = 'pointer'
+on([window, 'body'], 'keydown', () => {
+    if (!block.textContent) return
+    document.body.style.cursor = ''
+    openKeyboard(true)
+    // const { command, args } = parse(input.value)
+    // handle.complete(command, args)
+})
+on([window, 'body'], 'focus click', () => {
+    document.body.style.cursor = ''
+    openKeyboard()
+    // const { command, args } = parse(input.value)
+    // handle.complete(command, args)
+})
+
+const output = node('<div style="white-space:pre;font-family:monospace"></div>')
+const outputs = []
+document.body.insertBefore(output, document.body.children[1])
+const dynamicHtmlSrc = (html, i=undefined) => {
+    i = i ?? randalpha(16)
+    console.debug('dynamic html src', i)
+    const load_script = `
+<script>
+    const message = data => parent.postMessage({
+        i: "${i}",
+        ...data,
+    }, '*')
+    const _addEventListener = window.addEventListener.bind(window)
+    let focus = false
+    window.addEventListener = (...args)=>{
+        if (args[0] === 'keydown') focus = true
+        return _addEventListener(...args)
+    }
+    setTimeout(() => {
+        const update = () => {
+            message({
+                height: document.body.getBoundingClientRect().height,
+                // focus: !!document.querySelector(':is(canvas, input)'), // crude criteria for keeping document focused
+                focus, // crude criteria for keeping document focused
+            })
+            document.querySelectorAll('a').forEach(a => {
+                if (a.dataset['computerhref']) return
+                a.dataset['computerhref'] = true
+                a.addEventListener('click', e => {
+                    const href = a.getAttribute('href')
+                    if (href === location.href || href?.startsWith('#')) return
+                    if (href) {
+                        console.debug(e, href)
+                        e.preventDefault()
+                        message({ open: Object.fromEntries([...a.attributes].map(x=>[x.name,x.value])) })
+                    }
+                })
+            })
+        }
+        setTimeout(update)
+        setInterval(update, 100)
+    })
+<\/script>`
+    let content
+    if (html.tagName) {
+        let original_src = html.src
+        html.onload = e => {
+            e.target.contentWindow.window.document.body.append(node(load_script))
+            const rect = html.getBoundingClientRect()
+            html.style.minHeight = Math.min(200, e.target.contentWindow.window.document.body.scrollHeight)+'px'
+            document.body.scrollTop += html.getBoundingClientRect().height - rect.height
+            // if (html.src !== original_src) {
+            //     window.open(html.src)
+            //     html.src = original_src
+            // }
+        }
+    } else {
+        content = `data:text/html;charset=utf-8,${encodeURIComponent(`
+<style>
+body {
+    margin: 0;
+    height: max-content;
+    ${!html.includes('body {') ? `
+    white-space: pre;
+    font-family: monospace;`:''}
+}
+a {
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+a[href]::after {
+    // content: "↗";
+}
+<\/style>${load_script}${html}`)}`
+    }
+    const frame = html.tagName ? html : node(`<iframe tabIndex=0 style="border:0;display:block;min-width:100%" src="${content}"></iframe>`)
+    frame.id = `frame-${i}`
+    let uninitialized = true
+    const onmessage = e => {
+        const { i:m_i, height, width, focus, run, open, opened, ping, icon } = e.data
+        if (ping) console.debug(m_i, e.data)
+        if (m_i == i) {
+            if (uninitialized && height) {
+                uninitialized = false
+                frame.style.height = height + 'px'
+                frame.style.width = width + 'px'
+                frame.style.visibility = ''
+                console.debug('focus', focus)
+                if (focus) {
+                    frame.focus()
+                } else {
+                    openKeyboard()
+                    // setTimeout(() => options.scrollIntoView())
+                    // setTimeout(() => options.scrollIntoView({ block:'end' }))
+                    // document.body.scrollIntoView({ block:'end' })
+                    document.body.scrollTop = 1e6
+                }
+            }
+            if (run) {
+                handle.run(run)
+            }
+            if (open?.href) {
+                console.debug('open', e.data)
+                // window.open(open.href, open.target ?? '_blank')
+                // handle.open(open.href)
+                handle.run(`open ${open.href}`)
+
+                // api.get('simple'+open.href).then(async response => {
+                //     console.debug(response)
+                //     if (!response.url.endsWith('simple'+open.href)) {
+                //         window.open(response.url, open.target ?? '_blank')
+                //     } else if (response.tree) {
+                //         window.open(open.href, open.target ?? '_blank')
+                //     } else {
+                //         // handle._file(open.href)
+                //         // handle.cat(open.href)
+                //         handle.run(`cat ${open.href}`)
+                //     }
+                // })
+            }
+        }
+        if (icon) {
+            console.debug(icon)
+            manifest.href = URL.createObjectURL(new Blob([JSON.stringify({
+                name: location.host,
+                display: `standalone`,
+                icons: [{
+                    src: icon,
+                    sizes: `512x512`,
+                }],
+            })], { type: 'application/json' }))
+        }
+    }
+    on(window, 'message', onmessage)
+    return frame
+}
+
+const screenRect = () => ({
+    x: window.screenX,
+    y: window.screenY,
+    width: window.innerWidth,
+    height: window.innerHeight,
+    outerWidth: window.outerWidth,
+    outerHeight: window.outerHeight,
+})
+const channel = new BroadcastChannel('computer.html')
+const broadcast = message => {
+    console.debug('broadcast', message)
+    channel.postMessage(message)
+    channel.onmessage({ data: message })
+}
+const id = randalpha(16)
+let shared = undefined
+channel.onmessage = e => {
+    const { id:m_id, action, args={} } = e.data
+    console.debug({ id, action, args })
+    if(0){}
+    else if (action === 'close') {
+        const { id:c_id=undefined } = args
+        if (id === c_id) window.close()
+        else if (shared.layout[m_id] && !shared.layout[m_id].external) {
+            delete shared.layout[m_id]
+            shared.stack.splice(shared.stack.indexOf(m_id), 1)
+        }
+    }
+    else if (action === 'layout') {
+        if (m_id) shared.stack.unshift(m_id)
+        shared.layout[m_id] = args
+        if (args.corner) shared.corner = m_id
+        console.debug(shared.corner)
+    }
+    else if (action === 'init') {
+        if (id === shared?.stack[0]) broadcast({ id, action: 'state', args: { ...shared, original: false } })
+    }
+    else if (action === 'state') {
+        if (!shared) shared = args
+    }
+    else if (action == 'open') {
+        shared.layout[m_id].external = true
+    }
+}
+broadcast({ id, action: 'init' })
+on(window, 'resize', { id, action: 'layout', args: { rect: screenRect() } })
+on(window, 'beforeunload', e => broadcast({ id, action: 'close' }))
+
+const state = {
+    auth,
+    home_dir: '/home/public',
+    dir: '/home/public',
+    files: [],
+    stdin: Promise.resolve(''),
+    vars: {},
+    hidden: [],
+    modifiers: {},
+}
+const parse = input => {
+    let [command='', ...args] = Array.from(input.split(';').slice(-1)[0].matchAll(/(?:([^ ]+=)?"((?:[^"]|\\\"")*)")|(?:("?(?:[^" ]|\\\"")+| $|\"))/g)).map(x=>x[1]||x[2]||x[3]||x[4])
+    // ;[command, ...args] = [command, ...args].map((x,i) => {
+    //     if (x[0] !== '"' && x.split('=').length === 2) {
+    //         const [k, v] = x.split('=')
+    //         state.vars[k] = v
+    //         return i ? v : ' '
+    //     }
+    //     return x
+    // })
+    const hidden = state.hidden.slice()
+    args = args.map(x => {
+        let s = 0, i = 0, result = ''
+        for (; i < x.length; i++) {
+            if (x[i] === '$') {
+                result += x.slice(s, i)
+                i += 1
+                s = i
+                while (i < x.length && x[i] !== '$') i += 1
+                if (i > s) {
+                    result += state.vars[x.slice(s, i)] || ''
+                    s = i
+                }
+                i -= 1
+            }
+            else if (x.slice(i, i+3) === '***') {
+                result += hidden.shift() || ''
+                s = i = i + 3
+            }
+        }
+        return s ? result + x.slice(s, i) : x
+    })
+    // console.debug('parse', input, command)
+    console.debug('parse', input, command, hidden)
+    return { command, args }
+}
+const quote = arg => (arg.trim().includes(' ') ? '"'+arg.trim()+'"' : arg).padEnd(arg.length)
+const format = (command, ...args) => {
+    console.debug('format', command, args)
+    // console.debug('format', command)
+    const hidden_save = state.hidden
+    state.hidden = []
+    const result = [command, ...args].map((x, i) => {
+        const hidden = ({
+            login: [1],
+            signup: [1],
+        }[command] || []).includes(i - 1)
+        if (hidden) {
+            state.hidden.push(x)
+            return '***'
+        } else {
+            return quote(x).trim()
+        }
+    }).join(' ')
+    if (!state.hidden.length) state.hidden = hidden_save
+    console.debug('formatted', result, state.hidden)
+    // console.debug('formatted', result)
+    return result
+}
+const resolve = (path_string) => {
+    // if (/^https?:/.test(path_string)) return path_string
+    if (!path_string) path_string = state.dir
+    const parts = ((path_string[0] === '~') ? state.home_dir + path_string.slice(1) : path_string).split('/')
+    const path = parts[0] ? state.dir.split('/').filter(x=>x) : []
+    for (let i = 0; i < parts.length; i++) {
+        const part = parts[i]
+        if (!part || part === '.') {} // pass
+        else if (part === '..') path.length && path.pop()
+        else path.push(part)
+    }
+    console.debug('resolved', path_string, '/'+path.filter(x=>x).join('/'))
+    return ('/'+path.filter(x=>x).join('/')+(path_string.slice(-1)==='/'?'/':'')).replace(/\/+/g, '/')
+}
+const exists = (path_string) => {
+    const resolved = resolve(path_string)
+    return resolved_files(path_string).includes(path_string)
+}
+const resolved_files = (path_string='', preserve_prefix=false) => {
+    const dir = resolve(path_string && path_string !== '.' ? path_string : './')
+    if (!preserve_prefix) path_string = path_string.replace(/^\.\//, '')
+    console.debug('resolve files', path_string, state.dir)
+    const parts = dir.slice(1).split('/').slice(0, -1)
+    console.debug('resolve files', parts.slice(), state.tree, path_string, dir)
+    let node = state.tree
+    while (node && parts.length) node = node[parts.shift()+'/']
+    const children = node ? Object.keys(node) : []
+    if (dir !== '/' && auth.user) children.push('../')
+    const files = children.map(x => path_string.split('/').length > 1 ? path_string.split('/').slice(0, -1).join('/')+'/'+x : x)
+    console.debug(files)
+    return files
+}
+const update = (response={}) => {
+    console.debug('update', response)
+    state.files.splice(0, state.files.length, ...(response.files || []))
+    state.tree = response.tree || state.tree
+    // let node = state.tree
+    // let parts = state.dir.split('/').filter(x=>x).map(x=>x+'/')
+    // while (node && node[parts[0]]) node = node[parts.shift()]
+    // console.debug('update', node, parts, response.files)
+    // Object.keys(node).map(k => {
+    //     if (!response.files?.includes(k)) delete node[k]        
+    // })
+    // response.files?.map(k => {
+    //     if (!node[k]) node[k] = true
+    // })
+}
+const render = text => api.post('simple/render', { text }).then(({ html='' }) => node(`<pre>${html}</pre>`).outerHTML)
+const print = text => {
+    return render(text).then(html => {
+        const printed = node('<pre>')
+        printed.innerHTML = html
+        handle.output(printed.outerHTML)
+        console.debug('print', text, html, printed.textContent)
+        return Promise.resolve(text)
+    })
+    // return api.post('simple/render', { text }).then(({ html }) => {
+    //     const text = node('<pre>')
+    //     text.innerHTML = html
+    //     handle.output(text.outerHTML)
+    //     return Promise.resolve(text.textContent)
+    // })
+    // const text = node('<pre>')
+    // text.textContent = formatted
+    // handle.output(text.outerHTML)
+    // return Promise.resolve(text.textContent)
+}
+const hints = {
+    // ls: 'ls - list files',
+    // cat: 'cat <file> - view file',
+    view: 'view [name] - view file or folder',
+    note: 'note <name> [words] - add to note',
+    help: '',
+    
+    // new: 'new - open new window',
+    // open: 'open [file] - open file in new window',
+    // open: 'open [file] - open new window',
+    // opens: 'opens - list files (to open in new window)',
+    // close: 'close [id] - close this or another window',
+    // close: 'close [id] - close window',
+    // open: 'open [file] - open new window',
+    clear: '',
+    // login: 'login [user password] - log in as user',
+    // ';': '1; 2 - separate commands',
+    // '|': '1 | 2 - connect output of 1 to input of 2',
+    // '=': '1=2 - assign 1 to 2',
+    // '$': '$1 - reference the value of 1',
+    // echo: 'echo [1 2] - repeat inputs',
+    // re: 're <regex> - print matching lines from input\n  cat biome.html | re canvas'
+}
+const commands = {
+    help: (...args) => {
+        const more = args[0]==='more'
+        const _hints = Object.assign({}, hints, more ? Object.fromEntries(Object.keys(commands).map(k=>[k,{
+            ls: 'ls [folder]',
+            cat: 'cat <files>',
+            cd: 'cd <folder>',
+            echo: 'echo [input]',
+            re: 're <regex> [input]',
+            touch: 'touch <files>',
+            watch: 'watch <note>',
+            write: 'write <file> [input]',
+            open: 'open [files]',
+            close: 'close [id]',
+            login: 'login <user> *password*',
+            signup: 'signup <user> *confirm*',
+            user: 'user [name]',
+            bio: 'bio [input]',
+            '|': '[command with output] | [command with input] - for example: ls | re html',
+        }[k]||k])) : {}, hints)
+        delete _hints.help
+        Object.keys(_hints).map(k => {
+            if (k[0] === '_' || !_hints[k]) delete _hints[k]
+        })
+        if (more) delete _hints.more
+        // else if (!more && auth.user) _hints.more = 'more - list additional commands'
+        else if (!more) _hints.more = 'more - list additional commands'
+        handle.output(Object.values(_hints).map(line => {
+            const [command, ...rest] = line.split(' ')
+            return [command.startsWith('[') ? command : `<a style="cursor:pointer" onclick='
+            message({ run: \`input ${command}\` })
+            '>${command}</a>`, ...rest.map(x => pipe(node(),y=>(y.textContent=x)&&y.innerHTML))].join(' ')
+        }).join('\n'))
+    },
+    ls: async (...args) => {
+        const dir = args[0] || undefined
+        const files = resolved_files(dir && (dir.slice(-1) !== '/' ? dir+'/' : dir))
+        console.debug('ls', files)
+        handle.output(handle._list(dir, files))
+        return Promise.resolve(files.map(quote).join('\n'))
+    },
+    cat: (...args) => {
+        if (!args[0]) return handle.ls()
+        const resolved_files = args.map(name => resolve(name))
+        return Promise
+        // .all(args.filter(file => state.files.includes(file)).map(async file => [file, await fetch(`/raw/simple/${file}`).then(r=>r.text())]))
+        // .all(args.filter(file => state.files.includes(file)).map(async file => [file, await api.post(`/simple${resolve(state.dir+'/'+file)}`).then(r=>r.text())]))
+        .all(resolved_files.map(async file => [
+            file, 
+            await api
+            .post(`/simple${file}`)
+            .then(response =>
+                file.slice(-1)!=='/'
+                ? response.text()
+                : handle._list(file, response.files, 'cat'))
+            .then(text =>
+            file.endsWith('.txt')
+            ? render(text) // api.post('simple/render', { text }).then(({ html='' }) => node(`<pre>${html}</pre>`).outerHTML)
+            : undefined
+            // : (() => {
+            //     // const frame = node(`<iframe id='frame-${i}' tabIndex=0 style="border:0;display:block;min-width:100%" src="?open=${encodeURIComponent(file)}"></iframe>`)
+            //     // handle.output(frame)
+            //     return false
+            // })()
+            )
+            .catch(e => {
+                handle.output(`<span style="opacity:.33">(${resolve(file)} does not exist)</span>`)
+            })
+        ]))
+        .then(file_entries => {
+            file_entries = file_entries.filter(x=>x)
+            if (!file_entries[0]) return
+            console.debug(file_entries)
+            return Promise.all(file_entries.map(([name, contents]) => {
+                return handle._file(name, contents, !name.endsWith('/'), !name.endsWith('/') && file_entries.length > 1)
+                // contents
+                //     && !name.endsWith('/')
+                //     && name.startsWith('/home/public')
+                //     && handle.output(
+                //     `<a onClick="
+                //     message({ run: 'open ${resolve(name)}' })
+                //     ">${args.length > 1 ? name : 'open in new window'}↗</a>`)
+                // handle.output(contents || '<span style="opacity:.33">(empty)</span>')
+            })).then(file_strings => file_strings.join('\n'))
+            // return file_entries.map(e => e[1]).filter(x=>x).join('\n')
+        })
+    },
+    view: async (...args) => {
+        handle.cat(...args)
+    },
+    pwd: (...args) => {
+        handle.output(state.dir)
+        return Promise.resolve(state.dir)
+    },
+    cd: (...args) => {
+        state.dir = resolve(args[0])
+        api.post('simple'+state.dir)
+        .then(data => {
+            update(data)
+            handle.ls()
+        })
+        handle.prompt()
+        // return handle.pwd()
+        return Promise.resolve(state.dir)
+    },
+    echo: async (...args) => {
+        if (!args.length) args = [await state.stdin]
+        return print(args.join(' '))
+    },
+    re: async (...args) => {
+        const input = args[1] || await state.stdin
+        const re = new RegExp(args[0])
+        console.debug('re', re, input)
+        return print(input.split('\n').filter(line => re.test(line)).join('\n'))
+    },
+    touch: (...args) => {
+        if (!auth.user) return handle.output('you must log in first')
+
+        args.map(arg => {
+            let [file, dir=[]] = arg.split('/').reverse()
+            dir = dir.reverse().join('/')
+            return api.post('simple' + resolve(dir), {
+                command: 'touch', args: [file]
+            }).then(update)
+        })
+    },
+    note: async (...args) => {
+        // if (!args[0]) return handle.ls(resolve('.').endsWith('notes') ? '.' : 'notes'
+        // if (!args[0]) return handle.output('')
+        args = args.map(x=>x.trim())
+        if (!args[0]) {
+            const notes = resolved_files('notes/').filter(x=>x.endsWith('.txt'))
+            console.debug(notes)
+            const rand_note = notes[Math.floor(notes.length * Math.random())]
+            handle.output(rand_note+` <span style="opacity:.33">(selected at random)</span>`)
+            handle._file(rand_note, undefined, `<a onclick='
+            message({ run: \`input "note ${rand_note.replace('notes/','').replace('.txt','')} "\` })
+            '>add to note</a> <a onClick="message({ run: 'open ${resolve(rand_note).replace('.txt','')}' })">watch↗</a>`)
+            // handle.cat(rand_note.replace(state.dir, ''))
+            // handle.output(`<a onclick='
+            // message({ run: \`input "note ${rand_note.replace('notes/','').replace('.txt','')} "\` })
+            // '>add to note</a>`)
+            return
+        }
+        if (!args[1]) args.push(await state.stdin)
+        // if (!auth.user) return handle.output('you must log in first')
+        const [note_name, ...output] = args
+        const file_arg = (resolve(note_name).includes('note/') ? note_name : 'notes/' + note_name) + '.txt'
+        let [file, ...dir] = resolve(file_arg).split('/').reverse()
+        dir = dir.reverse().join('/')
+        return (output ? api.post('simple' + dir, {
+            command: 'write', args: {
+                file,
+                output: (exists(file_arg) ? ' ' : '') + output.join(' '),
+                mode: 2,
+            }
+        }) : Promise.resolve()).then(data => {
+            data && update(data)
+            console.debug(file_arg)
+            handle._file(file_arg, undefined, `<a onclick='
+            message({ run: \`input "note ${file_arg.replace('notes/','').replace('.txt','')} "\` })
+            '>add to note</a> <a onClick="message({ run: 'open ${resolve(file_arg).replace('.txt','')}' })">watch↗</a>`)
+
+            // api.post('simple/'+file_arg).then(r=>r.text()).then(text=>render(text)).then(html=>handle._file(file_arg, html, `<a onclick='
+            // message({ run: \`input "note ${file_arg.replace('notes/','').replace('.txt','')} "\` })
+            // '>add something</a>`))
+
+            // handle.cat(file_arg)
+            // handle.output(`<a onclick='
+            // message({ run: \`input "note ${file_arg.replace('notes/','').replace('.txt','')} "\` })
+            // '>add something</a>`)
+            // .then(() => handle.output(`<a onclick='
+            // message({ run: \`input "note ${file_arg.replace('notes/','').replace('.txt','')} "\` })
+            // '>add to note</a>`), 50)
+        })
+    },
+    watch: (...args) => {
+        args.map(note_name => {
+            const note_watch_arg = (resolve(note_name).includes('note/') ? note_name : 'notes/' + note_name)// + '.txt'
+            // if (!file.endsWith('.txt')) return api.catch({ error: 'you must provide a note name to watch' })
+            console.debug(note_watch_arg)
+            // cat, then replace with watch
+            api.get('simple'+resolve(note_watch_arg+'.txt')).then(res=>res.text()).then(html => {
+                const cat_frame = handle.output(html + '\n\n\n')
+                api.get('simple'+resolve(note_watch_arg)).then(res=>res.text()).then(async html => {
+                    const height = cat_frame.getBoundingClientRect().height
+                    cat_frame.remove()
+                    const watch_frame = handle.output(html)
+                    watch_frame.style.minHeight = height+'px'
+                    // await handle._file('', html, false)
+                    // QQ('iframe').slice(-1)[0].style.minHeight = height+'px'
+                })
+            })
+        })
+        return Promise.resolve('')
+    },
+    write: async (...args) => {
+        return handle._write(2, ...args)
+    },
+    // append: async (...args) => {
+    //     if (!args[1]) args.push(await state.stdin)
+    //     if (!auth.user) return handle.output('you must log in first')
+    //     const [file_arg, output] = args
+    //     let [file, ...dir] = resolve(file_arg).split('/').reverse()
+    //     dir = dir.reverse().join('/')
+    //     return api.post('simple' + dir, {
+    //         command: 'write', args: {
+    //             file,
+    //             output: args[1],
+    //             mode: 2,
+    //         }
+    //     }).then(update)
+    // },
+    clear: () => {
+        output.innerHTML = '<span></span>'
+        // handle.output('console cleared')
+        return Promise.resolve('')
+    },
+    // new: () => {
+    //     handle.open('computer.html')
+    //     return Promise.resolve('')
+    // },
+    open: (...args) => {
+        if (!args.length) args = [''] // open new instance of computer.html by default
+        args.map(async file => {
+            const last = Object.values(shared.layout).slice(-1)[0]
+            const rect = last.original ? {
+                x: 10, y: 10, width: Math.min(550, last.width), height: Math.min(400, last.width)
+            } : {
+                ...last,
+                x: last.x + last.width,
+            }
+            broadcast({ id:undefined, action: 'layout', args: last })
+            // window.open(`/raw/simple/${args[0]}`, '_blank', `popup,width=${rect.width},height=${rect.height},left=${rect.x},top=${rect.y}`)
+            const external = file?.startsWith('http')
+            file = external ? file : file && resolve(file)
+            const public_file = 
+                // !file || state.tree['home/']['public/'][file]
+                !file || external
+                ?
+                file
+                : file.startsWith('/home/public') && !file.startsWith('/home/public/notes')
+                ? 
+                `/raw/simple/${file.replace('/home/public/', '') || 'computer.html'}` 
+                : 
+                // dynamicHtmlSrc(await api.post('simple'+resolve(file)).then(r=>r.text()))
+                (location.port?location.origin.replace(':3000', ':5050')+'/simple':'')+file
+            window.open(file ? `?open=${encodeURIComponent(public_file)}` : location.href, '_blank', `popup,width=${rect.width},height=${rect.height},left=${rect.x},top=${rect.y}`)
+        })
+        return Promise.resolve('')
+    },
+    opens: (...args) => {
+        const dir = args[0] || undefined
+        const files = resolved_files(dir).filter(x=>x.slice(-1)!=='/')//.filter(x => state.tree['home/']['public/'][x])
+        handle.output(handle._list(dir, files, 'open'))
+        return Promise.resolve(files.map(quote).join(' '))
+    },
+    close: (...args) => {
+        if (shared.original) {
+            handle.output('you must close this window manually')
+            handle.input('')
+        } else {
+            if(0){}
+            else if (args[0] === 'all') args = shared.stack
+            else if (!args.length) args = [id]
+            else if (args.includes(id)) args = args.filter(x => x !== id).concat([id])
+            args.map(c_id => broadcast({ id, action:'close', args: { id:c_id } }))
+        }
+        return Promise.resolve('')
+    },
+    login: (...args) => {
+        console.debug(args)
+        const [user, raw_pass] = args
+        const curr_user = auth.user
+        if (curr_user && !user) handle.clear()
+        const _api_catch_save = api.catch
+        api.catch = e => {
+            _api_catch_save(e)
+            if (e.error.includes(`user doesn't exist`)) {
+                auth.confirm = raw_pass
+                handle.output(`TERMS & POLICY
+You must ask a parent/guardian for permission to use this site if under 13
+This site is provided as-is. It may go offline without notice. It may block, moderate, or delete your account. You are responsible for your conduct
+This site may store any content you provide`)
+                handle.input(`signup ${user} `)
+            }
+        }
+        return (user
+        ? 
+        sha256(raw_pass)
+        .then(pass => 
+            api
+            .post('api/login', { user, pass }))
+            .catch(e => {
+                api.catch({ error: `open in <a href="${location.href.replace('http:', 'https:')}">secure window (https)</a>` })
+            })
+        : new Promise(resolve => resolve(Object.assign(auth, { user:false, pass:undefined }))))
+        .then(_=>{
+            handle.authorized()
+            if (curr_user !== auth.user) handle.output(`<span style="opacity:.33">(${auth.user ? `logged in as ${auth.user}` : 'logged out'})</span>`)
+            return Promise.resolve(auth.user)
+        })
+        .finally(() => api.catch = _api_catch_save)
+    },
+    signup: (...args) => {
+        console.debug(args)
+        const [user, raw_pass] = args
+        if (!auth.confirm || raw_pass !== auth.confirm) {
+            api.catch({ error: 'password mismatch' })
+            handle.input(`login ${user} `)
+            return
+        }
+        const curr_user = auth.user
+        return (user
+        ? 
+        sha256(raw_pass)
+        .then(pass => 
+            api
+            .post('api/login/signup', { user, pass, info: { href:location.href } }))
+            .catch(e => {
+                api.catch({ error: `open in <a href="${location.href.replace('http:', 'https:')}">secure window (https)</a>` })
+            })
+        : new Promise(resolve => resolve(Object.assign(auth, { user:false, pass:undefined }))))
+        .then(_=>{
+            handle.authorized()
+            if (curr_user !== auth.user) handle.output(`<span style="opacity:.33">(${auth.user ? `logged in as ${auth.user}` : 'logged out'})</span>`)
+            return Promise.resolve(auth.user)
+        })
+    },
+    user: (...args) => {
+        const user = args[0] || auth.user
+        return Promise.resolve(auth.user && user ? api.get('api/profile/'+user).then(data => {
+            const { profile } = data
+            return (profile.bio ? api.post('simple/render', { text: profile.bio }) : Promise.resolve()).then(bio_to_render => `${profile.user}${node(`<pre>${bio_to_render?.html||''}\n</pre>`).outerHTML}`)
+        }) : 'you must log in').then(result => {
+            handle.output(result)
+            return result
+        })
+    },
+    bio: (...args) => {
+        if (auth.user) {
+            if (args[0]) {
+                handle._write(1, '~/bio', ...args)
+                api.post('api/profile/bio', { bio: args.join(' ') })
+            }
+            handle.cat('~/bio')
+        }
+    },
+    more: () => {
+        handle.help('more')
+    },
+    '|': ()=>{}, // for help text only
+    // settings: () => {
+    //     auth.user && handle._file('~/settings.json')
+    // },
+}
+const handle = {
+    _list: (dir, files, action='cat') => {
+        console.debug('_list', dir, files, files.map(quote).map(name => name + ' ' + dir + ' ' + resolve((dir?dir+'/':'') + name)))
+        return files.map(quote).map(name => `<a onClick="
+        message({ run: '${name.slice(-1)==='/' ? `cd ${resolve(name)}` : `${resolve(name).endsWith('/')?'cat':action} ${resolve(name)}`}' })
+        ">${files.length > 1 || name.endsWith('/') ? name.split('/').slice(name.endsWith('/')?-2:-1).join('/') : 'open in new window'}${{
+            'open': '↗'
+        }[resolve(name).endsWith('/')?'cat':action]||''}</a>`).join(' ')
+        // return files.map(quote).map(name => `<a onClick="
+        // message({ run: '${name.slice(-1)==='/' ? `cd ${name}` : `${action} ${name}`}' })
+        // ">${name}${{
+        //     'open': '↗'
+        // }[action]||''}</a>`).join(' ')
+    },
+    _file: async (name, contents, header=true, multiple=false) => {
+        const file = resolve(name)
+        let raw_contents
+        if (contents === undefined) {
+            // contents = (file.startsWith('http') ? await fetch(file) : await api.post(`/simple${file}`))
+            contents = await api.post(`/simple${file}`)
+            .then(response => {
+                console.debug('_file contents', { response })
+                return response.files
+                ? (() => {
+                    handle._list(file, resolved_files(response.files), 'cat')
+                    return false
+                })()
+                : (() => {
+                    return response.text()
+                    // // const frame = node(`<iframe tabIndex=0 style="border:0;display:block;min-width:100%" src="?open=${encodeURIComponent(file)}" onload="
+                    // // event.target.style.minHeight = contentWindow.document.body.scrollHeight+'px'
+                    // // "></iframe>`)
+                    // raw_contents = response.text()
+                    // const frame = node(`<iframe tabIndex=0 style="border:0;display:block;min-width:100%" src="${location.port?'http://localhost:5050/simple':''}${file}"></iframe>`)
+                    // console.debug('output', { frame })
+                    // return dynamicHtmlSrc(frame)
+                })()
+            })
+            .then(result =>
+            file.endsWith('.txt') && !result.tagName
+            ? render(result)
+            : result)
+        }
+        console.debug({ name, file, contents })
+        const action = name.endsWith('/') ? 'cat' : 'open'
+        contents
+        // && handle.output(
+        //     `${!header || header === true ? '' : (Array.isArray(header) ? header.join('  ') : header) +'  '}<a onClick="
+        //     message({ run: '${name.slice(-1)==='/' ? `cd ${resolve(name)}` : `${resolve(name).endsWith('/')?'cat':action} ${resolve(name)}`}' })
+        //     ">${multiple || !header ? resolve(name) : 'open in new window'}${{
+        //         'open': '↗'
+        //     }[resolve(name).endsWith('/')?'cat':action]||''}</a>`)
+        && header
+        && !multiple
+        && handle.output(
+            Array.isArray(header) ? header.join('  ') : header !== true ? header : `<a onClick="
+            message({ run: '${name.slice(-1)==='/' ? `cd ${resolve(name)}` : `${resolve(name).endsWith('/')?'cat':action} ${resolve(name)}`}' })
+            ">${multiple || !header ? resolve(name) : 'open in new window'}${{
+                'open': '↗'
+            }[resolve(name).endsWith('/')?'cat':action]||''}</a>`)
+        const frame = handle.output(contents.tagName ? contents : contents.replace(/\n*$/, '\n\n') || '<span style="opacity:.33">(empty)</span>')
+        return contents.tagName ? raw_contents || contents.innerHTML : contents
+    },
+    _write: async (mode, ...args) => {
+        if (!args[1]) args.push(await state.stdin)
+        if (!auth.user) return handle.output('you must log in first')
+        const [file_arg, output] = args
+        let [file, ...dir] = resolve(file_arg).split('/').reverse()
+        dir = dir.reverse().join('/')
+        return api.post('simple' + dir, {
+            command: 'write', args: {
+                file,
+                output: args[1],
+                mode,
+            }
+        }).then(update)
+    },
+    ...commands,
+    authorized: () => {
+        auth.user ? api.post('simple/login').then(data => Object.assign(auth, data)) : api.post('simple/logout')
+        state.home_dir = '/home/'+(auth.user||'public')
+        // auth.user || handle.output('<span style="opacity:.33">(logged out)</span>')
+        // handle.output(`<span style="opacity:.33">(${auth.user ? `logged in as ${auth.user}` : 'logged out'})</span>`)
+        handle.prompt()
+    },
+    prompt: format => {
+        // if (!format) format = auth.user ? `<span><span style="color:darkseagreen">${auth.user}@</span><span style="color:#888">${location.host}:</span><span style="color:gold">${state.dir.replace(state.home_dir, '~')}</span>\n$</span>` : '$'
+        // if (!format) format = auth.user ? `<span><span style="color:darkseagreen">${auth.user}@</span><span style="color:#6e6e6e">${location.host}:</span><span style="color:#ff962a">${state.dir.replace(state.home_dir, '~')}</span>\n$</span>` : '$'
+        if (!format) format = auth.user ? `<span style="color:darkseagreen">${auth.user}@</span><span style="color:#888">${location.host}:</span><span style="color:#ffbf2a">${state.dir.replace(state.home_dir, '~').replace(/\/$/, '')}</span>\n$` : '$'
+        const [lower, ...upper] = format.split('\n').reverse()
+        upper_ps.innerHTML = upper.reverse().join('\n')
+        ps.innerHTML = lower
+    },
+    run: async input => {
+        // const { command, args } = parse(input)
+        // // handle.output(`$ ${input}`)
+        // handle.output(ps.innerHTML + ' ' + input)
+        // handle.input('')
+        // console.debug('run', command, args.length, args)
+        // command && pipe(handle[command], x=>x?x(...args):handle.output(`'${command}' not found`))
+
+        const separate = input.split(';')
+        if (separate.length > 1) separate.map(x => handle.run(x.trim()))
+        else {
+            const commands = input.split(' | ')
+            console.debug('run', commands, input)
+            handle.input('')
+            if (window.input && !commands[0].startsWith('input')) handle.output([upper_ps.innerHTML, ps.innerHTML + ' ' + input].filter(x=>x).join('\n'))
+            const handle_output = handle.output
+            const _handle = handle
+            {
+                const handle = Object.assign(_handle, { output:()=>{} })
+                for (let i = 0; i < commands.length; i++) {
+                    let command_string, output_mode, output_string
+                    if (commands[i].includes('>>')) {
+                        output_mode = 2
+                        ;[command_string, output_string] = commands[i].split('>>').map(x=>x.trim())
+                    } 
+                    // else if (commands[i].includes('>')) {
+                    //     output_mode = 1
+                    //     ;[command_string, output_string] = commands[i].split('>')
+                    // }
+                    else {
+                        command_string = commands[i]
+                    }
+                    const { command, args } = parse(command_string)
+                    console.debug('run', command, args.length)
+                    if (i === commands.length - 1) handle.output = handle_output
+                    state.stdin = Promise.resolve(command.trim() && pipe(handle[command], x=>x?x(...args):handle.output(`'${command}' not found`)) || '')
+                    await state.stdin
+                    if (output_string) {
+                        console.debug('run output', output_mode, output_string)
+                        // handle[output_mode === 1 ? 'write' : 'append'](output_string, await state.stdin)
+
+                        if (!auth.user) return handle.output('you must log in first')
+                        const [file_arg, output] = [output_string, await state.stdin]
+                        let [file, ...dir] = resolve(file_arg).split('/').reverse()
+                        dir = dir.reverse().join('/')
+                        // console.debug('simple' + dir, {
+                        //     command: 'write', args: {
+                        //         file,
+                        //         output: await state.stdin,
+                        //         mode: output_mode,
+                        //     }
+                        // })
+                        return api.post('simple' + dir, {
+                            command: 'write', args: {
+                                file,
+                                output: await state.stdin,
+                                mode: output_mode,
+                            }
+                        }).then(update)
+                    }
+                    // if (output_string) {
+                    //     if (!auth.user) return handle.output('you must log in first')
+                    //     const [file_arg, output] = args
+                    //     let [file, dir=[]] = file_arg.split('/').reverse()
+                    //     dir = dir.reverse().join('/')
+                    //     const path = resolve(dir) + file
+                    //     return api.post('simple' + path, {
+                    //         command: 'write', args: {
+                    //             file: output_string,
+                    //             output: await state.stdin,
+                    //             mode: output_mode,
+                    //         }
+                    //     })
+                    // }
+                }
+                state.stdin = Promise.resolve('')
+            }
+        }
+    },
+    input: value => {
+        const { command, args } = parse(value)
+        const formatted = format(command, ...args)
+        console.debug('input', formatted)
+        const selection = [input.selectionStart, input.selectionEnd]
+        spacing.textContent = formatted
+        if (formatted !== input.value) {
+            input.value = formatted //|| '█'
+            selection[0] = selection[1] = input.value.length
+        }
+        input.resize()
+        const completed = (command) ? handle.complete(command, ...args) : handle.complete('')
+
+        input.focus()
+        input.click()
+        ;[input.selectionStart, input.selectionEnd] = selection
+        // if (input.selectionStart === input.selectionEnd && input.value.slice(input.selectionEnd - 3, input.selectionEnd) === '***') {
+        //     input.selectionStart = input.selectionEnd = input.selectionEnd - 3
+        // }
+    },
+    key: (key, e=undefined) => {
+        console.debug('keydown', key)
+        if (e) Object.assign(state.modifiers, {
+            shift: e.shiftKey,
+        })
+        if(0){}
+        else if (key === 'Enter') {
+            // if (input.value.slice(-1) !== '\'') {
+                e?.preventDefault()
+                if (!input.value) {
+                    handle.input('')
+                    handle.run('')
+                } else if (input.value.endsWith(' ') && options.textContent.split(' ')[1]) {
+                    const { command, args } = parse(input.value)
+                    const formatted = format(command, ...args)
+                    console.debug('run?', command, args, options.textContent)
+                    if (options.textContent.split(' ').includes([command, ...args].filter(x=>x).slice(-1)[0] + complete.textContent) || options.textContent.split(' ').includes(complete.textContent)) {
+                        handle.input(formatted + complete.textContent)
+                        // handle.input(input.value + complete.textContent)
+                        console.debug('run??', formatted + complete.textContent)
+                        if (!options.textContent.split(' ')[1]) {
+                            // const _temp = input.value // formatted + complete.textContent
+                            // handle.input('')
+                            // inputs.push(_temp)
+                            // input_i = inputs.length
+                            // handle.run(_temp)
+                        } else {
+                            // handle.tab()
+                        }
+                    } else 
+                    if (complete.textContent) {
+                        handle.input(formatted + complete.textContent)
+                        // handle.input(input.value + complete.textContent)
+                        if (!options.textContent.split(' ')[1]) {
+                            const _temp = formatted + complete.textContent
+                            handle.input('')
+                            inputs.push(_temp)
+                            input_i = inputs.length
+                            handle.run(_temp)
+                        } else {
+                            // handle.tab()
+                        }
+                    } else {
+                        handle.tab()
+                    }
+                } else {
+                    if (complete.textContent) {
+                        handle.input(input.value + complete.textContent)
+                    } else {
+                        const _temp = input.value + complete.textContent
+                        handle.input('')
+                        inputs.push(_temp)
+                        input_i = inputs.length
+                        handle.run(_temp)
+                    }
+
+                    // const completed = input.value + complete.textContent, single_option = !options.textContent.split(' ')[1]
+                    // const { command, args } = parse(completed)
+                    // const _temp = completed && handle.complete(command, ...args)
+                    // // const _temp = completed
+                    // // if (!complete.textContent && _temp === completed) {
+                    // if (single_option && input.value === completed) {
+                    //     inputs.push(_temp + ' ')
+                    //     input_i = inputs.length
+                    //     handle.input('')
+                    //     handle.run(_temp)
+                    // } else {
+                    //     handle.input(_temp)
+                    // }
+                }
+            // }
+        }
+        else if (key === 'Tab' || key === 'ArrowRight') {
+            if (!input.value && state.modifiers.shift) return
+            e?.preventDefault()
+            handle.tab()
+        }
+        else if (key === 'ArrowUp') {
+            input_i = Math.max(0, input_i - 1)
+            handle.input(inputs[input_i].trim())
+            setTimeout(() => input.selectionStart = input.selectionEnd = input.value.length)
+        }
+        else if (key === 'ArrowDown') {
+            input_i = Math.min(inputs.length, input_i + 1)
+            handle.input((inputs[input_i] || '').trim())
+            setTimeout(() => input.selectionStart = input.selectionEnd = input.value.length)
+        }
+        else if (key === 'Backspace' && input.value.slice(Math.min(input.selectionStart, input.selectionEnd-3), input.selectionEnd) === '***') {
+            e.preventDefault()
+            const hidden = state.hidden
+            if (hidden.length) hidden[hidden.length-1] = hidden[hidden.length-1].slice(0, -1)
+            if (!hidden[hidden.length-1]) hidden.pop()
+            if (!hidden.length) {
+                handle.input(input.value.replace(' ***', ''))
+                input.value += ' '
+            }
+        }
+        else {
+            const selection = [input.selectionStart, input.selectionEnd]
+            if (!state.modifiers.shift) {
+                spacing.textContent = input.value = input.value.slice(0, input.selectionStart) + input.value.slice(input.selectionEnd)
+                selection[1] = selection[0]
+            }
+            
+            const { command, args } = parse(input.value)
+            handle.input(format(command, ...args))
+            input.selectionStart = selection[0]
+            input.selectionEnd = selection[1]
+            // handle.input(handle.complete(command, ...args))
+        }
+    },
+    output: (value, after=undefined) => {
+        block.textContent = ''
+        console.debug('output', value)
+        if (!value) return
+        outputs.push(value)
+        let element
+        if (value.tagName) {
+            element = value
+        } else {
+            const i = outputs.length
+            element = dynamicHtmlSrc(value, i)
+            // const frame = node(`<iframe id='frame-${i}'
+            // tabIndex=0
+            // style="border:0;display:block;min-width:100%"
+            // src="${dynamicHtmlSrc(value, i)}"></iframe>`)
+        }
+        ;(after || output).append(element)
+        return element
+    },
+    complete: (command, ...args) => {
+        const _complete = (prefix, prefix_options) => {
+            const completed = prefix ? prefix_options.filter(x => x.startsWith(prefix)) : prefix_options
+            const options_string = (completed.length > 1) ? completed.join(' ') : ''
+            const min_option_length = Math.min(...completed.map(x=>x.length))
+            console.debug('_complete',
+                completed[(completed.map(x=>x.replace(prefix,'')).indexOf(complete.textContent) + 1)%completed.length],
+                completed.map(x=>x.replace(prefix,'')),
+                complete.textContent,
+                completed.map(x=>x.replace(prefix,'')).indexOf(complete.textContent),
+                (completed.map(x=>x.replace(prefix,'')).indexOf(complete.textContent) + 1)%completed.length,
+                )
+
+            if (!completed.length) {
+                complete.textContent = ''
+                options.textContent = ''
+                return prefix
+            }
+            if (completed.length === 1) {
+                complete.textContent = completed[0].replace(prefix, '')
+                options.textContent = ''
+                return completed[0]
+            }
+            
+            const common = completed.slice(1).reduce((a,b)=>{
+                let i = 0
+                for (; i < a.length && a[i] === b[i]; i++) {}
+                return a.slice(0, i)
+            }, completed[0]) || prefix
+            const last_suggestion = complete.textContent || [command, ...args].slice(-2)[0]
+            const curr_suggestion_index = completed.map(x=>x.replace(prefix,'')).indexOf(last_suggestion)
+            const curr_suggestion = completed[curr_suggestion_index] || completed[completed.length - 1]
+            const auto_suggestion = false // complete.textContent !== curr_suggestion.replace(prefix, '')
+            const next_suggestion = completed[(completed.indexOf(curr_suggestion) + (state.modifiers.shift ? completed.length - 1 : 1))%completed.length]
+
+            // let common = (
+            //     !auto_suggestion
+            //     // ? completed.find(x=>x.length===min_option_length) 
+            //     ? completed[(completed.map(x=>x.replace(prefix,'')).indexOf(complete.textContent) + 1)%completed.length]
+            //     : completed.slice(1).reduce((a,b)=>{
+            //         let i = 0
+            //         for (; i < a.length && a[i] === b[i]; i++) {}
+            //         return a.slice(0, i)
+            //     }, completed[0])
+            // ) || prefix
+            console.trace('completed', {
+                prefix, completed, common, next_suggestion, auto_suggestion, prev_complete: complete.textContent, test: next_suggestion.replace(prefix, ''), last_suggestion
+            })
+            options.innerHTML = !command && inputs.length && auth.user ? '' : completed.map(x => {
+                const x_prefix = x.split('/').slice(0, x.slice(-1)==='/'?-2:-1).join('/') + '/'
+                const x_format = format(x.split('/').slice(x.slice(-1)==='/'?-2:-1).join('/'))
+                // const { command:x_command, args:x_args } = parse(input.value.trim()+(!complete.textContent?' ':'')+x_format.trim())
+                // console.debug({ x_command, x_args, x_format, input:input.value })
+                // const x_command_format = format(x_command, ...x_args)
+                // console.debug(input.value.trim()+(!complete.textContent?' ':'')+x_format.trim(), [input.value.trim(), complete.textContent, (!complete.textContent?' ':''), x_format.trim()])
+                // const x_command_format = input.value.trim()+(!complete.textContent?' ':'')+x_format.trim()
+                
+                const x_command_format = input.value.replace(x_prefix, '') + ' ' + x
+                return `<span style="cursor:pointer" onclick='
+                handle.input(\`${x_command_format}\`)
+                setTimeout(() => {
+                    if (!options.textContent) handle.key("Enter")
+                }, 50)
+                '>${x_format}</span>`
+                // return `<span style="cursor:pointer" onclick='
+                // handle.input(\`${x_command_format}\`)
+                // setTimeout(() => {
+                //     if (!options.textContent) handle.key("Enter")
+                // }, 50)
+                // '>${x_format}</span>`
+            }).join(' ')
+            document.body.scrollTop = 1e6
+            
+            // return (prefix_options.includes(common)) ? common+' ' : common
+            // return common
+            // return prefix_options.includes(common) ? common+' ' : auto_suggestion ? prefix : common
+
+            if(0){}
+            else if (!command) {
+                complete.textContent = ''
+                return prefix                
+            }
+            else if (auto_suggestion) {
+                complete.textContent = curr_suggestion.replace(prefix, '')
+                return prefix
+            } else {
+                complete.textContent = next_suggestion.replace(common, '')
+                return common
+            }
+
+            // complete.textContent = prefix ? common.replace(prefix,'') : ''
+            // return completed.length > 1 ? prefix : prefix_options.includes(common) ? common+' ' : common
+        }
+
+        let last_arg = (args.slice(-1)[0] || '').trim()
+        console.debug('complete', handle[command] ? 'args' : 'command', { command })
+        if (args.length || (handle[command] && input.value === command)) {
+            const files = resolved_files(last_arg, preserve_prefix=true)
+            console.debug(files)
+            const handlers = {
+                // cat: () => _complete(last_arg, state.files.filter(x=>x.slice(-1)!=='/')),//last_arg = args.length > 1 ? _complete(last_arg,[]) : _complete(last_arg, state.files),
+                // close: () => last_arg = args.length > 1 && !last_arg ? _complete(last_arg,[]) : _complete(last_arg, [...shared.stack.slice(0, -1), 'all']),
+                // cd: () => last_arg = args.length > 1 ? _complete(last_arg,[]) : _complete(last_arg, state.files.filter(x=>x.slice(-1)==='/')),
+
+                // cat: () => _complete(last_arg, files.filter(x=>x.slice(-1)!=='/')),//last_arg = args.length > 1 ? _complete(last_arg,[]) : _complete(last_arg, state.files),
+                cat: () => _complete(last_arg, files),//last_arg = args.length > 1 ? _complete(last_arg,[]) : _complete(last_arg, state.files),
+                close: () => last_arg = args.length > 1 && !last_arg ? _complete(last_arg,[]) : _complete(last_arg, [...shared.stack.slice(0, -1), 'all']),
+                cd: () => last_arg = args.length > 1 ? _complete(last_arg,[]) : _complete(last_arg, files.filter(x=>x.slice(-1)==='/')),
+
+                view: () => _complete(last_arg, files),
+
+                note: () => {
+                    const notes_prefix = resolve(last_arg === 'note' ? state.dir : last_arg).endsWith('notes/')?'':'notes/'
+                    const notes_arg = notes_prefix+last_arg
+                    console.debug('note complete', last_arg, notes_prefix, notes_arg, resolved_files(notes_arg, preserve_prefix=true).filter(x=>x.endsWith('.txt')).map(x=>x.replace('.txt','')))
+
+                    last_arg = false && args.length > 1 
+                    ? _complete(last_arg,[]) 
+                    : _complete(last_arg, resolved_files(notes_arg, preserve_prefix=true).filter(x=>x.endsWith('.txt')).map(x=>x.replace('.txt','').replace(notes_prefix, ''))) 
+                    //_complete(notes_arg, resolved_files(notes_arg, preserve_prefix=true).filter(x=>x.endsWith('.txt')).map(x=>x.replace('.txt',''))).replace(notes_prefix, '')
+                },
+                watch: () => {
+                    const notes_prefix = resolve(last_arg).includes('notes/')?'':'notes/'
+                    const notes_arg = notes_prefix+last_arg
+
+                    last_arg = _complete(notes_arg, resolved_files(notes_arg, preserve_prefix=true).filter(x=>x.endsWith('.txt')).map(x=>x.replace('.txt',''))).replace(notes_prefix, '')
+                },
+            }
+            pipe({
+                ...handlers,
+                open: handlers.cat,
+                opens: handlers.cd,
+                // open: () => _complete(last_arg, files.filter(x => state.tree['home/']['public/'][x])),
+                ls: handlers.cd,
+
+                // watch: handlers.note,
+            }[command], x=>x?x():_complete(last_arg,[]))
+
+            if (args.length) args[args.length - 1] = last_arg
+            else args.push(last_arg)
+        }
+        else command = _complete(command, Object.keys(auth.user ? commands : hints))
+
+        // if (!args[0] && handle[command]) complete.textContent = ''
+        if (handle[command] && input.value === command) complete.textContent = ''
+
+        return format(command, ...args)
+    },
+    tab: () => {
+        let { command, args } = parse(input.value)
+        // handle.input(handle.complete(command, ...args))
+        const completed = handle.complete(command, ...args)
+        console.debug('tab', completed, command, ...args)
+
+        const { command:first, args:rest } = parse(options.textContent)
+        const common = rest.reduce((a,b)=>{
+            let i = 0
+            for (; i < a.length && a[i] === b[i]; i++) {}
+            return a.slice(0, i)
+        }, first)
+        // if (common) handle.input(format([command, ...args].slice(0, -1).filter(x=>x), common))
+        const common_completed = common && (input.value.replace(/ [^ ]+$/, ' ') + common)
+        if (common_completed && common_completed !== input.value) handle.input(common_completed)
+        else if (completed !== input.value) handle.input(completed)
+        else if (!complete.textContent && completed.trim() === command) handle.input(completed.trim() + ' ')
+        else if (!options.textContent && (input.value + complete.textContent).trim() !== input.value) handle.input((input.value + complete.textContent).trim())
+    },
+}
+
+input.oninput = e => handle.input(e.target.value)
+input.onkeydown = e => handle.key(e.key, e)
+complete.onclick = e => handle.input(input.value + complete.textContent)
+
+document.body.style.visibility = 'hidden'
+api
+.post('simple/login')
+.then(data => {
+    if (data.user) handle.authorized()
+
+    api.post('simple'+state.dir)
+    .then(data => {
+        state.files.push(...data.files)
+        api.get('simple').then(data => {
+            state.tree = data.tree
+            api.catch = e => {
+                console.error(e)
+                handle.output(`<span style="color:#f88">${e.error}</span>`)
+            }
+
+            // final initialization step - window placement, parse args
+            setTimeout(async () => {
+                let corner = false
+                if (!shared) shared = { original: true, stack: [], layout: {} }
+                else {
+                    const last = shared.layout[shared.stack[0]]
+                    const expected = last.original ? {
+                        x: 25, y: 25, width: Math.min(500, last.width), height: Math.min(400, last.width)
+                    } : {
+                        ...last,
+                        x: last.x + last.outerWidth,
+                    }
+                    const actual = screenRect()
+                    if (actual.x !== expected.x) {
+                        corner = true
+                        const second = shared.layout[shared.corner || shared.stack.slice(-2)[0] || id]
+                        if (second) {
+                            // window.moveTo(second.x, second.y + second.outerHeight)
+                            
+                            // {
+                            //     await sleep(100)
+                            //     const actual = screenRect()
+                            //     if (actual.y !== second.y + second.outerHeight) {
+                            //         window.moveTo(second.x, second.y - second.outerHeight)
+                            //     }
+                            // }
+                        }
+                    }
+                }
+                broadcast({ id, action: 'layout', args: { ...screenRect(), original: shared.original, corner } })
+                
+                const args = Object.fromEntries(new URLSearchParams(location.search).entries())
+                if (args.open && args.open !== location.pathname) {
+                    broadcast({ id, action:'open', args:args.open })
+                    handle.input = handle.output = ()=>{}
+                    setTimeout(() => {
+                        console.debug(args.open)
+                        if (args.open.startsWith('data')) {
+                            document.body.innerHTML = `<style>body{margin:0}</style><iframe style="border:0;height:100%;width:100%" src="${args.open}"></iframe>`
+                            document.body.style.visibility = 'hidden'
+                        } else if (args.open.startsWith('/home')) {
+                            location.href = '/simple'+args.open
+                            // api.get('simple'+args.open).then(r=>r.text())
+                            // // .then(text => api.post('simple/render', { text })).then(({ html }) => {
+                            // .then(html => {
+                            //     // console.debug('open', args.open, content)
+                            //     // document.body.innerHTML = `<style>body{margin:0}</style><iframe style="border:0;height:100%;width:100%" src="${dynamicHtmlSrc(html)}"></iframe>`
+                            //     document.body.innerHTML = `<style>body{margin:0}</style><iframe style="border:0;height:100%;width:100%" src="${dynamicHtmlSrc(html).src}"></iframe>`
+                            //     document.body.style.visibility = ''
+                            // })
+                        } else {
+                            location.href = args.open
+                        }
+                    })
+                } else {
+                    document.body.style.visibility = ''
+                }
+            })
+        })
+    })
+})
+.catch(e => {
+    console.error(e)
+    handle.output('broken computer.html')
+    input.outerHTML = `<span id=broken>:'(</span>`
+    setTimeout(() => {
+        [{ L: broken, i: 0, ms: 2_000, frames: [
+            `:'(`,
+            `:'/`,
+            `:')`,
+            `:'(`,
+        ] }].map(animation => {
+            console.debug(animation)
+            setInterval(() => animation.L.textContent = animation.frames[animation.i = (animation.i + 1) % animation.frames.length], animation.ms)
+        })
+    })
+    Object.keys(handle).map(k => delete handle[k])
+    document.body.style.visibility = ''
+})
+</script>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script>
+  <title>daily nonogram</title>
+  <meta data-hydrate data-style />
+  <style>
+    iframe {
+      flex-grow: 1;
+      width: 100% !important;
+    }
+  </style>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div data-hydrate data-signup></div>
+  <div>
+    <a href=puzzle.html onclick="
+    if (!event.metaKey) {
+      event.stopImmediatePropagation()
+      event.preventDefault()
+      const href = event.target.href + location.search + location.hash
+      event.target.href = href
+      url.push(href)
+      location.reload()
+    }
+    ">puzzle.html</a>
+    <span id=indicator_loading>loading...</span>
+  </div>
+  <div id=calendar_root style="
+  max-width: 30em;
+  "></div>
+  <script>
+    const log = named_log('daily-nonogram index')
+    Object.entries({
+      'mono-cal.js': '/lib/2/mono-cal/script.js',
+    }).map(([key,src])=>!window[key]&&document.head.append((x=>Object.assign(x,{innerHTML:(src=>(x=>{x.withCredentials=false;x.open('GET',src,false);x.send();return x.responseText})(new XMLHttpRequest()))(new URL(src,location.port==='3030'/*local testing on port 3030*/?location.origin:'https://freshman.dev').toString())}))(document.createElement('script'))))  
+    
+    const start_ms = Number(datetime.of({ Y:2023, M:7, D:10 }))
+    const today_ms = Date.now()
+    const puzzle_yyyymmdd = location.hash.slice(1) || datetime.yyyymmdd(start_ms)
+    const favorite_yyyymmdds = set('2023-11-16 2023-08-10 2023-08-14 2023-09-26 2023-10-01 2023-10-10 2023-10-13 2023-11-16 2023-11-29 2023-12-02 2023-12-08 2023-12-28')
+    log({start_ms, today_ms, puzzle_yyyymmdd})
+    mono_cal.attach(calendar_root, [], {
+      show_toggle: false,
+      absolute: start_ms,
+    })
+    defer(async () => {
+      const format = eval(`/${await api.get(`/raw/nonogram/puzzles/no.format`).then(r=>r.text())}/`)
+
+      const entries = []
+      for (let ms = today_ms; ms >= start_ms; ms += datetime.duration({ d:-1 })) {
+        const yyyymmdd = datetime.yyyymmdd(ms)
+        const in_store = store.get(`daily-nonogram-${yyyymmdd}`)
+        const addEntry = () => entries.push({
+          date: new Date(ms),
+          func: e => {
+            open(`/raw/daily-nonogram/puzzle.html#${yyyymmdd}`, e.metaKey ? '_blank' : '_self')
+          },
+          ...(
+            yyyymmdd === puzzle_yyyymmdd ? {
+              color: 'red',
+            } : 
+            favorite_yyyymmdds.has(yyyymmdd) ? {
+              color: 'gold',
+            } : {})
+        })
+        if (in_store) {
+          addEntry()
+        } else {
+          const puzzle = await api.get(`/raw/daily-nonogram/puzzles/${yyyymmdd}.no`).then(r=>r.text())
+          const variants = list(puzzle.matchAll(new RegExp(format, 'g'))).map(x => ({...x.groups}))
+          if (variants.length) {
+            store.set(`daily-nonogram-${yyyymmdd}`, { puzzle, variants })
+            addEntry()
+          }
+        }
+      }
+
+      log({entries})
+      indicator_loading.innerHTML = ''
+      mono_cal.attach(calendar_root, entries, {
+        show_toggle: false,
+        absolute: start_ms,
+      })
+    })
+
+  </script>
+  <!-- <div data-hydrate data-frame=puzzle.html></div> -->
+
+</body>
+</html>

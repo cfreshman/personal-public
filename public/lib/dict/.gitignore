@@ -1,0 +1,2 @@
+# ignore generated compressed dictionary files
+**/*.txt.gz

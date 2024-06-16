@@ -1,0 +1,316 @@
+<!-- cyrusfreshman 2023 -->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8><meta name=viewport content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><meta name=theme-color content=#000>
+<title>greeter certificate</title> <script src=/copyright.js></script><meta data-hydrate data-style />
+<style>
+#header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid currentcolor;
+    border-left: 0;
+    border-right: 0;
+    border-top: 0;
+}
+
+:root {
+    font-size: .125in;
+    --note-font-size: 1em;
+    -webkit-print-color-adjust: exact; 
+}
+:root, body {
+    filter: unset;
+}
+body {
+    width: 100%;
+    /* height: auto; */
+    /* height: calc(100vw * 8.25 / 11); */
+    /* aspect-ratio: 11 / 8.25; */
+    height: 100%;
+    min-height: max-content;
+    flex-grow: 0;
+
+    width: 11in;
+    height: 8.5in;
+
+    position: relative;
+}
+html:not(.mobile) body {
+    /* height: calc(100vw * 8.25 / 11); */
+    /* aspect-ratio: 11 / 8.25; */
+}
+
+body {
+    /* width: calc(100% - 1em * 2); */
+    /* margin: 1em; */
+    border: .25em solid #000;
+    padding: 1em;
+
+    font-size: 1.5em;
+}
+
+@page {
+    size: 11in 8.5in;
+    margin: .5in .5in .5in .5in;
+}
+@media print
+{   
+    body {
+        height: 100%;
+    }
+    .no-print {
+        display: none !important;
+    }
+}
+</style>
+</head>
+<body>
+
+    <div class="no-print" style="
+    position: fixed;
+    bottom: 0; left: 0;
+    margin: .5em;
+    ">
+        <button onclick="print_certificate(0)">print certificate</button>
+    </div>
+
+<script>
+const log = named_log('greeter display')
+
+const query = new URLSearchParams(location.search)
+const hangout_id = query.get('hangout')
+const meet_users = query.get('meet')
+
+const set_background = (icon) => {
+    if (icon) {
+        body.append(node(`<img src="${icon}" style="
+        position: absolute;
+        top: 0; left: 0; height: 100%; width: 100%;
+        opacity: .1;
+        image-rendering: pixelated;
+        pointer-events: none;
+        object-fit: cover;
+        z-index: -1;
+        " />`))
+    }
+}
+const shrink_notes = () => {
+    log('shrink?', body.scrollHeight, body.clientHeight)
+    let em = 1
+    do {
+        html.style.cssText = `--note-font-size: ${em}em`
+        em *= .95
+    } while (body.scrollHeight > body.clientHeight && em > .1)
+}
+const add_seal = () => {
+    const stamp_target = Q('.stamp-target') || body
+    stamp_target.style.position = 'relative'
+    stamp_target.append(node(`
+    <div id="seal" class="column" style="
+    background: #000;
+    color: #fff;
+    font-weight: bold;
+    aspect-ratio: 1 / 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2em;
+    line-height: .8;
+    font-family: 'Rubik Doodle Shadow';
+    border-radius: 50%;
+    padding: .33em;
+
+    background: #8d0105;
+    box-shadow: -.05em -.05em 0 0 #390002, .05em .05em 0 0 #e7363c, 0 0 0 calc(0.15em + .5px) #9b090d, -.05em -.05em 0 .15em #e7363c, .05em .05em 0 .15em #390002;
+    color: #e7363c;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: .5em;
+    font-size: 3em;
+    overflow: visible;
+    ">
+        <style>
+            #seal {
+                > span {
+                    font-family: inherit;
+                    line-height: 1.5;
+                    height: 0;
+                    overflow: visible;
+                    display: flex; align-items: center; justify-content: center;
+                    translate: -.025em 0;
+                }
+            }
+            @media print
+            {
+                .desktop #seal > span {
+                    translate: -.025em .125em !important;
+                }
+            }
+        </style>
+        <span class="middle-column" style="
+        filter: drop-shadow(-.0175em -.0175em 0 #e7363c) drop-shadow(.0175em .0175em 0 #390002);
+        ">👋</span>
+        <span class="middle-column" style="
+        mix-blend-mode: color-burn;
+        filter: saturate(0.25) brightness(.95);
+        position: absolute;
+        ">👋</span>
+    </div>
+    `))
+}
+const print_certificate = (ms=500) => {
+    print !== undefined && defer(window.print, ms)
+}
+
+on(window, 'resize deviceorientation', shrink_notes)
+
+hangout_id && defer(async () => {
+    const result = await api.get(`/api/greeter/hangout/${hangout_id}`)
+    log(result)
+    const {item:hangout} = result
+
+    const title = hangout.title || hangout.location || datetime.yyyymmdd(hangout.t)
+    document.title = title
+    body.append(node(`<div id="header-container" class="column wide">
+        <div id="header" class="row wide">
+            <div style="
+            align-self: flex-start;
+            text-transform: uppercase;
+            font-size: 2.5em; font-weight: bold;
+            font-family: highway-gothic;
+            ">${title}</div>
+        </div>
+        <div style="
+        align-self: flex-end;
+        font-size: 1.25em;
+        "><span style="opacity:.25">freshman.dev/greeter</span>/hangout/${hangout.id}</div>
+        <br />
+    </div>`))
+
+    const any_note = values(hangout.public).some(x => x)
+    const notes = node(`<div class="column wide" style="
+    gap: .25em;
+    ">
+        <div class="stamp-target" style="
+        border: 1px solid #000;
+        padding: .5em;
+        min-width: 100%;
+        ">
+            <div class="row gap">
+                ${hangout.icon ? `
+                <img src="${hangout.icon}" width="64" />
+                ` : ''}
+                <div class=column>
+                    <div>hung out ${datetime.yyyymmdd(hangout.t)}</div>
+                    <div>at ${hangout.location || 'unknown location'}</div>
+                    <div>with ${hangout.users.join(' & ')}</div>
+                </div>
+            </div>
+        </div>
+        ${any_note ? '<div>NOTES</div>' : ''}
+    </div`)
+    hangout.users.map(user => {
+        if (!hangout.public[user]) return
+        
+        notes.append(node(`
+        <div style="
+        border: 1px solid #000;
+        padding: .5em;
+        min-width: 100%;
+        font-size: var(--note-font-size);
+        ">
+            <div style="
+            font-weight: bold;
+            ">${user}</div>
+            <div style="white-space:pre-wrap">${hangout.public[user] || 'no note'}</div>
+        </div>
+        `))
+    })
+    body.append(notes)
+
+    set_background(hangout.icon)
+    shrink_notes()
+    add_seal()
+    print_certificate()
+})
+meet_users && defer(async () => {
+    const users = meet_users.split('-')
+    const users_url = users.join('/met/')
+    const result = await api.get(`/api/greeter/${users_url}`)
+    log(result)
+    const {item:meet} = result
+
+    const title = `when ${users.join(' and ')} met`
+    document.title = title
+    body.append(node(`<div id="header-container" class="column wide">
+        <div id="header" class="row wide">
+            <div style="
+            align-self: flex-start;
+            text-transform: uppercase;
+            font-size: 2.5em; font-weight: bold;
+            font-family: highway-gothic;
+            ">${title}</div>
+        </div>
+        <div style="
+        align-self: flex-end;
+        font-size: 1.25em;
+        "><span style="opacity:.25">freshman.dev/greeter</span>/${users_url}</div>
+        <br />
+    </div>`))
+
+    const any_note = values(meet.public).some(x => x)
+    const notes = node(`<div class="column wide" style="
+    gap: .25em;
+    ">
+        <div class="stamp-target" style="
+        border: 1px solid #000;
+        padding: .5em;
+        min-width: 100%;
+        ">
+            <div class="row gap">
+                ${meet.icon ? `
+                <img src="${meet.icon}" width="64" />
+                ` : ''}
+                <div class=column>
+                    <div>met ${datetime.yyyymmdd(meet.t)}</div>
+                    <div>at ${meet.location || 'unknown location'}</div>
+                </div>
+            </div>
+        </div>
+        ${any_note ? '<div>NOTES</div>' : ''}
+    </div`)
+    users.map(user => {
+        if (!meet.public[user]) return
+        
+        notes.append(node(`
+        <div style="
+        border: 1px solid #000;
+        padding: .5em;
+        min-width: 100%;
+        font-size: var(--note-font-size);
+        ">
+            <div style="
+            font-weight: bold;
+            ">${user}</div>
+            <div>
+                ${meet.public[user] || 'no note'}
+            </div>
+        </div>
+        `))
+    })
+    body.append(notes)
+
+    set_background(meet.icon)
+    shrink_notes()
+    add_seal()
+    print_certificate()
+})
+
+  </script>
+
+</body>
+</html>

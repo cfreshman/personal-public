@@ -1,0 +1,64 @@
+server {
+  server_name back.freshman.dev;
+  include sites-available/fragments/back-ssl;
+  ssl_certificate /etc/letsencrypt/live/back.freshman.dev/fullchain.pem;
+  ssl_certificate_key /etc/letsencrypt/live/back.freshman.dev/privkey.pem;
+
+  location / {
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-NginX-Proxy true;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection 'upgrade';
+    proxy_pass http://127.0.0.1:5000$request_uri;
+    proxy_ssl_session_reuse off;
+    # proxy_set_header Host $http_host;
+    proxy_pass_header Server;
+    proxy_cache_bypass $http_upgrade;
+    proxy_redirect off;
+  }
+}
+
+# static landing sites
+server {
+  server_name ~^p2\.back\. ~^p2\.c\.;
+  listen 80;
+  location / {
+    proxy_pass http://192.168.0.7$request_uri;
+  }
+}
+server {
+  server_name ~^p1\.back\. ~^p2\.c\.;
+  listen 80;
+  location / {
+    proxy_pass http://192.168.0.13$request_uri;
+  }
+}
+server {
+  server_name ~^z3\.back\. ~^z3\.c\.;
+  listen 80;
+  location / {
+    proxy_pass http://192.168.0.2$request_uri;
+  }
+}
+server {
+  server_name ~^z2\.back\. ~^z2\.c\.;
+  listen 80;
+  location / {
+    proxy_pass http://192.168.0.14$request_uri;
+  }
+}
+server {
+  server_name ~^z1\.back\. ~^z1\.c\.;
+  listen 80;
+  location / {
+    proxy_pass http://192.168.0.3$request_uri;
+  }
+}
+server {
+  server_name _;
+  listen 80 default_server;
+  location / {
+    proxy_pass http://127.0.0.1:8000$request_uri;
+  }
+}

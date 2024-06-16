@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset=utf-8>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<meta charset=utf-8>
+<title></title>
+<style>
+  html {
+    background: #f9f8f6;
+    color: #101010;
+    font-size: 10px;
+  }
+  body {
+    font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    padding: .5rem 1rem;
+  }
+  .title {
+    font-size: 1.5rem;
+    position: relative;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+  }
+  a {
+    color: inherit;
+  }
+  a:hover {
+    color: #f9f8f6;
+    background: #101010;
+  }
+</style>
+
+<script src="/lib/utils.js"></script>
+</head>
+<body>
+
+  <p class="title" id="msg">loading</p>
+
+  <script>
+    const msgL = Q('#msg')
+    msgL.textContent = decodeURIComponent(location.search.slice(1)) || `(empty)`
+    window.msg = text => `l0.vc/?${encodeURIComponent(text)}`
+  </script>
+
+</body>
+</html>

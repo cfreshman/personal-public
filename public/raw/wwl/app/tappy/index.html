@@ -1,0 +1,235 @@
+<head>
+  <!-- 
+    THIS IS AN EARLY DRAFT. It is provided as is.
+  -->
+  <title>tappy square</title>
+  <meta name="description" content="like the flappy bird" />
+  <meta name="author" content="cyrus@freshman.dev">
+  <script src="/lib/2/wwl/script.js"></script>
+  <link rel="icon" href="/raw/wwl/app/tappy/icon.png" />
+</head>
+<body>
+  <script>
+    wwl.attach({
+      dependencies: [
+        'https://freshman.dev/lib/2/ve/ve.js',
+      ],
+      title: '', subtitle: '',
+      state: 0,
+      states: [
+        {
+          title: 'tappy square',
+          html: '<button id=1>play</button>',
+        },
+        {
+          html: app => {
+            setTimeout(() => app.data.handle.loop(app.L.querySelector('canvas'), app.L.querySelector('.text')))
+            return `<div class=full style="display: flex; align-items: center; justify-content: center">
+              <canvas style="height: 100%"></canvas>
+            </div>`
+          },
+          footer: `<span class="text large"></span>`,
+        },
+      ],
+      style: `
+      touch-action: manipulation;
+      cursor: pointer;
+      `,
+
+      data: app => ({ log: (...x) => console.debug('tappy', ...x),
+        t: 0,
+        size: V.ne(128, 64),
+        MODE: { START:0, PLAY:1, END:2 },
+        SPACING: V.ne(128 / 4, 128 / 7),
+        PADDING: V.ne(0, 128 / 12),
+
+        score: 0, highscore: 0,
+        _mode: 0, get mode(){return this._mode}, set mode(new_mode) {
+          this.t = 0
+          this._mode = new_mode
+        },
+        bird: undefined,
+        pipes: [],
+
+        handle: {
+          spawn: {
+            bird: (x) => {
+              return {
+                pos: V.ne(x, app.data.size.y * 2/3),
+                vel: V.d2(),
+                acc: V.d2(),
+                size: V.ne(4, 4),
+              }
+            },
+            pipes: (x) => {
+              const size = V.ne(4, app.data.size.y)
+              // const gap = Math.random() * size.y*1/4 + size.y/2
+              const gap = Math.random() * (app.data.size.y - app.data.SPACING.y - app.data.PADDING.y) + app.data.PADDING.y
+              return [gap + app.data.SPACING.y/2 + size.y/2, gap - app.data.SPACING.y/2 - size.y/2].map(y => ({
+                pos: V.ne(x, y),
+                vel: V.d2(),
+                acc: V.d2(),
+                size,
+              }))
+            },
+          },
+          update: (dt) => {
+            app.data.t += dt
+
+            let { t, size, SPACING, MODE, mode, bird, pipes, handle, handle:{spawn} } = app.data
+            if (!bird) {
+              app.data.bird = bird = spawn.bird(SPACING.x / 2)
+            }
+            if (!pipes.length) {
+              pipes.push(...spawn.pipes(2 * SPACING.x))
+            }
+
+            let last_pipe = pipes.slice(-1)[0]
+            while (last_pipe.pos.x < bird.pos.x + size.x) {
+              const new_pipes = spawn.pipes(last_pipe.pos.x + SPACING.x)
+              pipes.push(...new_pipes)
+              last_pipe = new_pipes.slice(-1)[0]
+            }
+            if (pipes[0].pos.x < -SPACING.x) pipes.shift()
+
+            bird.pos = V.ad(V.sc(bird.vel, dt), bird.pos)
+            bird.vel = V.ad(V.sc(bird.acc, dt), bird.vel)
+
+            switch (mode) {
+              case MODE.START: {
+              }break
+              case MODE.PLAY: {
+
+                app.data.score = pipes.filter(x => x.pos.x < bird.pos.x).length / 2
+
+                const bounds = (points) => points.reduce((bounds, v) => {
+                  bounds.min_x = Math.min(bounds.min_x || v.x, v.x)
+                  bounds.min_y = Math.min(bounds.min_y || v.y, v.y)
+                  bounds.max_x = Math.max(bounds.max_x || v.x, v.x)
+                  bounds.max_y = Math.max(bounds.max_y || v.y, v.y)
+                  return bounds
+                }, {})
+                const hit = (bounds, ...points_list) => points_list.some(points => points.some(v => bounds.min_x < v.x && v.x < bounds.max_x && bounds.min_y < v.y && v.y < bounds.max_y))
+                // TODO proper intersects() for rectangles which detects overlap without point hit
+                const collision = (a, b) => {
+                  const [a_points, b_points] = [a, b].map(({ pos, size }) => 
+                    [[0, 0], [1, 0], [0, 1], [1, 1]]
+                    .map(V.ne)
+                    .map(v => V.ad(pos, V.mu(V.ad(v, V.ne(-.5, -.5)), size))))
+                  return hit(bounds(a_points), b_points)
+                }
+
+                if (bird.pos.y < 0 || pipes.filter(pipe => pipe.pos.x > bird.pos.x - SPACING.x).some(pipe => collision(pipe, bird))) {
+                  bird.vel.x = 0
+                  app.data.mode = MODE.END
+                }
+              }break
+              case MODE.END: {
+                if (t > 2_000) app.data.mode = MODE.START
+              }break
+            }
+          },
+          tap: (pos) => {
+            app.data.log('tap', pos.x, pos.y)
+            
+            const { t, size, MODE, mode, bird, pipes, handle } = app.data
+            switch (mode) {
+              case MODE.START: {
+                app.data.t = 0
+                app.data.bird.vel = V.ne(app.data.size.x / 5, 0)
+                app.data.bird.acc = V.ne(0, -app.data.size.y * 1.5)
+                app.data.mode = MODE.PLAY
+              }break
+              case MODE.PLAY: {
+                if (bird.pos.y < size.y && bird.pos.y > 0) {
+                  bird.vel.y = size.y * .75
+                }
+              }break
+              case MODE.END: {
+                if (t > 1) {
+                  if (app.data.score > app.data.highscore) {
+                    app.data.highscore = app.data.score
+                    app.session.update({ highscore: app.data.highscore })
+                  }
+
+                  app.data.t = 0
+                  app.data.bird = undefined
+                  app.data.pipes = []
+                  app.data.mode = MODE.START
+                }
+              }break
+            }
+          },
+
+          render: (canvas, text) => {
+            const { size, SPACING, MODE, mode, bird, pipes, handle } = app.data
+            ;[canvas.width, canvas.height] = V.ar(size)
+            canvas.style.imageRendering = 'pixelated'
+            canvas.style.scale = '1 -1'
+            const ctx = canvas.getContext('2d')
+
+            ctx.fillStyle=  '#ddf'
+            ctx.fillRect(0, 0, size.x, size.y)
+
+            const view = V.ne(bird?.pos.x - SPACING.x, 0)
+            const centered = (pos, size) => {
+              const adjusted = V.ne(...V.ar(V.ad(pos, V.sc(view, -1), V.sc(size, -1/2))).map(Math.round))
+              ctx.fillRect(adjusted.x, adjusted.y, size.x, size.y)
+            }
+
+            ctx.fillStyle = '#2b2'
+            pipes.map(pipe => centered(pipe.pos, pipe.size))
+
+            ctx.fillStyle = '#f00'
+            centered(bird.pos, bird.size)
+
+            text.textContent = {
+              [MODE.START]: 'tap to start',
+              [MODE.PLAY]: app.data.score,
+              [MODE.END]: `score: ${app.data.score} / highscore: ${app.data.highscore}`,
+            }[mode]
+          },
+
+          _loop: undefined,
+          loop: (canvas, text) => {
+            if (app.data._loop) {
+              app.data._loop()
+              app.data._loop = undefined
+            }
+
+            let timeout, last = performance.now()
+            const _loop = () => {
+              const now = performance.now()
+              app.data.handle.update((now - last) / 1_000)
+              app.data.handle.render(canvas, text)
+
+              last = now
+              timeout = requestAnimationFrame(_loop)
+            }
+            timeout = requestAnimationFrame(_loop)
+
+            const _onpointerdown = e => {
+              e.preventDefault()
+              e.stopPropagation()
+              const rect = canvas.getBoundingClientRect()
+              app.data.handle.tap(
+                V.mu(
+                  app.data.size, 
+                  V.ad(V.ne(0, 1), V.mu(V.ne(1, -1), V.ne(
+                    (e.clientX - rect.x) / rect.width, 
+                    (e.clientY - rect.y) / rect.height)))))
+            }
+            app.root.addEventListener('pointerdown', _onpointerdown)
+
+            return app.data._loop = () => {
+              cancelAnimationFrame(timeout)
+              app.root.removeEventListener('pointerdown', _onpointerdown)
+            }
+          },
+        },
+      }),
+
+      init: app => app.session.settle().then(session => session.default({ highscore: 0 }))
+    })
+  </script>
+</body>

@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>playlist-poster</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    body > * {
+        max-width: 100%;
+    }
+  </style>
+  <script src=/lib/2/spotify_client/script.js></script>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div id=input_root></div>
+  <br />
+  <div id=playlist_root></div>
+  <script>
+const log = named_log('playlist-poster')
+const spotify = spotify_client.new(
+  'playlist-poster',
+  '191bd055cb6b4095b4bc2ec40f85209b',
+  'user-library-read playlist-read-private',
+  'https://freshman.dev/raw/playlist-poster/')
+
+const state = {
+  profile: undefined,
+  playlists: [],
+  playlist: undefined,
+}
+const render = {
+    input: () => {
+      const loading = state.profile && !state.playlists
+      input_root.innerHTML = `
+${state.profile ? `<button id="disconnect">disconnect ${state.profile.id}</button>` : '<button id="connect">connect to Spotify</button>'}
+${[
+  `${(loading) ? 'loading your tracks' : ''}`,
+].filter(x=>x).join(', ')}
+<br/>
+<div class="row gap">
+  <input id=input_playlist placeholder="paste playlist share link" style="
+  min-width: 20em;
+  " value="${state.playlist?.external_urls.spotify || ''}" />
+  <button id="load_playlist">load</button>
+  <button id="clear_playlist">clear</button>
+</div>
+`
+      QQ(input_root, ':scope button').map(x => x.onclick = handle[x.id])
+    },
+    playlist: (loading=false, list=false) => {
+      const playlist_item = (playlist) => {
+        log(playlist)
+        return `<div class="middle-row gap" style="
+        border: 1px solid #000;
+        min-height: 4em;
+        ${list ? `
+        cursor: pointer;  
+        ` : ''}
+        " ${list ? `onclick="
+        input_playlist.value = '${playlist.external_urls.spotify}'
+        handle.load_playlist()
+        "` : ''}>
+          ${playlist.images && playlist.images[0] ? `<img src="${playlist.images[0].url}" style="
+          width: 4em;
+          aspect-ratio: 1/1;
+          " />` : ''}
+          <div style="
+          padding: .25em;
+          padding-right: .5em;
+          ">
+            <a href="${playlist.external_urls.spotify}">${playlist.name}</a>
+            by
+            <a href="${playlist.owner.external_urls.spotify}">${playlist.owner.display_name}</a>
+          </div>
+        </div>`
+      }
+      log({loading,list})
+      list = list || (state.playlists && !state.playlist)
+      if (state.playlists && list) {
+        playlist_root.innerHTML = `<div class="column gap">
+          ${state.playlists.map(playlist_item).join('\n')}
+          <br />
+          <br />
+        </div>`
+        return
+      } else if (!state.playlist) {
+        playlist_root.innerHTML = loading ? 'loading playlist' : 'log in and paste playlist URL to load'
+        return
+      }
+      playlist_root.innerHTML = `<div class="column gap">
+        ${playlist_item(state.playlist)}
+        <div class="row gap">
+          <button id="generate_poster">generate poster</button>
+          <button id="download_poster" style="display:none">download</button>
+        </div>
+        <div id=root_canvas_poster>
+        </div>
+      </div>`
+      QQ(playlist_root, ':scope button').map(x => x.onclick = handle[x.id])
+    },
+}
+const handle = {
+    connect: () => spotify.oauth(),
+    disconnect: () => spotify.disconnect(),
+    load: async () => {
+      state.profile = await spotify.profile()
+      render.input()
+
+      state.playlists = await spotify.playlists_parallel()
+      log(state)
+      log('playlists', state.playlists)
+
+      render.input()
+    },
+    load_playlist: async () => {
+      const playlist_url = input_playlist.value
+      if (!playlist_url) {
+        alert('paste playlist link')
+        return
+      }
+
+      Q('#clear_playlist').textContent = 'clear'
+      const id = /playlist\/([^?]+)/.exec(playlist_url)[1]
+      if (id) {
+        const search = new URLSearchParams(location.search)
+        search.set('playlist', playlist_url)
+        url.replace(location.pathname + ('?' + search.toString()))
+      
+        render.playlist(true)
+        state.playlist = await spotify.playlist(id)
+        log(state)
+        render.playlist()
+      } else {
+        alert('enter valid playlist link')
+      }
+    },
+    generate_poster: async () => {
+      Q('#generate_poster').textContent = 'generating...'
+      await Promise.resolve()
+      if (!state.playlist) return
+      const { playlist, playlist: {tracks} } = state
+      const n = tracks.length
+      log({tracks,n})
+      const canvas = node(`<canvas id=canvas_poster></canvas>`)
+      const ctx = canvas.getContext('2d')
+      const columns = Math.round(Math.sqrt(n))
+      const rows = Math.ceil(n / columns)
+      const track_imgs = await Promise.all(tracks.map((track, i) => new Promise(resolve => {
+        const { track: {album} } = track
+        const img = node('<img crossorigin="anonymous" />')
+        img.onload = e => resolve(img)
+        img.src = album.images.at(-1).url
+      })))
+      const playlist_img = playlist.images && playlist.images[0] && await new Promise(resolve => {
+        const img = node('<img crossorigin="anonymous" />')
+        img.onload = e => resolve(img)
+        img.src = playlist.images[0].url
+      })
+
+      const TILE_SIZE = 64
+      canvas.width = columns * TILE_SIZE
+      canvas.height = rows * TILE_SIZE
+      const center_minus = V.ne(columns / 2, rows / 2).sc(-1)
+      const places = range(rows).flatMap(r => range(columns).map(c => V.ne(c, r))).sort((a, b) => {
+        return center_minus.ad(b).do() - center_minus.ad(a).do()
+      })
+      log({places})
+
+      const track_img_stack = track_imgs.slice().reverse()
+      places.map(([c, r]) => {
+        const track_img = track_img_stack.pop()
+        if (!track_img) return
+        ctx.drawImage(
+          track_img,
+          0, 0, track_img.width, track_img.height,
+          c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE,
+          )
+      })
+
+      // const large_size = Math.min(columns / 3, rows / 3) * TILE_SIZE
+      // ctx.drawImage(
+      //   playlist_img,
+      //   0, 0, playlist_img.width, playlist_img.height,
+      //   canvas.width / 2 - large_size / 2, canvas.height / 2 - large_size / 2, large_size, large_size,
+      //   )
+
+      const text_pad = canvas.width / 16
+      const text_border = canvas.width / 64
+      const text_height = canvas.height / 8
+
+      ctx.fillStyle = '#000'
+      ctx.fillRect(
+        text_border + text_pad - text_border, text_border + canvas.height - text_pad - text_height - text_border,
+        canvas.width - text_pad * 2 + text_border * 2, text_height + text_border * 2)
+      ctx.fillStyle = '#fff'
+      ctx.fillRect(
+        text_border + text_pad, text_border + canvas.height - text_pad - text_height,
+        canvas.width - text_pad * 2, text_height)
+      ctx.fillStyle = '#000'
+      ctx.font = `${text_height}px monospace`
+      ctx.textBaseline = 'middle'
+      ctx.textAlign = 'left'
+      ctx.fillText(
+        playlist.name,
+        text_border + text_pad, text_border + canvas.height - text_pad - text_height/2,
+        canvas.width - text_pad * 2)
+
+      if (playlist_img) {
+        const large_size = Math.min(columns * 2 / 5, rows * 2 / 5) * TILE_SIZE
+        ctx.fillStyle = '#000'
+        ctx.fillRect(
+          text_border + canvas.width / 2 - large_size / 2 - text_border,
+          text_border + canvas.height / 2 - large_size / 2 - text_border,
+          large_size + text_border * 2, large_size + text_border * 2)
+        ctx.drawImage(
+          playlist_img,
+          0, 0, playlist_img.width, playlist_img.height,
+          text_border + canvas.width / 2 - large_size / 2,
+          text_border + canvas.height / 2 - large_size / 2,
+          large_size, large_size,
+          )
+      }
+
+      // const large_size = Math.max(columns, rows) * TILE_SIZE
+      // ctx.drawImage(
+      //   playlist_img,
+      //   0, 0, playlist_img.width, playlist_img.height,
+      //   canvas.width / 2 - large_size / 2, canvas.height / 2 - large_size / 2, large_size, large_size,
+      //   )
+
+      // ctx.globalCompositeOperation = 'multiply'
+      // const track_img_stack = track_imgs.slice().reverse()
+      // places.map(([c, r]) => {
+      //   const track_img = track_img_stack.pop()
+      //   if (!track_img) return
+      //   ctx.drawImage(
+      //     track_img,
+      //     0, 0, track_img.width, track_img.height,
+      //     c * TILE_SIZE, r * TILE_SIZE, TILE_SIZE, TILE_SIZE,
+      //     )
+      // })
+      // ctx.globalCompositeOperation = 'source-over'
+
+      // const actual_canvas = node('canvas')
+      // actual_canvas.width = canvas.width + text_border * 2
+      // actual_canvas.height = canvas.height + text_border * 2
+      // const actual_ctx = actual_canvas.getContext('2d')
+      // actual_ctx.fillStyle = '#000'
+      // actual_ctx.fillRect(0, 0, actual_canvas.width, actual_canvas.height)
+      // actual_ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, text_border, text_border, canvas.width, canvas.height)
+      let actual_canvas = canvas
+      // if (canvas.height !== 1024) {
+      //   actual_canvas = node('canvas')
+      //   actual_canvas.height = 1024
+      //   actual_canvas.width = canvas.width / canvas.height * 1024
+      //   const actual_ctx = actual_canvas.getContext('2d')
+      //   actual_ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, actual_canvas.width, actual_canvas.height)
+      // }
+
+      root_canvas_poster.innerHTML = ''
+      root_canvas_poster.append(actual_canvas)
+      log(actual_canvas)
+      Q('#generate_poster').textContent = 'generate'
+      Q('#download_poster').style.display = ''
+    },
+    download_poster: async () => {
+      canvases.download(canvas_poster)
+    },
+    clear_playlist: async () => {
+      if (input_playlist.value) {
+        input_playlist.value = ''
+        Q('#clear_playlist').textContent = state.playlist ? 'revert' : 'clear'
+        log('render playlist list')
+        render.playlist(false, true)
+      } else {
+        if (state.playlist) {
+          input_playlist.value = state.playlist.external_urls.spotify
+          Q('#clear_playlist').textContent = 'clear'
+          render.playlist()
+        }
+      }
+    },
+}
+
+render.input()
+defer(async () => {
+  await spotify.autogrant()
+  if (spotify.granted()) {
+    await handle.load()
+    const search = new URLSearchParams(location.search)
+    const playlist_url = search.get('playlist') || '' // 'https://open.spotify.com/playlist/3FRnVOPaTgKvqNcey6AZEl?si=45cc3abddcf442e0'
+    input_playlist.value = playlist_url
+    if (input_playlist.value) {
+      await handle.load_playlist()
+      await handle.generate_poster()
+    } else {
+      await render.playlist()
+    }
+  }
+})
+
+  </script>
+
+</body>
+</html>
