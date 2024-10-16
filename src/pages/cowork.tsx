@@ -76,7 +76,7 @@ export default () => {
       <div id='cowork-outer-container' className='cowork-container row grow'>
         <div id='cowork-left' className='cowork-container column'>
           <div id='cowork-background-music'>
-            <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/jfKfPfyJRdk?si=orfGJ4MAQpQB1Vk3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+            <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/jfKfPfyJRdk?si=orfGJ4MAQpQB1Vk3" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
           </div>
           <div id='cowork-online'>
             <InfoSection labels={[
@@ -145,7 +145,7 @@ export default () => {
       </> : <>
       <div id='cowork-outer-container' className='cowork-container column grow'>
         <div id='cowork-background-music'>
-          <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/jfKfPfyJRdk?si=orfGJ4MAQpQB1Vk3" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+          <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/jfKfPfyJRdk?si=orfGJ4MAQpQB1Vk3" title="YouTube video player" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
         </div>
         <div id='cowork-online'>
           <InfoBadges labels={[

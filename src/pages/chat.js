@@ -42,6 +42,20 @@ const open_popup = (closer) => {
   `)
 }
 
+const _ListItem = ({ x, marked, toggle_mark, checked }) => {
+  const skip = checked !== !!marked.marked[x.t]
+  return skip ? null : <div 
+  title={x.text} className='row wide' style={S(`align-items:center;cursor:pointer`)}
+  onClick={e => toggle_mark(x)}>
+    <input type='checkbox' checked={checked} onChange={e => toggle_mark(x)} />
+    &nbsp;
+    <span style={S(`
+    text-wrap: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    `)}>{checked ? <s>{x.text}</s> : x.text}</span>
+  </div>
+}
 const ListsModal = ({lists,chat,other,close}) => {
 
   const n_lists = keys(lists).length
@@ -76,17 +90,14 @@ const ListsModal = ({lists,chat,other,close}) => {
     <HalfLine />
     {entries(lists).map(([name, items]) => {
       const is_open = select === name
+      log(name, items)
       return <InfoSection labels={[
         name+'list',
         n_lists > 1 && (is_open ? { close: () => set_select(undefined) } : { open: () => set_select(name) }),
       ]}>
         {is_open ? <div className='column wide'>
-          {items.map(x => {
-            return marked.marked[x.t] ? null : <div className='center-row wide' style={S(`cursor:pointer`)} onClick={e => toggle_mark(x)}><input type='checkbox' onChange={e => toggle_mark(x)} />&nbsp;{x.text}</div>
-          })}
-          {items.slice().reverse().map(x => {
-            return marked.marked[x.t] ? <div className='center-row wide' style={S(`cursor:pointer`)} onClick={e => toggle_mark(x)}><input type='checkbox' checked onChange={e => toggle_mark(x)} />&nbsp;<s>{x.text}</s></div> : null
-          })}
+          {items.map(x => <_ListItem {...{ x, marked, toggle_mark, checked:false }} />)}
+          {items.slice().reverse().map(x => <_ListItem {...{ x, marked, toggle_mark, checked:true }} />)}
         </div> : null}
       </InfoSection>
     })}

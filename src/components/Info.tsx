@@ -1236,9 +1236,9 @@ const _InfoSliderStyle = styled.div`
 `
 
 const _InfoFile = withRef(({
-  image=false, accept, label, setValue, multiple=false, inline, onChange, children, ...props
+  image=false, audio=false, accept, label, setValue, multiple=false, inline, onChange, children, ...props
 }: props & {
-  image?:boolean, accept?:string, label?:string, multiple?:boolean,
+  image?:boolean, audio?:boolean, accept?:string, label?:string, multiple?:boolean,
   setValue?: consumer<File | File[]>, onChange?,
   inline?,
 }) => {
@@ -1253,7 +1253,7 @@ const _InfoFile = withRef(({
   `),  props.style || {})
   return <label {...props}>
     {label}{label && children ? ' ' : ''}{children}
-    <input type='file' accept={accept ?? (image ? 'image/*' : '*')} style={{ visibility:'hidden', pointerEvents:'none', position:'absolute', left:0 }}
+    <input type='file' accept={accept ?? (image ? 'image/*' : audio ? 'audio/*' : '*')} style={{ visibility:'hidden', pointerEvents:'none', position:'absolute', left:0 }}
     multiple={multiple}
     onChange={e => {
       named_log(e.target.files)

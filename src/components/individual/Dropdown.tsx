@@ -12,7 +12,7 @@ export const Dropdown = ({
   label, children, position='s e', indicator=false,
   open:initialOpen, expand=false,
   control={}, set_open=undefined,
-  clear_messages,
+  clear_messages, dropdown_style={},
   ...props
 }: props & {
   label: ReactFragment | 'lines' | 'icon',
@@ -23,6 +23,7 @@ export const Dropdown = ({
     open?,
     toggle?,
   },
+  dropdown_style?: any,
   clear_messages?: boolean,
 }) => {
 
@@ -70,16 +71,16 @@ export const Dropdown = ({
     close: (value=true) => setOpen(!value),
     toggle: handle.toggle,
   })
-  return <Style className={`dropdown-container open-${open} expand-${expand!==undefined} ${props.className||''}`} style={S(`
-  ${expand !== undefined ? `
-  top: calc((1.5em + 1px) * ${expand} - 2px);
-  border: 1px solid currentcolor;
-  `:''}
-  `)}>
+  return <Style className={`dropdown-container open-${open} expand-${expand!==undefined} ${props.className||''}`} style={{...S(`
+    ${expand !== undefined ? `
+    top: calc((1.5em + 1px) * ${expand} - 2px);
+    border: 1px solid currentcolor;
+    `:''}
+    `), ...(props.style||{})}}>
     <div className={`dropdown-label indicator-${indicator}`} onClick={e => handle.toggle()}>{label}</div>
-    <div {...props} className={['dropdown', position, props.className].filter(truthy).join(' ')} style={S(`
+    <div {...props} className={['dropdown', position, props.className].filter(truthy).join(' ')} style={{...S(`
     z-index: calc(100100 + ${dropdown_open_count});
-    `)}>{children}</div>
+    `), ...(dropdown_style||{})}}>{children}</div>
   </Style>
 }
 

@@ -713,9 +713,9 @@ app.use(async (req, res, next) => {
 })
 
 app.use(async (req, res, next) => {
-    log('FILE?', req.url)
+    // log('FILE?', req.url)
     const url_path = path.join(staticPath, req.url.replaceAll('../', ''))
-    log('FILE', url_path, fs.existsSync(url_path))
+    // log('FILE', url_path, fs.existsSync(url_path))
     if (fs.existsSync(url_path)) {
         res.sendFile(url_path)
     } else {

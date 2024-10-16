@@ -50,6 +50,8 @@ import rent_splitter from './rent-splitter'
 import aob from './aob'
 import recurder from './recurder'
 import cowork from './cowork'
+import image from './image'
+import audio from './audio'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -113,6 +115,8 @@ export default {
   'rent-splitter': rent_splitter,
   aob,
   recurder,
+  image,
+  audio,
 }
 
 export const ios = [

@@ -1,11 +1,10 @@
 const express = require('express')
-// const M = require('./model')
 const { J, U, isDevelopment } = require('../util.js')
 const path = require('node:path')
 const fs = require('node:fs')
 
 const FILE_DIR =  path.resolve('./file/')
-const R = express.Router();
+const R = express.Router()
 R.post('/*', async (req, res) => {
     if (req.user !== 'cyrus') throw 'unauthorized'
     console.log('[FILE:WRITE]', req.url, req.body)

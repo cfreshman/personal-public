@@ -5,7 +5,7 @@ import { basedir } from '../util';
 export const SECRETS_PATH = basedir() + '/secrets/files';
 console.debug('SECRETS', SECRETS_PATH)
 
-export async function readSecret(relativePath) {
+export async function readSecret(relativePath): Promise<any> {
     return new Promise((resolve, reject) => {
         fs.readFile(path.join(SECRETS_PATH, relativePath), (error, content) => {
             if (error) {

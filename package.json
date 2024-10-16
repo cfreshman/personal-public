@@ -31,6 +31,7 @@
     "jsts": "^2.9.0",
     "marked": "^4.2.5",
     "mongodb": "^4.0.1",
+    "node": "^20.18.0",
     "node-html-to-image": "^3.3.0",
     "node-telegram-bot-api": "^0.60.0",
     "nodemon": "^2.0.2",
