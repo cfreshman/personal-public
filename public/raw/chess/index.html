@@ -262,12 +262,12 @@
       })
       return checks
     },
-    winner: (state) => state.status > -1 ? status.status : undefined,
+    winner: (state) => state.status > -1 ? state.status : undefined,
   }
   // #endregions
 
   // #region state
-  const state = store.implicit('simple-wordbase-state', () => ({
+  const state = store.implicit('simple-chess-state', () => ({
     board: M.ne(range(13).map(r => range(10).map(c => Tile.new(r, c, '')))),
     players: [],
     turn: -1,

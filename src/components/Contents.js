@@ -74,6 +74,7 @@ export const Missing = ({ loaded }) => {
 
 const nonProjects = set('home about projects contents')
 const staticProjects = set('paths')
+const ignore_embedded = set('chess')
 const failedImport = set()
 export const Page = ({ loaded, override }) => {
     // actual page loading is handled inline with url changes (see url.tsx, page.tsx)
@@ -125,7 +126,7 @@ export const Page = ({ loaded, override }) => {
         }
 
         // check to see if this ID matches an embedded project
-        if (id) {
+        if (id && !ignore_embedded.has(id)) {
             const embedded_options = [
                 `/raw/${id}/index.html`,
                 `/raw/simple/${id}.html`,

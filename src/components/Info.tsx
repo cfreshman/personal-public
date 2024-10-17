@@ -17,7 +17,7 @@ export type InfoLabelType = printable | {
   [name:string]: ()=>void,
 } | {
   text?: any, element?: any,
-  func?: ()=>void, href?: string,
+  func?: ()=>void, href?: string, tab?: boolean,
   dot?: string | true,
   style?: React.CSSProperties | string,
   disabled?: boolean,
@@ -570,7 +570,7 @@ const _InfoBadge = ({label}: {label: InfoLabelType}) => {
 
     const className = `${label.label||!(func||label.href) ? (`label ${func ? 'clickable' : ''}`) : 'button'} inline ${label.disabled?'disabled':''} ${label.classes||''}`
     const L:any = label.href ? A : /* set(className).intersects(set('button clickable')) */ className.includes('button') || className.includes('clickable') ? _a : _span
-    return <L href={label.href as string} className={className} onClick={func} style={toStyle(label.style)}>{text}</L>
+    return <L href={label.href as string} {...(label.tab?{tab:label.tab}:{})} className={className} onClick={func} style={toStyle(label.style)}>{text}</L>
   }
   return <ScrollText on={[label]} className='label inline'>{label}</ScrollText>
 }

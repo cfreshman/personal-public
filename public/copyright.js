@@ -6,7 +6,7 @@ window.xhr = src => {
         x.withCredentials = false
         x.open('GET', src, false)
         x.send()
-        console.debug('[xhr]', src, x.responseText)
+        // console.debug('[xhr]', src, x.responseText)
         return x.responseText
     })(new XMLHttpRequest())
 }

@@ -716,6 +716,37 @@ export default () => {
             font-size: calc(128em + 32em + 8em);
             `)}>💩</span>
           </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #eeebe6;
+          color: #000;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          font-family: monospace;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-size: 256em;
+            translate: 0 -.025em;
+            `)}>♛</span>
+          </div>
+          <div className='rendered-icon middle-row' style={S(`
+          background: #fff;
+          color: #000;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          font-family: monospace;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-size: 325em;
+            translate: 0 -.1em;
+            `)}>♚</span>
+          </div>
         </div>
       </InfoSection>
       <InfoSection labels={['static']}>

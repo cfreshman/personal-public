@@ -52,6 +52,7 @@ import recurder from './recurder'
 import cowork from './cowork'
 import image from './image'
 import audio from './audio'
+import chess from './chess'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -117,6 +118,7 @@ export default {
   recurder,
   image,
   audio,
+  chess,
 }
 
 export const ios = [

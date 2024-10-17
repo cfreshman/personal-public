@@ -343,4 +343,13 @@ export const replace = {
       image: 'https://freshman.dev/raw/cowork/icon.png',
     },
   },
+  'chess': {
+    title: '/chess',
+    description: 'its just chess',
+    keywords: 'chess, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/chess-app/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/chess-app/icon.png',
+    },
+  },
 }

@@ -123,6 +123,7 @@ const _projects = {
   'contact': 'simple contact, discord, schedule a meeting, email',
   'selfchat': 'chat with yourself (productivity hack)',
   'cowork': 'chat & lofi',
+  'chess': 'simple roomed chess',
 }
 // ''.split(' ').forEach(p => {
 //     if (!_projects[p]) _projects[p] = '' });
@@ -152,7 +153,7 @@ export const project_years = {
 export const tags = {
   all: '',
   // game: 'befruited snackman snakes wordbase minesweeper dots-and-boxes',
-  game: 'snackman snakes wordbase dots-and-boxes fishbowl matchbox tappy-square daily-nonogram lettercomb quadbase multipals letterpress apple-orange-banana',
+  game: 'snackman snakes wordbase dots-and-boxes fishbowl matchbox tappy-square daily-nonogram lettercomb quadbase multipals letterpress apple-orange-banana chess',
   // visual: 'cloud floating models terrain graffiti slime speckle arm color pixelworld bubble tube garden egg',
   visual: 'cloud floating models terrain graffiti slime-ants speckle arm gradients pixelworld bubble tube pixels egg gradients color optimal-maps',
   // social: 'chat graffiti live records speckle turt-smurts turt-smurts-2D u wordbase dots-and-boxes garden wall dinder',

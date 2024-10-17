@@ -169,6 +169,7 @@ export default () => {
               { 'wordbase': () => set_content_url('/wordbase'), label: content_url === '/wordbase' },
               { 'lettercomb': () => set_content_url('/lettercomb'), label: content_url === '/lettercomb' },
               { 'letterpress': () => set_content_url('/letterpress'), label: content_url === '/letterpress' },
+              { 'chess': () => set_content_url('/chess'), label: content_url === '/chess' },
               { 'terrain': () => set_content_url('/terrain'), label: content_url === '/terrain' },
             ]} />
           </div>

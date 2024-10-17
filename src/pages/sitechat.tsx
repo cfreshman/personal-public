@@ -176,7 +176,7 @@ export const Chat = ({ hash }: {
           ignore_text = !removed_text.replaceAll(/https?:\/\//g, '').trim()
         }
 
-        const linked_text = text && convertLinks(text)
+        const linked_text = text && convertLinks(text, { new_tab:true })
         const side = meta.user === viewer ? 'right' : 'left'
         const base = `${side} ${meta.classes || 'default'}`
         const name = meta.user === viewer || chat.users.length < 3 ? undefined : meta.user

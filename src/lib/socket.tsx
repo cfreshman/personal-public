@@ -148,13 +148,11 @@ export const useRoom = ({ room='', on, connect }: {
   })
 
   // join room when socket (local) is available
-  useE(local, () => {
+  useE(room, local, () => {
     if (room && local) {
       local.emit('join', room)
-      joinedRooms.push(room)
       return () => {
         local.emit('leave', room)
-        joinedRooms.remove(room)
       }
     }
   })
