@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { InfoBadges, InfoBody, InfoSection, InfoStyles, Select } from '../components/Info'
+import { HalfLine, InfoBadges, InfoBody, InfoSection, InfoStyles, Select } from '../components/Info'
 import { usePageSettings, usePathState } from 'src/lib/hooks_ext'
 import { useF, useR, useS, useStyle } from 'src/lib/hooks'
 import api, { auth } from 'src/lib/api'
@@ -42,7 +42,7 @@ export default () => {
     }
   })
 
-  const [content_url, set_content_url] = useS('/sitechat')
+  const [content_url, set_content_url] = store.use('cowork-content_url', { default:'/sitechat' })
 
   const [online, set_online] = useS([])
   useSocket({
@@ -89,45 +89,54 @@ export default () => {
       '<iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/2VlD3hMpLDqeEkDCMDEn5P?utm_source=generator" width="100%" height="100%" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>',
     ][MUSIC_OPTIONS.indexOf(music)]} />
   </div>
+  const online_func = (user) => () => {
+    open_popup(close => {
+      const open_obj = (href) => ({
+        href,
+        func: e => {
+          if (!e.metaKey) {
+            e.preventDefault()
+            close()
+            // set_content_url(href)
+            // openFrame({ href:href.replace(/^\//, '/-')+'?hide-freshman-ui' })
+            url.push(href)
+          }
+        },
+      })
+      return <>
+        <InfoSection labels={[
+          user,
+        ]}>
+          <InfoBadges labels={[
+            // { text:'VIEW PROFILE', href:`/@${user}`, func:close }
+            { text:'view profile', ...open_obj(`/u/${user}`) }
+          ]} />
+          <InfoBadges labels={[
+            { text:'open chat', ...open_obj(`/chat/${user}`) }
+          ]} />
+          {viewer === user ? null : <InfoBadges labels={[
+            { text:'ADD ON GREETER', ...open_obj(`/greeter/${viewer}/met/${user}`) }
+          ]} />}
+          <HalfLine />
+          <div className='row wide end'>
+            <InfoBadges labels={[{ close }]} />
+          </div>
+        </InfoSection>
+      </>
+    })
+  }
   const panel_online = <div id='cowork-online'>
-    <InfoSection labels={[
+    {mobile ? <InfoBadges labels={[
+      'online:',
+      ...online.map(user => ({ text:user, func:online_func(user) }))
+    ]} />
+    : <InfoSection labels={[
       'online',
     ]}>
       {online.map(user => {
-        return <InfoBadges labels={[{ text:user, func:() => {
-          open_popup(close => {
-            const open_obj = (href) => ({
-              href,
-              func: e => {
-                if (!e.metaKey) {
-                  e.preventDefault()
-                  close()
-                  // set_content_url(href)
-                  // openFrame({ href:href.replace(/^\//, '/-')+'?hide-freshman-ui' })
-                  url.push(href)
-                }
-              },
-            })
-            return <>
-              <InfoSection labels={[
-                user,
-              ]}>
-                <InfoBadges labels={[
-                  // { text:'VIEW PROFILE', href:`/@${user}`, func:close }
-                  { text:'view profile', ...open_obj(`/u/${user}`) }
-                ]} />
-                <InfoBadges labels={[
-                  { text:'open chat', ...open_obj(`/chat/${user}`) }
-                ]} />
-                {viewer === user ? null : <InfoBadges labels={[
-                  { text:'ADD ON GREETER', ...open_obj(`/greeter/${viewer}/met/${user}`) }
-                ]} />}
-              </InfoSection>
-            </>
-          })
-        } }]} />
+        return <InfoBadges labels={[{ text:user, func:online_func(user) }]} />
       })}
-    </InfoSection>
+    </InfoSection>}
   </div>
   const panel_content = <div id='cowork-content'>
     <iframe src={`${content_url.replace(/^\//, '/-')}?hide-freshman-ui`} style={S(`
@@ -160,6 +169,7 @@ export default () => {
               { 'wordbase': () => set_content_url('/wordbase'), label: content_url === '/wordbase' },
               { 'lettercomb': () => set_content_url('/lettercomb'), label: content_url === '/lettercomb' },
               { 'letterpress': () => set_content_url('/letterpress'), label: content_url === '/letterpress' },
+              { 'terrain': () => set_content_url('/terrain'), label: content_url === '/terrain' },
             ]} />
           </div>
           {panel_content}

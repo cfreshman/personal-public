@@ -4,22 +4,14 @@
 # send to backend on box
 server {
     # server_name [::1]:5005;
-    server_name 64.227.18.122 157.245.122.207
-        freshman.dev freshmancyr.us cyrusfre.sh cyrusfreshman.com cyruswigginfreshman.com 
-        f3n.co f8n.co f6n.co 
-        0000011111100100.com 
-        freshman.dev monstera.software herb.dev;
+    server_name freshman.dev cyrusman.xyz;
     include sites-available/fragments/personal-ssl;
     include sites-available/fragments/gzip;
     listen [::]:443 ssl http2;
     charset utf-8;
     rewrite ^/-?(.*)/?$ /$1;
     rewrite ^/raw/-?(.*)/?$ /raw/$1;
-    # rewrite ^/stream /raw/stream;
-    # rewrite ^/raw/stream /stream;
     error_page 418 = @base; # use it's a teapot error code as goto
-
-
     location /stream {
         return 307 https://freshman.dev/raw/stream$request_uri$is_args$args;
     }
@@ -94,41 +86,12 @@ server {
         return 418;
     }
 }
-server {
-    server_name r.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-
-    error_page 418 = @common_dynamic;
-    location @common_dynamic {
-        include sites-available/fragments/proxy;
-        proxy_pass https://24.183.185.23$request_uri$is_args$args;
-        proxy_set_header Host $domain.$tld;
-    }
-    location / {
-        try_files $uri $uri/ @common_dynamic;
-    }
-    location /api {
-        client_max_body_size 100M;
-        return 418;
-    }
-}
 # redirect all www
 server {
     server_name ~^www\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
     listen 80;
     include sites-available/fragments/personal-ssl;
     return 301 $scheme://$domain.$tld$request_uri$is_args$args;
-}
-
-# api @ api. a.
-server {
-    server_name ~^api\. ~^a\.;
-    include sites-available/fragments/personal-ssl;
-    location / {
-        proxy_pass https://[::1]/api$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
 }
 
 # public git
@@ -154,255 +117,6 @@ server {
     }
 }
 
-# metrics @ metrics. m.
-server {
-    server_name ~^metrics\.;
-    include sites-available/fragments/personal-ssl;
-    location / {
-        proxy_pass http://[::1]:8000$request_uri$is_args$args;
-        proxy_set_header Host freshman.dev;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-    }
-}
-
-# wiki @ wiki.
-server {
-    server_name ~^wiki\.;
-    include sites-available/fragments/personal-ssl;
-    location / {
-        proxy_pass http://24.183.185.23:8080$request_uri$is_args$args;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-    }
-}
-
-# gitlab @ gitlab.
-server {
-    server_name ~^gitlab\.;
-    include sites-available/fragments/personal-ssl;
-    location / {
-        proxy_pass http://24.183.185.23:5010$request_uri$is_args$args;
-        proxy_set_header Host freshman.dev;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-    }
-}
-
-# paper.chat
-server {
-    server_name paper.chat;
-    # listen on 443 and set freshman.dev ssl certificates
-    root /var/www/paperchat/build;
-    include sites-available/fragments/listen-ssl;
-    include sites-available/fragments/gzip;
-
-    error_page 418 = @common_dynamic; # use it's a teapot error code as goto
-    location @common_dynamic {
-        proxy_pass http://[::1]:5002;
-        include sites-available/fragments/proxy;
-        proxy_set_header Host $host;
-    }
-    location / {
-        # try_files $uri $uri/ /index.html;
-        try_files $uri $uri/ @common_dynamic;
-    }
-    location /static {
-        try_files $uri $uri/ /index.html;
-    }
-    location /api {
-        client_max_body_size 100M;
-        return 418;
-    }
-    location /ly { return 418; }
-    # location ~* /\..*$ { return 418; } # use /.name for /ly/name
-    location /socket.io { return 418; }
-}
-
-# wordbase @ wordbase. w.
-server {
-    server_name ~^wordbase\. ~^w\.;
-    include sites-available/fragments/personal-ssl;
-    error_page 418 = @common_dynamic;
-    location @common_dynamic {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-    location /socket.io { return 418; }
-    location /static { return 418; }
-    location /api { return 418; }
-    location /raw { return 418; }
-    location ~ ^/(lib|fonts) { return 418; }
-    location / {
-        proxy_pass https://[::1]/wordbase$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
-
-# tally @ tally.
-server {
-    server_name ~^tally\.;
-    include sites-available/fragments/personal-ssl;
-    error_page 418 = @common_dynamic;
-    location @common_dynamic {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-    location ~ ^/(api|raw|lib|fonts|static|socket.io) { return 418; }
-    location / {
-        proxy_pass https://[::1]/tally$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
-
-# dinder @ dinder.
-# server {
-#     server_name ~^dinder\.;
-#     include sites-available/fragments/personal-ssl;
-#     error_page 418 = @common_dynamic;
-#     location @common_dynamic {
-#         proxy_pass https://[::1]$request_uri$is_args$args;
-#         include sites-available/fragments/proxy;
-#     }
-#     location /socket.io { return 418; }
-#     location /static { return 418; }
-#     location /api { return 418; }
-#     location /raw { return 418; }
-#     location ~ ^/(lib|fonts) { return 418; }
-#     location / {
-#         proxy_pass https://[::1]/dinder$request_uri$is_args$args;
-#         include sites-available/fragments/proxy;
-#     }
-# }
-
-# pico-packet @ pico-repo. pico.cafe
-server {
-    server_name ~^pico-repo\. ~^pico\.  ~^pico-packet\.;
-    listen 80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location = / {
-        try_files /raw/pico-packet/index.html =404;
-    }
-    location / {
-        try_files /raw/pico-packet/$uri /raw/pico-packet/$uri/ $uri $uri/ @proxy;
-    }
-    location @proxy {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
-
-# oh @ ö.wtf
-server {
-    server_name xn--nda.wtf; # ö.wtf
-    listen 80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location = / {
-        try_files /raw/oh/index.html =404;
-    }
-    location / {
-        try_files /raw/oh/$uri /raw/oh/$uri/ $uri $uri/ @proxy;
-    }
-    location @proxy {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
-
-# fishbowl @ bowl.fish
-server {
-    server_name bowl.fish;
-    include sites-available/fragments/personal-ssl;
-    # location = / {
-    #     try_files $uri $uri/ raw/fishbowl/index.html;
-    # }
-    location / {
-        return 301 https://freshman.dev/fishbowl$request_uri$is_args$args;
-    }
-    # location / {
-    #     try_files /raw/fishbowl/$uri /raw/fishbowl/$uri/ $uri $uri/ @proxy;
-    # }
-    # location @proxy {
-    #     proxy_pass https://[::1]$request_uri$is_args$args;
-    #     include sites-available/fragments/proxy;
-    # }
-}
-
-# crowdmeal @ crowdmeal.
-server {
-    server_name ~^crowdmeal\.;
-    include sites-available/fragments/personal-ssl;
-    error_page 418 = @common_dynamic;
-    location @common_dynamic {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-    location /socket.io { return 418; }
-    location / {
-        proxy_pass https://[::1]/crowdmeal$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
-
-# wordle @ wordle.
-server {
-    server_name ~^wordle\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-    include sites-available/fragments/personal-ssl;
-    location / {
-        return 301 $scheme://$domain.$tld/wordle$request_uri$is_args$args;
-    }
-}
-# follow-sync
-server {
-    server_name ~^follow-sync\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-    include sites-available/fragments/personal-ssl;
-    location / {
-        return 301 $scheme://$domain.$tld/follow-sync$request_uri$is_args$args;
-    }
-}
-# resume
-server {
-    server_name ~^resume\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-    include sites-available/fragments/personal-ssl;
-    error_page 418 = @common_dynamic;
-    location @common_dynamic {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-    location /socket.io { return 418; }
-    location /static { return 418; }
-    location /api { return 418; }
-    location /raw { return 418; }
-    location ~ ^/(lib|fonts) { return 418; }
-    location / {
-        # return 301 $scheme://$domain.$tld/wordle$request_uri$is_args$args;
-        proxy_pass https://[::1]/resume$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
-
-# buystream @ buystream.
-server {
-    server_name ~^buystream\.;
-    include sites-available/fragments/personal-ssl;
-    error_page 418 = @common_dynamic;
-    location @common_dynamic {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-    location /socket.io { return 418; }
-    location / {
-        proxy_pass https://[::1]/buystream$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
-
 # gitly - shorten github (and other source control ?) @ git.
 server {
     server_name ~^git\.;
@@ -420,25 +134,6 @@ server {
     }
 }
 
-# spot @ spo.tu.fo
-server {
-    server_name spo.tu.fo;
-    include sites-available/fragments/personal-ssl;
-    error_page 418 = @common_dynamic;
-    location @common_dynamic {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-    location /socket.io { return 418; }
-    location /static { return 418; }
-    location /api { return 418; }
-    location /raw { return 418; }
-    location ~ ^/(lib|fonts) { return 418; }
-    location / {
-        proxy_pass https://[::1]/spot$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
 # l. index - static page, proxy paths to /ly
 server {
     server_name l.freshman.dev l0.vc
@@ -543,112 +238,6 @@ server {
     # location / { return 418; }
 }
 
-# coming soon
-server {
-    server_name buystream.app bistream.app open-rideshare.app openride.app;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location = / {
-        try_files $uri $uri/ raw/soon/index.html;
-    }
-    location / {
-        try_files /raw/soon/$uri /raw/soon/$uri/ $uri $uri/ @proxy;
-    }
-    location @proxy {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
-
-# sludge.fans
-server {
-    server_name ~^sludge\.;
-    listen 80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location / {
-        try_files /raw/sludge/index.html =404;
-    }
-}
-
-# soon.systems
-server {
-    server_name soon.systems;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location = / {
-        try_files $uri $uri/ raw/soon-systems/index.html;
-    }
-    location / {
-        try_files /raw/soon-systems/$uri /raw/soon-systems/$uri/ $uri $uri/ @proxy;
-    }
-    location @proxy {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
-
-# sensible.page
-server {
-    server_name ~^sensible\. not.jetzt;
-    listen 80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location / {
-        try_files /raw/simple/minimal_nonograms.html =404;
-    }
-
-    error_page 418 = @common_dynamic;
-    location @common_dynamic {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-        proxy_set_header Host freshman.dev;
-    }
-    location /socket.io { return 418; }
-    location /static { return 418; }
-    location /api { return 418; }
-    location /raw { return 418; }
-    location ~ ^/(lib|fonts) { return 418; }
-}
-
-# Browser Compute Bank @ itj.sh
-server {
-    server_name itj.sh;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location = / {
-        try_files $uri $uri/ /raw/browser-compute-bank/index.html;
-    }
-    location / {
-        try_files /raw/browser-compute-bank/$uri /raw/browser-compute-bank/$uri/ $uri $uri/ @proxy;
-    }
-    location @proxy {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-}
-
-# server {
-#     server_name ~^stream\.(?<domain>[^.]+)\.(?<tld>[^.]+)$ ~^st\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-#     include sites-available/fragments/personal-ssl;
-#     location / {
-#         return 301 https://$domain.$tld/raw/stream$request_uri$is_args$args;
-#     }
-#     # error_page 418 = @common_dynamic;
-#     # location @common_dynamic {
-#     #     proxy_pass https://[::1]$request_uri$is_args$args;
-#     #     include sites-available/fragments/proxy;
-#     # }
-#     # location ~ ^/(lib|fonts|static|[^/]+.js) { try_files $uri $uri/ =418; }
-#     # location ~ ^/(api|raw|ly|socket.io) { return 418; }
-#     # location / {
-#     #     try_files @common_dynamic =404;
-#     # }
-#     # location = / {
-#     #     proxy_pass https://[::1]/stream$request_uri$is_args$args;
-#     #     include sites-available/fragments/proxy;
-#     # }
-# }
 server {
     server_name ~^(?<subdomain>[^.]+)\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
     include sites-available/fragments/personal-ssl;
@@ -706,19 +295,6 @@ server {
     # }
 }
 
-# unhappy.app
-server {
-    server_name unhappy.app;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location = / { # send root to /raw/unhappy
-        try_files $uri $uri/ raw/unhappy/index.html;
-    }
-    location / {
-        try_files /raw/unhappy/$uri /raw/unhappy/$uri/ $uri $uri/;
-    }
-}
-
 # .cafe
 server {
     server_name ~^.+\.cafe;
@@ -729,6 +305,7 @@ server {
         try_files /raw/simple/cafe.html =404;
     }
 }
+
 # .computer .codes *OS. webputer.page computer.
 server {
     server_name ~^computer\. ~^.+\.(computer|codes) ~^.+\.(computer|codes) webputer.page sickos.xyz;
@@ -776,55 +353,6 @@ server {
     location ~ ^/(lib|fonts) { return 418; }
 }
 
-# tr.ink/et
-server {
-    server_name tr.ink;
-    listen 80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location /et {
-        try_files /raw/simple/trinket.html =404;
-    }
-    location / {
-        return 301 https://tr.ink/et;
-    }
-}
-
-# oats.pl/ease
-server {
-    server_name oats.pl;
-    listen 80;
-    listen [::]:80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    charset utf-8;
-    location /ease {
-        try_files /raw/oats_please/index.html =404;
-    }
-    location = / {
-        return 301 https://oats.pl/ease;
-    }
-
-    location @proxy {
-        proxy_pass https://[::1]$request_uri$is_args$args;
-        include sites-available/fragments/proxy;
-    }
-    location / {
-        try_files /raw/oats_please$uri /raw/oats_please$uri/ @proxy;
-    }
-}
-# oatmeal.zip
-server {
-    server_name oatmeal.zip;
-    listen 80;
-    listen [::]:80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location / {
-        try_files /raw/oatmeal.zip/index.html =404;
-    }
-}
-
 # shr.ooo/m
 server {
     server_name shr.ooo;
@@ -839,94 +367,6 @@ server {
     }
     location / {
         return 301 https://shr.ooo/m;
-    }
-}
-server {
-    server_name the-taming-of-the.shr.ooo;
-    listen 80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location / {
-        try_files /raw/simple/snake.html =404;
-    }
-}
-
-# sci.
-server {
-    server_name ~^sci\.;
-    listen 80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location / {
-        try_files /raw/simple-in-progress/sci.html =404;
-    }
-}
-
-# not.jetzt
-# server {
-#     server_name not.jetzt;
-#     listen 80;
-#     include sites-available/fragments/personal-ssl;
-#     include sites-available/fragments/gzip;
-#     location / {
-#         try_files /raw/stop/index.html =404;
-#     }
-# }
-
-# od0bo.net - static homepage, proxy paths to freshman.dev
-# server {
-#     server_name od0bo.net;
-#     include sites-available/fragments/personal-ssl;
-#     include sites-available/fragments/gzip;
-#     location = / { # send root to /raw/od0bo
-#         try_files $uri $uri/ raw/od0bo/index.html;
-#     }
-#     location / { # proxy other paths to freshman.dev/<path>, after files under /raw/od0bo
-#         try_files /raw/od0bo/$uri /raw/od0bo/$uri/ $uri $uri/ @proxy;
-#     }
-#     location @proxy {
-#         proxy_pass https://[::1]$request_uri$is_args$args;
-#         include sites-available/fragments/proxy;
-#     }
-# }
-
-# pixelworld - static page @ pixelworld. px.
-server {
-    server_name ~^pixelworld\. ~^px\. marsh.f3n.co;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location = /128 {
-        return 301 "https://$host/#128";
-    }
-    location / {
-        proxy_pass https://[::1]/raw/pixelworld;
-        include sites-available/fragments/proxy;
-    }
-}
-
-# wwl
-server {
-    server_name ~^wwl\.;
-    listen 80;
-    listen [::]:80;
-    include sites-available/fragments/personal-ssl;
-    location / {
-        try_files /raw/wwl/$uri /raw/wwl/$uri/ $uri $uri/ /raw/wwl/app/gallery/index.html =404;
-    }
-}
-
-# matchbox
-server {
-    server_name matchbox.zip;
-    listen 80;
-    listen [::]:80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location / {
-        try_files /raw/matchbox$uri /raw/matchbox$uri/ $uri $uri/ =404;
-    }
-    location = / {
-        try_files /raw/matchbox/index.html =404;
     }
 }
 
@@ -990,188 +430,7 @@ server {
     return 301 $scheme://mastodon.freshman.dev$request_uri$is_args$args;
 }
 
-# gitlab
-server {
-    server_name ~^gitlab\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-    include sites-available/fragments/listen-ssl;
-    location / {
-        proxy_pass http://[::1]:3004$request_uri$is_args$args;
-        proxy_set_header Host gitlab.freshman.dev;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto https;
-    }
-}
 
-# server {
-#     server_name ~^(?<subdomain>[^.]+)\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-#     include sites-available/fragments/personal-ssl;
-#     include sites-available/fragments/gzip;
-
-#     location /icon.png {
-#         try_files /raw/$subdomain$uri /raw/$domain.$tld$uri /raw/$domain$uri $uri @proxy;
-#     }
-
-#     location @proxy {
-#         include sites-available/fragments/proxy;
-#         proxy_pass http://[::1]$request_uri$is_args$args;
-#         proxy_set_header Host $domain.$tld;
-#     }
-#     location / {
-#         try_files /raw/$subdomain$uri /raw/$subdomain$uri/ $uri $uri/ /raw$uri /raw$uri/ @proxy;
-#     }
-# }
-
-# proxy all subdomains - most projects will return index anyways, routing client-side
-# proxy all other subdomains to index - projects should use client-side routing
-# server {
-#     # server_name ~^(?<subdomain>[^.]+)\.;
-#     server_name ~^(?<subdomain>[^.]+)\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-#     include sites-available/fragments/personal-ssl;
-
-#     return 301 https://$domain.$tld/$subdomain$request_uri$is_args$args;
-    
-    # rewrite ^/-?(.*)/?$ /$1;
-    # location /icon.png {
-    #     try_files /raw/$domain.$tld$uri /raw/$domain$uri $uri;
-    # }
-    # location /static {
-    #     add_header Access-Control-Allow-Origin *;
-    #     try_files $uri $uri/ /index.html;
-    # }
-    # location ~ ^/raw/([^/]+)/(.*)$ {
-    #     add_header Access-Control-Allow-Origin *;
-    #     try_files $uri $uri/ /raw/$subdomain/$1/$2 /raw/$1/$2 /raw/$1/index.html /raw/simple/$1.html /raw/$subdomain/$1/ /raw/$subdomain /raw/$subdomain/ /raw/simple/$subdomain.html =404;
-    # }
-    # location ~ ^/raw/([^/]+)$ {
-    #     add_header Access-Control-Allow-Origin *;
-    #     try_files $uri $uri/ /raw/$1/index.html /raw/simple/$1.html =404;
-    # }
-    # location /raw {
-    #     add_header Access-Control-Allow-Origin *;
-    #     try_files $uri $uri/ =404;
-    # }
-    # # location ~ ^/craw {
-    # #     return 301 /raw/craw/fish;
-    # # }
-
-    # error_page 418 = @base;
-    # location @base {
-    #     proxy_pass https://[::1]$request_uri$is_args$args;
-    #     include sites-available/fragments/proxy;
-    #     proxy_set_header Host $domain.$tld;
-    # }
-    # location /api { return 418; }
-    # location /socket.io { return 418; }
-
-    # location @subdomain {
-    #     proxy_pass https://[::1]/$subdomain$request_uri$is_args$args;
-    #     include sites-available/fragments/proxy;
-    #     proxy_set_header Host $domain.$tld;
-    # }
-    # location / {
-    #     return 404;
-    #     # try_files /raw/$subdomain$uri /raw/$subdomain$uri/ /raw$uri /raw$uri/ /raw/$subdomain /raw/$subdomain/ $uri $uri/ @subdomain;
-    # }
-# }
-# server {
-#     # server_name ~^(?<subdomain>[^.]+)\.;
-
-#     server_name ~^(?<subdomain>[^.]+)\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-#     include sites-available/fragments/personal-ssl;
-
-#     location / {
-#         # return 301 $scheme://$domain.$tld/-$subdomain$request_uri$is_args$args;
-#         # proxy_pass https://[::1]$request_uri$is_args$args;
-#         proxy_pass https://[::1]/$subdomain$request_uri$is_args$args;
-#         include sites-available/fragments/proxy;
-#         proxy_set_header Host $domain.$tld;
-#     }
-# }
-# server {
-#     # server_name ~^(?<subdomain>[^.]+)\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-#     server_name ~^(?<subdomain>[^.]+)\.;
-#     include sites-available/fragments/personal-ssl;
-#     include sites-available/fragments/gzip;
-#     location /api {
-#         proxy_pass https://127.0.0.1$uri;
-#     }
-#     location @proxy {
-#         proxy_pass https://[::1]:5000;
-#         include sites-available/fragments/proxy;
-#         # proxy_set_header Host $domain.$tld;
-#         proxy_set_header Host freshman.dev;
-#         # return 301 $scheme://$domain.$tld/-$subdomain$request_uri$is_args$args;
-#         # proxy_pass https://[::1]$request_uri$is_args$args;
-#         # include sites-available/fragments/proxy;
-#         # proxy_set_header Host $host;
-#     }
-#     location / {
-#         # proxy_pass https://[::1]$request_uri$is_args$args;
-#         # include sites-available/fragments/proxy;
-#         # proxy_set_header Host freshman.dev;
-#         # return 301 $scheme://$domain.$tld/$subdomain$request_uri$is_args$args;
-
-#         # proxy_pass https://[::1]/$subdomain;
-#         # include sites-available/fragments/proxy;
-#         # proxy_set_header Host freshman.dev;
-
-#         # try_files /raw/simple/cards.html =404;
-        
-#         # add_header Access-Control-Allow-Origin *;
-#         # try_files /raw/$subdomain$uri /raw/$subdomain$uri/ /raw$uri /raw$uri/ /raw/$subdomain /raw/$subdomain/index.html /raw/simple/$subdomain.html @proxy;
-#         try_files @proxy @proxy;
-#         # try_files /raw/$subdomain$uri /raw/$subdomain$uri/ @proxy;
-#     }
-# }
-
-# redirect all http to https, error page fallback
-# server {
-#     server_name _;
-#     include sites-available/fragments/personal-ssl;
-#     location / {
-#         proxy_pass http://[::1]:5000/landing$request_uri$is_args$args;
-#         include sites-available/fragments/proxy;
-#         proxy_set_header Host $host;
-#     }
-# }
-
-server {
-    server_name actual-x.com *.actual-x.com;
-    listen 80;
-    listen [::]:80;
-    include sites-available/fragments/listen-ssl;
-    location / {
-        return 301 https://store.steampowered.com/app/200510/XCOM_Enemy_Unknown/;
-    }
-}
-server {
-    server_name beef-su.sh;
-    listen 80;
-    listen [::]:80;
-    include sites-available/fragments/listen-ssl;
-    location / {
-        return 301 https://cyrusfre.sh/man;
-    }
-}
-server {
-    server_name big-fee.sh;
-    listen 80;
-    listen [::]:80;
-    include sites-available/fragments/listen-ssl;
-    location / {
-        return 301 https://raw.tu.fo/raw/daily-nonogram/puzzle.html?=2023-09-27;
-    }
-}
-server {
-    server_name ~pointer-cursor.;
-    listen 80;
-    listen [::]:80;
-    include sites-available/fragments/listen-ssl;
-    location / {
-        return 301 https://freshman.dev/raw/stream/items/2023-08-23-8c.html;
-    }
-}
 server {
     server_name _;
     listen 80 default_server;
@@ -1180,6 +439,5 @@ server {
     location /.well-known { try_files /build/$uri =404; }
     location / {
         return 301 https://$host$request_uri$is_args$args;
-        # return 404;
     }
 }

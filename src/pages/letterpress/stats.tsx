@@ -12,15 +12,16 @@ import { store } from 'src/lib/store'
 const { named_log, strings, maths, colors, lists, V, datetime, copy, display_status, set } = window as any
 const log = named_log('letterpress stats')
 
+export const SPEEDY_DEFAULT_THINKING_TIME = 3_000
 const special_details = {
   easy: `easy can play short words`,
   medium: `medium can play mid-length words`,
-  hard: `medium can play longer words`,
+  hard: `hard can play longer words`,
   strategist: `strategist plays similar length words to the medium bot but plays them more strategically`,
   wordsmith: `wordsmith plays the longest word it can, not counting tiles it already owns or locked by you. it doesn't care about locking tiles`,
   beast: `beast wants to eliminate as many of your tiles as possible. it doesn't care about strategy. that is your only chance`,
   speedy: (rerender) => {
-    const speedy_ms = store.get('letterpress-ai-speedy-ms') || 3_000
+    const speedy_ms = store.get('letterpress-ai-speedy-ms') || SPEEDY_DEFAULT_THINKING_TIME
     const options = lists.unique([100, 300, 700, 1_500, 3_000, 7_000, 15_000, 30_000, 70_000, 1e10].concat(speedy_ms)).sort(maths.comparators.numeric)
     const display_option = (x) => x > 70_000 ? '∞' : datetime.durations.pretty(x)
     return <>
@@ -35,7 +36,7 @@ const special_details = {
         }
       }).concat([{
         reset: () => {
-          store.set('letterpress-ai-speedy-ms', 3_000)
+          store.set('letterpress-ai-speedy-ms', SPEEDY_DEFAULT_THINKING_TIME)
           rerender()
         }
       }])} />

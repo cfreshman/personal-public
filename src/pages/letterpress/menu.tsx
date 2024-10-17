@@ -12,8 +12,10 @@ import { openPopup } from 'src/components/Modal'
 import { Style } from './style'
 import { message } from 'src/lib/message'
 import { S, dev } from 'src/lib/util'
+import { store } from 'src/lib/store'
+import { SPEEDY_DEFAULT_THINKING_TIME } from './stats'
 
-const { named_log, set, list, copy, lists, values, range } = window as any
+const { named_log, set, list, copy, lists, values, range, datetimes } = window as any
 const log = named_log('letterpress menu')
 
 const MenuGameItem = ({ viewer, profile_map=undefined, info, handle }) => {
@@ -144,12 +146,20 @@ export default ({ hf, handle, profile_map, sections }) => {
           computer
           <div className='row gap wrap'>
             <InfoButton onClick={async e => {
-              handle.open(await create_game(hf, [viewer, 'easy'], true))
-            }}>easy</InfoButton>
-            <InfoButton onClick={async e => {
-              handle.open(await create_game(hf, [viewer, 'medium'], true))
+              // handle.open(await create_game(hf, [viewer, 'easy'], true))
+              store.set('letterpress-ai-speedy-ms', 100)
+              handle.open(await create_game(hf, [viewer, 'speedy'], true))
+            }}>easy speedy</InfoButton>
+            {/* <InfoButton onClick={async e => {
+              // handle.open(await create_game(hf, [viewer, 'medium'], true))
+              store.set('letterpress-ai-speedy-ms', 700)
+              handle.open(await create_game(hf, [viewer, 'speedy'], true))
             }}>medium</InfoButton>
             <InfoButton onClick={async e => {
+              store.set('letterpress-ai-speedy-ms', 3_000)
+              handle.open(await create_game(hf, [viewer, 'speedy'], true))
+            }}>hard</InfoButton> */}
+            {/* <InfoButton onClick={async e => {
               handle.open(await create_game(hf, [viewer, 'strategist'], true))
             }}>strategist</InfoButton>
             <InfoButton onClick={async e => {
@@ -157,10 +167,20 @@ export default ({ hf, handle, profile_map, sections }) => {
             }}>wordsmith</InfoButton>
             <InfoButton onClick={async e => {
               handle.open(await create_game(hf, [viewer, 'beast'], true))
-            }}>beast</InfoButton>
+            }}>beast</InfoButton> */}
             <InfoButton onClick={async e => {
+              if (store.get('letterpress-ai-speedy-ms') < SPEEDY_DEFAULT_THINKING_TIME) {
+                store.set('letterpress-ai-speedy-ms', SPEEDY_DEFAULT_THINKING_TIME)
+              }
+              message.trigger({
+                text: `open speedy's profile to adjust their thinking time (current: ${datetimes.durations.pretty(store.get('letterpress-ai-speedy-ms')||SPEEDY_DEFAULT_THINKING_TIME)})`,
+                ms: 3_000,
+              })
               handle.open(await create_game(hf, [viewer, 'speedy'], true))
             }}>speedy</InfoButton>
+            <InfoButton onClick={async e => {
+              handle.open(await create_game(hf, [viewer, 'wordsmith'], true))
+            }}>wordsmith</InfoButton>
             {/* <InfoButton disabled onClick={async e => {
               handle.open(await create_game(hf, [viewer, 'easy'], true))
             }}>more coming soon</InfoButton> */}

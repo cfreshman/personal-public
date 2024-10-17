@@ -11,7 +11,7 @@ import user from 'src/lib/user'
 import url from 'src/lib/url'
 import { store } from 'src/lib/store'
 
-const { named_log, rand, set, maths, keys, values, list } = window as any
+const { named_log, rand, set, maths, keys, values, list, defer } = window as any
 const log = named_log('letterpress util')
 
 
@@ -191,9 +191,10 @@ export const open_howto = ({ handle, viewer }) => open_popup(close => <>
       {/* <InfoButton disabled>tutorial (coming soon)</InfoButton> */}
       <InfoButton onClick={async e => {
         store.set('letterpress-ai-speedy-ms', 100)
+        store.set('letterpress-tutorial-start', true)
         handle.open(await create_game(undefined, [viewer, 'speedy'], true))
         close()
-      }}>play 'speedy' on easy</InfoButton>
+      }}>play tutorial</InfoButton>
       {/* <HalfLine />
       <HalfLine />
       <div>triplepress for 3-player games</div> */}
@@ -332,8 +333,8 @@ export const create_tile_bag = (state={tiles:[]}) => {
       y: 2,
       z: 1,
     },
-    pick: () => {
-      const letter = rand.weighted(bag.letters)
+    pick: (pick=undefined) => {
+      const letter = pick || rand.weighted(bag.letters)
       bag.letters[letter] -= 1
       update_total()
       return letter

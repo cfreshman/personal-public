@@ -3,6 +3,8 @@ import { dict, rand_alpha } from "./dict"
 import api from "src/lib/api"
 import { create_tile_bag, named_colors, named_icons } from "./util"
 import { truthy } from "src/lib/types"
+import { message } from "src/lib/message"
+import { is_ai } from "./ai"
 
 const { named_log, node, svg_node, V, range, set, rand, Q, QQ, on, list, strings, keys, values, from, lists } = window as any
 const log = named_log('letterpress data')
@@ -163,12 +165,32 @@ export const fetch_game = async (id: string, hf: any): Promise<{ info: Info, sta
     return { info:hydrate_info(info), state:hydrate_state(state) }
   }
 }
+const tutorial_messages = [
+  'find some words!\n<b>start with LETTERPRESS in the top left</b>\ntap to select/deselect a letter\ndrag to rearrange',
+  `keep going! play words that <b>lock tiles</b>\ntiles lock when surrounded by the same color\navoid spelling with locked tiles - you won't get them!`,
+  `<b>don't let speedy beat you!</b>`,
+]
 export const update_game = async (info: Info, state: State) => {
   const { id } = info
   if (id === 'local') {
     info.last_t = Date.now()
     store.set(COOKIES_LETTERPRESS.INFO, info)
     store.set(COOKIES_LETTERPRESS.STATE, state)
+
+    message.trigger({ delete:'tutorial-hint' })
+    if (info.turn % 2 === 0 && store.get('letterpress-tutorial-run')) {
+      const index = store.get('letterpress-tutorial-index')
+      // alert(`tutorial ${index}`)
+      if (index >= tutorial_messages.length) {
+        store.set('letterpress-tutorial-run', undefined)
+      } else {
+        message.trigger({
+          text: tutorial_messages[index],
+          id: 'tutorial-hint',
+        })
+        store.set('letterpress-tutorial-index', index + 1)
+      }
+    }
   } else {
     await api.post(`/letterpress/game/${id}`, { info, state })
   }
@@ -190,11 +212,19 @@ const new_info = (users=[], local=false): Info => {
 }
 const new_state = (hf, info): State => {
   const size = user_ids(info).length + 3
-  log('create state', {size})
-  let tries = 10
+  
+  const is_tutorial = store.get('letterpress-tutorial-start')
+  store.set('letterpress-tutorial-start', undefined)
+  store.set('letterpress-tutorial-index', 0)
+  store.set('letterpress-tutorial-run', is_tutorial)
+
+  log('create state', {size, is_tutorial})
+  
+  let tries = 100
+  let state
   while ((tries -= 1) + 1) {
     const tile_bag = create_tile_bag()
-    const state = {
+    state = {
       id: undefined,
       tiles: range(Math.pow(size, 2)).map((i) => {
         const pos = V.ne(i % size, Math.floor(i / size))
@@ -207,6 +237,23 @@ const new_state = (hf, info): State => {
         }
       }),
       deltas: [],
+    }
+    if (is_tutorial) {
+      const get_tile = (x, y) => {
+        log('get tile', { x, y })
+        return state.tiles.find(tile => V.eq(tile.pos, V.ne(x, y)))
+      }
+      get_tile(0, 0).letter = 'l'
+      get_tile(1, 0).letter = 'e'
+      get_tile(2, 0).letter = 't'
+      get_tile(3, 0).letter = 't'
+      get_tile(0, 1).letter = 'e'
+      get_tile(1, 1).letter = 'r'
+      get_tile(2, 1).letter = 'p'
+      get_tile(0, 2).letter = 'r'
+      get_tile(1, 2).letter = 'e'
+      get_tile(2, 2).letter = 's'
+      get_tile(0, 3).letter = 's'
     }
     log({tile_bag})
 
@@ -228,6 +275,7 @@ const new_state = (hf, info): State => {
       }
     }
   }
+  return state
 }
 export const create_game = async (hf: any, users: string[], local:boolean=false): Promise<{ info: Info, state: State }> => {
   const info = new_info(users, local)
@@ -358,6 +406,7 @@ export const play_turn = (info:Info, state:State, tiles:Tile[], hf):{ new_info:I
   } = play_state(state, new_info, hf)
   new_info.owner = new_owner
   new_info.status = new_status
+
   return { new_info, new_state }
 }
 
