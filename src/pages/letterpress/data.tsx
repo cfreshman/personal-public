@@ -166,8 +166,9 @@ export const fetch_game = async (id: string, hf: any): Promise<{ info: Info, sta
   }
 }
 const tutorial_messages = [
-  'find some words!\n<b>start with LETTERPRESS in the top left</b>\ntap to select/deselect a letter\ndrag to rearrange',
-  `keep going! play words that <b>lock tiles</b>\ntiles lock when surrounded by the same color\navoid spelling with locked tiles - you won't get them!`,
+  'find some words! tap to select tiles\n<b>start with LETTERPRESS in the top left</b>',
+  'tap a letter at the top to deselect\ndrag to rearrange',
+  `keep going! play words that <b>lock tiles</b>\ntiles lock when surrounded by tile color\navoid spelling with locked tiles - you won't keep them!`,
   `<b>don't let speedy beat you!</b>`,
 ]
 export const update_game = async (info: Info, state: State) => {

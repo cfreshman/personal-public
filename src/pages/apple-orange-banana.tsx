@@ -45,7 +45,8 @@ const ACTIONS = {
   PLANT: 'plant',
   SELL: 'sell',
   MARKET: 'market',
-  VIEW:' view',
+  VIEW: 'view',
+  BOARD: 'board',
 }
 
 const COLORS = {
@@ -182,6 +183,7 @@ const Onboarding = ({ viewer, data, handle }) => {
 const MODALS = {
   MARKET: 'market',
   VIEW: 'view',
+  BOARD: 'board',
 }
 const Market = ({ data, fruits, gold, handle, close }) => {
   const [tab, set_tab] = store.use('aob-tab', { default:0 })
@@ -276,6 +278,32 @@ const Market = ({ data, fruits, gold, handle, close }) => {
     </>}
   </div>
 }
+const Leaderboard = ({ data, handle, close }) => {
+  const [board, set_board] = useS(undefined)
+
+  handle = {
+    ...handle,
+    load_board: async () => {
+      const { board } = await api.get('/aob/board')
+      set_board(board)
+    },
+  }
+  useF(handle.load_board)
+
+  return <div style={S(`
+  width: min(300px, 90vw);
+  min-height: min(400px, 90vh);
+  `)}>
+    <AOB_Section label='leaderboard' close={close}>
+      {!board ? 'loading...'
+      : <div className='column gap'>
+        {board.map(x => {
+          return <div>{x.user} has {x.gold} gold 🟡</div>
+        })}
+      </div>}
+    </AOB_Section>
+  </div>
+}
 const FruitViewer = ({ fruit, close }) => {
   return <div style={S(`
   // min-height: 400px;
@@ -311,7 +339,7 @@ const Game = ({ data, handle }) => {
     return [...set]
   })
 
-  const [action, set_action] = useS(undefined)
+  const [action, set_action] = store.use('aob-action', { default:undefined })
   const fill_action = (value) => ({ type:'radio', name:'actions', onChange:(e => set_action(e.target.value)), checked:action===value, value })
   useF(() => {
     Q('[name=actions]').click()
@@ -349,6 +377,7 @@ const Game = ({ data, handle }) => {
     {modal ? <Modal outerClose={e => set_modal(undefined)}><PopupStyle>{
       modal === MODALS.MARKET ? <Market {...{ data, gold:counts.gold, fruits, handle, close:()=>set_modal(undefined) }} />
       : modal === MODALS.VIEW ? <FruitViewer {...{ fruit:view_fruit, close:()=>set_modal(undefined) }} />
+      : modal === MODALS.BOARD ? <Leaderboard {...{ data, handle, close:()=>set_modal(undefined) }} />
       : null
     }</PopupStyle></Modal> : null}
     <div className='row wide' style={S(`
@@ -515,6 +544,8 @@ const Game = ({ data, handle }) => {
             // await api.post('/aob/sell')
           } else if (action === ACTIONS.MARKET) {
             set_modal(MODALS.MARKET)
+          } else if (action === ACTIONS.BOARD) {
+            set_modal(MODALS.BOARD)
           } else if (action === ACTIONS.VIEW) {
             // set_modal(MODALS.VIEW)
             
@@ -538,6 +569,9 @@ const Game = ({ data, handle }) => {
         </span></label>
         <label className='action-option'><input {...fill_action(ACTIONS.MARKET)} />&nbsp;<span>
           go to market
+        </span></label>
+        <label className='action-option'><input {...fill_action(ACTIONS.BOARD)} />&nbsp;<span>
+          view leaderboard
         </span></label>
       </div>
       <HalfLine />

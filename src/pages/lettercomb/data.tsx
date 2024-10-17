@@ -3,6 +3,7 @@ import { dict, rand_alpha } from "./dict"
 import api from "src/lib/api"
 import { create_tile_bag, default_player_profiles, named_colors, named_icons } from "./util"
 import { truthy } from "src/lib/types"
+import { message } from "src/lib/message"
 
 const { named_log, node, svg_node, V, range, set, rand, Q, QQ, on, list, strings, keys, from, entries, values } = window as any
 const log = named_log('capitals data')
@@ -210,12 +211,33 @@ export const fetch_game = async (id: string, hf: any): Promise<{ info: Info, sta
     return { info:hydrate_info(info), state:hydrate_state(state) }
   }
 }
+const tutorial_messages = [
+  'eliminate your enemy to win! start by playing <b>CAPITALS</b> to cover your capital',
+  'you keep tiles that connect back to your territory',
+  'the enemy loses any tiles touching your new ones',
+  `take the enemy's capital 🏎️ for an extra turn!`
+]
 export const update_game = async (info: Info, state: State) => {
   const { id } = info
   if (id === 'local') {
     info.last_t = Date.now()
     store.set(COOKIES_CAPITALS.LOCAL_INFO, info)
     store.set(COOKIES_CAPITALS.LOCAL_STATE, state)
+    
+    message.trigger({ delete:'tutorial-hint' })
+    if (info.turn % 2 === 0 && store.get('capitals-tutorial-run')) {
+      const index = store.get('capitals-tutorial-index')
+      // alert(`tutorial ${index}`)
+      if (index >= tutorial_messages.length) {
+        store.set('capitals-tutorial-run', undefined)
+      } else {
+        message.trigger({
+          text: tutorial_messages[index],
+          id: 'tutorial-hint',
+        })
+        store.set('capitals-tutorial-index', index + 1)
+      }
+    }
   } else {
     await api.post(`/capitals/game/${id}`, { info, state })
   }
@@ -241,6 +263,11 @@ const new_info = (users=[undefined, undefined], local=false): Info => {
   }
 }
 const new_state = (hf, info): State => {
+  const is_tutorial = store.get('capitals-tutorial-start')
+  store.set('capitals-tutorial-start', undefined)
+  store.set('capitals-tutorial-index', 0)
+  store.set('capitals-tutorial-run', is_tutorial)
+
   const n_users = get_n_users(info)
   const capitals = n_users === 2 ? [
     V.ne(2, 1),
@@ -279,7 +306,7 @@ const new_state = (hf, info): State => {
       return tile.owner > -1 || cart.ma() <= 10
     }
   }
-  return {
+  const state = {
     id: undefined,
     tiles: hf.nearest(n_tiles, V.ne(0, 0)).map(pos => {
       return {
@@ -291,6 +318,15 @@ const new_state = (hf, info): State => {
     }).filter(get_is_filtered),
     deltas: [],
   }
+
+  if (is_tutorial) {
+    const user_capital = state.tiles.find(x => x.capital && x.owner === 0)
+    const uc_pos_neg = user_capital.pos.sc(-1)
+    const closest_letter_tiles = state.tiles.filter(x => x.letter).sort((a, b) => V.ma(a.pos.ad(uc_pos_neg)) - V.ma(b.pos.ad(uc_pos_neg)))
+    ;[...'capitals'].map((l, i) => closest_letter_tiles[i].letter = l)
+  }
+
+  return state
 }
 export const create_game = async (hf: any, users: string[], local:boolean=false): Promise<{ info: Info, state: State }> => {
   const info = new_info(users, local)

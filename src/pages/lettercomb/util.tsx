@@ -238,9 +238,10 @@ export const open_howto = ({ handle, hf, viewer }) => open_popup(close => <>
       {/* <InfoButton disabled>tutorial (coming soon)</InfoButton> */}
       <InfoButton onClick={async e => {
         store.set('capitals-ai-speedy-ms', 100)
+        store.set('capitals-tutorial-start', true)
         handle.open(await create_game(hf, [viewer, 'speedy'], true))
         close()
-      }}>play 'speedy' on easy</InfoButton>
+      }}>play tutorial</InfoButton>
       {/* <HalfLine />
       <HalfLine />
       <div>tripitals for 3-player games. hexitals for 6</div> */}
@@ -380,8 +381,8 @@ export const create_tile_bag = (state:{tiles:Tile[]},info:Info) => {
       y: 2,
       z: 1,
     },
-    pick: () => {
-      const letter = rand.weighted(bag.letters)
+    pick: (pick=undefined) => {
+      const letter = pick || rand.weighted(bag.letters)
       bag.letters[letter] -= 1
       update_total()
       return letter

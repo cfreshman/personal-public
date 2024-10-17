@@ -13,6 +13,7 @@ R.post('/fruit', J(rq => M.add_fruit(U(rq), rq.body)))
 R.post('/sell', J(rq => M.sell(U(rq), rq.body)))
 R.get('/market', J(rq => M.market(rq.user)))
 R.get('/buy/:id', J(rq => M.buy(U(rq), P(rq, 'id'))))
+R.get('/board', J(rq => M.board(rq.user)))
 
 export default {
     routes: R,
