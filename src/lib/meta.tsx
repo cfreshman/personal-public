@@ -403,9 +403,13 @@ refresh_theme_color()
 
 
 const install = trigger.value(undefined)
+let called = false
 !window.navigator?.standalone && addEventListener('beforeinstallprompt', (e:any) => {
-  e.preventDefault()
-  install.set(e)
+  if (!called) {
+    called = true
+    e.preventDefault()
+    install.set(e)
+  }
 })
 
 

@@ -73,7 +73,7 @@ export const track_ids = {
     VAMPIRE_EMPIRE: 'vampire_empire',
     WHEN_AM_I_GONNA_LOSE_YOU: 'when_am_i_gonna_lose_you',
     WHEN_I_GET_HOME: 'when_i_get_home',
-    STARRY_NIGHT: 'starry_night',
+    // STARRY_NIGHT: 'starry_night',
     YOURE_THE_ONE: 'youre_the_one',
     NULL: 'null',
     SUPERSONIC: 'supersonic',
@@ -670,16 +670,16 @@ export const tracks: { [id:string]: {
         flavor: 'i live here',
     },
 
-    [track_ids.STARRY_NIGHT]: {
-        title: 'Starry Night',
-        artist: 'Peggy Gou',
-        album: undefined,
-        list: track_lists.THEME,
-        audio: '/raw/audio/tracks/theme/starry_night.mp3',
-        image: '/raw/audio/tracks/theme/starry_night.jpg',
-        href: 'https://peggygou.bandcamp.com/track/starry-night',
-        flavor: 'cyrus means \'the sun\'',
-    },
+    // [track_ids.STARRY_NIGHT]: {
+    //     title: 'Starry Night',
+    //     artist: 'Peggy Gou',
+    //     album: undefined,
+    //     list: track_lists.THEME,
+    //     audio: '/raw/audio/tracks/theme/starry_night.mp3',
+    //     image: '/raw/audio/tracks/theme/starry_night.jpg',
+    //     href: 'https://peggygou.bandcamp.com/track/starry-night',
+    //     flavor: 'cyrus means \'the sun\'',
+    // },
     [track_ids.YOURE_THE_ONE]: {
         title: 'YOU\'RE THE ONE',
         artist: 'Kaytranada',
@@ -688,7 +688,7 @@ export const tracks: { [id:string]: {
         audio: '/raw/audio/tracks/theme/youre_the_one.mp3',
         image: '/raw/audio/tracks/theme/youre_the_one.jpg',
         href: 'https://open.spotify.com/track/2b4SSorCTQ2VzmllaeWuuT?si=b683740a86b9452e',
-        flavor: 'youre not the one - you can only have one tab of an app',
+        flavor: 'u can only have one tab of an app',
     },
 
     [track_ids.NULL]: {
