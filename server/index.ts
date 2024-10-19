@@ -1093,6 +1093,18 @@ app.get('/*', async (req, res, next) => {
             })
         }
     }
+    else if (page === 'wordle') {
+        if (req.url.includes('leaderboard')) {
+            Object.assign(replacements, {
+                title: 'Wordle solver leaderboard',
+            })
+        }
+    }
+    else if (page === 'light') {
+        Object.assign(replacements, {
+            title: '/light'+req.url.split('light').slice(1).join('light')
+        })
+    }
 
     let html = indexRaw
     if (replacements) html = replaceTemplate(html, replacements)

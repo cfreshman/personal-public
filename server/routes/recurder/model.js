@@ -40,7 +40,9 @@ const tick = async () => {
             timeouts.push(setTimeout(async () => {
                 const { data:inner_data } = await get(data.user)
                 const group_reminders = inner_data.reminders.filter(x => group_set.has(x.id) && x.active)
-                await notify.send([data.user], 'recurder', group_reminders.map(x => x.label).join(', '), `freshman.dev/recurder`)
+                if (group_reminders.length) {
+                    await notify.send([data.user], 'recurder', group_reminders.map(x => x.label).join(', '), `freshman.dev/recurder`)
+                }
             }, Number(k)))
         })
     }))

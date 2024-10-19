@@ -13,6 +13,8 @@ const C = db.of({
     //     // rooms: { string-id:true }
 })
 
+// TODO clear games 2 weeks after last move
+
 async function get(viewer, id) {
     const state = await C.chess().findOne({ id })
     log('get', {viewer, id}, !!state)
@@ -23,7 +25,7 @@ async function get(viewer, id) {
 }
 async function set(viewer, id, { state }) {
     log('set', {viewer, id})
-    await C.chess().updateOne({ id }, { $set:{ ...state, id } }, { upsert:true })
+    await C.chess().updateOne({ id }, { $set:{ ...state, id, t:Date.now() } }, { upsert:true })
     io.inst().to(`chess:${id}`).emit(`chess:${id}:update`, state)
     return { state }
 }

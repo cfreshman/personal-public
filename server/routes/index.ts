@@ -53,6 +53,7 @@ import cowork from './cowork'
 import image from './image'
 import audio from './audio'
 import chess from './chess'
+import light from './light'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -119,6 +120,7 @@ export default {
   image,
   audio,
   chess,
+  light,
 }
 
 export const ios = [

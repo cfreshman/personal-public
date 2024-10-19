@@ -77,11 +77,7 @@ export default () => {
           <HalfLine />
         </>}
         <div>support publicly:</div>
-        <Dangerous html={`<a class='button-like' href='https://ko-fi.com/U7U64599J' target='_blank' style='
-        display: inline-flex;
-        border-radius: 10em;
-        border: 1px solid currentcolor;
-        '>
+        <Dangerous html={`<a href='https://ko-fi.com/U7U64599J' target='_blank'>
           <img style='height:3em' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' />
         </a>`} />
         <HalfLine />

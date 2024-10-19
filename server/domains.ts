@@ -32,6 +32,9 @@ const common = {
     description: 'word strategy game',
     keywords: 'lettercomb, capitals, word, strategy, game, multiplayer, singleplayer, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/capitals/icon-small.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/capitals/icon.png',
+    },
   },
   plat: {
     title: 'plat: US plate chat',
@@ -44,6 +47,9 @@ const common = {
     description: 'view messages on freshman.dev',
     keywords: 'chat, messages, messenger, social, social media, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/chat/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/chat/icon.png',
+    },
   },
 }
 export const replace = {
@@ -62,10 +68,8 @@ export const replace = {
     og: true,
     twitter: {
       twitter_url: 'https://wordbase.app?ref=twitter-card',
+      image: 'https://freshman.dev/raw/wordbase/icon-large.png',
     },
-  },
-  'wordle': {
-    description: 'Wordle solver and solver leaderboard',
   },
   'follow-sync': {
     description: 'Sync follows between Twitter & Mastodon',
@@ -165,6 +169,9 @@ export const replace = {
     description: 'word strategy game',
     keywords: 'letterpress, word, strategy, game, multiplayer, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/letterpress/icon.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/letterpress/icon-large.png',
+    },
   },
   'link-timer': {
     title: '/link-timer',
@@ -273,6 +280,9 @@ export const replace = {
     description: 'assign rooms with fair rents',
     keywords: 'rent-splitter, split rent fairly, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/rent-splitter/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/rent-splitter/icon.png',
+    },
   },
   'settings': {
     title: '/settings',
@@ -296,13 +306,19 @@ export const replace = {
     title: '/apple-orange-banana',
     description: 'collect your fruits',
     keywords: 'apple-orange-banana, collect fruits and sell for gold, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
-    icon: 'https://freshman.dev/raw/apple-orange-banana/icon3-64.png',
+    icon: 'https://freshman.dev/raw/apple-orange-banana/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/apple-orange-banana/icon.png',
+    },
   },
   'recurder': {
     title: '/recurder',
     description: 'periodic reminders',
     keywords: 'recurder, periodic reminders, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/recurder/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/recurder/icon.png',
+    },
   },
   'spot': {
     title: '/spot',
@@ -350,6 +366,33 @@ export const replace = {
     icon: 'https://freshman.dev/raw/chess-app/icon-64.png',
     twitter: {
       image: 'https://freshman.dev/raw/chess-app/icon.png',
+    },
+  },
+  'wordle': {
+    title: '/wordle',
+    description: 'Wordle solver and solver leaderboard',
+    keywords: 'Wordle, solver, leaderboard, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/wordle/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/wordle/icon.png',
+    },
+  },
+  'you': {
+    title: '/you',
+    description: 'draw on your camera',
+    keywords: 'you, draw on your camera, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/you/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/you/icon.png',
+    },
+  },
+  'light': {
+    title: '/light',
+    description: 'light twitter',
+    keywords: 'light, tweets, twitter, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/light/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/light/icon.png',
     },
   },
 }

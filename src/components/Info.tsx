@@ -565,8 +565,7 @@ const _InfoBadge = ({label}: {label: InfoLabelType}) => {
     if (label.spacer) return <div style={S(`
     flex-shrink: 1;
     overflow: hidden;
-    flex-basis: 100%;
-    `)}>{(label.spacer === true ? <Dangerous html={'&nbsp;'.repeat(1000)} /> : (label.spacer as string).repeat(1000))}</div>
+    `)}><Dangerous html={(label.spacer === true ? '&nbsp;'.repeat(1000) : (label.spacer as string).repeat(1000))} /></div>
 
     const className = `${label.label||!(func||label.href) ? (`label ${func ? 'clickable' : ''}`) : 'button'} inline ${label.disabled?'disabled':''} ${label.classes||''}`
     const L:any = label.href ? A : /* set(className).intersects(set('button clickable')) */ className.includes('button') || className.includes('clickable') ? _a : _span
@@ -1968,8 +1967,9 @@ export const ColorPicker = withRef(({ value, ...props }: props & { value: string
 })
 
 
-export const Multiline = (({ ref=useR(), children, value, setValue, extra_height='0px', ...props }: props) => {
+export const Multiline = (({ ref=useR(), children, value, setValue, extra_height='0px', row_limited, ...props }: props) => {
   useF(value, () => {
+    if (props.rows) return
     const area = ref.current
     area.style.height = 0
     area.style.height = `calc(${area.scrollHeight}px + ${extra_height})`
@@ -1980,10 +1980,12 @@ export const Multiline = (({ ref=useR(), children, value, setValue, extra_height
   `), ...(props.style||{})}} onChange={e => {
     props.onChange && props.onChange(e)
     const l = e.currentTarget
-    setTimeout(() => {
-      setValue && setValue(l.value ?? l.textContent)
-    })
-  }}>{value}</textarea> : <div ref={ref} {...props}>{children || value}</div>
+    let new_value = l.value ?? l.textContent ?? ''
+    if (row_limited) {
+      l.value = l.textContent = new_value = new_value.split('\n').slice(0, props.rows || row_limited).join('\n')
+    }
+    setValue && setValue(new_value)
+  }} value={value} defaultValue={value}>{value}</textarea> : <div ref={ref} {...props}>{children || value}</div>
 })
 
 

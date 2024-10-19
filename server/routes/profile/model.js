@@ -86,7 +86,7 @@ async function _getUser(user) {
     return await _get(user);
 }
 async function get(user, other) {
-    let viewer = await _getUser(user);
+    let viewer = user && await _getUser(user);
     other = other ?? user
     let profile = await _get(other)
     if (profile) {

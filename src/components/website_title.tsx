@@ -25,7 +25,7 @@ export const WebsiteTitle = ({ href }) => {
     })
     return (title || href).replace(/^(https?:\/\/)?(www\.)?/, '')
 }
-export const RawWebsiteIcon = ({ href, style={} }: { href:string, style:any }) => {
+export const RawWebsiteIcon = ({ href, style={} }: { href:string, style?:any }) => {
     const [_icon, setIcon] = useS('')
     const icon = _icon === href ? '' : /data:image/.test(_icon) ? '' : _icon
     useF(href, async () => {

@@ -13,6 +13,8 @@ import { convertLinks } from '../lib/render';
 import { Scroller } from 'src/components/Scroller';
 import { readable_text } from 'src/lib/color';
 
+const { datetimes } = window as any
+
 const PRINT_QUEUE = 'cyrus/print'
 const GUESTBOOK_QUEUE = 'cyrus/guestbook'
 const POSTS_PER_PERIOD = 5
@@ -157,12 +159,20 @@ export default () => {
         setQ(err)
       }),
     load: () => handle.parse(api.get(`/q/${GUESTBOOK_QUEUE}`)),
+    _time: () => {
+      const date = new Date()
+      let tz : any = -date.getTimezoneOffset()/60
+      tz = (tz > 0) ? '+'+tz : tz
+      const time = datetimes.ymdhms(date).replace(/:\d\d$/, '') + ` Z${tz}`
+      return time
+    },
     add: () => {
       // rate limit
       if (rateLimited) return
       // only add if msg or doodle exists
       if (doodle ? !edited : !msgRef.current.value) return
 
+      const time = handle._time()
       const info = {
         name: name || 'anonymous',
         time,
@@ -184,11 +194,12 @@ export default () => {
       setShowChars(false)
     },
     time: () => {
-      const date = new Date()
-      let tz: any = -date.getTimezoneOffset()/60
-      tz = (tz > 0) ? '+'+tz : tz
-      setTime(date.toLocaleString().replace(',', '').replace(/:\d+ /, '')
-        + ` Z${tz}`)
+      // const date = new Date()
+      // let tz: any = -date.getTimezoneOffset()/60
+      // tz = (tz > 0) ? '+'+tz : tz
+      // setTime(date.toLocaleString().replace(',', '').replace(/:\d+ /, '')
+      //   + ` Z${tz}`)
+      setTime(handle._time())
     },
     errorOverlay: () => {
       const msgEl = msgRef.current
@@ -228,14 +239,14 @@ export default () => {
       draw(e)
     }
   })
-  useEventListener(doodleRef.current, 'pointerup', e => {
+  useEventListener(window, 'pointerup', e => {
     if (erase) {
       const to = e2p(e)
       ctx.clearRect(down[0], down[1], to[0]-down[0], to[1]-down[1])
     }
     down = undefined
   })
-  useEventListener(doodleRef.current, 'pointermove', e => {
+  useEventListener(window, 'pointermove', e => {
     if (down && !erase) draw(e)
   })
   useSocket({
@@ -422,13 +433,8 @@ export default () => {
                         e.preventDefault()
                         e.stopPropagation()
                         const msgEl = msgRef.current
-                        msgEl.value =
-                          msgEl.value.slice(0, typePos)
-                          + l
-                          + msgEl.value.slice(typePos)
-                        msgEl === document.activeElement
-                          ? msgEl.setSelectionRange(typePos + 1, typePos + 1)
-                          : setTypePos(typePos + 1)
+                        msgEl.value = msgEl.value.slice(0, typePos) + l + msgEl.value.slice(typePos)
+                        setTypePos(typePos + 1)
                         handle.errorOverlay()
                       }}>{l}</span>)}
                     </div>
@@ -690,7 +696,7 @@ textarea, .post {
 #error-overlay {
   // display: none;
   position: absolute;
-  top: 0;
+  top: 0; top: 1px;
   left: 0;
   border-color: transparent;
   margin: 0;

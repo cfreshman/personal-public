@@ -367,10 +367,8 @@ const User = ({ expand }: { expand: boolean }) => {
                 }
               }
               `}</style>
-              <Dangerous html={`<a class='button-like' href='https://ko-fi.com/U7U64599J' target='_blank' style='
+              <Dangerous html={`<a href='https://ko-fi.com/U7U64599J' target='_blank' style='
               display: inline-flex;
-              border-radius: 10em;
-              border: 1px solid #000;
               '>
                 <img style='height:2em' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' />
               </a>`} />
@@ -958,6 +956,9 @@ export const Header = () => {
                     'letterpress': 'https://freshman.dev/raw/letterpress/icon.png',
                     'wordbase': 'https://freshman.dev/raw/wordbase/icon.png',
                     'selfchat': 'https://freshman.dev/raw/chat/icon.png',
+                    'apple-orange-banana': 'https://freshman.dev/raw/apple-orange-banana/icon.png',
+                    'light': 'https://freshman.dev/raw/light/icon.png',
+                    'cowork': 'https://freshman.dev/raw/cowork/icon.png',
                     'settings': 'https://freshman.dev/raw/settings/icon.png',
                   }).map(([name, img]) => <AppIconTile {...{ name, img, close }} />)}
                 </div>

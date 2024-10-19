@@ -4,7 +4,7 @@
  */
 
 import React from 'react';
-import { cleanListener, useE, useEventListener, useF, useM, useR, useStyle } from '../lib/hooks';
+import { cleanListener, useE, useEventListener, useF, useM, useR, useStyle, useTimeout } from '../lib/hooks';
 import { JSX } from '../lib/types';
 import { isMobile } from '../lib/util';
 
@@ -102,5 +102,6 @@ export const Scroller = ({ deps=[], scrollBarSelector='#main' }) => {
     })
     useEventListener(window, 'resize pointerup', () => setTimeout(resize))
     useF(...deps, resize)
+    useTimeout(resize, 500)
     return <span ref={ref} style={{display:'none'}} />
 }

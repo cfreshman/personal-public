@@ -46,7 +46,7 @@ const _projects = {
   //     'wordle solver',
   //     'solves <a href="https://www.powerlanguage.co.uk/wordle/">Wordles</a>, <a href="wordle/#/leaderboard">compare solvers</a>'],
   wordle: 'solves <a href="https://www.powerlanguage.co.uk/wordle/">Wordles</a>, <a href="wordle/#/leaderboard">compare solvers</a>',
-  ':<': ':<',
+  ':<': ':>',
   wall: 'can hold up to 24x24 messages',
   pixels: 'pixel art graffiti wall',
   txt: 'for grocery lists & ASCII art',
@@ -103,8 +103,8 @@ const _projects = {
   'optimal-maps': 'countries from a better angle (WIP)',
   // 'donoboard': 'leaderboard for 8334 $1 slots',
   'donoboard': 'donation leadboard',
-  'dinoboard': 'best dinosaurs',
-  'dodoboard': 'various dodos',
+  // 'dinoboard': 'best dinosaurs',
+  // 'dodoboard': 'various dodos',
   // 'linktree': 'profile overviews - icon, bio, links',
   'plat': 'US license plate chat',
   // 'not-linkedin': 'not LinkedIn',
@@ -124,6 +124,7 @@ const _projects = {
   'selfchat': 'chat with yourself (productivity hack)',
   'cowork': 'chat & lofi',
   'chess': 'simple roomed chess',
+  'light': 'light twitter (text-only)',
 }
 // ''.split(' ').forEach(p => {
 //     if (!_projects[p]) _projects[p] = '' });
@@ -157,7 +158,7 @@ export const tags = {
   // visual: 'cloud floating models terrain graffiti slime speckle arm color pixelworld bubble tube garden egg',
   visual: 'cloud floating models terrain graffiti slime-ants speckle arm gradients pixelworld bubble tube pixels egg gradients color optimal-maps',
   // social: 'chat graffiti live records speckle turt-smurts turt-smurts-2D u wordbase dots-and-boxes garden wall dinder',
-  social: 'chat graffiti live records speckle turt-smurts u pixels wall dinder audio_form greeter proses plat not-linkedin',
+  social: 'chat graffiti live records speckle turt-smurts u pixels wall dinder audio_form greeter proses plat not-linkedin cowork light',
   site: 'notify reset search settings cookies otp donoboard developer-program',
   tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat',
   demo: 'paths bloom kmeans',

@@ -14,6 +14,8 @@ import { hex, hexToHsl, readable_text } from './color';
 import { InfoSection } from 'src/components/Info';
 import { props } from './types';
 
+const { colors } = window as any
+
 
 export const useStored = (key, initial=undefined) => {
     const [value, setValue] = useState(store.get(key) ?? initial)
@@ -95,7 +97,7 @@ export const setTextColor = (text_color) => {
     prev_text_color_revert = addStyle(text_color ? `
     :root {
         --id-color-text: ${text_color};
-        --id-color-text-readable: ${readable_text(hex(text_color))};
+        --id-color-text-readable: ${colors.hex_readable(hex(text_color))};
     }
     `:'')
     return prev_text_color_revert
