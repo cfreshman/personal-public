@@ -10,11 +10,11 @@ import url from '../lib/url'
 import { randAlphanum, rands, toClass, toStyle, isMobile, S, isWatch, eventToRelative } from '../lib/util'
 import { A } from './A';
 
-const { Q, node, defer, set, on, ons, pick, unpick, merge, named_log, elements:window_elements, V, range, hydrate, hydrates, strings } = window as any
+const { Q, node, defer, set, on, ons, pick, unpick, merge, named_log, elements:window_elements, V, range, hydrate, hydrates, strings, colors } = window as any
 const log = named_log('info')
 
 export type InfoLabelType = printable | {
-  [name:string]: ()=>void,
+  [name:string]: (...x:any)=>any,
 } | {
   text?: any, element?: any,
   func?: ()=>void, href?: string, tab?: boolean,
@@ -574,10 +574,10 @@ const _InfoBadge = ({label}: {label: InfoLabelType}) => {
   return <ScrollText on={[label]} className='label inline'>{label}</ScrollText>
 }
 
-export const InfoBadges = withRef((props: props & {
+export const InfoBadges = (props: {
   labels: InfoLabelType[],
   inline?: boolean, nowrap?: boolean, full?:boolean, header?: boolean,
-  label_func: ()=>void,
+  label_func?: ()=>void,
   [key:string]: any,
 }) => {
   const { labels=[], inline=false, nowrap=false, full=false, header=false, label_func=false } = props
@@ -587,7 +587,7 @@ export const InfoBadges = withRef((props: props & {
       {labels.filter(l => l).map((l, i) => <_InfoBadge key={i} label={label_func && printable_types.has(typeof(l)) ? { text:l, label:true, func:label_func } : l} />)}
     </div>
   </> : <></>
-})
+}
 
 export const InfoLabel = ({labels, nowrap, header}: {
   labels: InfoLabelType[], nowrap?: boolean, header?: boolean,
@@ -1936,7 +1936,7 @@ export const ColorPicker = withRef(({ value, ...props }: props & { value: string
   useF(() => console.debug('colorpicker', ref.current))
   return <div {...props} style={{
     background: _value,
-    color: readable_text(_value),
+    color: colors.hex_readable(colors.to_hex(_value)),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1953,7 +1953,7 @@ export const ColorPicker = withRef(({ value, ...props }: props & { value: string
       props.onInput?.cal;(e.currentTarget.value)
     }}
     type='color'
-    value={hex(_value)}
+    value={colors.to_hex(_value)}
     style={{
       // visibility: 'hidden',
       opacity: .01,

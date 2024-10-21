@@ -46,10 +46,11 @@ export const Contact = ({ newStyles=false, prefill='' }) => {
     `)}>
       <span style={S(`text-align: right`)}>or&nbsp;&nbsp;<A tab href="mailto:cyrus@freshman.dev">just email cyrus@freshman.dev</A></span>
       {/* <span style={S(`text-align: right`)}>or&nbsp;&nbsp;<A tab href="https://meetings.hubspot.com/cyrus-freshman">schedule a meeting</A></span> */}
-      <span style={S(`text-align: right`)}>or&nbsp;&nbsp;<A tab href="https://freshman.dev/schedule">schedule a meeting</A></span>
-      <span style={S(`text-align: right`)}>or&nbsp;&nbsp;<A tab href="https://freshman.dev/feedback">leave detailed feedback</A></span>
-      <span style={S(`text-align: right`)}><A tab href="https://freshman.dev/discord">join the discord!</A></span>
-      <span style={S(`text-align: right`)}>also</span>
+      {/* <span style={S(`text-align: right`)}>or&nbsp;&nbsp;<A tab href="https://freshman.dev/schedule">schedule a meeting</A></span> */}
+      {/* <span style={S(`text-align: right`)}>or&nbsp;&nbsp;<A tab href="https://freshman.dev/feedback">leave detailed feedback</A></span> */}
+      <span style={S(`text-align: right`)}>or&nbsp;&nbsp;<A tab href="https://freshman.dev/feedback">submit a bug / feature</A></span>
+      <span style={S(`text-align: right`)}>or&nbsp;&nbsp;<A tab href="https://freshman.dev/discord">join the discord</A></span>
+      {/* <span style={S(`text-align: right`)}>also</span> */}
       <br/>
       {newStyles
       ?

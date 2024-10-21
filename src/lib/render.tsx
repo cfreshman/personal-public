@@ -3,20 +3,27 @@ import { A } from '../components/Info'
 import { truthy, JSX } from './types'
 import { tokenize, strToStyle, node, S } from './util'
 
-// create links without evaluating user input
-//                              http or s         alphanum sub                   tail (doesn't cover
-//                              |                 |    alpha domain or local     |     all cases)
-const linkRegex =
-  /(^|[^.\w\d\-_:/?=&%#@+\n])(?<href>(?:\w+?:\/\/)*(?:(?:(?:[\w\d-]+\.)+\w{1,}|localhost)(?:[\w\d\-_:/?=&%#@+.]{1,}))|(?:\d{1,3}\.){3}\d+)(\.(?:! ))?/im
-const internalLinkRegex =
-  /(^|[^.\w\d\-_:/?=&%#@+\n])(?<href>[/?](?:[\w\d\-_:/?=&%#@+.]{1,}[\w\d\-_]{1,}))(\.(?:! ))?/im
 
 const OrRegExp = (a, b, flags=undefined) => {
   return new RegExp('(?:' + a.source + ')|(?:' + b.source + ')', [...new Set(flags ?? (a.flags + b.flags))].join(''))
 }
-const totalLinkRegex = OrRegExp(linkRegex, internalLinkRegex, 'gim')
-export const extractLinks = x => Array.from<any>(x.matchAll(totalLinkRegex)).map(x => x.groups.href)
-const _convertPart = (part, i, html=false, { new_tab=false }={}) => {
+const OrsRegExp = (flags:string=undefined, ...xs:RegExp[]) => {
+  return new RegExp(xs.map(x => `(?:${x.source})`).join('|'), [...new Set(flags ?? xs.map(x => x.flags).join(''))].join(''))
+}
+
+// create links without evaluating user input
+//                              http or s         alphanum sub                   tail (doesn't cover
+//                              |                 |    alpha domain or local     |     all cases)
+const linkRegex =
+  /(^|[^.\w\d\-_:/?=&%#@+\n])(?<h0>(?:\w+?:\/\/)*(?:(?:(?:[\w\d-]+\.)+\w{1,}|localhost)(?:[\w\d\-_:/?=&%#@+.]{1,}))|(?:\d{1,3}\.){3}\d+)(\.(?:! ))?/im
+const internalLinkRegex =
+  /(^|[^.\w\d\-_:/?=&%#@+\n])(?<h1>[/?](?:[\w\d\-_:/?=&%#@+.]{1,}[\w\d\-_]{1,}))(\.(?:! ))?/im
+const userRegex = /@(?<h2>[a-zA-Z0-9]+)/im
+const totalLinkRegex = OrsRegExp('gim', linkRegex, internalLinkRegex)
+const total_link_user_regex = OrsRegExp('gim', linkRegex, internalLinkRegex, userRegex)
+
+export const extractLinks = x => Array.from<any>(x.matchAll(totalLinkRegex)).map(x => x.groups.h0 || x.groups.h1)
+const _convertPart = (part, i, html=false, { new_tab=0, light=0 }:{ new_tab?:any, light?: any }={}) => {
   const matches = [linkRegex.exec(part), internalLinkRegex.exec(part)]
   const m_i = matches.findIndex(truthy)
   const match = matches[m_i]
@@ -25,17 +32,21 @@ const _convertPart = (part, i, html=false, { new_tab=false }={}) => {
         {match[1]}<A tab={new_tab} href={match[2].includes('://') || match[2].startsWith('/') ? match[2] : 'http://'+match[2]}><TwitterEmoji word={match[2].trim().replace(/(.+:\/\/)?(https?:\/\/)?/, '')}/></A>{match[3]}
     </span>
   } else {
+    const user_match = userRegex.exec(part)
+    if (user_match) {
+      return <A className='link-user' tab={new_tab} key={i} href={`${light ? '/light/@' : '/u/'}${user_match.groups.h2}`}>{part}</A>
+    }
     return html
-      ? <span key={i} dangerouslySetInnerHTML={{ __html: part }}></span>
+      ? <span key={i} style={{ whiteSpace: 'pre-wrap' }} dangerouslySetInnerHTML={{ __html: part }}></span>
       : <TwitterEmoji word={part} />
   }
 }
-export const convertLinks = (str, { new_tab=false }={}) => {
+export const convertLinks = (str, { new_tab=0, light=0 }:{ new_tab?:any, light?: any }={}) => {
   if (!str) return ''
   if (typeof(str) === 'object') return str
   // determine indices to split links into separate parts
-  const parts = tokenize(str, totalLinkRegex)
-  return <>{parts.map((part, i) => _convertPart(part, i, undefined, { new_tab }))}</>
+  const parts = tokenize(str, total_link_user_regex)
+  return <>{parts.map((part, i) => _convertPart(part, i, undefined, { new_tab, light }))}</>
 }
 export const anchorRegex = /<a href="(.+)">(.+)<\/a>/gim
 export const convertLinksAndHtml = str => {

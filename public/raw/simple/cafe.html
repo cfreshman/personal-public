@@ -1,10 +1,10 @@
-<title>jk.cafe</title>
+<title>cafe</title>
 <meta charset=utf-8><meta name="viewport" content="width=device-width,initial-scale=1" />
 <style>body{display:flex;align-items:center;justify-content:center}</style>
 <div style="white-space:pre-wrap;font-family:monospace">
-           <span id=smoke> ."</span>
-  /\____/\ㅈ
-␣␣␣<span id=sign>[ jk ]</span>␣␣␣
+            <span id=smoke> ."</span>
+  /\____/\ H
+␣␣<span id=sign>[ cafe ]</span>␣␣
 |    __    |
 | O |  | O |
 MMMM|__|MMMM
@@ -22,8 +22,8 @@ MMMM|__|MMMM
   },
   { 
     L: sign, i: 0, ms: 1_000, frames: [
-      `[ jk ]`, 
-      `␣[jk]␣`,
+      `[ cafe ]`, 
+      `␣[cafe]␣`,
     ],
   },
 ].map(animation => setInterval(() => animation.L.textContent = animation.frames[animation.i = (animation.i + 1) % animation.frames.length], animation.ms))

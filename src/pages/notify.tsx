@@ -18,7 +18,7 @@ import { openFeedback } from 'src/components/Modal';
 
 
 const { list } = window as any
-const notifyProjects = list('greeter wordbase lettercomb letterpress')//.sort()
+const notifyProjects = list('greeter wordbase lettercomb letterpress light')//.sort()
 
 const NotifyEntry = ({page, enabled, toggle}) => {
   return <InfoBadges labels={[

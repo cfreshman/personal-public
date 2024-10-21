@@ -28,7 +28,7 @@ export const Highlights = () => {
     {true ? <>
       <span>top 3</span>
       <A href='https://freshman.dev/intro-lettercomb'>/lettercomb (best word game imo)</A>
-      <A href='https://freshman.dev/intro-greeter'>/greeter (social diary + AI)</A>
+      <A href='https://freshman.dev/intro-greeter'>/greeter (social diary)</A>
       <A href='/wordle/leaderboard'>wordle bot leaderboard (300+ bots)</A>
       <HalfLine />
       {mobile ? null : <>
@@ -41,6 +41,7 @@ export const Highlights = () => {
         <HalfLine />
       </>}
       <span>new</span>
+      <A href='/light'>/light (text-only twitter)</A>
       <A href='/rent-splitter'>/rent-splitter (assign rooms fairly)</A>
       {/* <A tab='/radio'>dj___fresh radio</A> */}
       <A href='/twitter/install'>/twitter (twitter blue Threads icon)</A>

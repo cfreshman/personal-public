@@ -790,6 +790,21 @@ export default () => {
             font-size: calc(128em + 32em + 8em);
             `)}>🌞</span>
           </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #86b2ee;
+          background: #eeebe6;
+          background: #000;
+          color: #fff;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            `)}>🌐</span>
+          </div>
         </div>
       </InfoSection>
       <InfoSection labels={['static']}>

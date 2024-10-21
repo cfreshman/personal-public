@@ -73,7 +73,8 @@ export const Dropdown = ({
   })
   return <Style className={`dropdown-container open-${open} expand-${expand!==undefined} ${props.className||''}`} style={{...S(`
     ${expand !== undefined ? `
-    top: calc((1.5em + 1px) * ${expand} - 2px);
+    top: 0;
+    right: calc((1.5em + 1px) * ${1 - expand});
     border: 1px solid currentcolor;
     `:''}
     `), ...(props.style||{})}}>

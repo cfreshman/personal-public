@@ -10,7 +10,7 @@ import { draw } from "./draw";
 import { none, pass } from "./types";
 import { socket } from "./socket";
 
-const { named_log } = window as any
+const { named_log, colors } = window as any
 const log = named_log('meta')
 
 // https://github.com/microsoft/TypeScript/pull/40336
@@ -98,7 +98,7 @@ const theme_color = trigger.value(default_theme_color)
 // theme_color.add(value => document.documentElement.style.background = value)
 theme_color.add(value => [
   setBackground(value),
-  setTextColor(readable_text(value)),
+  setTextColor(colors.hex_readable(value)),
   (prev_theme_color => {
     theme_color_l.content = value
     return () => theme_color_l.content = prev_theme_color

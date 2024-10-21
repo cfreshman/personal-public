@@ -42,7 +42,10 @@ export const useProject = () => {
 }
 
 export const setBackground = (background:string, embedded=false) => {
-    const [h, s, l] = hexToHsl(hex(getCssVar(background)))
+    const hex_bg = hex(getCssVar(background))
+    const hex_text = colors.hex_readable(hex_bg)
+    const hex_text_readable = colors.hex_readable(hex_text)
+    const [h, s, l] = hexToHsl(hex_bg)
     console.debug('set background', {background, hex:hex(background), hsl:{h,s,l}})
     return addStyle(background ? background.includes('linear-gradient') ? `
     :root {
@@ -55,6 +58,10 @@ export const setBackground = (background:string, embedded=false) => {
         --id-color-s: ${s}%;
         --id-color-l: ${l}%;
         --id-color-d: ${l < 40 ? 0 : 100}%;
+
+        --id-color: ${hex_bg};
+        --id-color-text: ${hex_text};
+        --id-color-text-readable: ${hex_text_readable};
     }
     `:'')
     // return addStyle(background ? `

@@ -383,7 +383,8 @@ export default () => {
       {!bioEdit ? <>
         <HalfLine />
         <InfoBadges labels={[
-          { text:'view greeter', href:`/greeter/${user}` }
+          { text:'view greeter', href:`/greeter/${user}` },
+          { text:'view posts', href:`/light/@${user}` },
         ]} />
       </> : null}
       {!bioEdit && info.isUser ? <>

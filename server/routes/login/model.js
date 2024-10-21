@@ -26,7 +26,7 @@ const C = db.of(names)
 
 db.queueInit(() => {
     // register 'site' user to send certain notifications
-    'site admin mod user player chat settings invite join orange blue you wordbase picorepo dinder login contact wordle hash public about calendar delete open slte s1te hangout easy medium hard impossible strategist wordsmith beast speedy loading invalid username sername ai gail gai selfchat self'.split(' ').map(async special => {
+    'site admin mod user player chat settings invite join orange blue you wordbase picorepo dinder login contact wordle hash public about calendar delete open slte s1te hangout easy medium hard impossible strategist wordsmith beast speedy loading invalid username sername ai gail gai selfchat self deleted'.split(' ').map(async special => {
         try {
             await signup(special, 'internal')
         } catch {}

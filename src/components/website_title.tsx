@@ -18,6 +18,14 @@ const cached_or_fetch = async (key, fetcher) => {
     return value.href
 }
 
+export const use_is_website = ({ href }) => {
+    const [title, set_title] = useS(href)
+    useF(href, async () => {
+        set_title(await cached_or_fetch(`website-title-cache-${href}`, async () => await api.post('/title', { href })))
+    })
+    return !!title
+}
+
 export const WebsiteTitle = ({ href }) => {
     const [title, setTitle] = useS(href)
     useF(href, async () => {
@@ -25,15 +33,20 @@ export const WebsiteTitle = ({ href }) => {
     })
     return (title || href).replace(/^(https?:\/\/)?(www\.)?/, '')
 }
-export const RawWebsiteIcon = ({ href, style={} }: { href:string, style?:any }) => {
+export const RawWebsiteIcon = ({ href, style={}, fallback=null }: { href:string, style?:any, fallback?:any }) => {
     const [_icon, setIcon] = useS('')
     const icon = _icon === href ? '' : /data:image/.test(_icon) ? '' : _icon
+    const [fetched, set_fetched] = useS(false)
     useF(href, async () => {
-        setIcon(await cached_or_fetch(`website-icon-cache-${href}`, async () => await api.post('/icon', { href })))
+        setIcon(await cached_or_fetch(`website-icon-cache-${href}`, async () => {
+            const result = await api.post('/icon', { href })
+            set_fetched(true)
+            return result
+        }))
     })
     const id = useM(() => `website-icon-${rand.alphanum(8)}`)
-    return icon ? <a id={id} href={href.replace(/^(https?:\/\/)?/, 'https://')} className='website-icon center-row' style={{ ...S(`height:1.3em;aspect-ratio:1/1`), ...style }}>
-        <img src={icon} style={S(`height:100%;width:100%;object-fit:cover`)} />
+    return icon || fallback ? <a id={id} href={href.replace(/^(https?:\/\/)?/, 'https://')} className='website-icon center-row' style={{ ...S(`height:1.3em;aspect-ratio:1/1`), ...style }}>
+        <img src={icon || fallback} style={S(`height:100%;width:100%;object-fit:cover`)} />
     </a> : null
 }
 

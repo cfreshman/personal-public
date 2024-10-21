@@ -6,15 +6,20 @@ const name = M.name
 const log = named_log(name)
 const R = express.Router()
 
-R.post(`/user/:id`, J(rq => M.get_user(rq.user, P(rq, 'id'))))
+R.post(`/user/:id`, J(rq => M.user_get(rq.user, P(rq, 'id'))))
 
-R.post(`/post/:id`, J(rq => M.get_post(rq.user, P(rq, 'id'))))
-R.post(`/post`, J(rq => M.create_post(U(rq), rq.body)))
-R.post(`/post/:id/like`, J(rq => M.like_post(U(rq), P(rq, 'id'))))
+R.post(`/post/:id`, J(rq => M.post_get(rq.user, P(rq, 'id'))))
+R.post(`/post`, J(rq => M.post_create(U(rq), rq.body)))
+R.post(`/post/:id/edit`, J(rq => M.post_edit(U(rq), P(rq, 'id'), rq.body)))
+R.post(`/post/:id/like`, J(rq => M.post_like(U(rq), P(rq, 'id'))))
+R.post(`/post/:id/delete`, J(rq => M.post_delete(U(rq), P(rq, 'id'))))
+R.post(`/post/:id/permadelete`, J(rq => M.post_permadelete(U(rq), P(rq, 'id'))))
+R.post(`/post/:id/pin`, J(rq => M.post_pin(U(rq), P(rq, 'id'))))
 
-R.post(`/posts`, J(rq => M.get_posts(rq.user, rq.body.ids)))
+R.post(`/posts`, J(rq => M.posts_get(rq.user, rq.body.ids)))
 
 R.post(`/`, J(rq => M.home(rq.user)))
+R.post(`/feed/friends`, J(rq => M.friends(U(rq))))
 
 export default {
     routes: R,
