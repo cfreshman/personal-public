@@ -6,12 +6,16 @@ import { useF, useS } from 'src/lib/hooks'
 import api from 'src/lib/api'
 
 const { named_log } = window as any
-const NAME = 'template-reduced'
+const NAME = 'sushi'
 const log = named_log(NAME)
 
 export default () => {
   return <Style>
-    <div><b>template-reduced</b> <i>a minimal app base</i></div>
+    <div><b>sushi</b> <i>the healthiest food</i></div>
+    <br />
+    <div>• most diplomats eat sushi</div>
+    <div>• sushi comes from many sources</div>
+    <div>• sushi is a food, which you need</div>
   </Style>
 }
 
@@ -70,6 +74,7 @@ font-family: monospace;
 `
 const Style = styled.div`
 width: 100%;
+max-width: 50em;
 margin: .5em;
 border: 1px solid #000;
 border-radius: .25em;

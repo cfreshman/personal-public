@@ -395,4 +395,13 @@ export const replace = {
       image: 'https://freshman.dev/raw/light/icon.png',
     },
   },
+  'sushi': {
+    title: '/sushi',
+    description: 'the healthiest food',
+    keywords: 'sushi, food, healthy, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/sushi/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/sushi/icon.png',
+    },
+  },
 }
