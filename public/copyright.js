@@ -38,7 +38,7 @@ window.generate_manifest = async () => {
     if (icon_href === `${location.origin}/icon.png`) icon_href = false
     return JSON.stringify({
         name,
-        display: `standalone`,
+        display: `minimal-ui`,
         start_url: location.href,
         theme_color: Q('[name=theme_color]')?.content || getComputedStyle(document.documentElement).backgroundColor || getComputedStyle(document.body).backgroundColor || '#fdfcfa',
         icons: [{

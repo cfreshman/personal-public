@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>date me</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    .row {
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+    .img {
+      height: 27.5vh; max-width: 100%; width: auto !important; flex-grow: 0 !important; flex-shrink: 0 !important;
+      min-width: fit-content;
+    }
+    .img:nth-child(1) {
+      width: 100%; max-width: 400px;
+      max-height: unset;
+    }
+    img {
+      height: unset !important; width: unset !important;
+      max-height: 100%; max-width: 100%;
+    }
+    .column {
+      min-height: max-content;
+    }
+    .unloaded .row {
+      flex-direction: column !important;
+      align-items: flex-start;
+    }
+    .unloaded .img {
+      height: auto;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+  </style>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div class="column wide tall unloaded">
+    <div>i have a BS in CS and most days I do a little software</div>
+    <div><button id=compatible>check me out</button></div>
+    <script>
+      defer(() => {
+        QQ('img').map(x => {
+          const container = node(`<div id=img-${base62(x.title)} class="img "></div>`)
+          x.insertAdjacentElement('afterend', container)
+          container.append(x)
+          head.append(node(`<style>
+          #${container.id} {
+            position: relative;
+            z-index: 1;
+            white-space: pre-wrap;
+            display: flex;
+          }
+          #${container.id}::after {
+            content: "${x.title}";
+          }
+          </style>`))
+          x.title = ''
+          x.alt = ' '
+        })
+        Q('#compatible').onclick = e => {
+          e.target.remove()
+          
+          QQ('.hidden').map(x => {
+            x.classList.remove('hidden')
+          })
+          QQ('.unloaded').map(x => {
+            x.classList.remove('unloaded')
+          })
+          QQ('img').map(x => {
+            x.src = x.src.replace(/-?unloaded-?/g, '')
+            const container = x.parentNode
+            head.append(node(`<style>
+            #${container.id} {
+              overflow: hidden;
+            }
+            #${container.id}::after {
+              position: absolute; bottom: 0; right: 0;
+              margin: 2px; background: #000; color: #fff; mix-blend-mode: unset;
+            }
+            </style>`))
+          })
+        }
+      })
+    </script>
+    <div class="row wide">
+      <img src="photos/k.jpg-unloaded" title="me" />
+      <img src="photos/l.jpg-unloaded" title="caught the big one" />
+      <img src="photos/a.jpg-unloaded" title="80s family photo" />
+      <img src="photos/h.jpg-unloaded" title="Mt Washington" />
+      <img src="photos/d.jpg-unloaded" title="found some frickin christmas tree worms" />
+      <img src="photos/b.jpg-unloaded" title="post-trivia-win glow" />
+      <img src="photos/e.jpg-unloaded" title="so many sisters" />
+      <img src="photos/c.jpg-unloaded" title="before that" />
+      <img src="photos/i.jpg-unloaded" title="before that" />
+    </div>
+  </div>
+
+</body>
+</html>

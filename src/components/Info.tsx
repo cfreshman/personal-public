@@ -1103,11 +1103,10 @@ export const InfoSlider = ({
   snap?: number,
 }) => {
 
-  const ref = useR()
+  const clipped_value = Math.max(range[0], Math.min(value, range[1]))
+  const absolute_range = range[1] - range[0]
 
-  const [_value, _setValue] = useS(value)
-  useF(value, () => _setValue(Math.max(range[0], Math.min(value, range[1]))))
-  setValue = setValue ?? _setValue
+  const ref = useR()
 
   const [down, setDown] = useS()
   useEventListener(window, 'pointerup', () => setDown(false))
@@ -1116,8 +1115,6 @@ export const InfoSlider = ({
       handle.move(e)
     }
   })
-
-  const absolute_range = range[1] - range[0]
   useF({}, () => {
     const slider_handle_label = ref.current.querySelector('.slider-handle-label')
     const slider_handle_container = ref.current.querySelector('.slider-handle-container')
@@ -1127,12 +1124,13 @@ export const InfoSlider = ({
     move: (e) => {
       console.debug('slider', ref.current)
       const relative = eventToRelative(e, ref.current.querySelector('.slider-track-reference'))
-      const raw_value = relative.normalized_bounded.x * absolute_range
-      const snapped_value = snap ? Math.round((raw_value - range[0]) / snap) * snap + range[1] : raw_value
-      _setValue(snapped_value)
+      const raw_value = relative.normalized_bounded.x * absolute_range + range[0]
+      const snapped_value = snap ? Math.round((raw_value - range[0]) / snap) * snap + range[0] : raw_value
+      const clipped_value = Math.max(range[0], Math.min(snapped_value, range[1]))
+      setValue && setValue(clipped_value)
       onChange({
         target: {
-          value: snapped_value,
+          value: clipped_value,
         },
       })
       console.debug('slider', ref.current, {relative})
@@ -1151,7 +1149,7 @@ export const InfoSlider = ({
         style={S(`
         color: ${readable_text(color)};
         background: ${color};
-        left: ${Math.max(0, Math.min(Math.round(_value/absolute_range * 100), 100))}%;
+        left: ${(clipped_value - range[0])/absolute_range * 100}%;
         `)}
         onPointerDown={e => {
           setDown(true)
@@ -1164,7 +1162,7 @@ export const InfoSlider = ({
               line-height: 1;
               height: 1em;
               `)}>
-                {absolute_range > 1 ? Math.round(_value) : Math.round(_value * 100)/100}
+                {absolute_range > 1 ? absolute_range > 10 ? Math.round(clipped_value) : Math.round(clipped_value * 10)/10 : Math.round(clipped_value * 100)/100}
               </span>
               <span style={S('visibility:hidden')}>{(([min, max]) => min.length > max ? min : max)(range.map(String))}</span>
             </> : null}
@@ -1928,15 +1926,12 @@ export const StaticImage = withRef(({
 })
 
 
-export const ColorPicker = withRef(({ value, ...props }: props & { value: string }) => {
-  const [_value, setValue] = useS(value)
-  useF(value, setValue)
-
+export const ColorPicker = withRef(({ value, setValue, ...props }: props & { value: string }) => {
   const ref = useR()
   useF(() => console.debug('colorpicker', ref.current))
   return <div {...props} style={{
-    background: _value,
-    color: colors.hex_readable(colors.to_hex(_value)),
+    background: value,
+    color: colors.hex_readable(colors.to_hex(value)),
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -1944,16 +1939,15 @@ export const ColorPicker = withRef(({ value, ...props }: props & { value: string
     border: 0,
     ...(props.style || {}),
   }}>
-    {_value}
+    {value}
     <input
     ref={ref}
     {...props}
     onInput={e => {
       setValue(e.currentTarget.value)
-      props.onInput?.cal;(e.currentTarget.value)
     }}
     type='color'
-    value={colors.to_hex(_value)}
+    value={colors.to_hex(value)}
     style={{
       // visibility: 'hidden',
       opacity: .01,
@@ -1967,7 +1961,7 @@ export const ColorPicker = withRef(({ value, ...props }: props & { value: string
 })
 
 
-export const Multiline = (({ ref=useR(), children, value, setValue, extra_height='0px', row_limited, ...props }: props) => {
+export const Multiline = (({ ref=useR(), children, value, setValue, extra_height='.25em', row_limited, ...props }: props) => {
   useF(value, () => {
     if (props.rows) return
     const area = ref.current
@@ -1977,9 +1971,19 @@ export const Multiline = (({ ref=useR(), children, value, setValue, extra_height
   })
   return setValue ? <textarea autoCapitalize={false} ref={ref} {...props} style={{...S(`
   resize: none;
-  `), ...(props.style||{})}} onChange={e => {
+  `), ...(props.style||{})}} onKeyDown={e => {
+    // theres a textarea bug which requires us to set the textContent manually
+    // in order to have the right value in onChange - because value disappears on first backspace
+    // after each enter keypress
+    const l = e.target as HTMLTextAreaElement
+    if (e.key === 'Backspace') {
+      const [start, end] = [l.selectionStart, l.selectionEnd]
+      const new_start = Math.max(0, start - 1)
+      l.textContent = l.value.slice(0, new_start) + l.value.slice(end)
+    }
+  }} onChange={e => {
     props.onChange && props.onChange(e)
-    const l = e.currentTarget
+    const l = e.target as any
     let new_value = l.value ?? l.textContent ?? ''
     if (row_limited) {
       l.value = l.textContent = new_value = new_value.split('\n').slice(0, props.rows || row_limited).join('\n')

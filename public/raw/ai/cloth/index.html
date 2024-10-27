@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Interactive Cloth Simulation</title>
+  <style>
+    body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
+    #info {
+      position: absolute;
+      top: 10px;
+      width: 100%;
+      text-align: center;
+      color: #000;
+      font-family: sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="info">Click and drag to interact with the cloth</div>
+  <!-- Include Three.js library -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
+  <script>
+    let camera, scene, renderer, controls;
+    let clothGeometry, clothMesh;
+    const particles = [];
+    const constraints = [];
+    const clothWidth = 10;
+    const clothHeight = 10;
+    const segments = 30;
+    const clothRestDistance = clothWidth / segments;
+    const gravity = new THREE.Vector3(0, -9.8, 0).multiplyScalar(0.1);
+
+    class Particle {
+      constructor(x, y, z) {
+        this.position = new THREE.Vector3(x, y, z);
+        this.previous = new THREE.Vector3(x, y, z);
+        this.a = new THREE.Vector3(0, 0, 0); // acceleration
+      }
+      addForce(force) {
+        this.a.add(force);
+      }
+      integrate() {
+        const newPos = this.position.clone().sub(this.previous).multiplyScalar(0.99).add(this.position).add(this.a);
+        this.previous.copy(this.position);
+        this.position.copy(newPos);
+        this.a.set(0, 0, 0); // reset acceleration
+      }
+    }
+
+    function index(u, v) {
+      return u + v * (segments + 1);
+    }
+
+    function satisfyConstraints(p1, p2, distance) {
+      const diff = p2.position.clone().sub(p1.position);
+      const currentDist = diff.length();
+      if (currentDist === 0) return;
+      const correction = diff.multiplyScalar(1 - distance / currentDist).multiplyScalar(0.5);
+      p1.position.add(correction);
+      p2.position.sub(correction);
+    }
+
+    function createCloth() {
+      for (let v = 0; v <= segments; v++) {
+        for (let u = 0; u <= segments; u++) {
+          particles.push(new Particle((u / segments - 0.5) * clothWidth, (v / segments + 0.5) * clothHeight, 0));
+        }
+      }
+      for (let v = 0; v < segments; v++) {
+        for (let u = 0; u < segments; u++) {
+          constraints.push([particles[index(u, v)], particles[index(u, v + 1)], clothRestDistance]);
+          constraints.push([particles[index(u, v)], particles[index(u + 1, v)], clothRestDistance]);
+        }
+      }
+      for (let u = segments, v = 0; v < segments; v++) constraints.push([particles[index(u, v)], particles[index(u, v + 1)], clothRestDistance]);
+      for (let v = segments, u = 0; u < segments; u++) constraints.push([particles[index(u, v)], particles[index(u + 1, v)], clothRestDistance]);
+    }
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x202020);
+
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+      camera.position.set(0, 15, 40);
+
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(0, 10, 10).normalize();
+      scene.add(light);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      document.body.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+      createCloth();
+
+      clothGeometry = new THREE.BufferGeometry();
+      const positions = new Float32Array(particles.length * 3);
+      for (let i = 0; i < particles.length; i++) {
+        positions[i * 3] = particles[i].position.x;
+        positions[i * 3 + 1] = particles[i].position.y;
+        positions[i * 3 + 2] = particles[i].position.z;
+      }
+
+      clothGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      clothGeometry.setIndex(new THREE.BufferAttribute(new Uint32Array(generateIndices()), 1));
+      clothGeometry.computeVertexNormals();
+
+      const material = new THREE.MeshLambertMaterial({ color: 0x0066ff, side: THREE.DoubleSide });
+      clothMesh = new THREE.Mesh(clothGeometry, material);
+      scene.add(clothMesh);
+
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function generateIndices() {
+      const indices = [];
+      for (let v = 0; v < segments; v++) {
+        for (let u = 0; u < segments; u++) {
+          const a = index(u, v);
+          const b = index(u + 1, v);
+          const c = index(u, v + 1);
+          const d = index(u + 1, v + 1);
+          indices.push(a, b, d, a, d, c);
+        }
+      }
+      return indices;
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function simulate() {
+      const positions = clothGeometry.attributes.position.array;
+
+      for (const particle of particles) {
+        particle.addForce(gravity);
+        particle.integrate();
+      }
+      for (const constraint of constraints) satisfyConstraints(constraint[0], constraint[1], constraint[2]);
+
+      // Pin the top particles
+      for (let u = 0; u <= segments; u++) {
+        const p = particles[index(u, segments)];
+        p.position.copy(p.previous);
+      }
+
+      for (let i = 0; i < particles.length; i++) {
+        positions[i * 3] = particles[i].position.x;
+        positions[i * 3 + 1] = particles[i].position.y;
+        positions[i * 3 + 2] = particles[i].position.z;
+      }
+
+      clothGeometry.attributes.position.needsUpdate = true;
+      clothGeometry.computeVertexNormals();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      simulate();
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    init();
+    animate();
+  </script>
+</body>
+</html>

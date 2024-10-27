@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Enhanced Interactive Particle Simulation</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    #controls {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      color: #fff;
+      font-family: Arial, sans-serif;
+      z-index: 10;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 10px;
+      border-radius: 5px;
+    }
+
+    #controls label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    #controls input[type="range"] {
+      width: 150px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="controls">
+    <label>Particle Count: <span id="particleCountDisplay">200</span></label>
+    <input type="range" id="particleCount" min="50" max="500" value="200">
+    <label>Particle Size: <span id="particleSizeDisplay">2</span></label>
+    <input type="range" id="particleSize" min="1" max="5" value="2" step="0.5">
+    <label>Interaction Radius: <span id="interactionRadiusDisplay">100</span></label>
+    <input type="range" id="interactionRadius" min="50" max="200" value="100">
+    <label>Line Distance: <span id="lineDistanceDisplay">100</span></label>
+    <input type="range" id="lineDistance" min="50" max="200" value="100">
+  </div>
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let particlesArray = [];
+    let numberOfParticles = 200;
+    let maxRadius = 2;
+    let lineDistance = 100;
+
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    // Handle mouse
+    const mouse = {
+      x: null,
+      y: null,
+      radius: 100
+    };
+
+    window.addEventListener('mousemove', function(event) {
+      mouse.x = event.x;
+      mouse.y = event.y;
+    });
+
+    window.addEventListener('mouseout', function() {
+      mouse.x = null;
+      mouse.y = null;
+    });
+
+    window.addEventListener('resize', function() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      init();
+    });
+
+    // Particle class
+    class Particle {
+      constructor(x, y, directionX, directionY, size) {
+        this.x = x;
+        this.y = y;
+        this.directionX = directionX;
+        this.directionY = directionY;
+        this.size = size;
+        this.hue = Math.random() * 360;
+      }
+
+      // Draw particle
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.fillStyle = 'hsl(' + this.hue + ', 100%, 50%)';
+        ctx.fill();
+      }
+
+      // Update particle position
+      update() {
+        // Check canvas boundaries
+        if (this.x + this.size > canvas.width || this.x - this.size < 0) {
+          this.directionX = -this.directionX;
+        }
+        if (this.y + this.size > canvas.height || this.y - this.size < 0) {
+          this.directionY = -this.directionY;
+        }
+
+        // Move particle
+        this.x += this.directionX;
+        this.y += this.directionY;
+
+        // Mouse interaction
+        if (mouse.x && mouse.y) {
+          const dx = mouse.x - this.x;
+          const dy = mouse.y - this.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < mouse.radius + this.size) {
+            // Attraction effect
+            this.x -= dx / distance * 2;
+            this.y -= dy / distance * 2;
+          }
+        }
+
+        // Change color over time
+        this.hue += 1;
+        if (this.hue > 360) this.hue = 0;
+
+        this.draw();
+      }
+    }
+
+    // Initialize particles
+    function init() {
+      particlesArray = [];
+      for (let i = 0; i < numberOfParticles; i++) {
+        const size = Math.random() * maxRadius + 1;
+        const x = Math.random() * (canvas.width - size * 2) + size;
+        const y = Math.random() * (canvas.height - size * 2) + size;
+        const directionX = (Math.random() * 1) - 0.5;
+        const directionY = (Math.random() * 1) - 0.5;
+
+        particlesArray.push(new Particle(x, y, directionX, directionY, size));
+      }
+    }
+
+    // Connect particles with lines
+    function connectParticles() {
+      for (let a = 0; a < particlesArray.length; a++) {
+        for (let b = a; b < particlesArray.length; b++) {
+          const dx = particlesArray[a].x - particlesArray[b].x;
+          const dy = particlesArray[a].y - particlesArray[b].y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          if (distance < lineDistance) {
+            const opacity = 1 - (distance / lineDistance);
+            ctx.strokeStyle = 'rgba(255, 255, 255,' + opacity + ')';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+      // Create particle trails
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      particlesArray.forEach(particle => particle.update());
+      connectParticles();
+    }
+
+    // Interactive Controls
+    const particleCountInput = document.getElementById('particleCount');
+    const particleSizeInput = document.getElementById('particleSize');
+    const interactionRadiusInput = document.getElementById('interactionRadius');
+    const lineDistanceInput = document.getElementById('lineDistance');
+
+    const particleCountDisplay = document.getElementById('particleCountDisplay');
+    const particleSizeDisplay = document.getElementById('particleSizeDisplay');
+    const interactionRadiusDisplay = document.getElementById('interactionRadiusDisplay');
+    const lineDistanceDisplay = document.getElementById('lineDistanceDisplay');
+
+    particleCountInput.addEventListener('input', function() {
+      numberOfParticles = parseInt(this.value);
+      particleCountDisplay.textContent = this.value;
+      init();
+    });
+
+    particleSizeInput.addEventListener('input', function() {
+      maxRadius = parseFloat(this.value);
+      particleSizeDisplay.textContent = this.value;
+      init();
+    });
+
+    interactionRadiusInput.addEventListener('input', function() {
+      mouse.radius = parseInt(this.value);
+      interactionRadiusDisplay.textContent = this.value;
+    });
+
+    lineDistanceInput.addEventListener('input', function() {
+      lineDistance = parseInt(this.value);
+      lineDistanceDisplay.textContent = this.value;
+    });
+
+    // Initialize and animate
+    init();
+    animate();
+  </script>
+</body>
+</html>

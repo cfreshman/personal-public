@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Interactive 3D Rotating Cube</title>
+  <style>
+    body { margin: 0; overflow: hidden; }
+    canvas { display: block; }
+  </style>
+</head>
+<body>
+  <!-- Include Three.js library -->
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+  <!-- Include OrbitControls -->
+  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script>
+    // Set up the scene, camera, and renderer
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
+    const camera = new THREE.PerspectiveCamera(
+      75, window.innerWidth / window.innerHeight, 0.1, 1000
+    );
+    camera.position.z = 3;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // Add a cube to the scene
+    const geometry = new THREE.BoxGeometry();
+    const materials = [
+      new THREE.MeshBasicMaterial({ color: 0xff0000 }), // Right side - red
+      new THREE.MeshBasicMaterial({ color: 0x00ff00 }), // Left side - green
+      new THREE.MeshBasicMaterial({ color: 0x0000ff }), // Top side - blue
+      new THREE.MeshBasicMaterial({ color: 0xffff00 }), // Bottom side - yellow
+      new THREE.MeshBasicMaterial({ color: 0xff00ff }), // Front side - magenta
+      new THREE.MeshBasicMaterial({ color: 0x00ffff }), // Back side - cyan
+    ];
+    const cube = new THREE.Mesh(geometry, materials);
+    scene.add(cube);
+
+    // Add orbit controls
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+    // Handle window resize
+    window.addEventListener('resize', function() {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+
+      renderer.setSize(width, height);
+      camera.aspect = width / height;
+      camera.updateProjectionMatrix();
+    });
+
+    // Animation loop
+    function animate() {
+      requestAnimationFrame(animate);
+
+      // Rotate the cube for animation
+      cube.rotation.x += 0.005;
+      cube.rotation.y += 0.005;
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    animate();
+  </script>
+</body>
+</html>

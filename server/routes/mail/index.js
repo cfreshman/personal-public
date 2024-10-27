@@ -74,7 +74,7 @@ function getNewToken(oAuth2Client, callback) {
   });
 }
 
-const linkRegex = /(?:https?:\/\/)?((?:\w+\.)+[\w/#~\+]{2,})/gi
+const linkRegex = /(?:https?:\/\/)?((?:[\w\-]+\.)+[\w\-/#~\+]{2,})/gi
 const nestedLinkRegex = /href="<a href="(.+)">.+<\/a>"/gi
 const convertLinks = str => {
   // console.log(str.split(linkRegex).filter(part => part))

@@ -151,6 +151,7 @@ manifest.add(value => {
 }, true)
 
 // manifest updates
+// TODO figure out what tf i was doing here
 {
   const _preserve_page_icon = set('wordbase')
   const rerenderManifestIcon = async (value=icon.value, force=false) => {

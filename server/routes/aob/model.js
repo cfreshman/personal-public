@@ -1,4 +1,5 @@
 import db from '../../db'
+import io from '../../io'
 import { named_log, pick, randAlphanum, unpick } from '../../util'
 
 const name = 'AOB'
@@ -67,6 +68,8 @@ const tick = async () => {
     }
 
     await update_leaderboard()
+
+    io.update('aob')
 }
 const update_leaderboard = async () => {
     // calculate gold & leaderboard

@@ -1106,6 +1106,18 @@ app.get('/*', async (req, res, next) => {
             title: '/light'+req.url.split('light').slice(1).join('light')
         })
     }
+    else if (page === 'stream-pledge') {
+        Object.assign(replacements, {
+            title: '/stream-pledge'+req.url.split('stream-pledge').slice(1).join('stream-pledge')
+        })
+
+        const user = req.url.split('/stream-pledge')[1].replace('/', '')
+        if (user) {
+            Object.assign(replacements, {
+                description: `pledge to watch ${user}'s new stream!`,
+            })
+        }
+    }
 
     let html = indexRaw
     if (replacements) html = replaceTemplate(html, replacements)

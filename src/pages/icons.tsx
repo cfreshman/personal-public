@@ -820,6 +820,103 @@ export default () => {
             font-size: calc(128em + 32em + 8em);
             `)}>🍣</span>
           </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #86b2ee;
+          background: #eeebe6;
+          background: #000;
+          color: #fff;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-weight: bold;
+            `)}>{`<3`}</span>
+          </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #86b2ee;
+          background: #eeebe6;
+          background: #000;
+          color: #fff;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          overflow: hidden;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-weight: bold;
+            pointer-events: none;
+            `)}>{`RUN`}</span>
+          </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #86b2ee;
+          background: #eeebe6;
+          background: #000;
+          color: #fff;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          overflow: hidden;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-weight: bold;
+            pointer-events: none;
+            `)}>{`👀`}</span>
+          </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #86b2ee;
+          background: #eeebe6;
+          background: #000;
+          color: #fff;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          overflow: hidden;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-weight: bold;
+            pointer-events: none;
+            font-size: 320em;
+            `)}>{`🌌`}</span>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-weight: bold;
+            pointer-events: none;
+            position: absolute;
+            font-size: 64em;
+            white-space: pre;
+            `)}>{`space\ntext`}</span>
+          </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #86b2ee;
+          background: #eeebe6;
+          background: #000;
+          color: #fff;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          overflow: hidden;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-weight: bold;
+            pointer-events: none;
+            `)}>{`🏁`}</span>
+          </div>
         </div>
       </InfoSection>
       <InfoSection labels={['static']}>

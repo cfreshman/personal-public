@@ -195,6 +195,7 @@ export default () => {
           defer(async () => {
             try {
               const { info, state } = await fetch_game(local_info.id, hf)
+              log('ai turn', {info, state})
               const selection = await get_selection(info, state, hf, (progress) => trigger_for_game({
                 text: `${active_player} is thinking of a move (${progress})`,
                 id: `capitals-ai-thinking`, replace: `capitals-ai-thinking`,

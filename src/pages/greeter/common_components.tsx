@@ -2,12 +2,24 @@ import React from 'react'
 import { InfoSection } from 'src/components/Info'
 import GreeterLink from './GreeterLink'
 import url from 'src/lib/url'
-const { named_log, list, strings, datetime, truthy, Q, QQ, node, entries, lists, merge, values, keys, qr, copy, defer } = window as any
+import { preventDefault } from 'ol/events/Event'
+const { named_log, list, strings, datetime, truthy, Q, QQ, node, entries, lists, merge, values, keys, qr, copy } = window as any
 const log = named_log('greeter common_components')
 
 export const NoteInput = ({ value, setter }) => {
-  return <textarea placeholder='notes' rows={5} value={value} onChange={e => {
-    setter(e.target.value)
+  return <textarea placeholder='notes' rows={5} value={value} onKeyDown={e => {
+    // theres a textarea bug which requires us to set the textContent manually
+    // in order to have the right value in onChange - because value disappears on first backspace
+    // after each enter keypress
+    const l = e.target as HTMLTextAreaElement
+    if (e.key === 'Backspace') {
+      const [start, end] = [l.selectionStart, l.selectionEnd]
+      const new_start = Math.max(0, start - 1)
+      l.textContent = l.value.slice(0, new_start) + l.value.slice(end)
+    }
+  }} onChange={e => {
+    const l = e.target as HTMLTextAreaElement
+    setter(l.value || l.textContent)
   }} autoCapitalize='off'></textarea>
 }
 

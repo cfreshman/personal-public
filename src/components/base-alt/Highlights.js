@@ -41,7 +41,10 @@ export const Highlights = () => {
         <HalfLine />
       </>}
       <span>new</span>
-      <A href='/light'>/light (text-only twitter)</A>
+      <A href='/emoji-banner'>/emoji-banner (create twitter header)</A>
+      <A href='/stream-pledge'>/stream-pledge (get livestreaming)</A>
+      {/* <A href='/running'>/running (get faster)</A> */}
+      {/* <A href='/light'>/light (text-only twitter)</A> */}
       <A href='/rent-splitter'>/rent-splitter (assign rooms fairly)</A>
       {/* <A tab='/radio'>dj___fresh radio</A> */}
       <A href='/twitter/install'>/twitter (twitter blue Threads icon)</A>

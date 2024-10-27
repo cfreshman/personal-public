@@ -12,9 +12,6 @@ server {
     rewrite ^/-?(.*)/?$ /$1;
     rewrite ^/raw/-?(.*)/?$ /raw/$1;
     error_page 418 = @base; # use it's a teapot error code as goto
-    location /stream {
-        return 307 https://freshman.dev/raw/stream$request_uri$is_args$args;
-    }
     location /icon.png {
         try_files /raw/$host$uri $uri icon.png;
     }

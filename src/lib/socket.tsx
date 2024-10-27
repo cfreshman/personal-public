@@ -20,7 +20,10 @@ export const useConnectToSocketIo = () => {
   const auth = useAuth()
 
   const handle = {
-    login: (local: any=socket.get()) => local?.emit && local.emit('login', auth),
+    login: (local: any=socket.get()) => {
+      // alert(`socket login ${auth.user}`)
+      return local?.emit && local.emit('login', auth)
+    },
   }
   useE(() => {
     console.debug('connect to WebSocket', ENDPOINT)

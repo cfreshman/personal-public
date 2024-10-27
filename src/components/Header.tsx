@@ -56,7 +56,7 @@ const User = ({ expand }: { expand: boolean }) => {
   const emailRef = useR()
   const [profile] = user.profile.use()
   const supporter = useSupporter()
-  const show_donate = !supporter // && profile && elapsed(profile.t || Date.now()) > duration({ d: 1 })
+  const show_donate = false // !supporter // && profile && elapsed(profile.t || Date.now()) > duration({ d: 1 })
 
   const handle = {
     _reset_with_new_auth: (new_auth) => {
@@ -109,9 +109,9 @@ const User = ({ expand }: { expand: boolean }) => {
           setError('^ not accepted')
         } else if (verifyRef.current?.value === passRef.current?.value) {
           if (emailRef.current.value) {
-            if ('default' === Notification?.permission) {
-              Notification.requestPermission()
-            }
+            // if ('default' === Notification?.permission) {
+            //   Notification.requestPermission()
+            // }
           }
           await handle.signin(signup, 'wait one moment')
         } else {
@@ -893,6 +893,10 @@ export const Header = () => {
   
           z-index: 1;
           background: #fff;
+
+          background: var(--id-color);
+          border: .5px solid var(--id-color-text);
+
           `)} />}{useM(expand, () => expand ? null : <a className='center-row' style={S(`
           line-height:0;padding-right:5px;text-shadow:${range(0).map(i => `${i}px 0 currentcolor`).join(', ')};
           position: relative; width: 0; left: calc(-1.15em); top: -1.5px; padding: 0 !important; text-decoration: none;
@@ -955,7 +959,7 @@ export const Header = () => {
                     'lettercomb': 'https://freshman.dev/raw/capitals/icon.png',
                     'letterpress': 'https://freshman.dev/raw/letterpress/icon.png',
                     'wordbase': 'https://freshman.dev/raw/wordbase/icon.png',
-                    'selfchat': 'https://freshman.dev/raw/chat/icon.png',
+                    // 'selfchat': 'https://freshman.dev/raw/chat/icon.png',
                     'apple-orange-banana': 'https://freshman.dev/raw/apple-orange-banana/icon.png',
                     'light': 'https://freshman.dev/raw/light/icon.png',
                     'cowork': 'https://freshman.dev/raw/cowork/icon.png',

@@ -328,6 +328,7 @@ async function set_hangout(viewer, data) {
     // item.icon_url = item.icon && url_for_data_url(item.icon)
     item.icon = icon !== undefined ? icon && (icon.startsWith('/api') ? icon : url_for_data_url(icon)) : item.icon
     item.icon_url = item.icon
+    const is_first_note = !item.public[viewer] && _public[viewer]
     item.public[viewer] = _public[viewer] !== undefined ? _public[viewer] : item.public[viewer]
     item.links = links !== undefined ? links : item.links || []
     item.code = item.code || randAlphanum(12)
@@ -343,7 +344,7 @@ async function set_hangout(viewer, data) {
         await C.greeter().updateOne({ user }, { $set: user_greeter }, { upsert: true })
     })
     
-    const others = item.users.filter(x => x !== viewer) || []
+    const others = item.users.filter(x => x !== viewer)
     io.send(others, 'message', {
         // text: `${user} made edits, <a onclick="location.reload()">reload</a> to see them`,
         text: `${viewer} made edits to /greeter/hangout/${item.id} (tap to load)`,
@@ -352,9 +353,18 @@ async function set_hangout(viewer, data) {
     })
     // others.map(other => siteChat(other, `${viewer} made edits to /greeter/hangout/${item.id}`))
 
+    const notified = new Set()
+
+    // notify new users
     const existing_users_set = new Set(existing_users)
-    const new_users = item.users.filter(user => !existing_users_set.has(user))
-    notify.send(new_users.filter(user => user !== viewer), 'greeter', `${viewer} added you to a hangout`, `freshman.dev/greeter/hangout/${item.id}`)
+    const new_others = others.filter(user => !existing_users_set.has(user))
+    notify.send(new_others, 'greeter', `${viewer} added you to a hangout`, `freshman.dev/greeter/hangout/${item.id}`)
+    new_others.map(x => notified.add(x))
+    
+    // notify others of first note
+    if (is_first_note) {
+        notify.send(others.filter(x => !notified.has(x)), 'greeter', `${viewer} added a note`, `freshman.dev/greeter/hangout/${item.id}`)
+    }
 
     return { item }
 }

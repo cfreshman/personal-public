@@ -107,11 +107,13 @@ export default ({ user, hf, handle, profile_map, embedded=false }) => {
       edit && { cancel: () => {
         set_edit(false)
       } },
-      self && 'view:',
-      ...user_label_order.map(label_user => label_user === user ? user : {
-        text: label_user,
-        func: () => embedded ? handle.set_stats_popup_user(label_user) : handle.set_path(['stats', label_user])
-      }),
+      ...(edit ? [] : [
+        self && 'view:',
+        ...user_label_order.map(label_user => label_user === user ? user : {
+          text: label_user,
+          func: () => embedded ? handle.set_stats_popup_user(label_user) : handle.set_path(['stats', label_user])
+        }),
+      ]),
       // { text: <A href={`/u/${user}`}>view user</A> },
     ]}>
       {edit ? null : profile ? <>

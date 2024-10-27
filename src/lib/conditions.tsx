@@ -16,21 +16,15 @@ const { keys, from, entries, QQ, set, list, strings } = window as any
 // I (<a href="/about">/about</a>) host this site for free. To legally protect myself:
 // This is part of my personal website. To legally protect myself:
 const PP_EXAMPLE = {
-  'crowdmeal': [
-    '<a href="/crowdmeal">/crowdmeal</a> delivery information',
-    '<a href="/crowdmeal">/crowdmeal</a> deliverers'],
-  'dinder': [
-    '<a href="/dinder">/dinder</a> choices',
-    '<a href="/dinder">/dinder</a> matches'],
-  'pico-repo': [
-    '<a href="/pico-repo">/pico-repo</a> posts',
-    '<a href="/pico-repo">/pico-repo</a> viewers'],
+  // 'dinder': [
+  //   '<a href="/dinder">/dinder</a> choices',
+  //   '<a href="/dinder">/dinder</a> matches'],
 }[parsePage()] || [
   '<a href="/wordbase">/wordbase</a> games & chat',
   '<a href="/wordbase">/wordbase</a> opponents']
 
 const pptc_text = `<u>Terms of Use</u>
-<i><b>site</b> refers to this website, its administration, and downstream services such as <a href="https://freshman.dev/fishbowl">wwl-watchOS</a></i>
+<i><b>site</b> refers to this website, its administration, and related code/services</i>
 
 You must ask a parent/guardian for permission to use this site if under 13
 

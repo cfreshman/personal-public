@@ -42,7 +42,7 @@ export const Post = ({ id, post:initial, handle, userpage, light, hide_reply, no
   })
 
   const text = useM(post, () => post && post.text)
-  const { href, single } = use_post_href({ text })
+  const { href, single, large } = use_post_href({ text })
   const is_repost = useM(href, single, () => single && href.includes('/light/post/'))
   const actual_level = useM(level, is_repost, () => is_repost && !level ? 0 : level || 1)
   const is_rich_reply = !hide_rich_reply && !href && post?.parent && actual_level === 1 && !light
@@ -167,13 +167,13 @@ export const Post = ({ id, post:initial, handle, userpage, light, hide_reply, no
       : <div>{jsx_user}</div>}
       {/* <div style={S(`white-space:pre-wrap`)}>{post.parent?'↳ ':''}{convertLinks(post.text)}</div> */}
       {is_rich_reply ? <div className='light-content row wide'>replying to:</div> : null}
-      {is_rich_reply ? <PostRich {...{ href:`/light/post/${post.parent}`, single:true, handle, no_new, level:actual_level }} />
+      {is_rich_reply ? <PostRich {...{ href:`/light/post/${post.parent}`, large:true, handle, no_new, level:actual_level }} />
       : null}
       {actual_level === 0 ? null : <div className='light-content row wide'>
         {post.parent? <div>↳&nbsp;</div> : ''}
         <div style={S(`white-space:pre-wrap;word-break:break-all`)}>{convertLinks(post.text||'(this post has been deleted)', { new_tab:!no_new, light:1 })}</div>
       </div>}
-      {href && actual_level < 3 ? <PostRich {...{ href, single, handle, no_new, level:actual_level, userpage: actual_level === 0 ? userpage : false }} />
+      {href && actual_level < 3 ? <PostRich {...{ href, large, handle, no_new, level:actual_level, userpage: actual_level === 0 ? userpage : false }} />
       : null}
       {actual_level !== 1 ? null : <div className='row wide end'>
         <InfoBadges nowrap labels={[

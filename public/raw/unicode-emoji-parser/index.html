@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>unicode-emoji-parser</title><meta name=description content="" />
+  <style>
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
+
+    #emoji-list {
+        border: 1px solid currentcolor;
+        border-radius: .25em;
+        padding: .25em;
+    }
+  </style>
+</head>
+<body class="column gap">
+
+  <div data-hydrate data-title></div>
+  <div>parsing from v16.0 of <a href="https://unicode.org/Public/emoji/latest/">unicode.org's emoji-test.txt</a></div>
+  <div>contact me to update</div>
+  <div>&nbsp;</div>
+  <div><b>parser</b></div>
+  <div id="emoji-inputs" class="center-row gap"></div>
+  <div id="emoji-commands" class="center-row gap"></div>
+  <div id="emoji-list" class="column wide"></div>
+  <script async>
+    const log = named_log('unicode-emoji-parser')
+    let emoji_text
+    let below_version = 16
+
+    {
+      const l_inputs = Q('#emoji-inputs')
+
+      const input_version = node(`<input type="number" value="${below_version}" min="0">`)
+      input_version.oninput = () => {
+        below_version = Number(input_version.value)
+      }
+      l_inputs.append(node('<div>below version (16.0 is latest): </div>'), input_version)
+  
+      const input_regenerate = node('<button>regenerate</button>')
+      input_regenerate.onclick = () => {
+        do_emoji_parse()
+      }
+      l_inputs.append(input_regenerate)
+    }
+
+    fetch('emoji-test.txt')
+    .then(response => response.text())
+    .then(text => {
+      log({text})
+      emoji_text = text
+      do_emoji_parse()
+    })
+    
+    const do_emoji_parse = () => {
+      const lines = emoji_text.split('\n')
+      
+      const emojis = []
+      let group
+      lines.map(line => line.trim()).filter(pass).map(line => {
+        if (line.startsWith('# group:')) {
+          group = line.replace('# group: ', '')
+        } else if (line.startsWith('#')) {
+          // skip
+        } else {
+          const regex = /(?<points_raw>([^ ]+ )*[^ ]+) +; (?<qualified>[^ ]+) +# (?<emoji>[^ ]+) E(?<version_raw>[^ +]+) (?<description>.+)/
+          const match = line.match(regex)
+          const {points_raw, qualified, emoji, version_raw, description} = match.groups
+          const points = points_raw.split(' ')
+          const version = Number(version_raw)
+
+          if (qualified === 'fully-qualified' && version < below_version) {
+              emojis.push({
+                  emoji,
+                  description,
+                  group,
+                  points,
+                  primary: points.length === 1,
+              })
+          }
+        }
+      })
+
+      let last_group = undefined
+      Q('#emoji-list').innerHTML = emojis.filter(x => x.primary).map((x, i) => {
+        let str = `<div class='center-row'><span style='font-size:2em'>${x.emoji}</span>&nbsp;- ${x.description}</div>`
+        if (last_group !== x.group) {
+          str = `<div><b>${x.group}</b></div>` + str
+          if (i) {
+            str = `<div>&nbsp;</div>` + str
+          }
+          last_group = x.group
+        }
+        return str
+      }).join('')
+
+
+      const l_commands = Q('#emoji-commands')
+      l_commands.innerHTML = ''
+
+      const save_string = (str, filename) => {
+        const a = node('a')
+        const blob = new Blob([str], {type: "octet/stream"})
+        const url = window.URL.createObjectURL(blob)
+        a.href = url
+        a.download = filename
+        a.click()
+        window.URL.revokeObjectURL(url)
+      }
+
+      const button_save_csv = node('<button>download CSV</button>')
+      button_save_csv.onclick = () => {
+        const csv = [
+          ['emoji', 'description', 'group', 'points', 'primary'].join(','),
+          ...emojis.map(x => [
+            x.emoji,
+            `"${x.description}"`,
+            x.group,
+            x.points.join(' '),
+            x.primary,
+          ].join(','))
+        ].join('\n')
+        save_string(csv, 'emoji.csv')
+      }
+      l_commands.append(button_save_csv)
+
+      const button_save_json = node('<button>download JSON</button>')
+      button_save_json.onclick = () => {
+        const min = emojis.map(x => {
+          return {
+            e: x.emoji,
+            d: x.description,
+            g: x.group,
+            p: x.points,
+            r: x.primary,
+          }
+        })
+        save_string(JSON.stringify(min, null, 2), 'emoji.json')
+      }
+      l_commands.append(button_save_json)
+
+      log({emojis})
+    }
+  </script>
+
+</body>
+</html>

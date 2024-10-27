@@ -404,4 +404,52 @@ export const replace = {
       image: 'https://freshman.dev/raw/sushi/icon.png',
     },
   },
+  'dating': {
+    title: '/dating',
+    description: 'find a relationship',
+    keywords: 'dating, find a relationship, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/dating/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/dating/icon.png',
+    },
+  },
+  'running': {
+    title: '/running',
+    description: 'stay on pace',
+    keywords: 'running, pacing, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/running/icon.png',
+  },
+  'solar': {
+    title: '/solar',
+    description: 'sun and ground',
+    keywords: 'solar, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-solar.png',
+  },
+  'stream-pledge': {
+    title: '/stream-pledge',
+    description: 'hit a pledge goal before you start streaming',
+    keywords: 'stream-pledge, stream, streaming, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/stream-pledge/icon-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/stream-pledge/icon.png',
+    },
+  },
+  'spacetext': {
+    title: '/spacetext',
+    description: 'generate spacetext',
+    keywords: 'spacetext, generator, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-spacetext.png',
+  },
+  'textage': {
+    title: '/textage',
+    description: 'generate text response',
+    keywords: 'textage, text generator, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-textage.png',
+  },
+  'emoji-banner': {
+    title: '/emoji-banner',
+    description: 'generate an emoji banner!',
+    keywords: 'emoji-banner, generate an emoji banner, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-emoji-banner-64.png',
+  },
 }

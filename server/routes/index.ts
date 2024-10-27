@@ -54,6 +54,8 @@ import image from './image'
 import audio from './audio'
 import chess from './chess'
 import light from './light'
+import dating from './dating'
+import stream_pledge from './stream-pledge'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -121,6 +123,8 @@ export default {
   audio,
   chess,
   light,
+  dating,
+  'stream-pledge': stream_pledge,
 }
 
 export const ios = [

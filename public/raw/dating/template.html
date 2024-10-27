@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>date {{user}}</title>
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    .row {
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+    .img {
+      height: 27.5vh; max-width: 100%; width: auto !important; flex-grow: 0 !important; flex-shrink: 0 !important;
+      min-width: fit-content;
+    }
+    .img:nth-child(1) {
+      width: 100%; max-width: 400px;
+      max-height: unset;
+    }
+    img {
+      height: unset !important; width: unset !important;
+      max-height: 100%; max-width: 100%;
+    }
+    .column {
+      min-height: max-content;
+    }
+    .unloaded .row {
+      flex-direction: column !important;
+      align-items: flex-start;
+    }
+    .unloaded .img {
+      height: auto;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+  </style>
+</head>
+<body>
+
+  <div data-hydrate data-title></div>
+  <div class="column wide tall unloaded">
+    <div>{{bio}}</div>
+    <div><button id=compatible>check me out</button></div>
+    <script>
+      on(window, 'load', () => {
+        QQ('img').map(x => {
+          const src = x.dataset.src
+          const container = node(`<div id=img-${base62(src.slice(-100))} class="img "></div>`)
+          x.insertAdjacentElement('afterend', container)
+          container.append(x)
+          head.append(node(`<style>
+          #${container.id} {
+            position: relative;
+            z-index: 1;
+            white-space: pre-wrap;
+            display: flex;
+          }
+          #${container.id}::after {
+            content: "${x.title}";
+          }
+          </style>`))
+          x.title = ''
+          x.alt = ' '
+        })
+        Q('#compatible').onclick = e => {
+          e.target.remove()
+          
+          QQ('.hidden').map(x => {
+            x.classList.remove('hidden')
+          })
+          QQ('.unloaded').map(x => {
+            x.classList.remove('unloaded')
+          })
+          QQ('img').map(x => {
+            x.src = x.dataset.src
+            const container = x.parentNode
+            head.append(node(`<style>
+            #${container.id} {
+              overflow: hidden;
+            }
+            #${container.id}::after {
+              position: absolute; bottom: 0; right: 0;
+              margin: 2px; background: #000; color: #fff; mix-blend-mode: unset;
+            }
+            </style>`))
+          })
+        }
+      })
+    </script>
+    <div class="row wide">{{photos}}</div>
+  </div>
+
+</body>
+</html>

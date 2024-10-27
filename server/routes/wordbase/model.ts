@@ -202,7 +202,7 @@ setInterval(computeStats, 1000 * 60 * 60 * 24); // 24hr
 
 // re-schedule game timeouts
 db.queueInit(async () => {
-    const timeouts = Array.from(await C.timeout().find({}).toArray())
+    const timeouts = Array.from<any>(await C.timeout().find({}).toArray())
     console.log('scheduling', timeouts.length, '/wordbase timeouts')
     timeouts.map(({ id, ms }) => timeout(id, ms))
 
@@ -476,7 +476,7 @@ async function play(user, id, newInfo, state) {
             : completed
             ? `${user} won with ${lastWord}`
             : `${user} played ${lastWord}`,
-            `freshman.dev/wordbase#${info.id}`)
+            `freshman.dev/wordbase/${info.id}`)
         console.log('[WORDBASE:play]', user, id, info.chat,
             skip ? 'SKIPPED' : confirm ? confirm : lastWord)
     }
@@ -541,9 +541,9 @@ async function timeout(id, ms=0) {
 
                 ioM.send(players, 'wordbase:update', info)
                 notify.send(winner, 'wordbase',
-                    `${loser} timed out, you win!`, `freshman.dev/wordbase#${info.id}`)
+                    `${loser} timed out, you win!`, `freshman.dev/wordbase/${info.id}`)
                 notify.send(loser, 'wordbase',
-                    `you timed out, ${winner} wins`, `freshman.dev/wordbase#${info.id}`)
+                    `you timed out, ${winner} wins`, `freshman.dev/wordbase/${info.id}`)
 
                 _updateEndStats(info)
             }
@@ -575,7 +575,7 @@ async function _draw(user, id) {
 
         ioM.send([user, other], 'wordbase:update', info)
         notify.send(other, 'wordbase',
-            `${user} accepted a draw`, `freshman.dev/wordbase#${info.id}`)
+            `${user} accepted a draw`, `freshman.dev/wordbase/${info.id}`)
 
         _updateEndStats(info)
     }
@@ -593,7 +593,7 @@ async function resign(user, id) {
 
         ioM.send([user, other], 'wordbase:update', info)
         notify.send(other, 'wordbase',
-            `${user} resigned, you win!`, `freshman.dev/wordbase#${info.id}`)
+            `${user} resigned, you win!`, `freshman.dev/wordbase/${info.id}`)
 
         _updateEndStats(info)
     }
@@ -645,7 +645,7 @@ async function rematch(user, id, { state, settings }) {
         _setInfo(info)
 
         notify.send(other, 'wordbase',
-            `${user} requested a rematch!`, `freshman.dev/wordbase#${info.rematch}`)
+            `${user} requested a rematch!`, `freshman.dev/wordbase/${info.rematch}`)
         ioM.send(other, 'wordbase:update', info)
     }
     return rematch
@@ -653,12 +653,12 @@ async function rematch(user, id, { state, settings }) {
 async function friend(user, other, { state, settings }) {
     let { info } = await create(user, other, { state, settings });
     notify.send(other, 'wordbase',
-        `${user} challenged you!`, `freshman.dev/wordbase#${info.id}`)
+        `${user} challenged you!`, `freshman.dev/wordbase/${info.id}`)
     let userProfile = (await profile.get(user)).profile
     chat.sendUserChat(userProfile, other, [{
         meta: {
             read: true,
-            page: `/wordbase#${info.id}`,
+            page: `/wordbase/${info.id}`,
             pageDesc: `new /wordbase challenge!`,
             pageImg: `/raw/wordbase/favicon.png`,
         }
@@ -1211,7 +1211,7 @@ async function generateCompetition(id, user, settings) {
                     return game
                 }))
             matchNameToGames[matchInfo.name] = matchGames
-            matchInfo.links = matchGames.map(x => `/wordbase#${x.id}`)
+            matchInfo.links = matchGames.map(x => `/wordbase/${x.id}`)
             // console.debug('CREATED MATCH', matchNameToGames[matchInfo.name])
         }
     }
@@ -1275,7 +1275,7 @@ async function _startCompetitiveGame(game) {
     console.debug(info)
     await C.info().updateOne({ id }, { $set:info })
     timeout(id)
-    notify.send([game.p1, game.p2], 'wordbase', `${game.p1} vs ${game.p2} #${game.i} has begun (round ${game.round+1})`, `freshman.dev/wordbase#${id}`)
+    notify.send([game.p1, game.p2], 'wordbase', `${game.p1} vs ${game.p2} #${game.i} has begun (round ${game.round+1})`, `freshman.dev/wordbase/${id}`)
 
     if (game.i === 0) {
         const round = game.round
@@ -1348,7 +1348,7 @@ async function _handleCompetitiveEnd(info) {
                 else next.p2 = matchWinner
 
                 // send next link to winner, send bracket link to loser
-                notify.send(matchWinner, 'wordbase', `You won round ${game.round+1} against ${game.loser}! Your next game will appear here:`, `freshman.dev/wordbase#${next.id}`)
+                notify.send(matchWinner, 'wordbase', `You won round ${game.round+1} against ${game.loser}! Your next game will appear here:`, `freshman.dev/wordbase/${next.id}`)
                 notify.send(matchLoswer, 'wordbase', `You lost round ${game.round+1} to ${game.loser}! View the updated bracket here:`, `freshman.dev/wordbase/compete`)
             } else {
                 // if this was the final game, declare winner & badges

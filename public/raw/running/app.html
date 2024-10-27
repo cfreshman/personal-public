@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html style="background: #000; color: #fff">
+<head>
+  <title>running</title>
+  <meta name=description content="stay on pace" />
+  <link rel="icon" href=/raw/running/icon.png />
+  <script src=/copyright.js></script> <meta data-hydrate data-style />
+  <style>
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
+
+    :root {
+      filter: none;
+    }
+    .hidden {
+      display: none;
+    }
+    button {
+      appearance: none;
+      background: #fff2;
+      color: #fff;
+      border: 1px solid currentcolor;
+      border-radius: 10em;
+    }
+  </style>
+</head>
+<body class="column gap" style="height: 100%; width: 100%">
+
+  <!-- <div data-hydrate data-title></div> -->
+  <div id="top" class="row wide gap">
+    <div id="last-pace"></div>
+    <div class="grow"></div>
+    <div id="total-distance"></div>
+  </div>
+  <div id="main" class="middle-column wide grow" style="
+  background: #000;
+  color: #fff;
+  ">
+    <div id="time" style="font-size:2em"></div>
+    <div id="distance" style="font-size:6em; font-weight:bold"></div>
+    <div id="pace" style="font-size:4em"></div>
+    <div id="message" style="font-size:2em"></div>
+  </div>
+  <div id="buttons" class="row wide gap" style="font-size:2em">
+    <button id="reset" class="hidden" onclick="handle.reset()">reset</button>
+    <div class="grow"></div>
+    <button id="start" onclick="handle.start()">start</button>
+    <button id="complete" class="hidden" onclick="handle.complete()">complete</button>
+  </div>
+  <script>
+    const log = named_log('running')
+
+    const calc_geo_distance_meters = (lat1, lon1, lat2, lon2) => {
+      // done by copilot
+      const R = 6371e3; // metres
+      const φ1 = lat1 * Math.PI / 180; // φ, λ in radians
+      const φ2 = lat2 * Math.PI / 180;
+      const Δφ = (lat2-lat1) * Math.PI / 180;
+      const Δλ = (lon2-lon1) * Math.PI / 180;
+
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+      const d = R * c; // in metres
+      return d;
+    }
+    const calc_geo_distance_miles = (lat1, lon1, lat2, lon2) => {
+      return calc_geo_distance_meters(lat1, lon1, lat2, lon2) / 1609.344
+    }
+    
+    const ms_to_display = (ms) => {
+      const minutes = Math.floor((ms / 1_000) / 60)
+      const seconds = Math.round((ms / 1_000) % 60)
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`
+    }
+    const to_pace = (duration, distance) => {
+      return duration / Math.max(.001, distance)
+    }
+
+    let started = store.get('running-started') || false
+    let logs = store.get('running-logs') || []
+    let distance = store.get('running-distance') || 0
+    let last_pace = store.get('running-pace') || to_pace(duration({ m:10 }), 1)
+    let history = store.get('running-history') || [] // { distance, duration, t }
+    let last = history.at(-1)
+
+    const calc_recent_pace = () => {
+      // calculate pace over last 5 logs
+      const recent_logs = logs.slice(1).slice(-15)
+      const delta = recent_logs[recent_logs.length - 1].distance - recent_logs[0].distance
+      const time = recent_logs[recent_logs.length - 1].t - recent_logs[0].t
+      return to_pace(time, delta)
+    }
+    const calc_total_pace = () => {
+      // calculate pace over all logs
+      const time = logs[logs.length - 1].t - logs[0].t
+      return to_pace(time, distance)
+    }
+
+    const render = {
+      pace: () => {
+        const l = Q('#pace')
+        if (!started && last) {
+          l.innerHTML = `${ms_to_display(to_pace(last.duration, last.distance))} pace`
+        } else if (logs.length > 1) {
+          l.innerHTML = `${ms_to_display(started ? calc_recent_pace() : last_pace)} pace`
+        } else {
+          l.textContent = '0:00 pace'
+        }
+      },
+      time: () => {
+        const l = Q('#time')
+        if (!started && last) {
+          l.textContent = `${ms_to_display(last.duration)} total`
+        } else if (logs.length > 0) {
+          l.textContent = `${ms_to_display(logs.at(-1).t - logs[0].t)} total`
+        } else {
+          l.textContent = '0:00 total'
+        }
+      },
+      distance: () => {
+        const l = Q('#distance')
+        if (!started && last) {
+          l.textContent = `${last.distance.toFixed(2)} mi`
+        } else {
+          l.textContent = `${distance.toFixed(2)} mi`
+        }
+      },
+      rating: () => {
+        l_main = Q('#main')
+        l_message = Q('#message')
+        if (!started) {
+          l_main.style.background = '#000'
+          l_message.textContent = distance ? 'run complete' : last ? 'run complete' : 'ready?'
+        } else if (logs.length > 1) {
+          const pace = calc_recent_pace()
+          const s15 = duration({ s: 15 })
+          const capped_pace_diff = Math.min(Math.max(-s15, pace - last_pace), s15)
+          const capped_pace_percent = Math.abs(capped_pace_diff) / s15
+          const is_15s_below = pace < last_pace - s15
+          const is_15s_above = pace > last_pace + s15
+
+          let message = `you're on pace`
+          if (is_15s_above) message = `you're behind pace`
+          else if (is_15s_below) message = `you're ahead of pace`
+
+          // red/black/green for behind/on/ahead, capped at +/- 15s
+          let background
+          if (capped_pace_diff < 0) {
+            background = `rgb(0, 0, ${255 * capped_pace_percent})`
+          } else {
+            background = `rgb(${255 * capped_pace_percent}, 0, 0)`
+          }
+          l_main.style.background = background
+          l_message.textContent = message
+        } else {
+          l_main.style.background = '#000'
+          l_message.textContent = 'starting run'
+        }
+      },
+
+      top: () => {
+        Q('#last-pace').textContent = `last pace: ${ms_to_display(last_pace)} min/mi`
+        Q('#total-distance').textContent = `total mi: ${maths.sum(history.map(x => x.distance)).toFixed(2)}`
+      },
+
+      buttons: () => {
+        if (started) {
+          Q('#start').classList.add('hidden')
+          Q('#reset').classList.remove('hidden')
+          Q('#complete').classList.remove('hidden')
+        } else {
+          Q('#start').classList.remove('hidden')
+          Q('#reset').classList.add('hidden')
+          Q('#complete').classList.add('hidden')
+        }
+      },
+      landing: () => {
+        Q('#time').textContent = '(time)'
+        Q('#distance').textContent = '(miles)'
+        Q('#pace').textContent = '(pace)'
+        Q('#message').textContent = '(message)'
+      }
+    }
+    const handle = {
+      render: () => {
+        render.distance()
+        render.pace()
+        render.time()
+        render.rating()
+        render.top()
+        render.buttons()
+        log({ logs, distance })
+      },
+      location: () => {
+        navigator.geolocation.getCurrentPosition((position) => {
+          const new_log = {
+            t: Date.now(),
+            coords: position.coords,
+          }
+          logs.push(new_log)
+          if (logs.length > 1) {
+            const distance_delta = calc_geo_distance_miles(
+              logs[logs.length - 2].coords.latitude, logs[logs.length - 2].coords.longitude,
+              logs[logs.length - 1].coords.latitude, logs[logs.length - 1].coords.longitude,
+            )
+            distance = (distance || 0) + distance_delta
+            new_log.delta = distance_delta
+            new_log.distance = distance
+          }
+          store.set('running-logs', logs)
+          store.set('running-distance', distance)
+          handle.render()
+        }, undefined, { enableHighAccuracy: true })
+      },
+      update: () => {
+        if (started) {
+          handle.location()
+        } else {
+          handle.render()
+        }
+      },
+      
+      start: () => {
+        if (!confirm('are you on a phone?')) return
+
+        started = store.set('running-started', true)
+        logs = store.set('running-logs', [])
+        distance = store.set('running-distance', 0)
+        run()
+      },
+      reset: () => {
+        started = store.set('running-started', false)
+        logs = store.set('running-logs', [])
+        distance = store.set('running-distance', 0)
+        run()
+      },
+      complete: () => {
+        last_pace = store.set('running-pace', calc_total_pace())
+        started = store.set('running-started', false)
+        history.push({ distance, duration: logs.at(-1).t - logs[0].t, t: logs[0].t })
+        history = store.set('running-history', history)
+        last = history.at(-1)
+        run()
+      },
+    }
+
+    // testing
+    // if (!started && distance && logs.length > 1) {
+    //   last_pace = store.set('running-pace', calc_total_pace())
+    //   if (logs.length > 1 && (!history.length || history.at(-1).t !== logs[0].t)) {
+    //     history.push({ distance, duration: logs.at(-1).t - logs[0].t, t: logs[0].t })
+    //     history = store.set('running-history', history)
+    //   }
+    // }
+
+    // main update loop
+    let timeout
+    const run = () => {
+      clearTimeout(timeout)
+      timeout = setInterval(() => {
+        handle.update()
+      }, 1_000)
+      handle.update()
+    }
+    run()
+  </script>
+
+</body>
+</html>

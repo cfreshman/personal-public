@@ -6,7 +6,7 @@ const _projects = {
   // nonogram: ['nonogram solver', 'solves <a href="https://en.wikipedia.org/wiki/Nonogram">nonograms</a>'],
   nonogram: 'solves <a href="https://en.wikipedia.org/wiki/Nonogram">nonograms</a>',
   snakes: 'one- or two-player co-op snake',
-  wordbase: 'clone of discontinued word game',
+  wordbase: 'clone of discontinued word game #highlight',
   snackman: "(it's Pac-Man)",
   // befruited: 'bejeweled as fruit',
   graffiti: ['graffiti wall', 'open to all (be nice)'],
@@ -93,7 +93,7 @@ const _projects = {
   'color': 'add colored icons to your home screen',
   'kmeans': 'k-means clustering demo',
   'stream': 'my own social media. it\'s kinda like html VSCO',
-  'lettercomb': 'remake of Capitals',
+  'lettercomb': 'remake of Capitals #highlight',
   'quadbase': '4-player word strategy game (WIP)',
   // 'multipals': 'word game like capitals for > 2 players (WIP)',
   'starter': 'suggestions for getting started on freshman.dev',
@@ -125,6 +125,7 @@ const _projects = {
   'cowork': 'chat & lofi',
   'chess': 'simple roomed chess',
   'light': 'light twitter (text-only)',
+  'running': 'get faster',
 }
 // ''.split(' ').forEach(p => {
 //     if (!_projects[p]) _projects[p] = '' });
@@ -160,7 +161,7 @@ export const tags = {
   // social: 'chat graffiti live records speckle turt-smurts turt-smurts-2D u wordbase dots-and-boxes garden wall dinder',
   social: 'chat graffiti live records speckle turt-smurts u pixels wall dinder audio_form greeter proses plat not-linkedin cowork light',
   site: 'notify reset search settings cookies otp donoboard developer-program',
-  tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat',
+  tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat running',
   demo: 'paths bloom kmeans',
   me: 'about coffee domains home projects guestbook',
 }

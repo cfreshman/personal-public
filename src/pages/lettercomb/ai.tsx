@@ -179,6 +179,7 @@ export const get_selection = async (info:Info, raw_state:State, hf, f_progress?:
   const memoized_distances = {}
   const score_tiles = (tile_list, target_capital) => {
     return maths.sum(tile_list.map(tile => {
+      if (!target_capital) return 0
       if (!memoized_distances[target_capital.pos.st()]) memoized_distances[target_capital.pos.st()] = {}
       let score = memoized_distances[target_capital.pos.st()][tile.pos.st()]
       if (score === undefined) {
