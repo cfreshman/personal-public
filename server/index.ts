@@ -1085,6 +1085,16 @@ app.get('/*', async (req, res, next) => {
             })
         }
     }
+    else if (page === 'graffiti') {
+        const url_search_str = req.url.split('/graffiti')[1]
+        const [user] = url_search_str.split('/').filter(x => x)
+        console.debug('[graffiti] url parsed:', url_search_str, user)
+        if (user) {
+            Object.assign(replacements, {
+                title: `${user}'s graffiti wall`,
+            })
+        }
+    }
 
     let html = indexRaw
     if (replacements) html = replaceTemplate(html, replacements)

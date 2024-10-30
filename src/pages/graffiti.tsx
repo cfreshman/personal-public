@@ -2,11 +2,12 @@ import React from 'react'
 import styled from 'styled-components'
 import { ColorPicker, InfoBody, InfoSection, InfoStyles } from '../components/Info'
 import { usePageSettings, usePathState } from 'src/lib/hooks_ext'
-import { useEventListener, useF, useInterval, useS } from 'src/lib/hooks'
+import { useEventListener, useF, useInterval, useR, useS } from 'src/lib/hooks'
 import api, { auth } from 'src/lib/api'
 import { store } from 'src/lib/store'
 import { S } from 'src/lib/util'
 import { useRoom } from 'src/lib/socket'
+import url from 'src/lib/url'
 
 const { named_log, values, colors, Q, node, V, range, defer, canvases } = window as any
 const NAME = 'graffiti-2'
@@ -40,8 +41,7 @@ const combined ={
   ctx: combined_canvas.getContext('2d'),
 }
 
-const ColorDot = ({ color, value, on_click }) => {
-  const active = value === color
+const ColorDot = ({ color, active, on_click }) => {
   return <button 
   className={`${active?'active':''}`}
   style={S(`background:${color}; color:${colors.readable(color)}; height:3em; width:3em`)}
@@ -55,19 +55,34 @@ const SizeDot = ({ size, value, on_click }) => {
 }
 
 let over, down, backing, backing_img, dirty = false, touches
-const create_dataurl_image = (dataurl) => {
+const create_dataurl_image = async (dataurl) => {
   const img = new Image()
-  img.src = dataurl
+  await new Promise<void>(resolve => {
+    img.onload = () => resolve()
+    img.src = dataurl
+  })
   return img
 }
 export default () => {
 
-  const [a, set_auth] = auth.use()
-  const [id='', set_id] = usePathState()
+  const [a] = auth.use()
+  const {user:viewer} = a
+
+  const [id=''] = usePathState()
 
   const [colors, set_colors] = store.use('graffiti-colors', { default:values(COLORS) })
 
-  const [color, set_color] = store.use('graffiti-color', { default:COLORS.black })
+  // switched from hex to index
+  const color_check = useR()
+  if (!color_check.current) {
+    color_check.current = true
+    const color = store.get('graffiti-color')
+    if (typeof color !== 'number') {
+      store.set('graffiti-color', 0)
+    }
+  }
+  const [color, set_color] = store.use('graffiti-color', { default:0 })
+
   const [size, set_size] = store.use('graffiti-size', { default:BRUSHES.MEDIUM })
   const [mode, set_mode] = store.use('graffiti-mode', { default:'draw' })
 
@@ -78,18 +93,16 @@ export default () => {
       const canvas = Q('#canvas')
       canvas.width = canvas.width
     },
-    back: (data) => {
+    back: async (data) => {
       backing = data
-      backing_img = create_dataurl_image(backing.image)
-      backing_img.onload = () => {
-        const canvas = Q('#canvas')
-        canvas.style['background-image'] = `url(${backing.image})`
-      }
+      backing_img = await create_dataurl_image(backing.image)
+      const canvas = Q('#canvas')
+      canvas.style['background-image'] = `url(${backing.image})`
     },
     send: async (download=false) => {
       if (!dirty) return
 
-      const send_data_and_reset = (canvas) => {
+      const send_data_and_reset = async (canvas) => {
         if (download) {
           const white_canvas = node('canvas')
           white_canvas.width = white_canvas.height = SIZE
@@ -101,7 +114,7 @@ export default () => {
         } else {
           const data = { id, image: canvas.toDataURL() }
           socket.emit('graffiti-2:set', id, data.image)
-          handle.back(data)
+          await handle.back(data)
           handle.reset()
         }
       }
@@ -113,27 +126,25 @@ export default () => {
           backing_img.onload = async () => {
             combined.ctx.drawImage(backing_img, 0, 0)
             combined.ctx.drawImage(Q('#canvas'), 0, 0)
-            send_data_and_reset(combined.canvas)
+            await send_data_and_reset(combined.canvas)
             resolve()
           }
           backing_img.src = backing.image
         })
       } else {
-        send_data_and_reset(Q('#canvas'))
+        await send_data_and_reset(Q('#canvas'))
       }
-    },
-    receive: async (data) => {
-      backing = data
-      await handle.send()
     },
 
     resize: () => {
       const canvas = Q('#canvas')
+      canvas.style.width = canvas.style.height = 0
       const outer = canvas.parentElement.getBoundingClientRect()
       const inner_size = Math.min(outer.width * .95, outer.height * .9)
-      canvas.style.width = `${inner_size}px`
-      canvas.style.height = `${inner_size}px`
-      set_scale(inner_size / canvas.width)
+      canvas.style.width = canvas.style.height = ''
+      const new_scale = inner_size / canvas.width
+      canvas.style.scale = new_scale
+      set_scale(new_scale)
     },
     move: (e) => {
       if (!down) return
@@ -151,7 +162,7 @@ export default () => {
 
       ctx.imageSmoothingEnabled = false
       ctx.lineWidth = size
-      ctx.strokeStyle = color
+      ctx.strokeStyle = colors[color]
       ctx.lineCap = 'round'
       ctx.beginPath()
       ctx.moveTo(a.x, a.y)
@@ -170,16 +181,10 @@ export default () => {
       handle.send()
     },
   }
-  useF(a.expand, () => {
-    handle.resize()
-    range(5).map(i => defer(handle.resize, i * 100))
-  })
+  useF(a.expand, handle.resize)
   useEventListener(window, 'resize', handle.resize)
 
   useEventListener(window, 'mousedown', handle.down)
-  useEventListener(window, 'pointermove', handle.move)
-  useEventListener(window, 'pointerup', handle.up)
-
   useEventListener(window, 'touchstart', e => {
     touches = e.touches
     if (touches.length > 1) down = undefined
@@ -188,6 +193,8 @@ export default () => {
       down = V.ne(touch.clientX, touch.clientY)
     }
   })
+  useEventListener(window, 'pointermove', handle.move)
+  useEventListener(window, 'pointerup', handle.up)
   useEventListener(window, 'touchend', e => {
     down = undefined
     defer(() => {
@@ -198,19 +205,16 @@ export default () => {
   const socket = useRoom({
     room: `graffiti-2:${id}`,
     on: {
-      [`graffiti-2:${id}:update`]: (data) => {
-        log('update', data)
-        handle.back(data)
+      [`graffiti-2:${id}:update`]: async (data) => {
+        await handle.back(data)
       },
     },
     connect: socket => socket.emit(`graffiti-2:get`, id),
   })
   useF(id, () => {
-    if (socket) {
-      backing = undefined
-      handle.reset()
-      socket.emit('graffiti-2:get', id)
-    }
+    backing = undefined
+    handle.reset()
+    socket && socket.emit(`graffiti-2:get`, id)
   })
   useEventListener(window, 'focus', () => {
     socket && socket.emit(`graffiti-2:get`, id)
@@ -223,14 +227,44 @@ export default () => {
   //   }
   // }, 1_000)
 
+  const [profile, set_profile] = useS(undefined)
+  useF(viewer, async () => {
+    if (viewer) {
+      const { profile } = await api.get(`/profile/${viewer}`)
+      set_profile(profile)
+    } else {
+      set_profile(undefined)
+    }
+  })
+
   return <Style id='graffiti' className='column' style={S(`max-width:100vh`)}>
     <div className='row wide'>
-      <b>graffiti</b>
+      {id ? <>
+        <b>{id}'s graffiti wall</b>
+      </> : <>
+        <b>public graffiti wall</b>
+        {profile?.friends?.length ? null : <>
+          &nbsp;
+          <i>- please be nice</i>
+        </>}
+      </>}
+      {/* <b>graffiti</b>
       &nbsp;
-      <i>{id ? `${id}'s wall` : 'please be nice'}</i>
+      <i>{id ? `${id}'s wall` : 'please be nice'}</i> */}
       <div className='spacer' />
-      <button onClick={() => handle.send(true)}>download</button>
+      <div className='row gap'>
+        {profile?.friends?.length ? <select value={id} onChange={e => {
+          const to = e.target.value
+          url.push(`/graffiti${to?`/${to}`:''}`)
+          e.target.blur()
+        }}>
+          <option value=''>public</option>
+          <option value={viewer}>{viewer}</option>
+          {profile.friends.map(x => <option value={x}>{x}</option>)}
+        </select> : null}
+        <button onClick={() => handle.send(true)}>download</button>
       </div>
+    </div>
     <div id='canvas-container' className='wide grow middle-row'>
       <canvas id='canvas' height={SIZE} width={SIZE} onPointerMove={e => {
         over?.remove()
@@ -241,7 +275,7 @@ export default () => {
         font-size: ${size * scale}px;
         height: 1em; width: 1em; translate: -.5em -.5em;
         border-radius: 50%;
-        background: ${color};
+        background: ${colors[color]};
         z-index: 100;
         pointer-events: none;
         "></div>`)
@@ -250,7 +284,7 @@ export default () => {
     </div>
     <div id='controls-container' className='middle-row wide'>
       <div className='middle-column gap'>
-        <div id='palette' className='row gap'>{colors.map(x => <ColorDot {...{ color:x, value:color, on_click:()=>set_color(x) }} />)}</div>
+        <div id='palette' className='row gap'>{colors.map((x, i) => <ColorDot {...{ color:x, active:color===i, on_click:()=>set_color(i) }} />)}</div>
         <div id='picker-and-size' className='middle-row wide gap' style={S(`
         justify-content: space-between;
         `)}>
@@ -258,19 +292,17 @@ export default () => {
             <button onClick={e => {
               const picker = Q(e.target, 'input') || e.target
               picker.click()
-            }} style={S(`background:${color}; height:3em`)}><ColorPicker {...{ value:color, setValue: (new_color) => {
-              const curr_index = colors.indexOf(color)
+            }} style={S(`background:${colors[color]}; height:3em`)}><ColorPicker {...{ value:colors[color], setValue: (new_color) => {
+              const curr_index = color
               const new_colors = colors.slice()
               new_colors[curr_index] = new_color
               set_colors(new_colors)
-              set_color(new_color)
             } }} /></button>
             <button style={S(`height:3em`)} onClick={e => {
-              const curr_index = colors.indexOf(color)
+              const curr_index = color
               const new_colors = colors.slice()
               new_colors[curr_index] = values(COLORS)[curr_index]
               set_colors(new_colors)
-              set_color(new_colors[curr_index])
             }}>reset</button>
           </div>
           <div id='size' className='row gap'>{values(BRUSHES).map(x => <SizeDot {...{ size:x, value:size, on_click:()=>set_size(x) }} />)}</div>
@@ -295,7 +327,7 @@ const common_css = `
   }
 }
 
-input, select {
+input {
   height: 1.5em;
   font-size: 1em;
   border: 1px solid currentcolor;
@@ -309,8 +341,11 @@ ul {
   padding-left: 1em;
 }
 
-button {
+button, select {
+  font-size: 1em;
+  height: 1.5em;
   color: var(--id-color-text);
+  background: var(--id-color);
   border-radius: 10em;
   border: 1px solid var(--id-color-text);
   box-shadow: 0 1px var(--id-color-text);
@@ -348,8 +383,8 @@ font-size: .8em;
 font-family: monospace;
 `
 const Style = styled.div`
-width: 100%;
 margin: .5em;
+width: calc(100% - 1em);
 border: 1px solid #000;
 border-radius: .25em;
 
