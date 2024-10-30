@@ -1943,9 +1943,8 @@ export const ColorPicker = withRef(({ value, setValue, ...props }: props & { val
     <input
     ref={ref}
     {...props}
-    onInput={e => {
-      setValue(e.currentTarget.value)
-    }}
+    onInput={e => setValue(e.currentTarget.value)}
+    onChange={e => setValue(e.currentTarget.value)}
     type='color'
     value={colors.to_hex(value)}
     style={{
@@ -1984,7 +1983,7 @@ export const Multiline = (({ ref=useR(), children, value, setValue, extra_height
   }} onChange={e => {
     props.onChange && props.onChange(e)
     const l = e.target as any
-    let new_value = l.value ?? l.textContent ?? ''
+    let new_value = l.value || l.textContent || ''
     if (row_limited) {
       l.value = l.textContent = new_value = new_value.split('\n').slice(0, props.rows || row_limited).join('\n')
     }

@@ -209,13 +209,19 @@ export const User = ({ user, handle }) => {
   </>
 
   return <>
-    {show_weeks_hangouts ? <>
-      <InfoSection labels={[
-        "this week's hangouts",
+    {viewer ? <InfoBadges style={S(`font-size: 1.25em; padding-bottom: .125em`)} labels={[
         viewer && { 'add hangout': (e) => {
           store.set(APP_COOKIE.HANGOUT_PREFILL, { users:lists.unique([viewer, user]) })
           handle.setPath([undefined, 'hangout', undefined], e)
         }},
+    ]} /> : null}
+    {show_weeks_hangouts ? <>
+      <InfoSection labels={[
+        "this week's hangouts",
+        // viewer && { 'add hangout': (e) => {
+        //   store.set(APP_COOKIE.HANGOUT_PREFILL, { users:lists.unique([viewer, user]) })
+        //   handle.setPath([undefined, 'hangout', undefined], e)
+        // }},
         viewer && !self && { 'joint calendar': (e) => handle.setPath([viewer, 'calendar', user], e) },
       ]}>
         <InfoLoginBlock to={'view hangouts'} inline>
@@ -233,14 +239,7 @@ export const User = ({ user, handle }) => {
           </div>
         </InfoLoginBlock>
       </InfoSection>
-    </> : <>
-      <InfoBadges style={S(`font-size: 1.25em; padding-bottom: .125em`)} labels={[
-        viewer && { 'add hangout': (e) => {
-          store.set(APP_COOKIE.HANGOUT_PREFILL, { users:lists.unique([viewer, user]) })
-          handle.setPath([undefined, 'hangout', undefined], e)
-        }},
-      ]} />
-    </>}
+    </> : null}
     <InfoSection labels={[
       // self && user,
       self ? 'your follows' : `${user}'s meetings`,

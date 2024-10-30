@@ -72,7 +72,7 @@ const ReminderList = ({ data, reminders, opened, due, handle }: { data, reminder
       inst.due = inst.t + inst.d < Date.now()
       handle.set_opened(undefined)
       await handle.save_data(data)
-    }
+    },
   }
 
   return reminders.length ? <>
@@ -115,6 +115,12 @@ const ReminderList = ({ data, reminders, opened, due, handle }: { data, reminder
             { [x.active ? 'turn off' : 'turn on']: async () => {
               const inst = data.reminders.find(y => y.id === x.id)
               inst.active = !inst.active
+              handle.set_opened(undefined)
+              await handle.save_data(data)
+            } },
+            x.active && !due && { 'make due': async () => {
+              const inst = data.reminders.find(y => y.id === x.id)
+              inst.t = Date.now() - inst.d
               handle.set_opened(undefined)
               await handle.save_data(data)
             } },

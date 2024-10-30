@@ -23,6 +23,8 @@ const FONTS = {
   HIGHWAY_GOTHIC: 'highway-gothic',
   QUICKSAND: 'quicksand',
   SEVEN_SEGMENT_DISPLAY: 'seven-segment-display',
+  // M3X6: 'm3x6',
+  PIXEL: 'pixel',
 }
 const font_to_actual = (key) => ({
   // 'duospace': 'Duospace',
@@ -47,8 +49,8 @@ export default () => {
 
   const banner_text = useM(text, angle, () => {
     const chars = [...text]
-    const SIZE = 70
-    const rows = range(SIZE).map(r => range(100).map(c => chars[(r + c) % chars.length]).join(''))
+    const SIZE = 64
+    const rows = range(SIZE).map(r => range(SIZE).map(c => chars[((r - SIZE/2) + (c - SIZE/2 - Math.floor(chars.length/2)) + chars.length*SIZE) % chars.length]).join(''))
     return rows.map(row => <div className='row pre'>{[...row].map(char => <span style={S(`rotate:-${angle}deg`)}>{char}</span>)}</div>)
     // return [...text.repeat(2_000)].map(x => <span>{x}</span>)
   })
@@ -60,6 +62,8 @@ export default () => {
     return text_has_non_emojis
   })
 
+  const [aspect, set_aspect] = store.use('emoji-banner-aspect', { default:'3:1' })
+
   usePageSettings({
     expand:true,
   })
@@ -67,6 +71,7 @@ export default () => {
     <InfoBody className='column'>
       <InfoSection className='column grow' labels={[
         NAME,
+        { text: <Select value={aspect} setter={set_aspect} options={['3:1', '2:1', '1:1']} /> },
         { save: () => {
           const { html2canvas } = window as any
           html2canvas(Q('#emoji-banner-banner')).then(canvas => {
@@ -75,16 +80,27 @@ export default () => {
         } },
         devices.is_mobile && 'note: works best on desktop',
       ]}>
-        <div id='emoji-banner-banner' style={S(`
-        background: ${background};
-        color: ${color};
-        font-family: ${font_to_actual(font)};
+        <div id='emoji-banner-container' className='middle-row' style={S(`
+        width: 100%;
+        aspect-ratio: 3/1;
+        height: auto;
+        background: #0002;
         `)}>
-          <div id='emoji-banner-banner-inner' className='column wrap' style={S(`
-          font-size: ${size}em;
-          rotate: ${angle}deg;
-          gap: ${spacing}em;
-          `)}>{banner_text}</div>
+          <div id='emoji-banner-banner' style={S(`
+          height: calc(100% - 2px);
+          aspect-ratio: ${{ '3:1':'3/1', '2:1':'2/1', '1:1':'1/1' }[aspect]||aspect};
+          width: auto;
+          
+          background: ${background};
+          color: ${color};
+          font-family: ${font_to_actual(font)};
+          `)}>
+            <div id='emoji-banner-banner-inner' className='column wrap' style={S(`
+            font-size: ${size}em;
+            rotate: ${angle}deg;
+            gap: ${spacing}em;
+            `)}>{banner_text}</div>
+          </div>
         </div>
         <div className='center-row gap'>
           colors:
@@ -139,9 +155,6 @@ const Style = styled(InfoStyles)`
 #emoji-banner-banner {
   margin: 1px;
   box-shadow: 0 0 0 1px #000;
-  width: calc(100% - 2px);
-  height: auto;
-  aspect-ratio: 3/1;
   overflow: hidden;
   
   font-size: 100%;
@@ -153,6 +166,7 @@ const Style = styled(InfoStyles)`
     height: max(150vw, 150vh); width: max(150vw, 150vh);
     transform-origin: center;
     display: flex; align-items: center; justify-content: center;
+    flex-wrap: nowrap;
     line-height: 1;
 
     > div {

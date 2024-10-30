@@ -329,8 +329,8 @@ export default () => {
         'friends',
         showChat ? { text: 'chat', func: () => url.push(showChat) } : '',
         auth.user !== user && showChat ? { text: 'greet', func: () => url.push(auth.user === user ? `/greeter` : `/greeter/${auth.user}/met/${user}`) } : '',
-        // showChat ? { text: 'graffiti', func: () => url.push(`/graffiti/#/${user}`) } : '',
-        auth.user !== user && showChat ? { text: 'pixels', func: () => url.push(`/pixels/#/${user}`) } : '',
+        showChat ? { text: 'graffiti', func: () => url.push(`/graffiti/${user}`) } : '',
+        // auth.user !== user && showChat ? { text: 'pixels', func: () => url.push(`/pixels/#/${user}`) } : '',
         // showChat && !info.isFriend && unreadCount ? { text: unreadCount, func: () => history.push('/chat') } : '',
         // showChat && unread ? `${unread}` : ''
         ]}>

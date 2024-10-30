@@ -184,7 +184,7 @@ export const AI = ({ handle=undefined }={}) => {
       {/* <AiText>i am an <A tab href='https://en.wikipedia.org/wiki/Large_language_model'>LLM</A> assistant. your favorite LLM (<A tab href='https://chatgpt.com/'>ChatGPT</A>, etc) will ingest your /greeter logs and suggest new hangouts using <b>MATH</b>{!begin ? <>
         .&nbsp;<a onClick={() => set_begin(true)}>begin →</a>
       </> : null}</AiText> */}
-      <AiText>i am an <A tab href='https://en.wikipedia.org/wiki/Large_language_model'>LLM</A> assistant. your favorite LLM (<A tab href='https://chatgpt.com/'>ChatGPT</A>, etc) will ingest your /greeter logs and suggest new hangouts using <b>MATH</b></AiText>
+      {/* <AiText>i am an <A tab href='https://en.wikipedia.org/wiki/Large_language_model'>LLM</A> assistant. your favorite LLM (<A tab href='https://chatgpt.com/'>ChatGPT</A>, etc) will ingest your /greeter logs and suggest new hangouts using <b>MATH</b></AiText> */}
       <AiText>i am here to <b><i>improve your life</i></b>, not just keep you repeating the same hangouts every week. but you can always ask the LLM for more low-key hangouts too!</AiText>
       {!begin ? <AiText><a onClick={() => set_begin(true)}>begin →</a></AiText> : null}
       {/* {!begin

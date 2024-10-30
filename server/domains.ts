@@ -61,7 +61,7 @@ export const replace = {
   ...common,
   'wordbase': {
     title: 'wordbase.app',
-    description: 'web remake of discontinued word game',
+    description: 'word strategy game',
     icon: 'https://freshman.dev/raw/wordbase/icon.png',
     keywords: 'cyrus, wiggin, freshman, freshman_dev, wordbase, play, discontinued, multiplayer, word, strategy, game, app',
     manifest: 'https://freshman.dev/raw/wordbase/manifest.json',
@@ -270,9 +270,9 @@ export const replace = {
     }
   },
   'radio': {
-    title: 'dj___fresh radio',
+    title: 'freshman.dev radio',
     description: '',
-    keywords: 'dj, dj___fresh, spotify, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    keywords: 'dj, cyrus, freshman, spotify, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/radio/icon.png',
   },
   'rent-splitter': {
@@ -442,7 +442,7 @@ export const replace = {
   },
   'textage': {
     title: '/textage',
-    description: 'generate text response',
+    description: 'generate text responses',
     keywords: 'textage, text generator, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/images/icon-textage.png',
   },
@@ -451,5 +451,17 @@ export const replace = {
     description: 'generate an emoji banner!',
     keywords: 'emoji-banner, generate an emoji banner, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/images/icon-emoji-banner-64.png',
+  },
+  'whale': {
+    title: '/whale',
+    description: 'whale friend',
+    keywords: 'whale, friend, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-whale.png',
+  },
+  'graffiti': {
+    title: '/graffiti',
+    description: 'graffiti wall open to all (be nice)',
+    keywords: 'graffiti, wall, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-graffiti.png',
   },
 }

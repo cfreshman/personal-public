@@ -13,11 +13,14 @@ setTimeout(() => {
 
 const input = `Create a file containing just this data:
 
-5KZkxg_IaLgzjDw68k7GiIPV9LUEo4x-5qZ6cEDyMYI.A1pm8tDb58JdF_-gMNdkxU_WeVI-9PMwXQ9IdDt2xhk
+ctJAA99DF2eP3B6XDB3gcMS02ATX8Vf_Sa8QHiYHICM.A1pm8tDb58JdF_-gMNdkxU_WeVI-9PMwXQ9IdDt2xhk
 
 And make it available on your web server at this URL:
 
-http://tu.fo/.well-known/acme-challenge/5KZkxg_IaLgzjDw68k7GiIPV9LUEo4x-5qZ6cEDyMYI
+http://cyrusman.xyz/.well-known/acme-challenge/ctJAA99DF2eP3B6XDB3gcMS02ATX8Vf_Sa8QHiYHICM
+
+(This must be set up in addition to the previous challenges; do not remove,
+replace, or undo the previous challenge tasks yet.)
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Press Enter to Continue`

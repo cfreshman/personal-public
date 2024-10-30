@@ -385,14 +385,6 @@ async function get_hangouts(viewer, user) {
 async function side_hangouts(viewer, id, user=viewer) {
     await authorized(viewer, [user])
     const hangout = await _hangout(user, id)
-    // const previous_hangout = await C.greeter_hangout().aggregate([
-    //     { $match: { id:{$ne:id}, t:{$lte:hangout.t} } },
-    //     { $group: { id:'$id', t:{$maxN:{ input: '$t', n:1 }} } },
-    // ]).next()
-    // const next_hangout = await C.greeter_hangout().aggregate([
-    //     { $match: { id:{$ne:id}, t:{$gte:hangout.t} } },
-    //     { $group: { _id:'$id', t:{$minN:{ input: '$t', n:1 }} } },
-    // ]).next()
     const previous_hangout = await C.greeter_hangout().find({ id:{$ne:id}, t:{$lt:hangout.t}, users:user }).sort({ t: -1 }).limit(1).next()
     const equal_hangouts = Array.from(await C.greeter_hangout().find({ id:{$ne:id}, t:hangout.t, users:user }).toArray())
     const next_hangout = await C.greeter_hangout().find({ id:{$ne:id}, t:{$gt:hangout.t}, users:user }).sort({ t: 1 }).limit(1).next()
@@ -400,7 +392,6 @@ async function side_hangouts(viewer, id, user=viewer) {
     return { previous_hangout, equal_hangouts, next_hangout }
 }
 
-// async function get_ai_suggestions(viewer, { query='what are 3 hangout suggestions? one line each' }) {
 
 export const GREETER_RAW_PATH = path.join(staticPath,'raw', 'greeter')
 log({ GREETER_RAW_PATH })

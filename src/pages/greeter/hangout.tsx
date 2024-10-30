@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { A, HalfLine, InfoBadges, InfoBody, InfoButton, InfoLoginBlock, InfoSection, InfoSelect, InfoStyles, Select } from '../../components/Info'
+import { A, ColorPicker, HalfLine, InfoBadges, InfoBody, InfoButton, InfoLoginBlock, InfoSection, InfoSelect, InfoStyles, Select } from '../../components/Info'
 import { useCachedScript, usePageSettings } from 'src/lib/hooks_ext'
 import { S } from 'src/lib/util'
 import api, { auth } from 'src/lib/api'
@@ -14,16 +14,17 @@ import { APP_COOKIE, hangout } from './util'
 import GreeterMeet from './GreeterMeet'
 import url from 'src/lib/url'
 import { useQr } from 'src/components/qr'
-import { LinkSection, NoteInput, PrintCertificateSection, upload_icon_fill } from './common_components'
+import { IconCreate, LinkSection, MODALS, NoteInput, PrintCertificateSection, upload_icon_fill } from './common_components'
 import { openLogin } from 'src/lib/auth'
 import { convertLinks } from 'src/lib/render'
+import { Modal } from 'src/components/Modal'
+import { Style } from './style'
 
 
-const { named_log, list, strings, datetime, truthy, Q, QQ, node, entries, lists, merge, values, keys, qr, copy, defer } = window as any
+const { named_log, list, strings, datetime, truthy, Q, QQ, node, entries, lists, merge, values, keys, qr, copy, defer, colors } = window as any
 const log = named_log('greeter hangout')
 
 let prefill
-
 export const Hangout = ({ id, handle, join=undefined }) => {
 
   const [{user:viewer}] = auth.use()
@@ -249,7 +250,16 @@ export const Hangout = ({ id, handle, join=undefined }) => {
   /* TODO fix duplicate user bug better */
   const viewer_edit_user_i = useM(edit_data_view, () => edit_data_view?.users?.findIndex(user => user === viewer))
 
+  const [modal, set_modal] = useS(undefined)
+  const close_modal = () => set_modal(undefined)
+
   return <>
+    {modal ? <Modal outerClose={close_modal}><Style 
+    style={S(`height:max-content;width:max-content;min-height:400px;min-width:300px;border:1px solid currentcolor;box-shadow:0 2px currentcolor`)}
+    ><InfoBody>
+      {modal === MODALS.ICON_CREATE ? <IconCreate {...{ close:close_modal, set_icon:icon => set_edit_data({ ...edit_data, icon }) }} />
+      : null}
+    </InfoBody></Style></Modal> : null}
     <InfoSection labels={[
       // hangout?.users.join(' & ') || 'loading hangout',
       'hangout',
@@ -306,7 +316,7 @@ export const Hangout = ({ id, handle, join=undefined }) => {
             </div> */}
             <div>{hangout.title || `hangout with ${hangout.users.join(' & ')}`}</div>
             <div className='row gap'>
-              {hangout.icon ? <img src={hangout.icon} /> : null}
+              {hangout.icon ? <img src={hangout.icon} style={S(`width:128px`)} /> : null}
               <div>
                 <div>
                   hung out {datetime.yyyymmdd(hangout.t + datetime.duration({ h:1 }))}
@@ -408,13 +418,13 @@ export const Hangout = ({ id, handle, join=undefined }) => {
             title: e.target.value,
           })
         }}></input>
-        <div className='column' style={S(`margin-bottom:2px`)}>
+        <div className='row gap' style={S(`margin-bottom:2px`)}>
+          {edit_data_view.icon ? <img src={edit_data_view.icon} width={64} /> : null}
           <div>
             <InfoBadges labels={[
-              ...upload_icon_fill({ edit_data_view, set_edit_data }),
+              ...upload_icon_fill({ edit_data_view, set_edit_data, set_modal }),
             ]} />
           </div>
-          {edit_data_view.icon ? <img src={edit_data_view.icon} width={64} /> : null}
         </div>
         <input type='text' placeholder='location' autoCapitalize='off' value={edit_data_view.location} onChange={e => {
           set_edit_data({

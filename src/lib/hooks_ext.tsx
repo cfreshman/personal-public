@@ -115,7 +115,7 @@ export const useTextColor = (text_color) => {
 
 export const useTransparentHeader = (use=true, invert=false) => {
     const [{ expand }] = auth.use()
-    console.debug('transparent header', { use, invert, expand }, use && !expand)
+    useF(use, invert, expand, () => console.debug('transparent header', { use, invert, expand }, use && !expand))
     useStyle(use && !expand ? `
     #header {
         background: transparent;

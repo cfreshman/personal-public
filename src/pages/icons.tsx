@@ -917,12 +917,51 @@ export default () => {
             pointer-events: none;
             `)}>{`🏁`}</span>
           </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #9bb1e8;
+          color: #fff;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          overflow: hidden;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-weight: bold;
+            pointer-events: none;
+            `)}>{`🐋`}</span>
+          </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #000;
+          color: #fff;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          overflow: hidden;
+          background-image: url(/raw/images/back-graffiti.jpg);
+          background-size: cover;
+          color: #000;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-weight: bold;
+            pointer-events: none;
+            font-size: 48em;
+            text-align: right;
+            background: #000;
+            color: #fff;
+            `)}>{`graffiti\nwall`}</span>
+          </div>
         </div>
       </InfoSection>
       <InfoSection labels={['static']}>
         <div className='row gap'>
         {
-          list('/icon.png /raw/printgames/icon-65.png')
+          list('/icon.png /raw/printgames/icon-65.png /raw/images/icon-graffiti.png')
           .map(src => 
           <img src={src} style={S(`
           width: 128px;

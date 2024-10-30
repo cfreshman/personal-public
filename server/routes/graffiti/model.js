@@ -5,9 +5,9 @@ const name = 'graffiti';
 // hash: string
 // dataUrl: string
 
-setInterval(() => {
-    del('~/home')
-}, 3 * 60 * 60 * 1000) // clear homepage every 3 hours
+// setInterval(() => {
+//     del('~/home')
+// }, 3 * 60 * 60 * 1000) // clear homepage every 3 hours
 
 async function get(hash) {
     return (await db.collection(name).findOne({ hash })) || { hash };

@@ -1,5 +1,6 @@
 export PATH="/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/bin"
 alias rg='source ~/.bash_profile'
+alias personal='cd /var/www/personal'
 
 confirm-y() {
     local confirm_result=0

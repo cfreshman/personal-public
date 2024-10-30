@@ -187,7 +187,7 @@ export const Base = () => {
     color: var(--background) !important;
     border-color: currentcolor !important;
     border-width: 2px !important;
-    margin: 0 -2px !important;
+    // margin: 0 -2px !important;
     font-weight: bold;
     opacity: 1 !important;
     outline: 0;
@@ -509,7 +509,14 @@ export const Base = () => {
     height: 0; flex-grow: 1;
 
     padding-bottom: 0 !important;
-    margin: -1px calc(2px - 0.67rem) !important;
+    margin: 0 calc(2px - 0.67rem) !important;
+
+    // width: 100% !important;
+    width: calc(100vw + 1px) !important; /* so bad */
+    left: 0 !important;
+    margin: 0 !important; margin-left: calc(2px - .67rem) !important;
+    height: 0; flex-grow: 1;
+    overflow: hidden !important;
   }
   #box-inner#box-inner::after {
     content: "hidden";
@@ -593,6 +600,11 @@ export const Base = () => {
     border-color: #000c !important;
     // border-radius: .5em !important;
     border-radius: 2px !important;
+    border-radius: 0 !important;
+
+    &:is(textarea), &::placeholder {
+      font-weight: normal !important;
+    }
   }
   #contact-container :is(textarea, input)::placeholder {
     // opacity: .25;
@@ -607,6 +619,12 @@ export const Base = () => {
   #contact-container .content, .contact {
     overflow: hidden;
   }
+  #contact-container {
+    gap: 0 !important;
+    > :not(:first-child) {
+      border-top: 0 !important;
+    }
+  }
   #contact-container .content {
     // border-radius: .5rem;
     // border-bottom-left-radius: 0; border-bottom-right-radius: 0;
@@ -616,6 +634,10 @@ export const Base = () => {
     // border-top-left-radius: 0; border-top-right-radius: 0;
 
     // border-bottom-right-radius: 0;
+  }
+  .send-new {
+    margin-top: .5em;
+    cursor: pointer;
   }
 
   ${isWatch ? `
@@ -669,10 +691,10 @@ export const Base = () => {
     --id-color: #fff0b0;
   }
   @keyframes id-color-keyframes {
-    0% {}
+    0% { --id-color: #fff0b0 }
     33% { --id-color: #d2ffbb }
     67% { --id-color: #ffd0bf }
-    100% {}
+    100% { --id-color: #fff0b0 }
   }
 
   `)
@@ -892,7 +914,7 @@ export const Base = () => {
         {/* <br/> */}
         <HalfLine />
 
-        {isMain || dev ? null && <>
+        {isMain || dev || 1 ? null && <>
           <div className='row pre' style={S(`align-items:center`)}>
             Spotify hire me (<Help>
               gotta add 'move to top of queue'
@@ -942,10 +964,13 @@ export const Base = () => {
           // font-size: .9em;
 
           border: 2px solid var(--light);
-          margin: -1px -.5rem;
-          width: calc(100% + 2 * (.67rem - 2px));
-          margin: -1px calc(-0.67rem + 2px);
+          // margin: -1px -.5rem;
+          // width: calc(100% + 2 * (.67rem - 2px));
+          // margin: -1px calc(-0.67rem + 2px);
           padding: 0.67rem calc(0.67rem - 2px);
+          width: calc(100% + 4em);
+          position: relative;
+          left: -2em;
 
           flex-grow: 1;
 

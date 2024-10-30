@@ -10,6 +10,8 @@ export const Contact = ({ newStyles=false, prefill='' }) => {
   const [contact, setContact, contactProps] = useInput('')
   auth.use(x => x.user && setContact(`u/${x.user}`))
 
+  const [{token}] = auth.use()
+
   const [sent, setSent] = useState(false)
   const handle = {
     send: e => {
@@ -19,6 +21,7 @@ export const Contact = ({ newStyles=false, prefill='' }) => {
           content,
           contact,
           domain: location.host,
+          token,
         })
         .catch(() => setSent(false))
         setSent(true)
@@ -54,7 +57,7 @@ export const Contact = ({ newStyles=false, prefill='' }) => {
       <br/>
       {newStyles
       ?
-        <a onClick={handle.send}>{sent ? 'sent' : 'send'}</a>
+        <a className='send-new' onClick={handle.send}>{sent ? 'sent' : 'send message'}</a>
       :
       sent
         ? <div className='confirmation'>sent!</div>
@@ -76,15 +79,12 @@ const Style = styled.div`
   flex-direction: column;
   font-size: .8em;
 
-  &.sent {
-    opacity: .5;
-    & > *:focus {
-      outline: none;
+  &#contact-container#contact-container#contact-container.sent :is(.content, .contact, .send, .send-new, .confirmation) {
+    opacity: .5 !important;
+    &:focus {
+      outline: none !important;
     }
-    pointer-events: none;
-    a {
-      border: none !important;
-    }
+    pointer-events: none !important;
   }
 
   & * {

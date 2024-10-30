@@ -56,6 +56,7 @@ import chess from './chess'
 import light from './light'
 import dating from './dating'
 import stream_pledge from './stream-pledge'
+import graffiti_2 from './graffiti-2'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -125,6 +126,7 @@ export default {
   light,
   dating,
   'stream-pledge': stream_pledge,
+  'graffiti-2': graffiti_2,
 }
 
 export const ios = [
@@ -142,4 +144,5 @@ export const ios = [
   // plat.io,
   rent_splitter.io,
   cowork.io,
+  graffiti_2.io,
 ]

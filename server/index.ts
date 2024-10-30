@@ -430,14 +430,25 @@ io.on('connection', socket => {
                     // })
                 }
 
+                // donation messages
+                if (Date.now() - _profile.t > 28 * day_ms) {
+                    // after a moon cycle
+                    !(await supporter(user)) && popup({
+                        text: `if u were going to buy a coffee today, buy me one too! /coffee`,
+                        id: 'sponsor-mooncycle',
+                        once: true,
+                        ms: 60_000,
+                    })
+                }
+
                 {
                     // once per year
                     const years = Math.floor((Date.now() - _profile.t) / (365 * day_ms))
                     if (years) {
                         popup({
-                            // text: `i ask this once a year (year #${years}) - if u were going to buy a coffee today, buy me one! /coffee/venmo`,
-                            text: `if u were going to buy a coffee today, buy me one! /coffee`,
+                            text: `if u were going to buy a coffee today, buy me one too! /coffee`,
                             id: `sponsor-year-${years}`,
+                            delete: 'sponsor-mooncycle',
                             once: true,
                             ms: 60_000,
                         })
@@ -448,50 +459,6 @@ io.on('connection', socket => {
                             ms: 60_000,
                         })
                     }
-                }
-
-                if (Date.now() - _profile.t > 7 * day_ms) {
-                    // after a week
-                    const show_donate = true || !(await supporter(user))
-                    // show_donate && popup({
-                    //     // text: `read the new /about page! I need 8334 users to donate $1/mo to continue working on this website full-time`,
-                    //     text: `check out the /donoboard!\n\nenjoy the site? <a href="https://freshman.dev/github-sponsors">donate $1/mo</a> so i can keep working on it!`,
-                    //     id: 'sponsor-about',
-                    //     once: true,
-                    //     ms: 60_000,
-                    // })
-                } else if (Date.now() - _profile.t > 28 * day_ms) {
-                    // after a moon cycle
-
-                    // !(await supporter(user)) && popup({
-                    //     text: `<a href="https://coffee.tu.fo" target="_blank">tips: /coffee</a>`,
-                    //     id: 'sponsor-direct-1-dollar-per-month-repeat',
-                    //     once: true,
-                    //     ms: 60_000,
-                    // })
-
-                    !(await supporter(user)) && popup({
-                        text: `if u were going to buy a coffee today, buy me one! /coffee/venmo`,
-                        id: 'sponsor-mooncycle',
-                        once: true,
-                        ms: 60_000,
-                    })
-                } else if (Date.now() - _profile.t > 48 * 60 * 60 * 1000) {
-                    // send first donate prompt after 48hrs
-                    // !(await supporter(user)) && popup({
-                    //     text: `<a href="https://-coffee.tu.fo" target="_blank">tips: /coffee</a>`,
-                    //     id: 'sponsor-direct-1-dollar-per-month',
-                    //     once: true,
-                    //     ms: 60_000,
-                    // })
-                    // popup({
-                    //     text: `<a href="https://github.com/sponsors/cfreshman" target="_blank" onload="
-                    //     event.target.textContent = "Sponsor " + location.host
-                    //     ">Sponsor this website for $1!</a>`,
-                    //     id: 'sponsor-direct-1-dollar-per-month',
-                    //     once: true,
-                    //     ms: 60_000,
-                    // })
                 }
 
             } else {

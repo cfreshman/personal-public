@@ -266,6 +266,8 @@ export const open_popup = (closer, Style=InfoStyles) => {
     </Style>, `
     height: max-content;
     width: max-content;
+    min-height: 400px;
+    min-width: 300px;
     padding: 0;
     `)
 }

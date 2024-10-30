@@ -7,7 +7,7 @@ import api from 'src/lib/api'
 import { store } from 'src/lib/store'
 import { S } from 'src/lib/util'
 
-const { Q, named_log, keys, values, node } = window as any
+const { Q, named_log, keys, values, node, colors, devices } = window as any
 const NAME = 'textage'
 const log = named_log(NAME)
 
@@ -20,6 +20,7 @@ const FONTS = {
   HIGHWAY_GOTHIC: 'highway-gothic',
   QUICKSAND: 'quicksand',
   SEVEN_SEGMENT_DISPLAY: 'seven-segment-display',
+  PIXEL: 'pixel',
 }
 const ALIGN = {
   LEFT: 'left',
@@ -100,6 +101,11 @@ export default () => {
             set_color(background)
             set_background(color)
           }}>swap</InfoButton>
+          <InfoButton onClick={() => {
+            const new_background = colors.random()
+            set_background(new_background)
+            set_color(colors.hex_readable(new_background))
+          }}>random</InfoButton>
         </div>
         <div className='center-row wide gap'>
           <label>angle:</label>
@@ -114,28 +120,36 @@ export default () => {
           <InfoSlider value={size} setValue={set_size} range={[0, 10]} />
         </div>
         {/* <HalfLine /> */}
-        <div id='textage-raw' style={S(`
-        font-size: ${size}em;
-        background: ${background};
-        color: ${color};
-        display: flex; align-items: center; justify-content: center;
-        width: 100%; aspect-ratio: 1/1; height: auto;
-        border: 1px solid #000;
-        padding: ${.5}em;
-        overflow: hidden;
+        <div className='middle-row wide' style={S(`
+        background: #0002;
         `)}>
-          <span style={S(`
-          rotate: ${angle}deg;
-          font-family: ${font};
-          font-weight: ${bold ? 'bold' : 'normal'};
-          font-style: ${italic ? 'italic' : 'normal'};
-          text-align: ${align};
-          
-          white-space: pre-wrap;
-          max-width: 100%;
-          word-break: break-word;
-          line-height: 1.3;
-          `)}>{text}</span>
+          <div id='textage-raw' style={S(`
+          ${devices.is_mobile ? `` : `
+          max-width: 50vh;
+          `}
+
+          font-size: ${size}em;
+          background: ${background};
+          color: ${color};
+          display: flex; align-items: center; justify-content: center;
+          width: 100%; aspect-ratio: 1/1; height: auto;
+          border: 1px solid #000;
+          padding: ${.5}em;
+          overflow: hidden;
+          `)}>
+            <span style={S(`
+            rotate: ${angle}deg;
+            font-family: ${font};
+            font-weight: ${bold ? 'bold' : 'normal'};
+            font-style: ${italic ? 'italic' : 'normal'};
+            text-align: ${align};
+            
+            white-space: pre-wrap;
+            max-width: 100%;
+            word-break: break-word;
+            line-height: 1.1;
+            `)}>{text}</span>
+          </div>
         </div>
         <div>screenshot, crop, send</div>
         <HalfLine />

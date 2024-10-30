@@ -478,6 +478,7 @@ const Game = ({ data, handle }) => {
               font-size: .8em;
               ${!plot.ready ? `
               opacity: .5;
+              filter: grayscale(1);
                 ` : ''}
               `)}>{fruit.emoji}</span>
             </div>

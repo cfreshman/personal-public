@@ -126,6 +126,10 @@ const _projects = {
   'chess': 'simple roomed chess',
   'light': 'light twitter (text-only)',
   'running': 'get faster',
+  'textage': 'generate text responses',
+  'emoji-banner': 'generate an emoji banner!',
+  // 'westworld': 'coming soon (not actually tho, just a cool idea)',
+  'you': 'draw on your camera',
 }
 // ''.split(' ').forEach(p => {
 //     if (!_projects[p]) _projects[p] = '' });
@@ -155,13 +159,13 @@ export const project_years = {
 export const tags = {
   all: '',
   // game: 'befruited snackman snakes wordbase minesweeper dots-and-boxes',
-  game: 'snackman snakes wordbase dots-and-boxes fishbowl matchbox tappy-square daily-nonogram lettercomb quadbase multipals letterpress apple-orange-banana chess',
+  game: 'snackman snakes wordbase dots-and-boxes fishbowl matchbox tappy-square daily-nonogram lettercomb quadbase multipals letterpress apple-orange-banana chess cards',
   // visual: 'cloud floating models terrain graffiti slime speckle arm color pixelworld bubble tube garden egg',
   visual: 'cloud floating models terrain graffiti slime-ants speckle arm gradients pixelworld bubble tube pixels egg gradients color optimal-maps',
   // social: 'chat graffiti live records speckle turt-smurts turt-smurts-2D u wordbase dots-and-boxes garden wall dinder',
   social: 'chat graffiti live records speckle turt-smurts u pixels wall dinder audio_form greeter proses plat not-linkedin cowork light',
   site: 'notify reset search settings cookies otp donoboard developer-program',
-  tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat running',
+  tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat running emoji-banner',
   demo: 'paths bloom kmeans',
   me: 'about coffee domains home projects guestbook',
 }
