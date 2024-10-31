@@ -45,7 +45,7 @@ export default () => {
           display: inline-flex;
           justify-content: flex-end;
           overflow: hidden;
-          `)} />,
+          `)} /> as any,
           { 
             'upload': e => handle.upload(file),
             label: !file,

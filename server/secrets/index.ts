@@ -30,4 +30,6 @@ export async function writeSecret(relativePath, content) {
     })
 }
 
-export default { SECRETS_PATH, readSecret, writeSecret }
+export const read_secret = readSecret
+export const write_secret = writeSecret
+export default { SECRETS_PATH, readSecret, writeSecret, read_secret, write_secret }

@@ -98,10 +98,11 @@ const Post = ({ i, msg }: {
 export default () => {
   usePageSettings({
     checkin: 'guestbook',
-    background: '#ecff97',
+    // background: '#ecff97',
+    background: '#eeebe6',
     // text_color: readable_text('#e0ff1a'),
     text_color: '#000',
-    transparentHeader: true,
+    // transparentHeader: true,
   })
   
   const auth = useAuth()
@@ -323,10 +324,14 @@ export default () => {
     handle.errorOverlay()
   })
   useF(showChars, () => showChars && setTimeout(() => msgRef.current.focus(), 10))
+  useStyle(`
+  #header {
+    border-bottom: 1px solid currentcolor;
+  }  
+  `)
   return <Style>
     <InfoBody>
       <Scroller />
-      <HalfLine ratio={1} />
       <div>
         <div id='heading'>Leave a receipt</div>
         <div id='description'>
@@ -487,13 +492,13 @@ export default () => {
 const printWidth = '19.3em'
 const Style = styled(InfoStyles)`
 text-shadow: none;
---id-color: #ecff97;
-animation: id-color-keyframes 2s infinite linear;
-@keyframes id-color-keyframes {
-  0% { --id-color: #ecff97 }
-  50% { --id-color: #feff97 }
-  100% { --id-color: #ecff97 }
-}
+// --id-color: #ecff97;
+// animation: id-color-keyframes 2s infinite linear;
+// @keyframes id-color-keyframes {
+//   0% { --id-color: #ecff97 }
+//   50% { --id-color: #feff97 }
+//   100% { --id-color: #ecff97 }
+// }
 
 // &::before {
 //   content: ""; width: 100%; height: 100%;
@@ -511,7 +516,7 @@ animation: id-color-keyframes 2s infinite linear;
   // border-top: 1px solid black;
   width: fit-content;
   // margin-bottom: 0.3rem;
-  margin-top: 1rem;
+  // margin-top: 1rem;
 }
 #description {
   // font-size: .8rem;

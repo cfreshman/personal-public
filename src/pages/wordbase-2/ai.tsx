@@ -167,7 +167,7 @@ export const get_selection = async (info:Info, raw_state:State, hf, f_progress?:
     }
     const anagram_result = await compute_best_play(evaluator, word_length_limit)
     log({anagram_result})
-    selection = rand.pick(anagram_result).tiles
+    selection = rand.sample(anagram_result).tiles
   }
   const strategic_ai = async (word_length_limit_float=undefined, ms=undefined) => {
     const word_length_limit = word_length_limit_float && word_length_limit_from_float(word_length_limit_float)
@@ -206,7 +206,7 @@ export const get_selection = async (info:Info, raw_state:State, hf, f_progress?:
       }
       const anagram_result = await compute_best_play(evaluator, word_length_limit, ms)
       log({anagram_result})
-      selection = rand.pick(anagram_result).tiles
+      selection = rand.sample(anagram_result).tiles
     }
   }
   switch (ai) {
@@ -228,7 +228,7 @@ export const get_selection = async (info:Info, raw_state:State, hf, f_progress?:
       // }
       // const anagram_result = await compute_best_play(evaluator)
       // log({anagram_result})
-      // selection = rand.pick(anagram_result).tiles
+      // selection = rand.sample(anagram_result).tiles
 
       const score_anagram = (anagram) => {
         let n_taken = 0

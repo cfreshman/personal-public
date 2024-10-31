@@ -15,6 +15,39 @@ const { named_log, devices } = window as any
 const NAME = 'dating <3'
 const log = named_log(NAME)
 
+const INTERESTS = [
+  "technology",
+  "gaming",
+  "books",
+  "fitness",
+  "travel",
+  "cooking",
+  "arts",
+  "music",
+  "movies",
+  "environment",
+  "science",
+  "history",
+  "self-help",
+  "fashion",
+  "photography",
+  "pets",
+  "sports",
+  "languages",
+  "game dev",
+  "DIY",
+  "podcasts",
+  "cars",
+  "space",
+  "VR",
+  "crypto",
+  "AI",
+  "gardening",
+  "astronomy",
+  "writing",
+  "animation",
+]
+
 export default () => {
 
   const [{user:viewer}] = auth.use()

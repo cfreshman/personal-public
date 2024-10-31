@@ -139,18 +139,18 @@ export const AI = ({ handle=undefined }={}) => {
 
         query_parts.push(`meta info: username ${viewer}, friends on freshman.dev include ${viewer_profile.friends.join(', ')}`)
 
-        // both_list.map(entry => {
-        //   if (entry.type === 'meet') {
-        //     const meet = entry as meet
-        //     // query_parts.push([`${meet.users.join(' & ')} met ${datetime.yyyymmdd(meet.t + datetime.duration({ h:1 }))} at ${meet.location || 'unknown location'}`, ...meet.users.filter(user => meet.public[user]).map(user => `${user} noted "${meet.public[user]}"`)].join('. '))
-        //     query_parts.push([`meet: ${meet.users.join(' & ')} met ${datetime.yyyymmdd(meet.t + datetime.duration({ h:1 }))} at ${meet.location || 'unknown location'}. ${meet.icon ? 'has' : 'no'} image`, ...meet.users.filter(user => meet.public[user]).map(user => `${user} noted:\n${meet.public[user].split('\n').map(x => `| ${x}`).join('\n')}`), `links: ${meet.links.join(', ')||'none'}`].join('\n'))
-        //   } else {
-        //     const hangout = entry as hangout
-        //     // query_parts.push([`${hangout.users.join(' & ')} hung out ${datetime.yyyymmdd(hangout.t + datetime.duration({ h:1 }))} at ${hangout.location || 'unknown location'}`, ...hangout.users.filter(user => hangout.public[user]).map(user => `${user} noted "${hangout.public[user]}"`)].join('. '))
-        //     query_parts.push([`hangout${hangout.title ? ` "${hangout.title}"` : ''}: ${hangout.users.join(' & ')} hung out ${datetime.yyyymmdd(hangout.t + datetime.duration({ h:1 }))} at ${hangout.location || 'unknown location'}. ${hangout.icon ? 'has' : 'no'} image`, ...hangout.users.filter(user => hangout.public[user]).map(user => `${user} noted:\n${hangout.public[user].split('\n').map(x => `| ${x}`).join('\n')}`), `links: ${hangout.links.join(', ')||'none'}`].join('\n'))
-        //   }
-        // })
-        query_parts.push(JSON.stringify(both_list))
+        both_list.map(entry => {
+          if (entry.type === 'meet') {
+            const meet = entry as meet
+            // query_parts.push([`${meet.users.join(' & ')} met ${datetime.yyyymmdd(meet.t + datetime.duration({ h:1 }))} at ${meet.location || 'unknown location'}`, ...meet.users.filter(user => meet.public[user]).map(user => `${user} noted "${meet.public[user]}"`)].join('. '))
+            query_parts.push([`meet: ${meet.users.join(' & ')} met ${datetime.yyyymmdd(meet.t + datetime.duration({ h:1 }))} at ${meet.location || 'unknown location'}. ${meet.icon ? 'has' : 'no'} image`, ...meet.users.filter(user => meet.public[user]).map(user => `${user} noted:\n${meet.public[user].split('\n').map(x => `| ${x}`).join('\n')}`), `links: ${meet.links.join(', ')||'none'}`].join('\n'))
+          } else {
+            const hangout = entry as hangout
+            // query_parts.push([`${hangout.users.join(' & ')} hung out ${datetime.yyyymmdd(hangout.t + datetime.duration({ h:1 }))} at ${hangout.location || 'unknown location'}`, ...hangout.users.filter(user => hangout.public[user]).map(user => `${user} noted "${hangout.public[user]}"`)].join('. '))
+            query_parts.push([`hangout${hangout.title ? ` "${hangout.title}"` : ''}: ${hangout.users.join(' & ')} hung out ${datetime.yyyymmdd(hangout.t + datetime.duration({ h:1 }))} at ${hangout.location || 'unknown location'}. ${hangout.icon ? 'has' : 'no'} image`, ...hangout.users.filter(user => hangout.public[user]).map(user => `${user} noted:\n${hangout.public[user].split('\n').map(x => `| ${x}`).join('\n')}`), `links: ${hangout.links.join(', ')||'none'}`].join('\n'))
+          }
+        })
+        // query_parts.push(JSON.stringify(both_list))
 
         const query = query_parts.join('\n\n')
         set_query(query)

@@ -130,6 +130,8 @@ const _projects = {
   'emoji-banner': 'generate an emoji banner!',
   // 'westworld': 'coming soon (not actually tho, just a cool idea)',
   'you': 'draw on your camera',
+  'list-picker': 'pick a random item from a menu',
+  'poll': 'create a textable poll',
 }
 // ''.split(' ').forEach(p => {
 //     if (!_projects[p]) _projects[p] = '' });

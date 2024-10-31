@@ -6,12 +6,21 @@ import { useF, useS } from 'src/lib/hooks'
 import api from 'src/lib/api'
 
 const { named_log } = window as any
-const NAME = 'template-reduced'
+const NAME = 'template'
 const log = named_log(NAME)
 
 export default () => {
+  const [id, set_id] = usePathState()
+
+  usePageSettings({
+    professional:true,
+  })
   return <Style>
-    <div><b>template-reduced</b> <i>a minimal app base</i></div>
+    <InfoBody>
+      <InfoSection labels={[NAME]}>
+        <button>new</button>
+      </InfoSection>
+    </InfoBody>
   </Style>
 }
 
@@ -40,7 +49,7 @@ button {
   translate: 0 -1px;
   &:not(:disabled) {
     cursor: pointer;
-    &:active {
+    &:active, &.active {
       translate: 0;
       box-shadow: none;
     }
@@ -49,12 +58,6 @@ button {
     cursor: default;
     color: #888;
     // background: #ccc;
-  }
-  &.on {
-    background: var(--id-color-text);
-    color: var(--id-color-text-readable);
-    translate: 0;
-    box-shadow: none;
   }
   line-height: 1.3em;
 }
@@ -65,10 +68,9 @@ button {
 background: var(--id-color) !important;
 color: var(--id-color-text) !important;
 padding: .5em;
-font-size: .8em;
 font-family: monospace;
 `
-const Style = styled.div`
+const Style = styled(InfoStyles)`
 margin: .5em;
 width: calc(100% - 1em);
 height: calc(100% - 1em);
@@ -79,7 +81,7 @@ ${common_css}
 
 box-shadow: none !important; /* to undo expand style (bad code) */
 `
-const PopupStyle = styled.div`
+const PopupStyle = styled(InfoStyles)`
 border: 1px solid var(--id-color-text);
 box-shadow: 0 2px var(--id-color-text);
 ${common_css}

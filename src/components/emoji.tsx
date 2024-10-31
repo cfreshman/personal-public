@@ -11,6 +11,8 @@ const { named_log, Q, entries, keys, values, defer, rand } = window as any
 const NAME = 'components/emoji'
 const log = named_log(NAME)
 
+export const split_emoji = (str) => [...new Intl.Segmenter().segment(str)].map(x => x.segment)
+
 export const use_emoji = () => {
   const [emoji, set_emoji] = useS(undefined)
   useCachedScript('/lib/2/emoji/script.js', () => {
@@ -49,7 +51,7 @@ export const EmojiKeyboard = ({ input_selector, add_emoji, style }: { input_sele
       <div className='emoji-keyboard-body'>
         {shuffle ? <div className='emoji-keyboard-group-body row wrap'>
           {list.filter(x => x.primary).map(x => {
-            return <div className='emoji-keyboard-tile' title={x.description} onPointerDown={e => {
+            return <div className='emoji-keyboard-tile' title={x.description} onClick={e => {
 
               const l_input = input_selector && Q(input_selector)
               if (l_input) {

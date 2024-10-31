@@ -61,7 +61,7 @@ export const PostRich = ({ href, handle, large=false, level=1, no_new=false, use
       max-width: min(15em, 50%);
       overflow: hidden;
       `)}>
-        <RawWebsiteIcon href={href} style={S(`
+        <RawWebsiteIcon href={full_href} style={S(`
         width: 100%;
         height: auto;
         object-fit: cover;
@@ -69,7 +69,7 @@ export const PostRich = ({ href, handle, large=false, level=1, no_new=false, use
         // aspect-ratio: 2/1;
         `}
         `)} fallback={'/raw/images/internet-icon-solarized.png'} />
-        <div className='light-post-rich-title'><WebsiteTitle href={href} /></div>
+        <div className='light-post-rich-title'><WebsiteTitle href={full_href} /></div>
       </div>
     </div>
     : null}

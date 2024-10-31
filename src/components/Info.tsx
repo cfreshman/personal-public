@@ -1960,13 +1960,18 @@ export const ColorPicker = withRef(({ value, setValue, ...props }: props & { val
 })
 
 
-export const Multiline = (({ ref=useR(), children, value, setValue, extra_height='.25em', row_limited, ...props }: props) => {
+export const Multiline = (({ ref=useR(), children, value, setValue, extra_height='.25em', row_limited, min_rows=0, ...props }: props) => {
   useF(value, () => {
     if (props.rows) return
     const area = ref.current
+    const [start, end] = [area.selectionStart, area.selectionEnd]
+    const rows = value.split('\n')
+    area.textContent = area.value = [...rows, ...range(min_rows - rows.length).map(() => 'abc')].join('\n')
+    // area.textContent = area.value = value
     area.style.height = 0
     area.style.height = `calc(${area.scrollHeight}px + ${extra_height})`
     area.textContent = area.value = value
+    ;[area.selectionStart, area.selectionEnd] = [start, end]
   })
   return setValue ? <textarea autoCapitalize={false} ref={ref} {...props} style={{...S(`
   resize: none;
@@ -1988,7 +1993,7 @@ export const Multiline = (({ ref=useR(), children, value, setValue, extra_height
       l.value = l.textContent = new_value = new_value.split('\n').slice(0, props.rows || row_limited).join('\n')
     }
     setValue && setValue(new_value)
-  }} value={value} defaultValue={value}>{value}</textarea> : <div ref={ref} {...props}>{children || value}</div>
+  }} value={value}>{value}</textarea> : <div ref={ref} {...props}>{children || value}</div>
 })
 
 

@@ -512,7 +512,7 @@ export const Base = () => {
     margin: 0 calc(2px - 0.67rem) !important;
 
     // width: 100% !important;
-    width: calc(100vw + 1px) !important; /* so bad */
+    width: calc(100vw + 2px) !important; /* so bad */
     left: 0 !important;
     margin: 0 !important; margin-left: calc(2px - .67rem) !important;
     height: 0; flex-grow: 1;

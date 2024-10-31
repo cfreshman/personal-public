@@ -34,20 +34,21 @@ export const Highlights = () => {
       <A href='https://freshman.dev/letterpress'>/letterpress (also best word game)</A>
       <A href='https://freshman.dev/greeter'>/greeter (social diary)</A>
       <HalfLine />
-      {mobile ? null : <>
+      {mobile && 0 ? null : <>
         <span>more</span>
         <A href='https://freshman.dev/wordbase'>/wordbase (word game i hate ugh)</A>
         <A href='/wordle/leaderboard'>Wordle bot leaderboard (300+ bots)</A>
         {/* <A href='/fishbowl'>/fishbowl (party game for 6-18)</A> */}
         {/* <A href='/matchbox'>/matchbox (joycon couch game)</A> */}
-        <A href='/raw/stream'>stream (microblog)</A>
-        <A href='/twitter/install'>/twitter (twitter blue Threads icon)</A>
+        {/* <A href='/raw/stream'>stream (microblog)</A> */}
+        {/* <A href='/twitter/install'>Twitter blue Threads icon</A> */}
         <A href='/itly'>/itly (smaller iMessage previews)</A>
         <HalfLine />
       </>}
       <span>new</span>
+      <A href='/list-picker'>/list-picker (picks random menu item)</A>
       <A href='/emoji-banner'>/emoji-banner (create twitter header)</A>
-      <A href='/stream-pledge'>/stream-pledge (get livestreaming)</A>
+      {/* <A href='/stream-pledge'>/stream-pledge (get livestreaming)</A> */}
       {/* <A href='/running'>/running (get faster)</A> */}
       {/* <A href='/light'>/light (text-only twitter)</A> */}
       <A href='/rent-splitter'>/rent-splitter (assign rooms fairly)</A>

@@ -380,6 +380,16 @@ const User = ({ expand }: { expand: boolean }) => {
         {/* <A href='/donoboard' className='item' onClick={() => handle.nav()} /> */}
         <hr />
       </> : null}
+      <>
+        <div className='middle-column gap'>
+          <br/>
+          <div style={S(`width:max-content; padding:0 .5em`)}><A tab='/contact' className='middle-column'>hire me!<br/>(SWE)</A></div>
+          <br/>
+        </div>
+
+        {/* <A href='/donoboard' className='item' onClick={() => handle.nav()} /> */}
+        <hr />
+      </>
       {/* <A href='/otp'>OTP login</A> */}
       <a className='item' onClick={() => { handle.logout() }}>log out</a>
     </>

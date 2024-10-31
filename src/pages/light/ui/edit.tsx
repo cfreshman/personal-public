@@ -33,7 +33,8 @@ export default ({ handle, parent=undefined, reply=false, post=undefined, close=u
   const on_submit = ((id) => {
     if (close) {
       message.trigger({
-        html: `your <a href='/light/post/${id}'>post</a> was sent`,
+        html: `<a href='/light/post/${id}'>your post</a> was sent`,
+        ms: 5_000,
       })
     } else if (reply) {
       url.push(`/light/post/${id}`)

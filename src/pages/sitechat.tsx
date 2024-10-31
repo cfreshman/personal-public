@@ -185,7 +185,7 @@ export const Chat = ({ hash }: {
         if (useDate) lastDateString = date.toDateString()
 
         const jsx = <>
-          {name && name !== last_name ? <div className={`non-message ${base} name`}>{name}</div> : null}
+          {name && name !== last_name ? <div className={`non-message ${base} name`}><A tab={`/u/${name}`}>{name}</A></div> : null}
           {linked_text && !ignore_text ?
           <div className={`message ${base}`} title={date.toLocaleString()}>
             {linked_text}

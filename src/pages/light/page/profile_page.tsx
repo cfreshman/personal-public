@@ -31,7 +31,7 @@ export const ProfilePage =  ({ id, handle }) => {
   
   return <div id='light-profile' className='column gap'>
     <Profile {...{ initial:light_profile, handle }} />
-    {light_profile?.pin ? <Post {...{ id:light_profile.pin, handle }} userpage pin /> : null}
+    {light_profile?.pin ? <Post {...{ id:light_profile.pin, handle, userpage:id }} pin /> : null}
     {!posts ? 'loading posts...'
     : posts?.map(post => <Post {...{ post, handle, userpage:id }} hide_reply />)}
     {posts?.length > 2 ? <>

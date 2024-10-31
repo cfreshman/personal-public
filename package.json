@@ -36,7 +36,7 @@
     "node-telegram-bot-api": "^0.60.0",
     "nodemon": "^2.0.2",
     "ol": "^8.2.0",
-    "openai": "^4.0.0",
+    "openai": "^4.69.0",
     "paper": "^0.12.15",
     "poly-to-pslg": "^1.0.1",
     "punycode": "^2.1.1",

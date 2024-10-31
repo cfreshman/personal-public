@@ -3,6 +3,7 @@ import { send } from '../mail'
 import * as chat from '../chat'
 import { pick } from '../../util'
 import login from '../login'
+import notify from '../notify'
 
 const C = db.of({
     default: 'msg',
@@ -25,6 +26,7 @@ async function create(content, contact=undefined, domain=undefined, token=undefi
         `${msg.content}\n\n${msg.contact}`,
         msg.contact.includes('@') ? ['Reply-To: '+msg.contact] : [],
     )
+    // notify.send('cyrus', 'contact', `${msg.content}\n\n${msg.contact}`)
     if (msg.contact.startsWith('u/')) {
         const user = msg.contact.slice(2)
         const check = await login.model.check(user, token)

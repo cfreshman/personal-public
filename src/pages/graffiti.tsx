@@ -77,13 +77,13 @@ export default () => {
   if (!color_check.current) {
     color_check.current = true
     const color = store.get('graffiti-color')
-    if (typeof color !== 'number') {
+    if (color && typeof color !== 'number') {
       store.set('graffiti-color', 0)
     }
   }
   const [color, set_color] = store.use('graffiti-color', { default:0 })
 
-  const [size, set_size] = store.use('graffiti-size', { default:BRUSHES.MEDIUM })
+  const [size, set_size] = store.use('graffiti-size', { default:BRUSHES.SMALL })
   const [mode, set_mode] = store.use('graffiti-mode', { default:'draw' })
 
   const [scale, set_scale] = useS(1)

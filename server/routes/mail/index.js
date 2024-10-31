@@ -105,7 +105,7 @@ function buildRequest(subject, domain, to, message, extraHeaders=[]) {
     `To: ${to}`,
     ...extraHeaders,
     '',
-    `<div style="white-space:pre">${message}</div>`,
+    `<div style="white-space:pre">${message.replaceAll('\n', '<br>')}</div>`,
   ].join('\n');
   console.debug('[MAIL:request', content)
   return {

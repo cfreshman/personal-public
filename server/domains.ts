@@ -464,4 +464,28 @@ export const replace = {
     keywords: 'graffiti, wall, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/images/icon-graffiti.png',
   },
+  'guestbook': {
+    title: '/guestbook',
+    description: 'sign my guestbook!',
+    keywords: 'guestbook, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-guestbook-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/images/icon-guestbook.png',
+    },
+  },
+  'list-picker': {
+    title: '/list-picker',
+    description: 'pick a random item from a menu',
+    keywords: 'list-picker, menu, picker, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-list-picker.png',
+  },
+  'poll': {
+    title: '/poll',
+    description: 'run a simple poll',
+    keywords: 'poll, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-poll-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/images/icon-poll.png',
+    },
+  },
 }

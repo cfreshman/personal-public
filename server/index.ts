@@ -94,6 +94,7 @@ import { supporter } from './routes/cost/model';
 import txt from './routes/txt';
 import { get_friend_link } from './routes/profile/model';
 import { get_sponsors } from './routes/donoboard';
+import poll from './routes/poll';
 // console.log(randAlphanum(16))
 process.on('uncaughtException', e => {
     console.error('uncaughtException', e);
@@ -1092,6 +1093,17 @@ app.get('/*', async (req, res, next) => {
         if (user) {
             Object.assign(replacements, {
                 title: `${user}'s graffiti wall`,
+            })
+        }
+    }
+    else if (page === 'poll') {
+        const url_search_str = req.url.split('/poll')[1]
+        const [id] = url_search_str.split('/').filter(x => x)
+        console.debug('[poll] url parsed:', url_search_str, id)
+        if (id) {
+            const { data } = await poll.model.get(id)
+            Object.assign(replacements, {
+                title: `${data.question} (poll)` || `answer this poll`,
             })
         }
     }

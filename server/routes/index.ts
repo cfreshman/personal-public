@@ -57,6 +57,8 @@ import light from './light'
 import dating from './dating'
 import stream_pledge from './stream-pledge'
 import graffiti_2 from './graffiti-2'
+import list_picker from './list-picker'
+import poll from './poll'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -127,6 +129,8 @@ export default {
   dating,
   'stream-pledge': stream_pledge,
   'graffiti-2': graffiti_2,
+  'list-picker': list_picker,
+  poll,
 }
 
 export const ios = [

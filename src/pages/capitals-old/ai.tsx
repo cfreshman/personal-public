@@ -211,7 +211,7 @@ export const get_selection = async (info:Info, raw_state:State, hf, f_progress?:
     }
     const anagram_result = await compute_best_play(evaluator, word_length_limit)
     log({anagram_result})
-    selection = rand.pick(anagram_result).tiles
+    selection = rand.sample(anagram_result).tiles
   }
   switch (ai) {
     case 'easy':{
@@ -254,8 +254,8 @@ export const get_selection = async (info:Info, raw_state:State, hf, f_progress?:
       }
       const anagram_result = await compute_best_play(evaluator, word_length_limit)
       log({anagram_result})
-      // const word = rand.pick(dict.anagrams[rand.pick(max_anagram_results.map(x=>x.anagram))])
-      selection = rand.pick(anagram_result).tiles
+      // const word = rand.sample(dict.anagrams[rand.sample(max_anagram_results.map(x=>x.anagram))])
+      selection = rand.sample(anagram_result).tiles
     }break
     case 'beast':{
       const evaluator = (anagram_result: play_result) => {
@@ -278,8 +278,8 @@ export const get_selection = async (info:Info, raw_state:State, hf, f_progress?:
       }
       const anagram_result = await compute_best_play(evaluator)
       log({anagram_result})
-      // const word = rand.pick(dict.anagrams[rand.pick(max_anagram_results.map(x=>x.anagram))])
-      selection = rand.pick(anagram_result).tiles
+      // const word = rand.sample(dict.anagrams[rand.sample(max_anagram_results.map(x=>x.anagram))])
+      selection = rand.sample(anagram_result).tiles
     }break
     case 'speedy':{
       const evaluator = (anagram_result: play_result) => {
@@ -314,8 +314,8 @@ export const get_selection = async (info:Info, raw_state:State, hf, f_progress?:
       }
       const anagram_result = await compute_best_play(evaluator, undefined, store.get('capitals-ai-speedy-ms') || 3_000)
       log({anagram_result})
-      // const word = rand.pick(dict.anagrams[rand.pick(max_anagram_results.map(x=>x.anagram))])
-      selection = rand.pick(anagram_result).tiles
+      // const word = rand.sample(dict.anagrams[rand.sample(max_anagram_results.map(x=>x.anagram))])
+      selection = rand.sample(anagram_result).tiles
     }break
     default:{
       let max_anagram_is = [0]
