@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<!-- adapted from https://d3-graph-gallery.com/graph/choropleth_basic.html -->
+<head>
+  <meta charset="utf-8"><meta name='viewport' content='width=device-width, initial-scale=1'>
+  <style>
+    body {
+      padding: .5em;
+      font-family: monospace;
+    }
+    #choropleth {
+      border: 1px solid currentcolor;
+      max-width: 100%; height: auto;
+    }
+    .tooltip {
+      background: #fff;
+      border: #000;
+      border: 1px solid currentcolor;
+      box-shadow: 0 2px currentcolor;
+      padding: 2px;
+      margin-top: 1em;
+      white-space: pre-wrap;
+      pointer-events: none;
+    }
+  </style>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+</head>
+<body>
+
+<div>world population</div>
+<svg id=choropleth width="800" height="600"></svg>
+
+<script>defer(async () => {
+  const log = named_log('d3')
+  
+  const svg = d3.select('#choropleth').attr('style', 'width: 100%; height: auto; height: intrinsic;');
+  const width = svg.attr('width')
+  const height = svg.attr('height')
+
+  // map and projection
+  const path = d3.geoPath()
+  const projection = d3.geoNaturalEarth1()
+    // .scale(70)
+    // .center([0,20])
+    // .translate([width / 2, height / 2])
+
+  // data and color scale
+  const data = new Map()
+  const f_color_scale = d3.scaleThreshold([100000, 1000000, 10000000, 30000000, 100000000, 500000000], d3.schemeYlGn[7])
+
+  // load external data and boot
+  const topo = await d3.json("./data/world.geojson")
+  await d3.csv("./data/world_population.csv", d => data.set(d.code, Number(d.pop)))
+
+  // draw map
+  const get_number_display = (x) => {
+    if (x < 1e3) return x
+    if (x < 1e6) return `${(x / 1e3).toFixed(1)}k`
+    if (x < 1e9) return `${(x / 1e6).toFixed(1)}m`
+    return `${(x / 1e9).toFixed(1)}b`
+  }
+  const tooltip = d3.select('body').append('div')
+  .attr('class', 'tooltip')
+  .style('position', 'absolute')
+  .style('visibility', 'hidden')
+  let last_click = undefined
+  const mouse_over = (e, d) => {
+    // log({ e, d, tooltip })
+    svg.selectAll('.country').style('opacity', .67)
+    d3.select(e.target).style('opacity', 1)
+    if (e.clientX > window.innerWidth / 2) {
+      tooltip
+      .style('right', `${window.innerWidth - e.clientX}px`)
+      .style('text-align', 'right')
+      .style('left', '')
+    } else {
+      tooltip
+      .style('left', `${e.clientX}px`)
+      .style('text-align', 'left')
+      .style('right', '')
+    }
+    tooltip
+    .style('top', `${e.clientY}px`)
+    .style('visibility', 'visible')
+    .text(`${d.properties.name}\n${get_number_display(d.total)}`)
+  }
+  const mouse_out = (e, d) => {
+    svg.selectAll('.country').style('opacity', 1)
+    tooltip.style('visibility', 'hidden')
+  }
+  svg
+  .on('click', (e) => {
+    if (e.target === svg.node()) {
+      last_click = undefined
+      mouse_out()
+    }
+  })
+  .append('g')
+    .selectAll('path')
+    .data(topo.features)
+    .join('path')
+    // countries
+    .attr('d', d3.geoPath().projection(projection))
+    // colors
+    .attr('fill', function (d) {
+      d.total = data.get(d.id) || 0
+      return f_color_scale(d.total)
+    })
+    .attr('stroke', '#000')
+    .attr('title', d => d.total)
+    .attr('tip', true)
+    .on('pointerout', mouse_out)
+    .on('pointermove', mouse_over)
+    .on('click', (e, d) => {
+      if (last_click === d) {
+        last_click = undefined
+        mouse_out(e, d)
+      } else {
+        last_click = d
+        mouse_over(e, d)
+      }
+    })
+    .attr('class', 'country')
+
+  // rescale svg
+  const g = Q(choropleth, 'g')
+  const g_rect = g.getBoundingClientRect()
+  log({ g_rect})
+  svg.attr('width', g_rect.width)
+  svg.attr('height', g_rect.height)
+  svg.attr('viewBox', `0 0 ${g_rect.width} ${g_rect.height}`)
+  choropleth.style['aspect-ratio'] = `${g_rect.width}/${g_rect.height}`
+})</script>
+  
+</body>

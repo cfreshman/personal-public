@@ -764,7 +764,7 @@ export default ({thinder=false}) => {
             : showSuggestions
             ? <>
               <InfoBadges labels={[
-                { 'done editing': setShowSuggestions(false) },
+                { 'done editing': () => setShowSuggestions(false) },
               ]} />
               {suggestions.map(x => {
                 return <div style={{display:'flex'}}><InfoBadges labels={[

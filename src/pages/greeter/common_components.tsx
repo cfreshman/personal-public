@@ -104,7 +104,7 @@ export const NoteInput = ({ value, setter }) => {
   }} autoCapitalize='off'></textarea>
 }
 
-export const upload_icon_fill = ({ edit_data_view, set_edit_data, set_modal }) => {
+export const upload_icon_fill = ({ edit_data_view, set_edit_data, set_modal=undefined }) => {
   return [
     { 'upload icon': () => {
       log('upload icon')
@@ -140,7 +140,7 @@ export const upload_icon_fill = ({ edit_data_view, set_edit_data, set_modal }) =
       })
       node_file.click()
     } },
-    { 'create icon': () => {
+    set_modal && { 'create icon': () => {
       set_modal(MODALS.ICON_CREATE)
     } },
     edit_data_view.icon && { 'remove icon': () => {

@@ -220,7 +220,7 @@ export const Meet = ({ user1, user2, handle }) => {
               <>{user1}'s note</>}
             </div>
             <div className='card-inner'>
-              {convertLinks(meet.public[user1] || `no notes by ${user1}`)}
+              {convertLinks(meet.public[user1] || `no notes by ${user1}`, { new_tab:true })}
             </div>
             <HalfLine />
             <div>
@@ -228,7 +228,7 @@ export const Meet = ({ user1, user2, handle }) => {
               <>{user2}'s note</>}
             </div>
             <div className='card-inner'>
-              {convertLinks(meet.public[user2] || `no notes by ${user2}`)}
+              {convertLinks(meet.public[user2] || `no notes by ${user2}`, { new_tab:true })}
             </div>
             {meet?.private[viewer] ? <>
               <HalfLine />
@@ -236,7 +236,7 @@ export const Meet = ({ user1, user2, handle }) => {
                 your private note
               </div>
               <div className='card-inner'>
-                {convertLinks(meet.private[viewer] || 'no private notes')}
+                {convertLinks(meet.private[viewer] || 'no private notes', { new_tab:true })}
               </div>
             </> : null}
           </div> : <div className='card'>

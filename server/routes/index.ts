@@ -59,6 +59,7 @@ import stream_pledge from './stream-pledge'
 import graffiti_2 from './graffiti-2'
 import list_picker from './list-picker'
 import poll from './poll'
+import beam from './beam'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -131,6 +132,7 @@ export default {
   'graffiti-2': graffiti_2,
   'list-picker': list_picker,
   poll,
+  beam,
 }
 
 export const ios = [

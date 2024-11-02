@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<!-- adapted from https://d3-graph-gallery.com/graph/choropleth_basic.html -->
+<head>
+  <meta charset="utf-8"><meta name='viewport' content='width=device-width, initial-scale=1'>
+  <style>
+    body {
+      padding: .5em;
+      font-family: monospace;
+    }
+    .tooltip {
+      background: #fff;
+      border: #000;
+      border: 1px solid currentcolor;
+      box-shadow: 0 2px currentcolor;
+      padding: 2px;
+      margin-top: 1em;
+      white-space: pre-wrap;
+      pointer-events: none;
+    }
+    #output-container {
+      table {
+        text-align: center;
+        border-collapse: collapse;
+        th {
+          font-weight: normal;
+        }
+        tr:first-child {
+          border-bottom: 1px solid currentcolor;
+        }
+        th, td {
+          padding: 0 .5em;
+        }
+      }
+    }
+  </style>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="./dependencies/d3@7.min.js"></script>
+</head>
+<body>
+
+<div class="column spaced w100">
+  <div class="middle-column w100" style="max-width: 100em">
+    <div><b>tiger density</b></div>
+    <div id=map-container class="middle-column gap w100"></div>
+    <br/>
+    <div id=output-container></div>
+    <br/>
+    <div>data from <a href='https://www.youtube.com/watch?v=wEDKc5UvkNk'>youtube.com/watch?v=wEDKc5UvkNk</a></div>
+  </div>
+</div>
+
+<script>defer(async () => {
+  const log = named_log('tigermap')
+
+  {
+    const map_container = d3.select('#map-container')
+
+    // map and projection
+    const projection = d3.geoNaturalEarth1()
+    const f_project = d3.geoPath(projection)
+    const outline = { type: 'Sphere' }
+    let map
+    {
+      const width = 1000
+      const [
+        [x0, y0],
+        [x1, y1]
+      ] = d3.geoPath(projection.fitWidth(width, outline)).bounds(outline)
+      const height = Math.ceil(y1 - y0)
+      const min_side = Math.min(Math.ceil(x1 - x0), height)
+      projection.scale(projection.scale() * (min_side - 1) / min_side)
+
+      // create map element
+      map = map_container.append('svg')
+        .attr('width', width)
+        .attr('height', height)
+        .attr('viewBox', [0, 0, width, height])
+        .attr('style', 'width: 100%; height: auto');
+
+      // draw outline
+      map.append('path')
+        .attr('fill', '#88bbff')
+        .attr('stroke', 'currentcolor')
+        .attr('d', f_project({ type:'Sphere' }))
+    }
+
+    // load data
+    const data_pop = new Map(), data_area = new Map()
+    await d3.csv("./data/tigers.csv", d => data_pop.set(d.code, Number(d.tigers || 0)))
+    await d3.csv("./data/area.csv", d => data_area.set(d.code, Number(d.area)))
+    const { features } = await d3.json("./data/world.geojson")
+    const data = features.map(feature => {
+      const x = {
+        code: feature.id,
+        name: feature.properties.name,
+        feature,
+        pop: data_pop.get(feature.id) || 0,
+        area: data_area.get(feature.id) || 0,
+      }
+      if (!x.area) {
+        x.pop = 0 // display missing same as 0 population
+        x.density = -1
+        x.value = 0
+        log(`missing data for ${x.name}`, {pop:x.pop, area:x.area})
+      } else {
+        x.density = x.pop / x.area
+        x.value = Math.sqrt(x.density)
+      }
+      return x
+    })
+    log({ data })
+
+    // color scale
+    const f_color_scale = d3.scaleSequential([0, d3.max(data, x => x.value)], d3.interpolateOranges)
+    const color_none = '#0002'
+    const f_color = d => d.value > 0 ? f_color_scale(d.value) : color_none
+
+    // draw map
+    let last_click = undefined
+    const tooltip = d3.select('body').append('div').attr('class', 'tooltip').attr('style', 'position: absolute; visibility: hidden')
+    const mouse_out = (e, d) => {
+      map.selectAll('.entity').style('filter', '')
+      tooltip.style('visibility', 'hidden')
+    }
+    const get_number_display = (x) => {
+      if (x < 0) return 'missing data'
+      if (x < 1e3) return Math.round(x)
+      if (x < 1e6) return `${(x / 1e3).toFixed(1)}k`
+      if (x < 1e9) return `${(x / 1e6).toFixed(1)}m`
+      return `${(x / 1e9).toFixed(1)}b`
+    }
+    const mouse_over = (e, d) => {
+      // log({ e, d, tooltip })
+      if (d.pop < 1) {
+        mouse_out(e, d)
+        return
+      }
+
+      last_click = d
+      map.selectAll('.entity').style('filter', 'saturate(.5) contrast(.67)')
+      d3.select(e.target).style('filter', '')
+      if (e.clientX > window.innerWidth / 2) {
+        tooltip
+        .style('right', `${window.innerWidth - e.clientX}px`)
+        .style('text-align', 'right')
+        .style('left', '')
+      } else {
+        tooltip
+        .style('left', `${e.clientX}px`)
+        .style('text-align', 'left')
+        .style('right', '')
+      }
+      tooltip
+      .style('top', `${e.clientY}px`)
+      .style('visibility', 'visible')
+      .text(`${d.name}\n${get_number_display(d.pop)}`)
+    }
+    map
+    .on('click', (e) => {
+      if (e.target === map.node()) {
+        last_click = undefined
+        mouse_out()
+      }
+    })
+      .append('g').selectAll().data(data).join('path')
+        // countries
+        .attr('d', d => f_project(d.feature))
+        .attr('fill', f_color).attr('stroke', '#000')
+        .on('pointerout', mouse_out).on('pointermove', mouse_over)
+        .on('click', (e, d) => {
+          if (last_click === d) {
+            last_click = undefined
+            mouse_out(e, d)
+          } else {
+            last_click = d
+            mouse_over(e, d)
+          }
+        })
+        .attr('class', d => {
+          return d.density > -1 ? 'entity' : 'entity missing'
+        })
+
+    const max_density = d3.max(data, x => x.density)
+    const sorted_data = data.slice().filter(d => d.pop > 0).map(x => {
+      x.rate = x.density / max_density
+      return x
+    }).sort((a, b) => b.density - a.density)
+    log({ sorted_data })
+    Q('#output-container').innerHTML = `<table>
+      <tr><th></th><th>country</th><th style="text-align:right">rate</th><th style="text-align:right">tigers</th><th style="text-align:right">km²</th></tr>
+      ${sorted_data.map((d, i) => `<tr><td style="text-align:right">${i+1})</td><td><b>${d.name}</b></td><td style="text-align:right">${d.rate.toFixed(3)}</td><td style="text-align:right">${get_number_display(d.pop)}</td><td style="text-align:right">${get_number_display(d.area)}</td></tr>`).join('')}
+    </table>`
+  }
+})</script>
+  
+</body>

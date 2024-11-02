@@ -333,7 +333,7 @@ export const Hangout = ({ id, handle, join=undefined }) => {
                 <>{user}'s note</>}
               </div>
               <div className='card-inner'>
-                {(typeof(comment) === 'string' && convertLinks(comment)) || `no notes by ${user}`}
+                {(typeof(comment) === 'string' && convertLinks(comment, { new_tab:true })) || `no notes by ${user}`}
               </div>
             </>)}
             {invited ? <>

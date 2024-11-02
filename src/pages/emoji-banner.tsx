@@ -47,6 +47,9 @@ export default () => {
   const [size, set_size] = store.use('emoji-banner-size', { default:1.6 })
   const [spacing, set_spacing] = store.use('emoji-banner-spacing', { default:.2 })
 
+  const [show_shadow, set_show_shadow] = store.use('emoji-banner-show-shadow', { default:false })
+  const [shadow_color, set_shadow_color] = store.use('emoji-banner-shadow-color', { default:'#000000' })
+
   const banner_text = useM(text, angle, () => {
     const chars = [...text]
     const SIZE = 64
@@ -99,6 +102,9 @@ export default () => {
             font-size: ${size}em;
             rotate: ${angle}deg;
             gap: ${spacing}em;
+            ${devices.is_mobile || !show_shadow ? '' : `
+            text-shadow: 0 max(2px, .05em) ${shadow_color};
+            `}
             `)}>{banner_text}</div>
           </div>
         </div>
@@ -115,6 +121,10 @@ export default () => {
             set_background(new_background)
             set_color(colors.hex_readable(new_background))
           }}>random</InfoButton>
+          {devices.is_mobile ? null : <>
+            <InfoButton onClick={() => set_show_shadow(!show_shadow)}>{show_shadow ? 'no' : 'show'} shadow</InfoButton>
+            {show_shadow ? <InfoButton><ColorPicker value={shadow_color} setValue={set_shadow_color} /></InfoButton> : null}
+          </>}
         </div>
         {show_font ? <div className='center-row gap'>
           font:

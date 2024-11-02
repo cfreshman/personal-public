@@ -103,21 +103,21 @@ export const GameLobby = ({ open, setModal, create }) => {
         hasNewInvites && { refresh: reloadInfoList },
       ]}>
         <InfoBadges labels={[
-          <InfoSelect label='mode' inline
+          {element:<InfoSelect label='mode' inline
           value={mode} 
           options={[undefined, ...Object.values(GameSettings.Mode)]}
           display={x => x === undefined ? 'any' : x}
-          onChange={e => setMode(e.target.value as GameSettings.Mode)} />,
-          <InfoSelect label='clock' inline
+          onChange={e => setMode(e.target.value as GameSettings.Mode)} />},
+          {element:<InfoSelect label='clock' inline
           value={timed}
           options={[undefined, 'no', 'yes']}
           display={x => x || 'any'}
-          onChange={(e:any) => setTimed(e.target.value)} />,
-          <InfoSelect label='tries' inline
+          onChange={(e:any) => setTimed(e.target.value)} />},
+          {element:<InfoSelect label='tries' inline
           value={tries} 
           options={[undefined, 'default', 'custom']}
           display={x => x ?? 'any'} 
-          onChange={e => setTries(e.target.value as string)} />,
+          onChange={e => setTries(e.target.value as string)} />},
         ]} />
       </InfoSection>
       {!infoList

@@ -488,4 +488,13 @@ export const replace = {
       image: 'https://freshman.dev/raw/images/icon-poll.png',
     },
   },
+  'beam': {
+    title: '/beam',
+    description: '1hr download link',
+    keywords: 'beam, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-beam-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/images/icon-beam.png',
+    },
+  },
 }

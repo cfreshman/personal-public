@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>javascript-game-engine</title><meta name=description content="" />
+  <style>
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
+
+    body {
+      height: 100%;
+      width: 100%;
+    }
+    #jge-container {
+      flex-grow: 1;
+      width: 100%;
+      border: 1px solid currentcolor;
+    }
+  </style>
+</head>
+<body class="column">
+
+  <div data-hydrate data-title></div>
+  <div id="jge-container">
+  </div>
+  <script src=/lib/2/jge/script.js></script>
+  <script>
+    const SIZE = 32
+    const random_position = () => V.ne(rand.i(SIZE), rand.i(SIZE))
+    const state = {
+      snake: undefined,
+      direction: undefined,
+      next_direction: undefined,
+      apple: undefined
+    }
+    const spawn_snake = () => {
+      state.snake = range(3).map(i => V.ne(SIZE/4 - i, SIZE/2))
+      state.direction = V.ne(1, 0)
+    }
+    const spawn_apple = () => {
+      do {
+        state.apple = random_position()
+      } while (state.snake.some(x => V.eq(x, state.apple)))
+    }
+    const new_game = () => {
+      spawn_snake()
+      spawn_apple()
+    }
+    
+    new_game()
+
+    const game = jge.attach({
+      root: '#jge-container',
+      width: SIZE, height: SIZE,
+      fps: 10,
+      loop: () => {
+        state.direction = state.next_direction || state.direction
+        state.next_direction = undefined
+        const head = state.snake[0]
+        const next = V.ad(head, state.direction)
+        if (V.eq(next, state.apple)) {
+          state.snake = [next, ...state.snake]
+          spawn_apple()
+        } else {
+          state.snake = [next, ...state.snake.slice(0, -1)]
+        }
+        if (state.snake.slice(1).some(x => V.eq(x, next) || next.x >= SIZE || next.y >= SIZE || next.x < 0 || next.y < 0)) {
+          new_game()
+        }
+        
+        game.ctx.fillStyle = 'black'
+        game.ctx.fillRect(0, 0, SIZE, SIZE)
+        game.ctx.fillStyle = 'red'
+        game.ctx.fillRect(state.apple.x, state.apple.y, 1, 1)
+        game.ctx.fillStyle = 'green'
+        state.snake.forEach(x => game.ctx.fillRect(x.x, x.y, 1, 1))
+      },
+    })
+    game.start()
+
+    on(window, 'keydown', e => {
+      const key = e.key
+      if ((key === 'ArrowUp' || key === 'w') && !V.eq(state.direction, V.ne(0, 1))) state.next_direction = V.ne(0, -1)
+      if ((key === 'ArrowDown' || key === 's') && !V.eq(state.direction, V.ne(0, -1))) state.next_direction = V.ne(0, 1)
+      if ((key === 'ArrowLeft' || key === 'a') && !V.eq(state.direction, V.ne(1, 0))) state.next_direction = V.ne(-1, 0)
+      if ((key === 'ArrowRight' || key === 'd') && !V.eq(state.direction, V.ne(-1, 0))) state.next_direction = V.ne(1, 0)
+    })
+  </script>
+
+</body>
+</html>

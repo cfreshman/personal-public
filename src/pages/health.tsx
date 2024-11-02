@@ -93,7 +93,7 @@ export default () => {
             // })))
 
             setImporting(false)
-          }} />,
+          }} /> as any,
           importing && 'importing',
         ]} />
         

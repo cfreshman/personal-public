@@ -83,11 +83,11 @@ export default () => {
           display: inline-flex;
           justify-content: flex-end;
           overflow: hidden;
-          `)} />,
+          `)} /> as any,
         ]} />
         <InfoBadges style={S(`max-width:100%;`)} labels={[
-            <InfoCheckbox data-input-public label='public' {...bindPublic} setter={setPublic} />,
-            <InfoCheckbox data-input-preserve-id label='preserve name' {...bindPreserveId} setter={setPreserveId} />,
+            <InfoCheckbox data-input-public label='public' {...bindPublic} setter={setPublic} /> as any,
+            <InfoCheckbox data-input-preserve-id label='preserve name' {...bindPreserveId} setter={setPreserveId} /> as any,
           ]} />
         <textarea ref={data_ref} className='wide grow' style={S(`
         font-size: .5rem;

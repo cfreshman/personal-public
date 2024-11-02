@@ -9,7 +9,7 @@ import { Row } from 'src/components/Common';
 import { store } from 'src/lib/store';
 import { open_popup } from 'src/components/Modal';
 
-const { named_log, Q, defer, sleep, range, rand } = window as any
+const { named_log, Q, defer, sleep, range, rand, devices } = window as any
 const log = named_log('list-picker')
 
 export default () => {
@@ -96,9 +96,9 @@ export default () => {
         ]} className='column h100 w100'>
           <div className='spacer' />
           <div className='grow center-column wide'>
-            <InfoFile label='SELECT IMAGE' setValue={handle.image} />
+            <InfoFile label={devices.is_mobile ? 'TAKE/SELECT PHOTO' : 'SELECT IMAGE'} setValue={handle.image} />
             <HalfLine />
-            <div className='description' style={S(`max-width: 20em`)}>list-picker will give you a random item from your image</div>
+            <div className='description' style={S(`max-width: 20em`)}>list-picker will select a random item from your image</div>
             <div className='spacer' />
           </div>
         </InfoSection>

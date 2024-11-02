@@ -132,6 +132,7 @@ const _projects = {
   'you': 'draw on your camera',
   'list-picker': 'pick a random item from a menu',
   'poll': 'create a textable poll',
+  'beam': '1hr download link',
 }
 // ''.split(' ').forEach(p => {
 //     if (!_projects[p]) _projects[p] = '' });
@@ -167,7 +168,7 @@ export const tags = {
   // social: 'chat graffiti live records speckle turt-smurts turt-smurts-2D u wordbase dots-and-boxes garden wall dinder',
   social: 'chat graffiti live records speckle turt-smurts u pixels wall dinder audio_form greeter proses plat not-linkedin cowork light',
   site: 'notify reset search settings cookies otp donoboard developer-program',
-  tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat running emoji-banner',
+  tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat running emoji-banner poll beam',
   demo: 'paths bloom kmeans',
   me: 'about coffee domains home projects guestbook',
 }

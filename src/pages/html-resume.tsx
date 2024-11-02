@@ -626,7 +626,7 @@ outer.append(
                 <InfoSelect value={item_i} options={range(resume.items.length)} display={i => `#${i+1}`} setter={i => {
                   ;[resume.items[i], resume.items[item_i]] = [resume.items[i], resume.items[item_i]].reverse()
                   setResume(merge({}, resume))
-                }} />,
+                }} /> as any,
                 !confirm && { x: () => {
                   setConfirm(item)
                 } },
@@ -717,7 +717,7 @@ outer.append(
                       <InfoSelect value={position_i} options={range(item.positions.length)} display={i => `${item_i+1}-${i+1}`} setter={i => {
                         ;[item.positions[i], item.positions[position_i]] = [item.positions[i], item.positions[position_i]].reverse()
                         setResume(merge({}, resume))
-                      }} />,
+                      }} /> as any,
                       { x: () => {
                         lists.remove(item.positions, position)
                         setResume(merge({}, resume))

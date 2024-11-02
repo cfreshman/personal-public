@@ -1,11 +1,11 @@
-import React, { forwardRef, Fragment, useEffect, useRef, useState } from 'react'
+import React, { forwardRef, Fragment, ReactNode, useEffect, useRef, useState } from 'react'
 import { Link, useHistory } from 'react-router-dom'
 import styled from 'styled-components'
 import * as DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { cleanTimeout, InputL, useCached, useE, useEventListener, useF, useGrab, useInterval, useM, useR, useS, useSkip, useStyle, useTimeout, withRef } from '../lib/hooks'
 import { useAuth, useCachedScript, usePage, useSupporter } from '../lib/hooks_ext'
-import { JSX, jsx, legacyRef, pass, printable, props, stringable, transform, functionOrOther, action, consumer, printable_types } from '../lib/types'
+import { JSX, jsx, legacyRef, pass, printable, props, stringable, transform, functionOrOther, action, consumer, printable_types, any_func } from '../lib/types'
 import url from '../lib/url'
 import { randAlphanum, rands, toClass, toStyle, isMobile, S, isWatch, eventToRelative } from '../lib/util'
 import { A } from './A';
@@ -17,7 +17,7 @@ export type InfoLabelType = printable | {
   [name:string]: (...x:any)=>any,
 } | {
   text?: any, element?: any,
-  func?: ()=>void, href?: string, tab?: boolean,
+  func?: any_func, href?: string, tab?: boolean,
   dot?: string | true,
   style?: React.CSSProperties | string,
   disabled?: boolean,
@@ -577,7 +577,7 @@ const _InfoBadge = ({label}: {label: InfoLabelType}) => {
 export const InfoBadges = (props: {
   labels: InfoLabelType[],
   inline?: boolean, nowrap?: boolean, full?:boolean, header?: boolean,
-  label_func?: ()=>void,
+  label_func?: any_func,
   [key:string]: any,
 }) => {
   const { labels=[], inline=false, nowrap=false, full=false, header=false, label_func=false } = props

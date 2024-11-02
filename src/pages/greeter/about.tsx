@@ -54,14 +54,17 @@ export const About = ({ handle=undefined }={}) => {
       </div>
       <div className='heading'>^ flashy little slogan</div>
       <HalfLine />
+
       {/* <InfoBadges labels={[
         // 'new?',
         { text: "join today's work sesh hangout", href: 'https://freshman.dev/today-greeter' },
       ]} />
       <HalfLine /> */}
-      <div className='heading'>new</div>
+
+      {/* <div className='heading'>new</div>
       <div>- opt-in AI suggestions for things to do next based on your past logs!</div>
-      <HalfLine />
+      <HalfLine /> */}
+
       <div className='heading'>install</div>
       <div>
         <span style={S(`display:inline-flex;align-items:center`)}>
@@ -88,6 +91,7 @@ export const About = ({ handle=undefined }={}) => {
         </span>
       </div>
       <HalfLine />
+
       {/* <div>creds to ✨<A href='/u/zam'>zam</A>✨ for quizzes</div>
       <div>creds to my dreams for the idea</div>
       <HalfLine /> */}
@@ -104,7 +108,7 @@ export const About = ({ handle=undefined }={}) => {
       </a>`} /> */}
       {/* <Dangerous html={`<a style="filter: grayscale(1) invert() brightness(3);" href="https://www.producthunt.com/products/greeter/reviews?utm_source=badge-product_review&utm_medium=badge&utm_souce=badge-greeter" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=573509&theme=dark" alt="&#0047;greeter - a&#0032;social&#0032;diary&#0058;&#0032;log&#0032;your&#0032;first&#0032;meets&#0032;&#0038;&#0032;everyday&#0032;hangouts&#0033; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>`} /> */}
       <div className='row gap wrap'>
-        <Dangerous html={`<a style="filter: grayscale(1) invert() brightness(3);" href="https://www.producthunt.com/posts/greeter?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-greeter" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=442640&theme=dark" alt="greeter - Keep&#0032;track&#0032;of&#0032;how&#0032;you&#0032;met&#0032;friends&#0033; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>`} />
+        {/* <Dangerous html={`<a style="filter: grayscale(1) invert() brightness(3);" href="https://www.producthunt.com/posts/greeter?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-greeter" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=442640&theme=dark" alt="greeter - Keep&#0032;track&#0032;of&#0032;how&#0032;you&#0032;met&#0032;friends&#0033; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>`} /> */}
         <Dangerous html={`<a style="filter: grayscale(1) invert() brightness(3);" href="https://www.producthunt.com/products/greeter/reviews?utm_source=badge-product_review&utm_medium=badge&utm_souce=badge-greeter" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/product_review.svg?product_id=573509&theme=dark" alt="&#0047;greeter - a&#0032;social&#0032;diary&#0058;&#0032;log&#0032;your&#0032;first&#0032;meets&#0032;&#0038;&#0032;everyday&#0032;hangouts&#0033; | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>`} />
       </div>
     </InfoSection>

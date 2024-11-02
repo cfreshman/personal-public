@@ -183,7 +183,7 @@ export default () => {
                 handle.save_poll(poll, true)
               }}>{x}</button>)
               : items_and_votes_sorted.map(({ item, votes }) => 
-                <button className='active' style={S(`width:100%; font-size:2em; display:block; text-align:left`)}>{item}: {Math.round(votes / (vote_total||1) * 100)}%</button>)}
+                <button className='active' style={S(`width:100%; font-size:2em; display:block; text-align:left`)}>{item} - {Math.round(votes / (vote_total||1) * 100)}%</button>)}
             </div>
             <div>{vote_total} {strings.plural(vote_total, 'vote', 's')} cast</div>
           </InfoSection>

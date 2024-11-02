@@ -359,6 +359,10 @@ if (!window['common.js']) {
             return [date.getHours(), date.getMinutes(), date.getSeconds()].map(x => String(x).padStart(2, '0')).join(':')
         },
         ymdhms: (date=Date.now()) => [datetime.ymd(date), datetime.hms(date)].join(' '),
+        hm: (date=Date.now()) => {
+            return datetime.hms(date).replace(/:\d\d$/, '')
+        },
+        ymdhm: (date=Date.now()) => [datetime.ymd(date), datetime.hm(date)].join(' '),
         yyyymmddhhmmss: (...x)=>datetime.ymd(...x),
         new: (yyyymmdd=undefined, hhmmss='12:00:00') => yyyymmdd ? new Date(yyyymmdd + ' ' + hhmmss) : new Date(),
         of: ({ Y=undefined, M=undefined, D=undefined, h=0, m=0, s=0, ms=0 }={}) => {
@@ -392,15 +396,17 @@ if (!window['common.js']) {
         durations: {
             new: duration,
             pretty: (ms) => {
+                const sign = ms < 0 ? '-' : ''
+                ms = Math.abs(ms)
                 const d = Math.floor(ms / duration({ d:1 }))
-                const h = Math.floor(ms / duration({ h:1 }))
-                const m = Math.floor(ms / duration({ m:1 }))
-                const s = Math.floor(ms / duration({ s:1 }))
-                if (d > 1) return `${d} ${strings.plural(d, 'day', 's')}`
+                const h = Math.floor(ms % duration({ d:1 }) / duration({ h:1 }))
+                const m = Math.floor(ms % duration({ h:1 }) / duration({ m:1 }))
+                const s = Math.floor(ms % duration({ m:1 }) / duration({ s:1 }))
+                if (d >= 1) return `${sign}${d} ${strings.plural(d, 'day', 's')}`
                 const format_60 = (x) => x.toString().padStart(2, '0')
-                if (h > 1) return `${format_60(h)}h ${format_60(m)}m`
-                if (m > 1) return `${format_60(m)}m ${format_60(s)}s`
-                if (s > 10) return `${format_60(s)}s`
+                if (h >= 1) return `${sign}${format_60(h)}h:${format_60(m)}m`
+                if (m >= 1) return `${sign}${format_60(m)}m:${format_60(s)}s`
+                if (s >= 10) return `${sign}${format_60(s)}s`
                 return `${maths.round(ms / 1_000, 1)}s`
             },
         },
@@ -886,16 +892,22 @@ if (!window['common.js']) {
             const [r, g, b] = colors.hex_to_rgb(hex)
             return colors.rgb_to_hex(256 - r, 256 - g, 256 - b)
         },
-        hex_readable: (bg) => {
+        hex_readable: (hex) => {
             // const [bg_rgb] = colors.hex_to_rgb(bg)
             // const sum = bg_rgb.reduce((a,v)=>a+v,0)
             // const max = Math.max(...bg_rgb)
             // const weighted = sum // sum/2 + (max * 3)/2
             // const readable_rgb = ((!weighted && weighted !== 0) || weighted > 255 * 1) ? [0, 0, 0] : [255, 255, 255]
             // return colors.rgb_to_hex(...readable_rgb)
-            const [R, G, B] = colors.hex_to_rgb(bg).map(x => x / 256)
+            const [R, G, B] = colors.hex_to_rgb(hex).map(x => x / 256)
             const L = Math.sqrt(0.299*Math.pow(R, 2) + 0.587*Math.pow(G, 2) + 0.114*Math.pow(B, 2))
             return L > .5 ? '#000000' : '#ffffff'
+        },
+        invert: (color) => {
+            return colors.hex_invert(colors.to_hex(color))
+        },
+        readable: (background) => {
+            return colors.hex_readable(colors.to_hex(background))
         },
         hex_to_canonical: (hex) => colors.rgb_to_hex(...colors.hex_to_rgb(hex)),
         rgb_to_hsl_object: (r, g, b) => {
@@ -980,6 +992,25 @@ if (!window['common.js']) {
                 return colors.rgb_to_hex(...colors.hsl_object_to_rgb({ h, s, l }))
             })
         },
+        to_hex: (str) => {
+            if (str.startsWith('hsl')) {
+                let [h, s, l] = /hsl\(([^)]+)\)/.exec(str)[1].split(/[, ]+/g)
+                const h_match = /([\d\.]+)(deg)?/.exec(h)
+                if (h_match) h = Number(h_match[1]) / 360
+                else h = Number(h) 
+                const s_match = /([\d\.]+)%/.exec(s)
+                if (s_match) s = Number(s_match[1]) / 100
+                else s = Number(s) 
+                const l_match = /([\d\.]+)%/.exec(l)
+                if (l_match) l = Number(l_match[1]) / 100
+                else l = Number(l)
+                return colors.rgb_to_hex(...colors.hsl_object_to_rgb({ h, s, l }))
+            } else if (str.startsWith('rgb'))  {
+                return colors.rgb_to_hex(...str.slice(4, -1).split(/[, ]+/g).map(x => Number(x)))
+            }
+            return str
+        },
+        random: () => colors.rgb_to_hex(rand.i(256), rand.i(256), rand.i(256)),
     }
 
     window.tone = (pitch, volume, ms) =>

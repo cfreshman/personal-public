@@ -1,4 +1,4 @@
-import './utils/script'
+import '../build/lib/2/common/script'
 
 import express from 'express';
 import path from 'path';
@@ -46,7 +46,7 @@ const io = new socket_io.Server(server as any, {
         methods: ["GET", "POST"]
     }
 })
-events.EventEmitter.defaultMaxListeners = 100
+;(events.EventEmitter as any).defaultMaxListeners = 100
 ioModule.set(io)
 ioR.set(io)
 
@@ -95,6 +95,7 @@ import txt from './routes/txt';
 import { get_friend_link } from './routes/profile/model';
 import { get_sponsors } from './routes/donoboard';
 import poll from './routes/poll';
+import beam from './routes/beam';
 // console.log(randAlphanum(16))
 process.on('uncaughtException', e => {
     console.error('uncaughtException', e);
@@ -1104,6 +1105,19 @@ app.get('/*', async (req, res, next) => {
             const { data } = await poll.model.get(id)
             Object.assign(replacements, {
                 title: `${data.question} (poll)` || `answer this poll`,
+                description: '/poll',
+            })
+        }
+    }
+    else if (page === 'beam') {
+        const url_search_str = req.url.split('/beam')[1]
+        const [id] = url_search_str.split('/').filter(x => x)
+        console.debug('[beam] url parsed:', url_search_str, id)
+        if (id) {
+            const { data } = await beam.model.get(id)
+            Object.assign(replacements, {
+                title: data ? `${data.name} (1hr download)` : `1hr download link`,
+                description: '/beam',
             })
         }
     }

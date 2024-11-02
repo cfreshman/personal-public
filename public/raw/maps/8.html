@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<!-- adapted from https://d3-graph-gallery.com/graph/choropleth_basic.html -->
+<head>
+  <meta charset="utf-8"><meta name='viewport' content='width=device-width, initial-scale=1'>
+  <style>
+    body {
+      padding: .5em;
+      font-family: monospace;
+    }
+    #map-container {
+      width: 100%;
+      /* border: 1px solid currentcolor; */
+      /* padding: .5em; */
+      overflow: visible;
+      /* background: #0001; */
+      /* border-radius: .25em; */
+    }
+    #map-container > * {
+      /* border: 1px solid currentcolor; */
+      background: #fff;
+      /* border-radius: .25em; */
+    }
+    .tooltip {
+      background: #fff;
+      border: #000;
+      border: 1px solid currentcolor;
+      box-shadow: 0 2px currentcolor;
+      padding: 2px;
+      margin-top: 1em;
+      white-space: pre-wrap;
+      pointer-events: none;
+    }
+  </style>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="./dependencies/d3@7.min.js"></script>
+</head>
+<body>
+
+<div class="column spaced w100">
+  <div class="column w100">
+    <div class="middle-column w100" style="max-width: 100em">
+      <div><b>world population density</b></div>
+      <div id=map-container class="middle-column gap">
+        <!-- <svg id=choropleth width="800" height="600"></svg> -->
+      </div>
+    </div>
+  </div>
+  <div id=output-container></div>
+</div>
+
+<script>defer(async () => {
+  const log = named_log('d3')
+  
+  // const svg = d3.select('#choropleth').attr('style', 'width: 100%; height: auto; height: intrinsic;');
+  // const width = svg.attr('width')
+  // let height = svg.attr('height')
+
+  // map and projection
+  const projection = d3.geoNaturalEarth1()
+  const path = d3.geoPath(projection)
+  const outline = { type: 'Sphere' }
+
+  const width = 1000
+  let height
+  const [
+    [x0, y0],
+    [x1, y1]
+  ] = d3.geoPath(projection.fitWidth(width, outline)).bounds(outline)
+  const dy = Math.ceil(y1 - y0),
+    l = Math.min(Math.ceil(x1 - x0), dy);
+  projection.scale(projection.scale() * (l - 1) / l).precision(0.2);
+  height = dy
+
+  const svgId = 'choropleth'
+  const svg = d3
+  .create('svg')
+    .attr('class', 'map')
+    .attr('id', svgId)
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', [0, 0, width, height])
+    .attr('style', 'width: 100%; height: auto; height: intrinsic;');
+  Q('#map-container').append(svg.node())
+
+  // load data and boot
+  const data_pop = new Map()
+  await d3.csv("./data/pop.csv", d => data_pop.set(d.code, Number(d.pop)))
+  const data_area = new Map()
+  await d3.csv("./data/area.csv", d => data_area.set(d.code, Number(d.area)))
+  log({ data_pop, data_area })
+  const topo = await d3.json("./data/world.geojson")
+
+  let max_data = 0
+  topo.features.forEach(d => {
+    const population = data_pop.get(d.id)
+    const area = data_area.get(d.id)
+    if (!population || !area) {
+      d.total = 0
+      log(`missing data for ${d.properties.name}`, {population, area})
+    } else {
+      d.total = population / area
+    }
+    if (d.total > max_data) max_data = d.total
+  })
+
+  // color scale
+  const f_color_scale = d3.scaleSequential([0, max_data * .2], d3.interpolateGreens)
+  const color_missing = '#0002' // '#ffcccc'
+
+  // draw outline
+  svg
+  .append('path')
+    .attr('fill', 'none')
+    .attr('stroke', 'currentcolor')
+    .attr('d', path({ type:'Sphere' }))
+
+  // draw map
+  const get_number_display = (x) => {
+    if (!x) return 'missing data'
+    if (x < 1e3) return x.toFixed(1)
+    if (x < 1e6) return `${(x / 1e3).toFixed(1)}k`
+    if (x < 1e9) return `${(x / 1e6).toFixed(1)}m`
+    return `${(x / 1e9).toFixed(1)}b`
+  }
+  const tooltip = d3.select('body').append('div')
+  .attr('class', 'tooltip')
+  .style('position', 'absolute')
+  .style('visibility', 'hidden')
+  let last_click = undefined
+  const mouse_over = (e, d) => {
+    // log({ e, d, tooltip })
+    svg.selectAll('.country').style('opacity', .67)
+    d3.select(e.target).style('opacity', 1)
+    if (e.clientX > window.innerWidth / 2) {
+      tooltip
+      .style('right', `${window.innerWidth - e.clientX}px`)
+      .style('text-align', 'right')
+      .style('left', '')
+    } else {
+      tooltip
+      .style('left', `${e.clientX}px`)
+      .style('text-align', 'left')
+      .style('right', '')
+    }
+    tooltip
+    .style('top', `${e.clientY}px`)
+    .style('visibility', 'visible')
+    .text(`${d.properties.name}\n${get_number_display(d.total)}`)
+  }
+  const mouse_out = (e, d) => {
+    svg.selectAll('.country').style('opacity', 1)
+    tooltip.style('visibility', 'hidden')
+  }
+  svg
+  .on('click', (e) => {
+    if (e.target === svg.node()) {
+      last_click = undefined
+      mouse_out()
+    }
+  })
+    .append('g')
+    .selectAll('path')
+    .data(topo.features)
+    .join('path')
+    // countries
+    .attr('d', d3.geoPath().projection(projection))
+    // colors
+    .attr('fill', d => {
+      return d.total ? f_color_scale(d.total) : color_missing
+    })
+    .attr('stroke', '#000')
+    .on('pointerout', mouse_out)
+    .on('pointermove', mouse_over)
+    .on('click', (e, d) => {
+      if (last_click === d) {
+        last_click = undefined
+        mouse_out(e, d)
+      } else {
+        last_click = d
+        mouse_over(e, d)
+      }
+    })
+    .attr('class', d => {
+      return d.total ? 'country' : 'country missing'
+    })
+
+  // rescale svg
+  // const g = Q(choropleth, 'g')
+  // const g_rect = g.getBoundingClientRect()
+  // log({ g_rect})
+  // svg.attr('width', g_rect.width)
+  // svg.attr('height', g_rect.height)
+  // svg.attr('viewBox', `0 0 ${g_rect.width} ${g_rect.height}`)
+  // choropleth.style['aspect-ratio'] = `${g_rect.width}/${g_rect.height}`
+
+  const legend = (color, {
+    svgId = 'legend',
+    title,
+    tickSize = 6,
+    width = 320,
+    height = 44 + tickSize,
+    marginTop = 18,
+    marginRight = 4,
+    marginBottom = 16 + tickSize,
+    marginLeft = 4,
+    ticks = width / 64,
+    tickFormat,
+    tickValues
+  } = {}) => {
+    const ramp = (color, n = 256) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = n;
+      canvas.height = 1;
+      const context = canvas.getContext('2d');
+      for (let i = 0; i < n; ++i) {
+        context.fillStyle = color(i / (n - 1));
+        context.fillRect(i, 0, 1, 1);
+      }
+      return canvas;
+    }
+
+    const svg = d3.create('svg')
+      .attr('id', svgId)
+      .attr('width', width)
+      .attr('height', height)
+      .attr('viewBox', [0, 0, width, height])
+      .style('overflow', 'visible')
+      .style('display', 'block');
+
+    let tickAdjust = g => g.selectAll('.tick line').attr('y1', marginTop + marginBottom - height);
+    let x;
+
+    // Continuous
+    if (color.interpolate) {
+      const n = Math.min(color.domain().length, color.range().length);
+
+      x = color.copy().rangeRound(d3.quantize(d3.interpolate(marginLeft, width - marginRight), n));
+
+      svg.append('image')
+        .attr('x', marginLeft)
+        .attr('y', marginTop)
+        .attr('width', width - marginLeft - marginRight)
+        .attr('height', height - marginTop - marginBottom)
+        .attr('preserveAspectRatio', 'none')
+        .attr('xlink:href', ramp(color.copy().domain(d3.quantize(d3.interpolate(0, 1), n))).toDataURL());
+    }
+    // Sequential
+    else if (color.interpolator) {
+      x = Object.assign(color.copy()
+        .interpolator(d3.interpolateRound(marginLeft, width - marginRight)), {
+          range() {
+            return [marginLeft, width - marginRight];
+          }
+        });
+
+      svg.append('image')
+        .attr('x', marginLeft)
+        .attr('y', marginTop)
+        .attr('width', width - marginLeft - marginRight)
+        .attr('height', height - marginTop - marginBottom)
+        .attr('preserveAspectRatio', 'none')
+        .attr('xlink:href', ramp(color.interpolator()).toDataURL());
+
+      // scaleSequentialQuantile doesn’t implement ticks or tickFormat.
+      if (!x.ticks) {
+        if (tickValues === undefined) {
+          const n = Math.round(ticks + 1);
+          tickValues = d3.range(n).map(i => d3.quantile(color.domain(), i / (n - 1)));
+        }
+        if (typeof tickFormat !== 'function') {
+          tickFormat = d3.format(tickFormat === undefined ? ',f' : tickFormat);
+        }
+      }
+    }
+    // Threshold
+    else if (color.invertExtent) {
+      const thresholds = color.thresholds ? color.thresholds() // scaleQuantize
+        :
+        color.quantiles ? color.quantiles() // scaleQuantile
+        :
+        color.domain(); // scaleThreshold
+
+      const thresholdFormat = tickFormat === undefined ? d => d :
+        typeof tickFormat === 'string' ? d3.format(tickFormat) :
+        tickFormat;
+
+      x = d3.scaleLinear()
+        .domain([-1, color.range().length - 1])
+        .rangeRound([marginLeft, width - marginRight]);
+
+      svg.append('g')
+        .selectAll('rect')
+        .data(color.range())
+        .join('rect')
+        .attr('x', (d, i) => x(i - 1))
+        .attr('y', marginTop)
+        .attr('width', (d, i) => x(i) - x(i - 1))
+        .attr('height', height - marginTop - marginBottom)
+        .attr('fill', d => d);
+
+      tickValues = d3.range(thresholds.length);
+      tickFormat = i => thresholdFormat(thresholds[i], i);
+    }
+    // Ordinal
+    else {
+      x = d3.scaleBand()
+        .domain(color.domain())
+        .rangeRound([marginLeft, width - marginRight]);
+
+      svg.append('g')
+        .selectAll('rect')
+        .data(color.domain())
+        .join('rect')
+        .attr('x', x)
+        .attr('y', marginTop)
+        .attr('width', Math.max(0, x.bandwidth() - 1))
+        .attr('height', height - marginTop - marginBottom)
+        .attr('fill', color);
+
+      tickAdjust = () => {};
+    }
+
+    svg.append('g')
+      .attr('transform', `translate(0,${height - marginBottom})`)
+      .call(d3.axisBottom(x)
+        .ticks(ticks, typeof tickFormat === 'string' ? tickFormat : undefined)
+        .tickFormat(typeof tickFormat === 'function' ? tickFormat : undefined)
+        .tickSize(tickSize)
+        .tickValues(tickValues))
+      .call(tickAdjust)
+      .call(g => g.select('.domain').remove())
+      .call(g => g.append('text')
+        .attr('x', marginLeft)
+        .attr('y', marginTop + marginBottom - height - 6)
+        .attr('fill', 'currentcolor')
+        .attr('text-anchor', 'start')
+        // .attr('font-weight', 'bold')
+        .attr('class', 'title')
+        .style('text-transform', 'uppercase')
+        .text(title));
+
+    return svg.node();
+  }
+
+  const chart_legend = legend(f_color_scale, {
+    title: 'people per sq km',
+  })
+
+  d3.select('#map-container').append(() => chart_legend)
+
+  const sorted_data = topo.features.filter(d => d.total).map(d => ({
+    name: d.properties.name,
+    density: d.total,
+    population: data_pop.get(d.id),
+    area: data_area.get(d.id),
+  })).sort((a, b) => b.density - a.density)
+  log({ sorted_data })
+  Q('#output-container').innerHTML = `${sorted_data.length}/195 countries listed<br/>` + sorted_data.map((d, i) => `${i+1}) <b>${d.name}:</b> ${get_number_display(d.density)} (${get_number_display(d.population)} people, ${get_number_display(d.area)} sq km)`).join('<br>')
+})</script>
+  
+</body>

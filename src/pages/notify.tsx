@@ -283,7 +283,7 @@ export default () => {
         ]),
       ].filter(l => l)}>
         <InfoBadges labels={[
-          <Select value={method} options={Object.keys(methods)} onChange={e => setChanges({ ...changes, method:e.target.value })} />,
+          <Select value={method} options={Object.keys(methods)} onChange={e => setChanges({ ...changes, method:e.target.value })} /> as any,
           `(${methods[method][1]})`
         ]} />
         {methods[method][0]}

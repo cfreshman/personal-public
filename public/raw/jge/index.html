@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>javascript-game-engine</title><meta name=description content="" />
+  <style>
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
+
+    body {
+      height: 100%;
+      width: 100%;
+    }
+    #jge-container {
+      flex-grow: 1;
+      width: 100%;
+      border: 1px solid currentcolor;
+    }
+  </style>
+</head>
+<body class="column">
+
+  <div data-hydrate data-title></div>
+  <div id="jge-container">
+  </div>
+  <script src=/lib/2/jge/script.js></script>
+  <script>
+    jge.attach({
+      id: 'jge-container',
+      aspect: 1,
+    })
+  </script>
+
+</body>
+</html>

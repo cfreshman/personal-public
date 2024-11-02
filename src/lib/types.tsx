@@ -12,6 +12,7 @@ export type anyFields = any // fields<any> was causing issues
 export type printable = string | number | boolean
 export const printable_types = new Set('string number boolean'.split(' '))
 export type stringable = printable | { toString }
+export type any_func = (...args: any[]) => any
 export type functionOrOther<F, O> = (F & O) | (O & { apply? }) // resolves type issues with F | O
 
 export type single<T> = [T]

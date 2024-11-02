@@ -259,7 +259,7 @@ export const Chat = ({ hash }: {
                   } else {
                     close()
                   }
-                }} />,
+                }} /> as any,
               ]} />
               <HalfLine />
               <div className='row end'>
@@ -301,7 +301,7 @@ export const Chat = ({ hash }: {
           width: max-content; height: max-content;
           `)}>
             <InfoBadges labels={[
-              <InfoFile label='send image' setValue={file => {
+              {element:<InfoFile label='send image' setValue={file => {
                 if (file) {
                   // set_wait(true)
                   api
@@ -318,7 +318,7 @@ export const Chat = ({ hash }: {
                     close()
                   })
                 }
-              }} />,
+              }} />},
             ]} />
           </div>
         </Dropdown>
