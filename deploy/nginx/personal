@@ -4,7 +4,7 @@
 # send to backend on box
 server {
     # server_name [::1]:5005;
-    server_name freshman.dev cyrusman.xyz frsh.mn;
+    server_name freshman.dev cyrusman.xyz tu.fo;
     include sites-available/fragments/personal-ssl;
     include sites-available/fragments/gzip;
     listen [::]:443 ssl http2;
@@ -131,6 +131,17 @@ server {
     }
 }
 
+# NEW 2024-11-04 xn--uda.fo "tell me what to do with this"
+server {
+    server_name xn--uda.fo;
+    listen 80;
+    include sites-available/fragments/personal-ssl;
+    include sites-available/fragments/gzip;
+    location / {
+        try_files /raw/y_fo/index.html =404;
+    }
+}
+
 # l. index - static page, proxy paths to /ly
 server {
     server_name l.freshman.dev l0.vc
@@ -138,7 +149,7 @@ server {
         xn--9ck.day # ッ.day
         xn--bdk.pw # ツ.pw
         xn--uda.fo # ý.fo
-        tu.fo nn.fo
+        frsh.mn nn.fo
         ~^l.;
     include sites-available/fragments/personal-ssl;
     include sites-available/fragments/gzip;
@@ -182,7 +193,7 @@ server {
         raw.xn--bdk.pw # ツ.pw
         raw.xn--uda.fo # ý.fo
         raw.xn--nda.wtf # ö.wtf
-        raw.tu.fo raw.nn.fo;
+        raw.frsh.mn raw.nn.fo;
     include sites-available/fragments/gzip;
     include sites-available/fragments/personal-ssl;
 
@@ -215,6 +226,7 @@ server {
 # l. subdomains - redirect to project pages (for non-raw)
 server {
     server_name ~^(?<subdomain>\w+(?:-\w+)*)\.l0\.vc$
+        ~^(?<subdomain>\w+(?:-\w+)*)\.frsh\.mn$
         ~^(?<subdomain>\w+(?:-\w+)*)\.(?<domain>.+)\.fo$
         ~^(?<subdomain>\w+(?:-\w+)*)\.xn--bdk\.(?<tld>.+)$
         ~^(?<subdomain>\w+(?:-\w+)*)\.xn--9ck\.(?<tld>.+)$
@@ -245,6 +257,7 @@ server {
     }
 }
 
+# now ignored
 server {
     server_name ~^(?<subdomain>[^.]+)\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
     include sites-available/fragments/personal-ssl;

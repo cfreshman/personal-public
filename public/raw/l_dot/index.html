@@ -7,6 +7,11 @@
   <meta charset="utf-8" />
   <meta data-hydrate data-style />
   <script src="/lib/punycode.js"></script>
+  <style>
+    * {
+      font-size: 12px;
+    }
+  </style>
 </style>
 </head>
 <body class="column">
@@ -60,7 +65,7 @@
             listL.innerHTML =
 `|
 |–[ <i>urls</i> ]
-| &nbsp;<input type="text" placeholder="url" autoCorrect='off' autoCapitalize='off'></input> <a id="shrt">shortn</a>
+| &nbsp;<input type="text" placeholder="url" autoCorrect='off' autoCapitalize='off'></input> <a id="shrt">shorten</a>
 ` + urls.filter(u => u.links.length === 1).reverse().map(url => {
               const display = url.links[0].replace(/https?:\/\//, '')
               const maxLen = 9999
@@ -112,16 +117,17 @@
   <div id=section-demo class=host>
     <p>|</p>
     <p>|</p>
-    <p>|–[ <i>short urls</i> ]</p>
+    <p>|–[ <i>short domains</i> ]</p>
     <!-- <p>| &nbsp;<a href="https://tu.fo">tu.fo</a> <a href="https://nn.fo">nn.fo</a> <a href="https://ý.fo">ý.fo</a> <a href="https://ツ.day">ツ.day</a> <a href="https://ッ.day">ッ.day</a> <a href="https://ö.wtf">ö.wtf</a></p> -->
-    <p>| &nbsp;<a href="https://tu.fo">tu.fo</a> <a href="https://nn.fo">nn.fo</a> <!-- <a href="https://ý.fo">ý.fo</a> <a href="https://ö.wtf">ö.wtf</a></p> -->
+    <!-- <p>| &nbsp;<a href="https://tu.fo">tu.fo</a> <a href="https://nn.fo">nn.fo</a> <a href="https://ý.fo">ý.fo</a> <a href="https://ö.wtf">ö.wtf</a></p> -->
+    <p>| &nbsp;<a href="https://frsh.mn">frsh.mn</a> <a href="https://nn.fo">nn.fo</a> <!-- <a href="https://ý.fo">ý.fo</a></p> -->
     <p>|</p>
     <p>|–[ <i>redirect to shortened URLs</i> ]</p>
-    <p>| &nbsp;<a href="https://tu.fo/twitter">tu.fo/twitter</a> => twitter.com/freshman_dev</p>
+    <p>| &nbsp;<a href="https://frsh.mn/twitter">frsh.mn/twitter</a> => twitter.com/freshman_dev</p>
     <p>|</p>
     <p>|–[ <i>subdomain.tu.fo redirects to freshman.dev/subdomain</i> ]</p>
-    <p>| &nbsp;<a href="https://donoboard.tu.fo">donoboard.tu.fo</a> => freshman.dev/donoboard</p>
-    <p>| &nbsp;<a href="https://raw.tu.fo/wwl/app/tappy">raw.tu.fo/wwl/app/tappy</a> => freshman.dev/raw/wwl/app/tappy</p>
+    <p>| &nbsp;<a href="https://donoboard.frsh.mn" data-hydrate>donoboard.frsh.mn</a> => freshman.dev/donoboard</p>
+    <p>| &nbsp;<a href="https://raw.frsh.mn/wwl/app/tappy">raw.frsh.mn/wwl/app/tappy</a> => freshman.dev/raw/wwl/app/tappy</p>
   </div>
   <style>
     #section-demo i {

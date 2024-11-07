@@ -25,7 +25,17 @@ const triggerStorage = (storage: Storage): TriggerStorage => {
             if (value === undefined) {
                 storage.removeItem(key)
             } else {
-                storage.setItem(key, JSON.stringify(value))
+                const stringified = JSON.stringify(value)
+                try {
+                    storage.setItem(key, stringified)
+                } catch (e) {
+                    // bad but nothing to do about it :)
+                }
+                // try {
+                //     storage.setItem(key, stringified)
+                // } catch (e) {
+                //     // alert('ran out of browser storage')
+                // }
             }
         },
         set: function(key, value=undefined) {

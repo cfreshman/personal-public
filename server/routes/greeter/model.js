@@ -10,6 +10,8 @@ import * as M_profile from '../profile/model'
 import { siteChat } from '../chat/model';
 import { query_llm } from '../../ai';
 import path from 'path';
+import ly from '../ly';
+const { duration } = window
 
 const log = named_log('greeter')
 const names = {
@@ -310,10 +312,10 @@ async function set_hangout(viewer, data) {
     if (viewer === 'cyrus' && _delete) {
         users = []
     }
-    console.debug('[greeter] set hangout', viewer, users, data)
+    log('set_hangout', viewer, users, data)
     const item = await _hangout(viewer, id)
     if (!item.users.includes(viewer) && (!code || item.code !== code)) throw 'unauthorized'
-    if (code) console.debug('[greeter:set_hangout] join', code)
+    if (code) log('set_hangout join', code)
     const new_hangout = !item.id
     const existing_users = item.users
     item.id = item.id || randAlphanum(12)
@@ -364,6 +366,12 @@ async function set_hangout(viewer, data) {
     // notify others of first note
     if (is_first_note) {
         notify.send(others.filter(x => !notified.has(x)), 'greeter', `${viewer} added a note`, `freshman.dev/greeter/hangout/${item.id}`)
+    }
+
+    // if from today and made by cyrus and title is worksesh, update /ly's 'today' to this hangout
+    if (viewer === 'cyrus' && item.t > Date.now() - duration({ d:1 }) && item.title === 'worksesh') {
+        const { ly:ly_data } = await ly.update('cyrus', 'today', { links:[`https://freshman.dev/greeter/hangout/${item.id}`] })
+        log('set_hangout set ly worksesh', ly_data)
     }
 
     return { item }

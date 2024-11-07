@@ -7,7 +7,7 @@ import { open_popup } from 'src/components/Modal'
 import { useCached, useF, useM, useR, useS, useStyle } from 'src/lib/hooks'
 import { S } from 'src/lib/util'
 import { useCachedScript } from 'src/lib/hooks_ext'
-const { named_log, list, strings, datetime, truthy, Q, QQ, node, entries, lists, merge, values, keys, qr, copy, colors, canvases } = window as any
+const { named_log, list, strings, datetime, truthy, Q, QQ, node, entries, lists, merge, values, keys, qr, copy, colors, canvases, defer } = window as any
 const log = named_log('greeter common_components')
 
 
@@ -115,7 +115,7 @@ export const upload_icon_fill = ({ edit_data_view, set_edit_data, set_modal=unde
       }
       node_file.onclick = e => {
         log('file input clicked')
-        node_file.value = null
+        defer(() => node_file.value = null)
       }
       // for some reason, iOS safari requires addEventListener instead of onchange
       // https://stackoverflow.com/a/47665517

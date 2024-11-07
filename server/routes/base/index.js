@@ -48,10 +48,10 @@ const link_preview_object = async (_href) => {
 
     const icon = [
       /"avatarThumb":"(?<value>[^"]+)"/,
-      /<meta[^>]+property="og:image"[^>]* content=(?<value>((?:['"])[^'"]*(?:['"])))[ >/]/,
-      /<meta[^>]+property="og:image"[^>]* content=(?<value>([^ ]+))[ >/]/,
       /<meta[^>]+name="?twitter:image"?[^>]* content=(?<value>((?:['"])[^'"]*(?:['"])))[ >/]/,
       /<meta[^>]+name="?twitter:image"?[^>]* content=(?<value>([^ ]+))[ >/]/,
+      /<meta[^>]+property="og:image"[^>]* content=(?<value>((?:['"])[^'"]*(?:['"])))[ >/]/,
+      /<meta[^>]+property="og:image"[^>]* content=(?<value>([^ ]+))[ >/]/,
       /<link[^>]+rel="?icon"?[^>]* href=(?<value>((?:['"])[^'"]*(?:['"])))[ >/]/,
       /<link[^>]+rel="?icon"?[^>]* href=(?<value>([^ ]+))[ >/]/,
       /<link[^>]+rel="?apple-touch-icon"?[^>]* href=(?<value>((?:['"])[^'"]*(?:['"])))[ >/]/,
@@ -128,7 +128,7 @@ const link_preview_object = async (_href) => {
     ].reduce((done,x)=>done||x.exec(html),0)||{})[1]||undefined
 
     const domain = new URL(href, 'https://freshman.dev').hostname.split('.').slice(-2).join('.')
-    const domain_title = og_title ? (!og_title.includes(domain)) ? `${og_title} (${domain})` : og_title : ''
+    const domain_title = og_title ? (!og_title.match(/\([^)]+\)$/)) ? `${og_title} (${domain})` : og_title : ''
 
     return {
       title: (overrides.title || domain_title || (any_error 

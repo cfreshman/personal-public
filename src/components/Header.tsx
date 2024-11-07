@@ -29,7 +29,7 @@ import { DropdownTrackPlayerFill } from 'src/lib/track_player'
 import { GoogleLogin } from '@react-oauth/google'
 import { QR } from './qr'
 
-const {css,range,defer,node,datetime,Q,set,entries} = window as any
+const {css,range,defer,node,datetime,Q,set,entries,devices} = window as any
 
 const url_params = new URLSearchParams(location.search)
 const hide_ui = url_params.has('hide-freshman-ui')
@@ -846,7 +846,9 @@ const User = ({ expand }: { expand: boolean }) => {
         <path fill-rule="evenodd" clip-rule="evenodd" d="M11.8372 11.1735C14.26 11.1735 16.2236 9.2099 16.2236 6.78718C16.2236 4.36445 14.26 2.3999 11.8372 2.3999C9.41452 2.3999 7.44998 4.36445 7.44998 6.78718C7.4418 9.20172 9.3918 11.1654 11.8063 11.1735C11.8172 11.1735 11.8272 11.1735 11.8372 11.1735Z" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       : (auth.user ? auth.user : 'log in')
-    } control={user_dropdown_control} clear_messages set_open={setDropdown}>
+    } control={user_dropdown_control} clear_messages set_open={setDropdown} dropdown_style={S(`
+    ${devices.is_mobile ? `font-size: max(1em, 16px);` : ''}
+    `)}>
       {auth.user ? loggedIn : loggedOut}
     </Dropdown>}
   </>
@@ -921,7 +923,9 @@ export const Header = () => {
           // margin-right: .125em;
           font-family: system-ui;
           margin-left: 2px;
-          `)}>{'☜'}</a>)}</>}>
+          `)}>{'☜'}</a>)}</>} dropdown_style={S(`
+          ${devices.is_mobile ? `font-size: max(1em, 16px);` : ''}
+          `)}>
           {/* <hr /> */}
           <A href='/'>home</A>
           <a onClick={e => {
@@ -971,8 +975,9 @@ export const Header = () => {
                     'wordbase': 'https://freshman.dev/raw/wordbase/icon.png',
                     // 'selfchat': 'https://freshman.dev/raw/chat/icon.png',
                     'apple-orange-banana': 'https://freshman.dev/raw/apple-orange-banana/icon.png',
-                    'light': 'https://freshman.dev/raw/light/icon.png',
                     'cowork': 'https://freshman.dev/raw/cowork/icon.png',
+                    'light': 'https://freshman.dev/raw/light/icon.png',
+                    'vibe': 'https://freshman.dev/raw/vibe/icon-2.png',
                     'settings': 'https://freshman.dev/raw/settings/icon.png',
                   }).map(([name, img]) => <AppIconTile {...{ name, img, close }} />)}
                 </div>

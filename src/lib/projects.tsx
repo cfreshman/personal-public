@@ -133,6 +133,8 @@ const _projects = {
   'list-picker': 'pick a random item from a menu',
   'poll': 'create a textable poll',
   'beam': '1hr download link',
+  'square': 'put stuff in a square',
+  'vibe': '24hr photos from bars/cafes/etc'
 }
 // ''.split(' ').forEach(p => {
 //     if (!_projects[p]) _projects[p] = '' });
@@ -166,9 +168,9 @@ export const tags = {
   // visual: 'cloud floating models terrain graffiti slime speckle arm color pixelworld bubble tube garden egg',
   visual: 'cloud floating models terrain graffiti slime-ants speckle arm gradients pixelworld bubble tube pixels egg gradients color optimal-maps',
   // social: 'chat graffiti live records speckle turt-smurts turt-smurts-2D u wordbase dots-and-boxes garden wall dinder',
-  social: 'chat graffiti live records speckle turt-smurts u pixels wall dinder audio_form greeter proses plat not-linkedin cowork light',
+  social: 'chat graffiti live records speckle turt-smurts u pixels wall dinder audio_form greeter proses plat not-linkedin cowork light vibe',
   site: 'notify reset search settings cookies otp donoboard developer-program',
-  tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat running emoji-banner poll beam',
+  tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat running emoji-banner poll beam square list-picker',
   demo: 'paths bloom kmeans',
   me: 'about coffee domains home projects guestbook',
 }

@@ -60,6 +60,7 @@ import graffiti_2 from './graffiti-2'
 import list_picker from './list-picker'
 import poll from './poll'
 import beam from './beam'
+import vibe from './vibe'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -133,6 +134,7 @@ export default {
   'list-picker': list_picker,
   poll,
   beam,
+  vibe,
 }
 
 export const ios = [

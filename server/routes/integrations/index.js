@@ -18,6 +18,7 @@ export const clearUrl = (url) => {
   const filename = decodeURIComponent(url.split('/').slice(-1)[0])
   fs.unlinkSync(file.getPath(filename), console.debug)
 }
+export const clear_url_for_data_url = clearUrl
 
 // why not a generic API which can return any HTML? huge security risk!
 // in fact, this is still a security risk :) TODO fix

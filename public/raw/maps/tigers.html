@@ -76,7 +76,9 @@
         .attr('width', width)
         .attr('height', height)
         .attr('viewBox', [0, 0, width, height])
-        .attr('style', 'width: 100%; height: auto');
+        .attr('style', 'width: 100%; height: auto')
+        .style('touch-action', 'none')
+        .style('user-select', 'none')
 
       // draw outline
       map.append('path')
@@ -109,7 +111,8 @@
       }
       return x
     })
-    log({ data })
+    const code_to_data = Object.fromEntries(data.map(d => [d.code, d]))
+    log({ data, code_to_data })
 
     // color scale
     const f_color_scale = d3.scaleSequential([0, d3.max(data, x => x.value)], d3.interpolateOranges)
@@ -119,7 +122,12 @@
     // draw map
     let last_click = undefined
     const tooltip = d3.select('body').append('div').attr('class', 'tooltip').attr('style', 'position: absolute; visibility: hidden')
-    const mouse_out = (e, d) => {
+    if (devices.is_mobile) {
+      tooltip.style('margin-bottom', '1em')
+    } else {
+      tooltip.style('margin-top', '1em')
+    }
+    const mouse_out = () => {
       map.selectAll('.entity').style('filter', '')
       tooltip.style('visibility', 'hidden')
     }
@@ -130,14 +138,15 @@
       if (x < 1e9) return `${(x / 1e6).toFixed(1)}m`
       return `${(x / 1e9).toFixed(1)}b`
     }
-    const mouse_over = (e, d) => {
+    const mouse_over = (e) => {
+      const actual_entity = document.elementFromPoint(e.clientX, e.clientY)
+      const d = code_to_data[actual_entity.dataset.code]
       // log({ e, d, tooltip })
-      if (d.pop < 1) {
-        mouse_out(e, d)
+      if (!d || d.pop < 1) {
+        mouse_out()
         return
       }
 
-      last_click = d
       map.selectAll('.entity').style('filter', 'saturate(.5) contrast(.67)')
       d3.select(e.target).style('filter', '')
       if (e.clientX > window.innerWidth / 2) {
@@ -151,8 +160,12 @@
         .style('text-align', 'left')
         .style('right', '')
       }
+      if (devices.is_mobile) {
+        tooltip.style('bottom', `${window.innerHeight - e.clientY}px`)
+      } else {
+        tooltip.style('top', `${e.clientY}px`)
+      }
       tooltip
-      .style('top', `${e.clientY}px`)
       .style('visibility', 'visible')
       .text(`${d.name}\n${get_number_display(d.pop)}`)
     }
@@ -180,6 +193,7 @@
         .attr('class', d => {
           return d.density > -1 ? 'entity' : 'entity missing'
         })
+        .attr('data-code', d => d.code)
 
     const max_density = d3.max(data, x => x.density)
     const sorted_data = data.slice().filter(d => d.pop > 0).map(x => {

@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>matchbox.html</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="icon" href="./app/icon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    :root {
+      font-size: 16px;
+      font-family: monospace;
+      * {
+        box-sizing: border-box;
+        font-family: inherit;
+      }
+    }
+
+    body {
+      overflow: hidden;
+      font-family: Monospace;
+      background: #111;
+    }
+    
+    #matchbox-canvas {
+      /* width: 100% !important;
+      height: 100% !important; */
+      /* filter: brightness(1.2) contrast(.8) saturate(1); */
+    }
+
+    button {
+      appearance: none;
+      height: 1.5em;
+      border-radius: .75em;
+      border: 1px solid #000;
+      box-shadow: 0 2px #000;
+      translate: 0 -2px;
+      background: #eee;
+      color: #000;
+      padding: 0 .5em;
+      cursor: pointer;
+      &:active {
+        box-shadow: none;
+        translate: none;
+      }
+    }
+
+    .gui {
+      z-index: 1;
+      color: #fff;
+      text-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
+      padding: .5em;
+      visibility: hidden;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="matchbox-container" class="cover center">
+    <canvas id="matchbox-canvas"></canvas>
+  </div>
+  <div id="gui-menu" class="gui cover center column spaced">
+    <div style="font-size: 2em"><b>matchbox.html</b></div>
+    <button style="font-size: 2em" onclick="start_game()">play</button>
+  </div>
+  <div id="gui-play" class="gui column" style="
+  position: absolute; top: 0; left: 0;
+  pointer-events: none;
+  ">
+    <div><b>matchbox.html</b></div>
+    <div>WASD to move</div>
+    <div>SPACE to jump</div>
+    <div>B to boost</div>
+    <div>score: <span id="score">0</span>🟡</div>
+    <div id="timer">0s left</div>
+  </div>
+  <div id="gui-end" class="gui cover center column spaced">
+    <div style="font-size: 2em">final score: <span id="final-score">0</span>🟡</div>
+    <button style="font-size: 2em" onclick="
+    state = STATES.PLAY
+    reset_game()
+    start_game()
+    ">again</button>
+  </div>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="/lib/noise.js"></script>
+  <script src="/lib/three.js"></script>
+  <script src="./app/cannon.js"></script>
+  <script src="./app/cannon.demo.js"></script>
+  <script src="./app/dat.gui.js"></script>
+  <!-- <script src="./lib/Three.js"></script> -->
+  <script src="./app/TrackballControls.js"></script>
+  <script src="./app/Detector.js"></script>
+  <script src="./app/Stats.js"></script>
+  <script src="./app/smoothie.js"></script>
+  <script>
+    const log = named_log('matchbox')
+    const T = THREE
+
+    const COLORS_CAR = [
+      // 0x000000,
+      0x0000ff,
+      0x00ff00,
+      0x00ffff,
+      0xff0000,
+      0xff00ff,
+      0xffff00,
+      // 0xffffff,
+      // 0x285ff4,
+      // 0x65c467,
+      // 0xf8ce46,
+      // 0xec4d3e,
+    ]
+    const COLOR_SAND = 0xffc277 // 0x113355 // 
+    const COLOR_LIQUID = 0x44bbff // 0x2277ff // 0xff8888 // 
+
+    const FIELD = 256
+    const size = 64
+    const tile = FIELD / size
+    const chunk_size = 2.5
+    const min_height = 1
+    const max_height = 45
+    const liquid_height = 8
+    let rand_off
+    const randomize_generate = () => rand_off = rand.i(1_000_000_000)
+    function get_height(x, y) {
+      zoom = size / chunk_size
+      huge = noise.simplex2(x / zoom / 4 - 10000 + rand_off, y / zoom / 4 - 10000 + rand_off)
+      large = noise.simplex2(x / zoom * 2 + 10000 + rand_off, y / zoom * 2 + 10000 + rand_off)
+      medium = noise.simplex2(x / zoom * 4 + 20000 + rand_off, y / zoom * 4 + 20000 + rand_off)
+      small = noise.simplex2(x / zoom * 10 + 30000 + rand_off, y / zoom * 10 + 30000 + rand_off)
+      // value = Math.pow(huge*0.3 + large*0.5 + medium*0.15 + small*0.05, 3)
+      let height
+      value = Math.pow(huge * 0.3 + large * 0.5 + medium * 0.15 + small * 0.0, 3)
+      const mid_height = liquid_height + (max_height - liquid_height) / 10
+      if (value > 0) {
+        height = maths.lerp(mid_height, max_height, Math.sqrt(value))
+      } else {
+        height = maths.lerp(mid_height, liquid_height, Math.sqrt(-value))
+      }
+
+      const dist = V.ne(x, y).ma()
+      const outer_dist = V.ne(1, 1).sc(get_border_random(x, y)).sc(size / 6).ma()
+      if (dist > outer_dist) {
+        height = maths.lerp(height, 0, Math.pow((dist - outer_dist) / outer_dist * 1.5, 2))
+      }
+
+      return height
+    }
+    function get_border_random(x, y) {
+      const angle = Math.atan2(y, x)
+      return (noise.simplex2(angle / 32 + 10_000_000, 0) + noise.simplex2(angle / 8 + 20_000_000, 0) + noise.simplex2(angle * 2 + 30_000_000, 0)) / 10 + 1
+    }
+
+    const demo = new CANNON.Demo()
+    const MAX_COINS = 5
+    const MAX_BOOST_PARTICLES = 20
+    let boost_particles = []
+    let vehicle, wheels, coins
+    let score = 0, timer = 0
+
+    const MS_ROUND = duration({ m:1 })
+    const STATES = {
+      INIT: 'init',
+      MENU: 'menu',
+      PLAY: 'play',
+      END: 'end',
+    }
+    let state = STATES.MENU
+    const update_gui = () => {
+      QQ('.gui').map(x => x.style.visibility = 'hidden')
+      QQ(`#gui-${state}`).map(x => x.style.visibility = 'visible')
+    }
+    update_gui()
+
+    const spawn_car = (vehicle) => {
+      vehicle.chassisBody.position.set(0, 0, get_height(0, 0) + 4)
+      vehicle.chassisBody.velocity.set(0, 0, 0)
+      vehicle.chassisBody.angularVelocity.set(0, 0, 0)
+      vehicle.chassisBody.quaternion.set(0, 0, 0, 1)
+      defer(() => {
+        vehicle.chassisBody.velocity.set(0, 0, 0)
+        vehicle.chassisBody.angularVelocity.set(0, 0, 0)
+        vehicle.chassisBody.quaternion.set(0, 0, 0, 1)
+      })
+    }
+    const spawn_coin = (coin) => {
+      let x, y, z
+      do {
+        x = rand.i(FIELD) - FIELD / 2
+        y = rand.i(FIELD) - FIELD / 2
+        z = get_height(x / tile, y / tile)
+      } while (z < liquid_height)
+      coin.position.set(x, y, z + 4)
+      coin.velocity.set(0, 0, 0)
+      coin.angularVelocity.set(0, 0, 0)
+      coin.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2)
+      defer(() => {
+        coin.velocity.set(0, 0, 0)
+        coin.angularVelocity.set(0, 0, 0)
+        coin.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2)
+      })
+    }
+
+    const N_LIQUID_LAYERS = 10
+    let terrain_body, liquid_meshes
+    let cleanups = []
+
+    let world, scene, started = false
+    const init_game = () => {
+      update_gui()
+      if (started) {
+        clear_game()
+      }
+      started = true
+      
+      if (!world) {
+        world = demo.getWorld()
+        world.broadphase = new CANNON.SAPBroadphase(world)
+        world.gravity.set(0, 0, -20)
+        world.defaultContactMaterial.friction = 1
+      }
+
+      randomize_generate()
+
+      var sizeX = size, sizeY = size
+      var matrix = []
+      for (var i = 0; i < sizeX; i++) {
+        matrix.push([])
+        for (var j = 0; j < sizeY; j++) {
+          const height = get_height(i - sizeX / 2, j - sizeY / 2)
+          matrix[i].push(height)
+        }
+      }
+
+      var hfShape = new CANNON.Heightfield(matrix, {
+        elementSize: FIELD / size
+      })
+
+      // create a Trimesh instead, using points randomly picked from a circle plus points sampled from the circular perimeter
+      //
+      // for example, here's a single triangle:
+      // var vertices = [
+      //     0, 0, 0, // vertex 0
+      //     1, 0, 0, // vertex 1
+      //     0, 1, 0  // vertex 2
+      // ];
+      // var indices = [
+      //     0, 1, 2  // triangle 01
+      // ];
+      // var trimeshShape = new Trimesh(vertices, indices);
+      // 
+      // now here's the terrain version:
+      // const vertices = []
+      // const indices = []
+      // const num_points = 16
+      // const num_perimeter_points = 16
+      // const radius = size / 2
+      // for (let i = 0; i < num_points; i++) {
+      //   const angle = Math.random() * Math.PI * 2
+      //   const x = Math.cos(angle) * Math.random() * radius
+      //   const y = Math.sin(angle) * Math.random() * radius
+      //   const height = get_height(x, y)
+      //   vertices.push(x, y, height)
+      // }
+      // for (let i = 0; i < num_perimeter_points; i++) {
+      //   const angle = Math.random() * Math.PI * 2
+      //   const x = Math.cos(angle) * radius
+      //   const y = Math.sin(angle) * radius
+      //   const height = get_height(x, y)
+      //   vertices.push(x, y, height)
+      // }
+      // log(vertices)
+      // // calculate delaunay triangulation manually
+      // for (let i = 0; i < num_points; i++) {
+      //   const x = vertices[i * 3]
+      //   const y = vertices[i * 3 + 1]
+      //   const height = vertices[i * 3 + 2]
+      //   for (let j = i + 1; j < num_points; j++) {
+      //     const x2 = vertices[j * 3]
+      //     const y2 = vertices[j * 3 + 1]
+      //     const height2 = vertices[j * 3 + 2]
+      //     for (let k = j + 1; k < num_points; k++) {
+      //       const x3 = vertices[k * 3]
+      //       const y3 = vertices[k * 3 + 1]
+      //       const height3 = vertices[k * 3 + 2]
+      //       const area = Math.abs(
+      //         x * (y2 - y3) +
+      //         x2 * (y3 - y) +
+      //         x3 * (y - y2)
+      //       ) / 2
+      //       if (area > 0.1) {
+      //         indices.push(i, j, k)
+      //       }
+      //     }
+      //   }
+      // }
+      // log(indices)
+      // const hfShape = new CANNON.Trimesh(vertices, indices)
+
+      var hfBody = new CANNON.Body({ mass: 0 })
+      hfBody.addShape(hfShape)
+      hfBody.position.set(-sizeX * hfShape.elementSize / 2, -sizeY * hfShape.elementSize / 2, -1)
+      world.add(hfBody)
+      terrain_body = hfBody
+      demo.addVisual(hfBody, new THREE.MeshLambertMaterial({ color: COLOR_SAND }))
+
+      liquid_meshes = range(N_LIQUID_LAYERS).map(i => {
+        // add liquid layers to create the illusion of depth. lerp from min_height to liquid_height
+        var liquid_geom = new T.CylinderGeometry(size * 10, size * 10, liquid_height, 256)
+        liquid_geom.rotateX(Math.PI / 2)
+        liquid_geom.translate(0, 0, 1 - liquid_height + maths.lerp(min_height, liquid_height, i / N_LIQUID_LAYERS / 2 + .5))
+        liquid = new T.Mesh(liquid_geom, new T.MeshStandardMaterial({
+          metalness: 0,
+          flatShading: true,
+          color: COLOR_LIQUID,
+          transparent: true,
+          opacity: i === 0 ? 1 : 0.15,
+          side: T.DoubleSide,
+        }))
+        demo.getScene().add(liquid)
+        return liquid
+      })
+
+      // create all coins and keep off screen until needed
+      coins = range(MAX_COINS).map(i => {
+        // create gold coin using cannonjs Cylinder
+        const coin_shape = new CANNON.Cylinder(2, 2, .5, 8)
+        const coin_body = new CANNON.Body({ mass: 1 })
+        coin_body.position.set(0, 0, -100)
+        coin_body.addShape(coin_shape)
+        demo.addVisual(coin_body, new THREE.MeshStandardMaterial({ color: 0xffd700 }))
+        world.add(coin_body)
+        return coin_body
+      })
+
+      // create boost particles
+      boost_particles = range(MAX_BOOST_PARTICLES).map(i => {
+        const boost_geom = new T.SphereGeometry(.5, 8, 8)
+        const boost = new T.Mesh(boost_geom, new T.MeshBasicMaterial({
+          color: 0xffffff,
+          transparent: true,
+          opacity: 0.25,
+        }))
+        demo.getScene().add(boost)
+
+        // hide off screen
+        boost.position.set(0, 0, -100)
+
+        return boost
+      })
+      
+      let last_t
+      {
+        const f = () => {
+          const t = performance.now()
+          if (last_t) {
+            const dt = (t - last_t) / 1000
+            update(dt)
+          }
+          last_t = t
+        }
+        world.addEventListener('postStep', f)
+        cleanups.push(() => world.removeEventListener('postStep', f))
+      }
+    }
+    const start_game = () => {
+      state = STATES.PLAY
+
+      const body_chassis = new CANNON.Body({ mass:150 })
+      body_chassis.addShape(new CANNON.Box(new CANNON.Vec3(1.8, 1, 0.5)))
+      body_chassis.addShape(new CANNON.Box(new CANNON.Vec3(.9, 1, .67)), new CANNON.Vec3(-.3, 0, (.5 + .67) / 2))
+      body_chassis.position.set(0, 0, 4)
+      // body_chassis.angularVelocity.set(0, 0, 0.5)
+      demo.addVisual(body_chassis, new THREE.MeshLambertMaterial({ color: COLORS_CAR[rand.i(COLORS_CAR.length)] }))
+
+      // Create the vehicle
+      vehicle = new CANNON.RaycastVehicle({
+        chassisBody: body_chassis,
+      })
+      var options = {
+        radius: .75,
+        directionLocal: new CANNON.Vec3(0, 0, -1),
+        suspensionStiffness: 100,
+        suspensionRestLength: 0.3,
+        frictionSlip: 5,
+        dampingRelaxation: 2.3,
+        dampingCompression: 4.4,
+        maxSuspensionForce: 10_000,
+        rollInfluence: 0.01,
+        axleLocal: new CANNON.Vec3(0, 1, 0),
+        chassisConnectionPointLocal: new CANNON.Vec3(0, 0, 0),
+        maxSuspensionTravel: 0.3,
+        customSlidingRotationalSpeed: -30,
+        useCustomSlidingRotationalSpeed: true,
+      }
+      const o_x = 1.3
+      const o_y = 1.15
+      const o_z = -0.2
+      options.chassisConnectionPointLocal.set(o_x, o_y, o_z)
+      vehicle.addWheel({
+        ...options,
+        isFrontWheel: true
+      })
+      options.chassisConnectionPointLocal.set(o_x, -o_y, o_z)
+      vehicle.addWheel({
+        ...options,
+        isFrontWheel: true
+      })
+      options.chassisConnectionPointLocal.set(-o_x, o_y, o_z)
+      vehicle.addWheel({
+        ...options,
+        isFrontWheel: false
+      })
+      options.chassisConnectionPointLocal.set(-o_x, -o_y, o_z)
+      vehicle.addWheel({
+        ...options,
+        isFrontWheel: false
+      })
+      vehicle.addToWorld(world)
+
+      var wheelBodies = []
+      for (var i = 0; i < vehicle.wheelInfos.length; i++) {
+        var wheel = vehicle.wheelInfos[i]
+        var cylinderShape = new CANNON.Cylinder(wheel.radius, wheel.radius, wheel.radius / 2, 20)
+        var wheelBody = new CANNON.Body({ mass: 1 })
+        var q = new CANNON.Quaternion()
+        q.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2)
+        wheelBody.addShape(cylinderShape, new CANNON.Vec3(), q)
+        wheelBodies.push(wheelBody)
+        demo.addVisual(wheelBody, new THREE.MeshLambertMaterial({ color: 0x111111 }))
+      }
+      wheels = wheelBodies
+
+      // Update wheels
+      {
+        const f = function () {
+          for (var i = 0; i < vehicle.wheelInfos.length; i++) {
+            vehicle.updateWheelTransform(i)
+            var t = vehicle.wheelInfos[i].worldTransform
+            wheelBodies[i].position.copy(t.position)
+            wheelBodies[i].quaternion.copy(t.quaternion)
+          }
+        }
+        world.addEventListener('postStep', f)
+        cleanups.push(() => world.removeEventListener('postStep', f))
+      }
+
+      coins.map(coin => {
+        let t_last_score = 0
+        coin.addEventListener('collide', (e) => {
+          // log('coin collision', e)
+          // detect if car or wheel collided with coin and increase score
+          
+          // avoid double counting
+          if (Date.now() - t_last_score < 100) return
+
+          if (e.body === vehicle.chassisBody || wheels.includes(e.body)) {
+            score++
+            document.getElementById('score').innerText = score
+            spawn_coin(coin)
+            t_last_score = Date.now()
+          }
+        })
+      })
+
+      // spawn car and coins
+      spawn_car(vehicle)
+      coins.map(coin => spawn_coin(coin))
+
+      update_gui()
+      timer = Date.now() + MS_ROUND
+    }
+    const end_game = () => {
+      // hide coins and set final score
+      coins.map(coin => coin.position.set(0, 0, -100))
+      document.getElementById('final-score').innerText = score
+    }
+    const clear_game = () => {
+      demo.removeAllVisuals()
+      const scene = demo.getScene()
+      liquid_meshes.map(liquid => scene.remove(liquid))
+      cleanups.map(cleanup => cleanup())
+      cleanups = []
+      score = 0
+      document.getElementById('score').innerText = score
+    }
+    const reset_game = () => {
+      demo.changeScene(0) // triggers init_game
+    }
+
+    demo.addScene('default', init_game)
+    demo.start()
+
+    var max_steer = 0.7
+    const drive_force = 2_000
+    const brake_force = 1_000_000
+    const friction_force = 5
+    const air_rotate_force = 1_000
+    document.onkeydown = document.onkeyup = (e) => {
+      if (state === STATES.MENU) {
+        if (e.key === ' ') {
+          start_game()
+        }
+        return
+      }
+      var up = (e.type == 'keyup')
+      if (!up && e.type !== 'keydown') return
+
+      let is_grounded = false
+      { // raycast from car to ground to check if grounded
+        const ray = new CANNON.Ray(
+          vehicle.chassisBody.position,
+          new CANNON.Vec3(vehicle.chassisBody.position.x, vehicle.chassisBody.position.y, vehicle.chassisBody.position.z - 2)
+        )
+        const result = new CANNON.RaycastResult()
+        ray.intersectBodies([terrain_body], result)
+        // console.debug(result)
+        if (result.hasHit) {
+          is_grounded = true
+        }
+      }
+      let is_controlled = false
+      { // raycast from each wheel to ground to check if controlled
+        let contact_points = 0
+        for (let i = 0; i < vehicle.wheelInfos.length; i++) {
+          const wheel = vehicle.wheelInfos[i]
+          const position = wheel.worldTransform.position
+          const ray = new CANNON.Ray(
+            position,
+            new CANNON.Vec3(position.x, position.y, position.z - 2)
+          )
+          const result = new CANNON.RaycastResult()
+          ray.intersectBodies([terrain_body], result)
+          // console.debug(result)
+          if (result.hasHit) {
+            contact_points++
+          }
+        }
+        is_controlled = contact_points >= 3
+      }
+
+      switch (e.key) {
+        case ' ': // jump if grounded
+          if (is_grounded) {
+            vehicle.chassisBody.velocity.z = 10
+          }
+          break
+      }
+
+      if (up) {
+        keys[e.key] = false
+      } else {
+        keys[e.key] = true
+      }
+    }
+
+    const keys = {}
+    const update = (dt) => {
+      const t = Date.now()
+      if (vehicle) {
+        // rewrite the key events to key states here (no helper functions)
+        let is_grounded = false
+        { // raycast from car to ground to check if grounded
+          const ray = new CANNON.Ray(
+            vehicle.chassisBody.position,
+            new CANNON.Vec3(vehicle.chassisBody.position.x, vehicle.chassisBody.position.y, vehicle.chassisBody.position.z - 2)
+          )
+          const result = new CANNON.RaycastResult()
+          ray.intersectBodies([terrain_body], result)
+          // console.debug(result)
+          if (result.hasHit) {
+            is_grounded = true
+          }
+        }
+        let is_controlled = false
+        { // raycast from each wheel to ground to check if controlled
+          let contact_points = 0
+          for (let i = 0; i < vehicle.wheelInfos.length; i++) {
+            const wheel = vehicle.wheelInfos[i]
+            const position = wheel.worldTransform.position
+            const ray = new CANNON.Ray(
+              position,
+              new CANNON.Vec3(position.x, position.y, position.z - 2)
+            )
+            const result = new CANNON.RaycastResult()
+            ray.intersectBodies([terrain_body], result)
+            // console.debug(result)
+            if (result.hasHit) {
+              contact_points++
+            }
+          }
+          is_controlled = contact_points >= 3
+        }
+
+        vehicle.setBrake(friction_force, 0)
+        vehicle.setBrake(friction_force, 1)
+        vehicle.setBrake(friction_force, 2)
+        vehicle.setBrake(friction_force, 3)
+        vehicle.setSteeringValue(0, 0)
+        vehicle.setSteeringValue(0, 1)
+        vehicle.applyEngineForce(0, 0)
+        vehicle.applyEngineForce(0, 1)
+        vehicle.applyEngineForce(0, 2)
+        vehicle.applyEngineForce(0, 3)
+        if (keys['w'] || keys['ArrowUp']) {
+          // if grounded, apply force
+          vehicle.applyEngineForce(-drive_force, 0)
+          vehicle.applyEngineForce(-drive_force, 1)
+          vehicle.setBrake(0, 0)
+          vehicle.setBrake(0, 1)
+          vehicle.setBrake(0, 2)
+          vehicle.setBrake(0, 3)
+          if (!is_controlled) {
+            // apply rotational force forward (positive y direction of car)
+            // apply force to local point at front of car
+            vehicle.chassisBody.applyLocalForce(new CANNON.Vec3(0, 0, -air_rotate_force), new CANNON.Vec3(1, 0, 0))
+          }
+        }
+        if (keys['s'] || keys['ArrowDown']) {
+          vehicle.applyEngineForce(drive_force, 2)
+          vehicle.applyEngineForce(drive_force, 3)
+          vehicle.setBrake(0, 0)
+          vehicle.setBrake(0, 1)
+          vehicle.setBrake(0, 2)
+          vehicle.setBrake(0, 3)
+          if (!is_controlled) {
+            // apply rotational force backward (negative y direction of car)
+            vehicle.chassisBody.applyLocalForce(new CANNON.Vec3(0, 0, -air_rotate_force), new CANNON.Vec3(-1, 0, 0))
+          } else {
+            // downforce
+            vehicle.chassisBody.applyLocalForce(new CANNON.Vec3(0, 0, -drive_force/3), new CANNON.Vec3(0, 0, 0))
+          }
+        }
+        if (keys['d'] || keys['ArrowRight']) {
+          vehicle.setSteeringValue(-max_steer, 0)
+          vehicle.setSteeringValue(-max_steer, 1)
+          if (!is_controlled) {
+            // apply rotational force right (positive x direction of car)
+            vehicle.chassisBody.applyLocalForce(new CANNON.Vec3(0, 0, -air_rotate_force), new CANNON.Vec3(0, -.33, 0))
+          } else {
+            // downforce
+            vehicle.chassisBody.applyLocalForce(new CANNON.Vec3(0, 0, -drive_force/3), new CANNON.Vec3(0, 0, 0))
+          }
+        }
+        if (keys['a'] || keys['ArrowLeft']) {
+          vehicle.setSteeringValue(max_steer, 0)
+          vehicle.setSteeringValue(max_steer, 1)
+          if (!is_controlled) {
+            // apply rotational force left (negative x direction of car)
+            vehicle.chassisBody.applyLocalForce(new CANNON.Vec3(0, 0, -air_rotate_force), new CANNON.Vec3(0, .33, 0))
+          }
+        }
+        // b for boost
+        if (keys['b']) {
+          vehicle.chassisBody.applyLocalForce(new CANNON.Vec3(drive_force, 0, 0), new CANNON.Vec3(0, 0, 0))
+          // downforce
+          vehicle.chassisBody.applyLocalForce(new CANNON.Vec3(0, 0, -drive_force/3), new CANNON.Vec3(0, 0, 0))
+
+          // move next boost particle to car
+          const boost = boost_particles.shift()
+          // copy position for later
+          const pos = new CANNON.Vec3().copy(vehicle.chassisBody.position)
+          boost_particles.push(boost)
+          setTimeout(() => {
+            boost.position.copy(pos)
+            boost.position.z -= .5
+            boost.position.x += rand.s(.5)
+            boost.position.y += rand.s(.5)
+            const t = boost.t = Date.now()
+            setTimeout(() => {
+              if (boost.t === t) {
+                boost.position.set(0, 0, -100)
+              }
+            }, 1000)
+          })
+        }
+
+        // if car is below liquid_height, respawn at start
+        if (vehicle.chassisBody.position.z < (min_height + liquid_height) / 2) {
+          spawn_car(vehicle)
+          // halve score
+          if (state === STATES.PLAY) {
+            score = Math.floor(score / 2)
+            document.getElementById('score').innerText = score
+          }
+        }
+
+        // if a coin is below liquid_height, respawn at random location
+        coins.map(coin => {
+          if (coin.position.z < liquid_height - 2) {
+            spawn_coin(coin)
+          }
+        })
+
+        // set all coins upright
+        coins.map(coin => {
+          coin.angularVelocity.set(0, 0, 0)
+          coin.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2)
+          // coin.velocity.x = 0
+          // coin.velocity.y = 0
+        })
+
+        // countdown timer
+        if (t > timer) {
+          state = STATES.END
+          end_game()
+          update_gui()
+        } else {
+          document.getElementById('timer').innerText = `${Math.floor((timer - t) / 1000)}s left`
+        }
+      }
+
+      // move liquids like waves (except first layer)
+      liquid_meshes.map((liquid, i) => {
+        if (i < N_LIQUID_LAYERS - 1) return
+        liquid.position.z = 1 - liquid_height + maths.lerp(min_height, liquid_height, i / N_LIQUID_LAYERS / 2 + .5) + Math.sin(t / 1000 * 2 + i) * 0.1
+      })
+    }
+
+  </script>
+</body>
+
+</html>

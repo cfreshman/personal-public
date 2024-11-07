@@ -91,7 +91,7 @@ overflow-x: hidden;
     background: var(--id-color-text);
     color: var(--id-color-text-readable);
     padding: 0;
-    word-break: break-all;
+    word-break: break-word;
     max-height: 50%;
   }
 }

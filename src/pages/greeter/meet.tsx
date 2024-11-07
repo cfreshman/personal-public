@@ -4,7 +4,7 @@ import { A, HalfLine, InfoBadges, InfoBody, InfoButton, InfoLoginBlock, InfoSect
 import { useCachedScript, usePageSettings } from 'src/lib/hooks_ext'
 import { S } from 'src/lib/util'
 import api, { auth } from 'src/lib/api'
-import { useEventListener, useF, useM, useR, useRerender, useS, useSkip, useStyle, useStyleE, useTimed, useTimeout } from 'src/lib/hooks'
+import { useEventListener, useF, useInterval, useM, useR, useRerender, useS, useSkip, useStyle, useStyleE, useTimed, useTimeout } from 'src/lib/hooks'
 import { WebsiteTitle } from 'src/components/website_title'
 import GreeterLink from './GreeterLink'
 import { store } from 'src/lib/store'
@@ -61,6 +61,9 @@ export const Meet = ({ user1, user2, handle }) => {
     }
     loaded.current = true
   }))
+  // reload every 5m and on focus
+  // useInterval(() => handle.load_meet(user1, user2, setMeet), datetime.duration({ m:5 }))
+  // useEventListener(window, 'focus', () => handle.load_meet(user1, user2, setMeet))
 
   // TODO figure out side meets (this code is from hangout.jsx)
   // const [side_hangouts, set_side_hangouts] = useS(undefined)

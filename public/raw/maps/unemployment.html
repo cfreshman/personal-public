@@ -77,7 +77,9 @@
         .attr('width', width)
         .attr('height', height)
         .attr('viewBox', [0, 0, width, height])
-        .attr('style', 'width: 100%; height: auto');
+        .attr('style', 'width: 100%; height: auto')
+        .style('touch-action', 'none')
+        .style('user-select', 'none')
 
       // draw outline
       map.append('path')
@@ -94,11 +96,13 @@
 
     const data_unem = new Map()
     await d3.csv('./data/unemployment201907.csv', d => data_unem.set(d.name, Number(d.rate)))
+    const abbr = Object.fromEntries((await d3.csv('./data/us-abbr.csv')).map(d => [d.State, d.Abbreviation]))
     const us = await d3.json('./data/us-states.geojson')
     log({ us })
     const state_data = us.features.map(x => {
       const name = x.properties.NAME
       return {
+        id: `USA-${abbr[name]}`,
         name,
         feature: x,
         value: data_unem.get(name) || -1,
@@ -108,13 +112,13 @@
     const { features } = await d3.json("./data/world.geojson")
     const country_data = features.map(feature => {
       const x = {
-        code: feature.id,
+        id: feature.id,
         name: feature.properties.name,
         feature,
         value: data_globe_unem.get(feature.id) || -1,
       }
       return x
-    }).filter(x => x.code !== 'USA')
+    }).filter(x => x.id !== 'USA')
     log({ state_data, country_data })
 
     const data = [].concat(state_data, country_data)
@@ -127,28 +131,34 @@
       }
     })
 
+    const id_to_data = Object.fromEntries(data.map(d => [d.id, d]))
+
     // color scale
     const f_color_scale = d3.scaleSequential([d3.min(data.filter(x => x.value >= 0), x => x.value), d3.max(data, x => x.value)], d3.interpolateOranges)
     const color_none = '#ccc'
     const f_color = d => d.value > 0 ? f_color_scale(d.value) : color_none
 
     // draw map
-    let last_click = undefined
+
     const tooltip = d3.select('body').append('div').attr('class', 'tooltip').attr('style', 'position: absolute; visibility: hidden')
-    const mouse_out = (e, d) => {
+    if (devices.is_mobile) {
+      tooltip.style('margin-bottom', '1em')
+    } else {
+      tooltip.style('margin-top', '1em')
+    }
+
+    let last_click = undefined
+    const mouse_out = () => {
       map.selectAll('.entity').style('filter', '')
       tooltip.style('visibility', 'hidden')
     }
-    const mouse_over = (e, d) => {
+    const mouse_over = (e) => {
+      const actual_entity = document.elementFromPoint(e.clientX, e.clientY)
+      const d = id_to_data[actual_entity.dataset.id]
       // log({ e, d, tooltip })
-      if (d.pop < 1) {
-        mouse_out(e, d)
-        return
-      }
 
-      last_click = d
       map.selectAll('.entity').style('filter', 'saturate(.5) contrast(.67)')
-      d3.select(e.target).style('filter', '')
+      d3.select(e.target).attr('filter', '')
       if (e.clientX > window.innerWidth / 2) {
         tooltip
         .style('right', `${window.innerWidth - e.clientX}px`)
@@ -160,8 +170,12 @@
         .style('text-align', 'left')
         .style('right', '')
       }
+      if (devices.is_mobile) {
+        tooltip.style('bottom', `${window.innerHeight - e.clientY}px`)
+      } else {
+        tooltip.style('top', `${e.clientY}px`)
+      }
       tooltip
-      .style('top', `${e.clientY}px`)
       .style('visibility', 'visible')
       .text(`${d.name}\n${d.unemployment < 0 ? 'no data' : d.unemployment.toFixed(1)+'%'}`)
     }
@@ -173,8 +187,6 @@
         mouse_out()
       }
     })
-
-
     map.append('g').selectAll().data(data).join('path')
       // entities
       .attr('d', d => f_project(d.feature))
@@ -183,15 +195,14 @@
       .on('click', (e, d) => {
         if (last_click === d) {
           last_click = undefined
-          mouse_out(e, d)
+          mouse_out(e)
         } else {
           last_click = d
-          mouse_over(e, d)
+          mouse_over(e)
         }
       })
-      .attr('class', d => {
-        return d.density > -1 ? 'entity' : 'entity missing'
-      })
+      .attr('class', d => `entity entity-${d.id} ${d.unemployment > -1?'':'missing'}`)
+      .attr('data-id', d => d.id)
     
     // map legend
     const legend = (color, {

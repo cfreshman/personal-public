@@ -4,7 +4,7 @@ import { A, ColorPicker, HalfLine, InfoBadges, InfoBody, InfoButton, InfoLoginBl
 import { useCachedScript, usePageSettings } from 'src/lib/hooks_ext'
 import { S } from 'src/lib/util'
 import api, { auth } from 'src/lib/api'
-import { useE, useEventListener, useF, useM, useR, useRerender, useS, useSkip, useStyle, useStyleE, useTimed, useTimeout } from 'src/lib/hooks'
+import { useE, useEventListener, useF, useInterval, useM, useR, useRerender, useS, useSkip, useStyle, useStyleE, useTimed, useTimeout } from 'src/lib/hooks'
 import { WebsiteTitle } from 'src/components/website_title'
 import GreeterLink from './GreeterLink'
 import { store } from 'src/lib/store'
@@ -73,28 +73,30 @@ export const Hangout = ({ id, handle, join=undefined }) => {
       handle.setPath([hangout.id, 'hangout', join])
     }
   })
+  // reload every 5m and on focus
+  // useInterval(() => handle.load_hangout(id, setHangout), datetime.duration({ m:5 }))
+  // useEventListener(window, 'focus', () => handle.load_hangout(id, setHangout))
 
   const [side_hangouts, set_side_hangouts] = useS(undefined)
   const [side_hangouts_user, set_side_hangouts_user] = useS(viewer)
   useF(viewer, () => set_side_hangouts_user(viewer))
+  const try_load_side_hangouts = async () => {
+    try {
+      set_side_hangouts(await api.get(`/greeter/hangout/${id}/side/${side_hangouts_user}`))
+    } catch {
+      set_side_hangouts({ unauthorized:true })
+    }
+  }
   useF(viewer, id, async () => {
     set_side_hangouts(undefined)
     if (viewer && id) {
-      try {
-        set_side_hangouts(await api.get(`/greeter/hangout/${id}/side/${side_hangouts_user}`))
-      } catch {
-        set_side_hangouts({ unauthorized:true })
-      }
+      await try_load_side_hangouts()
     }
   })
   useSkip(useF, _hangout, side_hangouts_user, async () => {
     set_side_hangouts(side_hangouts && { loading:true })
     if (_hangout) {
-      try {
-        set_side_hangouts(await api.get(`/greeter/hangout/${id}/side/${side_hangouts_user}`))
-      } catch {
-        set_side_hangouts({ unauthorized:true })
-      }
+      await try_load_side_hangouts()
     }
   })
   useF(side_hangouts, () => log({side_hangouts}))
@@ -297,7 +299,25 @@ export const Hangout = ({ id, handle, join=undefined }) => {
       ...((viewer && hangout?.users.map(user => (user && !edit && { [user]: e => handle.setPath([user, 'met'], e) }))) || []),
 
       invited && { 'log in to join hangout': () => openLogin() }
-    ]}>
+    ]} onDrop={async e => {
+      e.preventDefault()
+      const file = e.dataTransfer.items[0].getAsFile()
+
+      const img = node(`<img />`)
+      img.onload = () => {
+        const canvas = node('<canvas />')
+        canvas.height = canvas.width = 128
+        const ctx = canvas.getContext('2d')
+        ctx.imageSmoothingEnabled = false
+        ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, canvas.width, canvas.height)
+        log('resized icon', canvas.toDataURL())
+        set_edit_data({
+          ...edit_data_view,
+          icon: canvas.toDataURL(),
+        })
+      }
+      img.src = URL.createObjectURL(file)
+    }} onDragOver={e => e.preventDefault()}>
       {!viewer && !join
       ? <InfoLoginBlock inline to={join ? 'join hangout' : 'view hangout'} />
       : !authorized

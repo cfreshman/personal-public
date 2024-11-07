@@ -71,16 +71,6 @@ export default () => {
   const [id=''] = usePathState()
 
   const [colors, set_colors] = store.use('graffiti-colors', { default:values(COLORS) })
-
-  // switched from hex to index
-  const color_check = useR()
-  if (!color_check.current) {
-    color_check.current = true
-    const color = store.get('graffiti-color')
-    if (color && typeof color !== 'number') {
-      store.set('graffiti-color', 0)
-    }
-  }
   const [color, set_color] = store.use('graffiti-color', { default:0 })
 
   const [size, set_size] = store.use('graffiti-size', { default:BRUSHES.SMALL })

@@ -1,6 +1,6 @@
 import React from 'react'
 import { auth } from 'src/lib/api'
-import { useF, useR, useS } from 'src/lib/hooks'
+import { useEventListener, useF, useInterval, useR, useS } from 'src/lib/hooks'
 import { useCachedScript } from 'src/lib/hooks_ext'
 import { InfoSection } from '../../components/Info'
 import { S } from 'src/lib/util'
@@ -9,7 +9,7 @@ import { Scroller } from 'src/components/Scroller'
 import { APP_COOKIE } from './util'
 
 
-const { named_log, list, strings, truthy, QQ, Q, datetime } = window as any
+const { named_log, list, strings, truthy, QQ, Q, datetime, duration } = window as any
 const log = named_log('greeter calendar')
 
 export const Calendar = ({ user=undefined, other=undefined, handle=undefined }={}) => {
@@ -19,8 +19,13 @@ export const Calendar = ({ user=undefined, other=undefined, handle=undefined }={
 
   const [{ user:viewer }] = auth.use()
   const self = user === viewer
+
   const [calendar, setCalendar] = useS(undefined)
   useF(user, () => handle.load_calendar(user, other, setCalendar))
+  // reload every 5m and on focus
+  useInterval(() => handle.load_calendar(user, other, setCalendar), duration({ m:5 }))
+  useEventListener(window, 'focus', () => handle.load_calendar(user, other, setCalendar))
+
   useF(calendar, window['mono_cal'], calendar_root.current, () => {
     const { mono_cal } = window as any
     log({ calendar, mono_cal })

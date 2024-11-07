@@ -1,5 +1,6 @@
 import { MongoClient } from 'mongodb';
 import { entryMap, remove, resolve, sleep } from '../util';
+const { rand } = window
 
 let client;
 

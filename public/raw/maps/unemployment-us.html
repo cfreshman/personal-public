@@ -25,7 +25,6 @@
       border: 1px solid currentcolor;
       box-shadow: 0 2px currentcolor;
       padding: 2px;
-      margin-top: 1em;
       white-space: pre-wrap;
       pointer-events: none;
     }
@@ -36,6 +35,7 @@
 </head>
 
 <body>
+
   <div class="column">
     <div class="column w100" style="max-width: 100em">
       <div><b>US unemployment</b></div>
@@ -79,6 +79,8 @@
       const Im = new d3.InternMap(N.map((id, i) => [id, i]));
       const If = d3.map(data.map(x => x.feature), featureId);
 
+      const abbr_to_data = Object.fromEntries(data.map(d => [d.abbr, d]))
+
       // Compute default domains.
       if (domain === undefined) domain = d3.extent(V);
 
@@ -113,6 +115,8 @@
         .attr('height', height)
         .attr('viewBox', [0, 0, width, height])
         .attr('style', 'width: 100%; height: auto; height: intrinsic;')
+        .style('touch-action', 'none')
+        .style('user-select', 'none')
       
       // define a simple filter which creates a shadow effect on applied elements
       const filter_shadow = svg.append('filter')
@@ -147,19 +151,37 @@
           </feComponentTransfer>
         `)
 
-      let last_click = undefined
+      let last_click = undefined, cancel_out = false
       const tooltip = d3.select('body').append('div')
       .attr('class', 'tooltip')
       .style('position', 'absolute')
       .style('visibility', 'hidden')
-      const mouse_out = (e, d) => {
+
+      if (devices.is_mobile) {
+        tooltip.style('margin-bottom', '1em')
+      } else {
+        tooltip.style('margin-top', '1em')
+      }
+
+      // avoid flickering by delaying the mouse out handler
+      const actual_mouse_out = (e) => {
         svg.selectAll('.entity').attr('filter', '').style('translate', '').attr('id', '')
-        svg.select(`.entity-label-${d.abbr}:not(.side)`).style('translate', '')
+        svg.select(`.entity-label:not(.side)`).style('translate', '')
         tooltip.style('visibility', 'hidden')
       }
-      const mouse_over = (e, d) => {
+      const mouse_out = (e) => {
+        cancel_out = false
+        defer(() => {
+          if (cancel_out) return
+          actual_mouse_out(e)
+        }, 100)
+      }
+      const mouse_over = (e) => {
+        const actual_entity = document.elementFromPoint(e.clientX, e.clientY)
+        const d = abbr_to_data[actual_entity.dataset.abbr]
+        cancel_out = true
         // log({ e, d, tooltip })
-        last_click = d
+        actual_mouse_out(e)
         svg.selectAll('.entity').attr('filter', 'url(#filter-inactive)')
         svg.selectAll(`.entity-${d.abbr}`).attr('filter', '')
         svg.selectAll(`.entity-${d.abbr}:not(.side)`).attr('filter', `url(#filter-shadow)`).style('translate', '0 -2px').attr('id', 'use')
@@ -175,8 +197,12 @@
           .style('text-align', 'left')
           .style('right', '')
         }
+        if (devices.is_mobile) {
+          tooltip.style('bottom', `${window.innerHeight - e.clientY}px`)
+        } else {
+          tooltip.style('top', `${e.clientY}px`)
+        }
         tooltip
-        .style('top', `${e.clientY}px`)
         .style('visibility', 'visible')
         .text(title(d))
       }
@@ -197,8 +223,9 @@
         .attr('stroke-width', strokeWidth)
         .attr('stroke-opacity', strokeOpacity)
         .attr('class', d => `entity entity-${d.abbr}`)
+        .attr('data-abbr', d => d.abbr)
         .on('pointerout', mouse_out)
-        .on('pointermove', mouse_over)
+        .on('pointerdown pointermove', mouse_over)
         .on('click', (e, d) => {
           if (last_click === d) {
             last_click = undefined
@@ -280,8 +307,9 @@
           .attr('width', side_width)
           .attr('height', side_height)
           .attr('class', d => `side entity entity-${d.abbr}`)
+          .attr('data-abbr', d => d.abbr)
           .on('pointerout', mouse_out)
-          .on('pointermove', mouse_over)
+          .on('pointerdown pointermove', mouse_over)
           .on('click', (e, d) => {
             if (last_click === d) {
               last_click = undefined

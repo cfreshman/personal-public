@@ -9,7 +9,7 @@ import { S } from 'src/lib/util'
 import { useRoom } from 'src/lib/socket'
 import url from 'src/lib/url'
 
-const { named_log, Q, rand, duration, datetimes, copy, display_status, maths, colors, strings, range } = window as any
+const { named_log, Q, rand, duration, datetimes, copy, display_status, maths, colors, strings, range, devices } = window as any
 const NAME = 'poll'
 const log = named_log(NAME)
 
@@ -77,7 +77,8 @@ export default () => {
   useTimeout(() => rerender_over(), !is_over ? end_ms - Date.now() : 1e10)
 
   usePageSettings({
-    professional:true,
+    professional: true,
+    icon: '/raw/images/icon-poll.png',
   })
   useStyle(`
   #header {
@@ -85,6 +86,19 @@ export default () => {
   }
   `)
   useStyle(poll, `
+  :root {
+    ${poll?.color ? `
+    --id-color: ${poll.color};
+    --id-color-text: ${colors.readable(poll.color)};
+    --id-color-text-readable: ${colors.readable(colors.readable(poll.color))};
+    ` : ''}
+  }
+  #index::after {
+    background: linear-gradient(#0001 0 0) var(--id-color) !important;
+  }
+  #inner-index#inner-index {
+    ${devices.is_mobile ? '' : 'border: 1px solid var(--id-color-text) !important;'}
+  }
   #poll#poll {
     ${poll?.color ? `
     --id-color: ${poll.color};
@@ -163,7 +177,7 @@ export default () => {
             <div className='center-row'>
               <b>poll #{id}</b>&nbsp;
               <button onClick={e => {
-                copy(location.origin + `/-poll/${id}`)
+                copy(location.origin + `/poll/${id}`)
                 display_status(e.target, 'copied!')
               }}>copy link</button></div>
             {!is_over ? <div>time remaining: {datetimes.durations.pretty(Math.max(0, poll.t + poll.d - Date.now()))}</div>
@@ -185,7 +199,13 @@ export default () => {
               : items_and_votes_sorted.map(({ item, votes }) => 
                 <button className='active' style={S(`width:100%; font-size:2em; display:block; text-align:left`)}>{item} - {Math.round(votes / (vote_total||1) * 100)}%</button>)}
             </div>
-            <div>{vote_total} {strings.plural(vote_total, 'vote', 's')} cast</div>
+            <div className='center-row spaced'>
+              <span>{vote_total} {strings.plural(vote_total, 'vote', 's')} cast {votes[id] === true ? ` (you didn't vote)` : votes[id] ? ` (you voted ${votes[id]})` : null}</span>
+              {votes[id] ? null : <button onClick={e => {
+                votes[id] = true
+                set_votes({...votes})
+              }}>just view results</button>}
+            </div>
           </InfoSection>
         </>}
       </> : <>
@@ -195,7 +215,7 @@ export default () => {
             set_poll(poll)
             // set_id(poll.id)
             url.push(`/poll/${poll.id}`)
-          }} style={S(`font-size:2em`)}>new poll</button>
+          }} style={S(`font-size:2em`)}>new poll 🗳️</button>
         </InfoSection>
       </>}
     </InfoBody>

@@ -497,4 +497,19 @@ export const replace = {
       image: 'https://freshman.dev/raw/images/icon-beam.png',
     },
   },
+  'square': {
+    title: '/square',
+    description: 'put stuff in a square',
+    keywords: 'square, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-square-64.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/images/icon-square.png',
+    },
+  },
+  'vibe': {
+    title: '/vibe',
+    description: '24hr photos from bars/cafes/etc',
+    keywords: 'vibe, social, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/vibe/icon-2.png',
+  },
 }

@@ -104,7 +104,7 @@ const FruitWheel = ({ fruits, style, ...props }) => {
     })}
     {[DEFAULT_FRUITS.apple, DEFAULT_FRUITS.orange, DEFAULT_FRUITS.banana, ...fruits].map((x, i) => {
       const is_default = i < 3
-      const o = V.p((x.angle - 90) * Math.PI / 180, is_default ? 30 : 50).ad(V.ne(50, 50))
+      const o = V.p((x.angle - 90) * Math.PI / 180, is_default ? 25 : 50).ad(V.ne(50, 50))
       return <div style={S(`
       font-size: 2em;
       // border: 1px solid currentcolor;

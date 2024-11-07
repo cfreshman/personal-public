@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>terrain</title>
+    <script src=/copyright.js></script>
+    <style>
+      html, body {
+        display: flex; align-items: center; justify-content: center;
+        margin: 0;
+        background-color: #050505;
+      }
+      #canvas {
+        width: 100% !important;
+        height: 100% !important;
+        image-rendering: pixelated;
+      }
+    </style>
+  </head>
+  <body>
+
+    <canvas id=canvas></canvas>
+
+    <script src="/lib/three.js"></script>
+    <script src="/lib/noise.js"></script>
+    <script src="/lib/OrbitControls.js"></script>
+    <script src="/lib/pause.js"></script>
+    <script>
+
+const T = THREE
+const V2 = T.Vector2
+const V3 = T.Vector3
+const ORIGIN = V3(0, 0, 0)
+const v = (x, y, z=undefined) => z !== undefined ? new V3(x, y, z) : new V2(x, y)
+
+const V_to_T = v => {
+  v = V.ne(v)
+  di = v.di()
+  if (di === 2) return new V2(v.x, v.y)
+  else return new V3(v.x || 0, v.y || 0, v.z || 0)
+}
+const T_to_V = t => {
+  return V.ne(t.x, t.y, t.x)
+}
+
+const debug = {
+  showFlocks: false,
+  showFollow: false,
+  showRaycast: false,
+  seed: false,
+  fps: false,
+}
+
+// TODO fix meaning of scaling vars
+// const SIZE = 1024, SCALE = 4
+// let frustumSize = Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth) * SIZE
+
+const Color = from(entries({
+  BORDER: "#383842",
+  SKY: "#dff6f5",
+  GROUND: "#636061",
+  BOTTOM: "#472d3c",
+  LIQUID: "#5996b0",
+  DEEP: "#394778",
+  COVER: "#576341",
+  TOPS: "#397b44",
+  BACKGROUND: "#50505",
+  FOG: "#cccccc",
+  RED: "#ff0000",
+  GREEN: "#ff00",
+  BLUE: "#ff",
+  WHITE: "#f0f0f0",
+  BLACK: "#f0f0f",
+  TREE: "#3e6146"
+}).map(e => [e[0], new T.Color(parseInt(e[1].slice(1), 16))]))
+
+const SIZE = 1024,
+  BORDER_SIZE = 16,
+  SCALE = 3,
+  MIN_HEIGHT = 1,
+  MAX_HEIGHT = 24,
+  CHUNK_SIZE = 16,
+  N_BOIDS = 256,
+  N_TREES = 1024,
+  N_FLOCKS = 3,
+  ORTHO = true,
+  IMG_SCALE = 1,
+  N_NEIGHBORS = 0,
+  C_R_SPHERE = 8
+var size = SIZE,
+    radius = SIZE / 2,
+    borderSize = BORDER_SIZE,
+    tiles = SIZE / Math.pow(2, SCALE),
+    minHeight = MIN_HEIGHT * Math.pow(2, SCALE),
+    maxHeight = MAX_HEIGHT * Math.pow(2, SCALE),
+    highestElevation = 0,
+    frustumSize = Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth) * SIZE,
+    chunkSize = CHUNK_SIZE / Math.pow(2, SCALE)
+var tileSize = size / tiles
+var liquidHeight = (maxHeight - minHeight)*1/5 + minHeight
+
+var scene, objects, renderer, camera, controls, terrain, liquid, sides, raycaster
+var dirs = {up: 0, down: 0, left: 0, right: 0}
+var offset = v(0, 0)
+var timer, prevTime
+var paused = false
+
+function init() {
+  aspect = window.innerWidth / window.innerHeight
+  prevTime = performance.now()
+  timer = 0
+
+  scene = new T.Scene()
+  scene.background = Color.BACKGROUND
+  scene.fog = new T.FogExp2(Color.FOG, 0.00025)
+
+  objects = new T.Group()
+  scene.add(objects)
+
+  renderer = new T.WebGLRenderer({
+      canvas: canvas,
+      antialias: true
+  })
+  renderer.setPixelRatio(window.devicePixelRatio)
+  renderer.setSize(window.innerWidth/IMG_SCALE, window.innerHeight/IMG_SCALE)
+  document.body.appendChild(renderer.domElement)
+
+  if (ORTHO) {
+    camera = new T.OrthographicCamera(-frustumSize/2, frustumSize/2, frustumSize/aspect/2, -frustumSize/aspect/2, -10000, 10000)
+  } else {
+    camera = new T.PerspectiveCamera(30, window.innerWidth / window.innerHeight, 1, 10000)
+  }
+  camera.up.set(0, 0, 1)
+  camera.position.copy(new T.Vector3(Math.cos(Math.PI/4), Math.sin(Math.PI/4), 2/3).multiplyScalar(frustumSize))
+
+  // from three.js OrbitControls example
+  controls = new T.OrbitControls(camera, renderer.domElement)
+  controls.enableDamping = true
+  controls.dampingFactor = 0.05
+  controls.screenSpacePanning = false
+  controls.minDistance = maxHeight
+  controls.maxDistance = 1500
+  controls.maxPolarAngle = Math.PI / 2
+
+  camera.zoom = Math.max(window.innerWidth / window.innerHeight, window.innerHeight / window.innerWidth) * 2 // - .05
+  camera.updateProjectionMatrix()
+
+  var axesHelper = new T.AxesHelper(size/2)
+  axesHelper.geometry.translate(0, 0, maxHeight/2)
+  // scene.add(axesHelper)
+
+  raycaster = new T.Raycaster(ORIGIN, ORIGIN, 0, tileSize*5)
+
+  var terrain_geom = new T.BufferGeometry()
+  var indices = []
+  for (var i = 0; i < tiles; i++) {
+      for (var j = 0; j < tiles; j++) {
+          var a = i * (tiles + 1) + (j + 1)
+          var b = i * (tiles + 1) + j
+          var c = (i + 1) * (tiles + 1) + j
+          var d = (i + 1) * (tiles + 1) + (j + 1)
+          if ((i + j) % 2) {
+              indices.push(b, a, d)
+              indices.push(b, d, c)
+          } else {
+              indices.push(a, c, b)
+              indices.push(a, d, c)
+          }
+      }
+  }
+  terrain_geom.setIndex(indices)
+  terrain = new T.Mesh(terrain_geom, new T.MeshStandardMaterial({
+    metalness: 0,
+    roughness: 1,
+    flatShading: true,
+    vertexColors: T.VertexColors
+  }))
+  scene.add(terrain)
+
+  var liquid_geom = new T.CylinderGeometry(radius - 0.5, radius - 0.5, liquidHeight - 1, 256)
+  liquid_geom.translate(0, -liquidHeight/2, 0)
+  liquid_geom.lookAt(new T.Vector3(0, 1, 0))
+  liquid = new T.Mesh(liquid_geom, new T.MeshStandardMaterial({
+    metalness: 0,
+    flatShading: true,
+    color: Color.LIQUID,
+    transparent: true,
+    opacity: 0.65
+  }))
+  scene.add(liquid)
+
+  var sides_geom = new T.BufferGeometry()
+  var indices = []
+  for (var i = 0; i < 256; i++) {
+      var a = i*2
+      var b = i*2 + 1
+      var c = i*2 + 3
+      var d = i*2 + 2
+      indices.push(a, c, b)
+      indices.push(a, d, c)
+  }
+  sides_geom.setIndex(indices)
+  sides = new T.Mesh(sides_geom, new T.MeshStandardMaterial({
+    metalness: .3,
+    roughness: 1,
+    flatShading: true,
+    vertexColors: T.VertexColors,
+    side: T.DoubleSide
+  }))
+  scene.add(sides)
+
+  var bottom_geom = new T.CircleGeometry(radius, 256)
+  bottom_geom.lookAt(new T.Vector3(0, 0, 1))
+  scene.add(new T.Mesh(bottom_geom, new T.MeshBasicMaterial({
+    color: Color.BOTTOM,
+    side: T.DoubleSide
+  })))
+
+  scene.add(new T.AmbientLight(0xd9b3ff))
+  var directionalLight = new T.DirectionalLight(0xffffbf, 1.25)
+  directionalLight.position.set(0.5, -0.5, 0.75)
+  directionalLight.position.normalize()
+  scene.add(directionalLight)
+  var directionalLight = new T.DirectionalLight(0x3300ff, 0.75)
+  directionalLight.position.set(-0.5, 0.5, 1.5)
+  directionalLight.position.normalize()
+  scene.add(directionalLight)
+
+  const handle_pause = () => { pause(true) }
+  window.addEventListener('blur', handle_pause)
+  window['disable-blur'] = () => window.removeEventListener('blur', handle_pause)
+  if (window.matchMedia('(display-mode: standalone)').matches) window['disable-blur']()
+  
+  window.addEventListener('focus', () => { pause(false) })
+  window.addEventListener('resize', onWindowResize, false)
+  window.document.addEventListener('keydown', (event) => {
+    switch(event.key) {
+      case ' ':
+        generate()
+        render()
+        break
+      case 'p':
+        pause(!paused)
+        break
+      case 'w': dirs.up = 1; break
+      case 's': dirs.down = -1; break
+      case 'a': dirs.left = -1; break
+      case 'd': dirs.right = 1; break
+    }
+  }, false)
+  window.document.addEventListener('keyup', (event) => {
+    switch(event.key) {
+      case 'w': dirs.up = 0; break
+      case 's': dirs.down = 0; break
+      case 'a': dirs.left = 0; break
+      case 'd': dirs.right = 0; break
+    }
+  }, false)
+
+  generate(!!localStorage.getItem('seed'))
+}
+
+let _seed
+debug.seed = debug.seed || (x => x && Number(x))(localStorage.getItem('seed'))
+function generate(move=false) {
+  if (!move) {
+    _seed = debug.seed || Math.random()
+  }
+  console.debug('SEED', _seed)
+  localStorage.setItem('seed', _seed)
+  noise.seed(_seed)
+
+  // generate terrain
+  highestElevation = 0
+  var halfSize = size * .5
+  var vertices = []
+  var colors = []
+  for (var i = 0; i <= tiles; i++) {
+      var row = (i * tileSize) - halfSize
+      for (var j = 0; j <= tiles; j++) {
+        var col = (j * tileSize) - halfSize
+
+        var pos = new T.Vector2(col, row)
+        pos.clampLength(0, radius)
+        let height = getHeight(pos.x, pos.y)
+        if (height > highestElevation) highestElevation = height
+        vertices.push(pos.x, pos.y, height)
+        // colors.push(...Color.TOPS.clone().lerp(Color.COVER, (height - liquidHeight) / (maxHeight - liquidHeight)).toArray());
+      }
+  }
+  for (var i = 0; i <= tiles; i++) {
+      var row = (i * tileSize) - halfSize
+      for (var j = 0; j <= tiles; j++) {
+        var col = (j * tileSize) - halfSize
+
+        var pos = new T.Vector2(col, row)
+        pos.clampLength(0, radius)
+        let height = getHeight(pos.x, pos.y)
+        colors.push(...Color.TOPS.clone().lerp(Color.COVER, (height - liquidHeight) / (highestElevation - liquidHeight)).toArray())
+      }
+  }
+  terrain.geometry.addAttribute('position', new T.Float32BufferAttribute(vertices, 3))
+  terrain.geometry.addAttribute('color', new T.Float32BufferAttribute(colors, 3))
+
+  // generate sides
+  var vertices = []
+  var colors = []
+  const SIDES_N = 256
+  for (var i = 0; i <= SIDES_N; i++) {
+    var ang = Math.PI*2/SIDES_N * i
+    var x = Math.cos(ang) * radius
+    var z = Math.sin(ang) * radius
+
+    vertices.push(x, z, 0)
+    colors.push(...Color.BOTTOM.toArray())
+
+    vertices.push(x, z, getHeight(x, z))
+    colors.push(...Color.GROUND.toArray())
+    // colors.push(...Color.GROUND.toArray().map(x => x * rand.s(1, .1)))
+  }
+  sides.geometry.addAttribute('position', new T.Float32BufferAttribute(vertices, 3))
+  sides.geometry.addAttribute('color', new T.Float32BufferAttribute(colors, 3))
+}
+
+function getHeight(x, y) {
+  zoom = size/chunkSize
+  huge = noise.simplex2(x/zoom/4 - 10000, y/zoom/4 - 10000)
+  large = noise.simplex2(x/zoom*2 + 10000, y/zoom*2 + 10000)
+  medium = noise.simplex2(x/zoom*4 + 20000, y/zoom*4 + 20000)
+  small = noise.simplex2(x/zoom*10 + 30000, y/zoom*10 + 30000)
+  // value = Math.pow(huge*0.3 + large*0.5 + medium*0.15 + small*0.05, 3)
+  let height
+  value = Math.pow(huge*0.3 + large*0.5 + medium*0.15 + small*0.05, 3)
+  if (value > 0) {
+    // scale height down at sides
+    // value = value * (1 - Math.pow(new V2(x, y).mag * 2 / size, 2))
+
+    height = maths.lerp(liquidHeight + maxHeight/5, maxHeight, Math.sqrt(value))
+  } else {
+    height = maths.lerp(liquidHeight + maxHeight/5, liquidHeight + maxHeight/10, Math.sqrt(-value))
+  }
+
+  const dist = V.ne(x, y).ma()
+  const outer_dist = V.ne(1, 1).ad().sc(size/5).ma()
+  if (dist > outer_dist) {
+    height = maths.lerp(height, minHeight, Math.pow((dist - outer_dist) / outer_dist * 1.5, 2))
+  }
+
+  return height
+}
+
+function getBorder(x, y) {
+  const angle = V.ne(x, y).an()
+}
+
+function update(dt) {
+  controls.update()
+
+  // move pos according to keys
+  // const move = [0, 0]
+  // if (dirs.up) move[1] += 1
+  // if (dirs.down) move[1] -= 1
+  // if (dirs.left) move[0] -= 1
+  // if (dirs.right) move[0] += 1
+  // offset.x += Math.cos(cam_ang) * SCALE;
+  // offset.y += Math.sin(cam_ang) * SCALE;
+  // if (move.some(x => x)) generate(true)
+}
+
+// animation loop: update & render scene
+function animate() {
+  if (paused) return
+
+  requestAnimationFrame(animate)
+  var elapsedTime = performance.now() - prevTime
+  prevTime += elapsedTime
+  timer += elapsedTime * 0.0001
+  if (debug.fps) console.log(elapsedTime)
+
+  update(elapsedTime)
+  render()
+}
+
+// render scene to camera
+function render() {
+  var pos = scene.position.clone()
+  pos.z += maxHeight/4
+  camera.lookAt(pos)
+  renderer.render(scene, camera)
+}
+
+function onWindowResize() {
+  if (ORTHO) {
+    var aspect = window.innerWidth / window.innerHeight
+    camera.left   = - frustumSize / 2
+    camera.right  =   frustumSize / 2
+    camera.top    =   frustumSize / aspect / 2
+    camera.bottom = - frustumSize / aspect / 2
+  } else {
+    camera.aspect = window.innerWidth / window.innerHeight
+  }
+  camera.updateProjectionMatrix()
+  renderer.setSize(window.innerWidth/IMG_SCALE, window.innerHeight/IMG_SCALE)
+  render()
+}
+
+function pause(value) {
+  paused = (value !== null) ? value : true
+  controls.enabled = !paused
+  if (!paused) {
+    prevTime = performance.now()
+    animate()
+  }
+  togglePauseHint(paused)
+}
+
+let pointer_target
+const parseEventPoint = (e, pointer=v(0, 0)) => {
+  pointer.x = (e.clientX / window.innerWidth) * 2 - 1
+	pointer.y = - (e.clientY / window.innerHeight) * 2 + 1
+}
+// const event_pointer = v(0, 0)
+// let pointer_down = undefined
+// const pointer_raycast = new T.Raycaster(ORIGIN, ORIGIN, 0, 1e6)
+// const doPointerRaycast = (e, pointerdown=undefined, target=false) => {
+//   if (e) parseEventPoint(e, event_pointer)
+//   pointer_raycast.setFromCamera(event_pointer, camera)
+//   const intersects = pointer_raycast.intersectObjects(neighbors.map(x => x.object))
+//   neighbors.forEach(x => {
+//       x.object.material.opacity = placemarks(x.absolute_offset)?.length ? Math.min(.95, 1.25 * x.opacity) : x.opacity
+//       x.object.material.Color.SET(
+//           path.slice(-1)[0]?.object === x.object ? 0x222222 : 
+//           placemarks(x.absolute_offset)?.length ? 0xffffff : 
+//           path.map(x => x.object).includes(x.object) ? 0x222222 :
+//           Color.LIQUID)
+//   })
+//   document.body.style.cursor = intersects.length ? 'pointer' : ''
+//   if (intersects.length > 0) {
+//       for (let i = 0; i < intersects.length; i++) {
+//           const x = intersects[i].object
+//           const neighbor = neighbors.find(y => y.object === x)
+//           if (target?.object === x) {
+//               // console.debug(neighbor.group.position.clone().toArray().toString())
+//               // console.debug(neighbor.offset)
+//               let i = 0
+//               const animateRotation = () => {
+//                   if (i > 5) {
+//                       // setTimeout(() => {
+//                           // discs.translateOnAxis(v(...neighbor.offset.toArray(), 0), -1)
+//                           discs.translateOnAxis(v(0, 0, 1), radius * C_R_SPHERE)
+//                           discs.lookAt(v(0, 0, radius * 2 * C_R_SPHERE))
+//                           discs.translateOnAxis(v(0, 0, 1), -radius * C_R_SPHERE)
+//                           neighbor.generate()
+//                           render()
+//                           doPointerRaycast(e)
+//                       // }, 250)
+//                   } else {
+//                       // const lookAt = v(0, 0, 0).lerp(v(...neighbor.offset.toArray(), 0), .1)
+//                       // discs.translateOnAxis(lookAt, 1)
+//                       const lookAt = new T.Object3D()
+//                       lookAt.position.copy(neighbor_group.localToWorld(neighbor.group.position.clone()))
+//                       lookAt.translateOnAxis(v(0, 0, 1), radius * 2 * C_R_SPHERE)
+//                       discs.translateOnAxis(v(0, 0, 1), radius * C_R_SPHERE)
+//                       discs.lookAt(v(0, 0, radius * 2 * C_R_SPHERE).lerp(lookAt.position, .05 * i))
+//                       discs.translateOnAxis(v(0, 0, 1), -radius * C_R_SPHERE)
+                      
+//                       i += 1
+//                       requestAnimationFrame(animateRotation)
+//                   }
+//               }
+//               animateRotation()
+//           } else {
+//               x.material.Color.SET(0xffffff)
+//               x.material.opacity = 1
+//               // console.debug(neighbors.find(y => y.object === x).offset.toArray().toString())
+//           }
+//       }
+//   } else if (pointerdown) {
+//       const terrain_intersect = pointer_raycast.intersectObjects([terrain])[0]
+//       if (terrain_intersect) {
+//           const down_pointer = event_pointer.clone()
+//           pointer_down = async () => {
+//               if (event_pointer.equals(down_pointer)) {
+//                   const placemark = new Placemark(terrain_intersect.point, Math.PI * 2 * Math.random())
+//                   center.add(placemark)
+
+//                   await Promise.resolve()
+//                   pointer_down = true
+//                   await new Promise(x => setTimeout(x, 100))
+//                   while (pointer_down) {
+//                       placemark.scale.multiplyScalar(1.1)
+//                       placemark.position.z = Math.max(1, placemark.position.z - tileSize * placemark.scale.z * .09)
+
+//                       // break if placemark extends outside disc
+//                       let maxDistanceFromCenter = 0
+//                       placemark.traverse(object => {
+//                           const vertices = object.geometry?.vertices
+//                           if (vertices) {
+//                               for (let i = 0; i < vertices.length; i++) {
+//                                   const absolute = placemark.localToWorld(vertices[i].clone())
+//                                   const xy = v(absolute.x, absolute.y)
+//                                   maxDistanceFromCenter = Math.max(xy.length(), maxDistanceFromCenter)
+//                                   if (maxDistanceFromCenter > radius) {
+//                                       console.debug(maxDistanceFromCenter, radius, xy, vertices[i])
+//                                       pointer_down = false
+//                                       return
+//                                   }
+//                               }
+//                           }
+//                       })
+
+//                       await new Promise(x => setTimeout(x, 10))
+//                   }
+
+//                   localStorage.setItem(
+//                       'placemarks',
+//                       JSON.stringify((x => 
+//                           (x ? JSON.parse(x) : []).concat([{
+//                               position: placemark.position.toArray(),
+//                               angle: placemark.angle,
+//                               scale: placemark.scale.toArray()[0],
+//                               offset: placemark.offset.toArray(),
+//                           }])
+//                       )(localStorage.getItem('placemarks'))))
+//               }
+//           }
+//           setTimeout(() => doPointerRaycast(undefined, false), 250)
+//       }
+//   } else if (pointer_down) {
+//       pointer_down !== true && pointer_down()
+//       pointer_down = undefined
+//   }
+//   if (!pointerdown) pointer_down = undefined
+//   if (pointerdown === undefined) {
+//       event_pointer.set(1e6, 1e6)
+//   }
+//   return intersects[0]
+// }
+// window.addEventListener('pointermove', e => doPointerRaycast(e))
+// window.addEventListener('pointerdown', e => pointer_target = doPointerRaycast(e, true))
+// window.addEventListener('pointerup', e => doPointerRaycast(e, false, pointer_target))
+
+init()
+animate()
+
+    </script>
+  </body>
+</html>

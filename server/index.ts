@@ -96,6 +96,7 @@ import { get_friend_link } from './routes/profile/model';
 import { get_sponsors } from './routes/donoboard';
 import poll from './routes/poll';
 import beam from './routes/beam';
+import vibe from './routes/vibe';
 // console.log(randAlphanum(16))
 process.on('uncaughtException', e => {
     console.error('uncaughtException', e);
@@ -1104,8 +1105,8 @@ app.get('/*', async (req, res, next) => {
         if (id) {
             const { data } = await poll.model.get(id)
             Object.assign(replacements, {
-                title: `${data.question} (poll)` || `answer this poll`,
-                description: '/poll',
+                title: data.question ? `${data.question} (poll)` : `answer this poll`,
+                description: data.items.join(', '),
             })
         }
     }
@@ -1116,9 +1117,28 @@ app.get('/*', async (req, res, next) => {
         if (id) {
             const { data } = await beam.model.get(id)
             Object.assign(replacements, {
-                title: data ? `${data.name} (1hr download)` : `1hr download link`,
+                title: data.name ? `${data.name} (1hr download)` : `1hr download link`,
                 description: '/beam',
             })
+        }
+    }
+    else if (page === 'vibe') {
+        const url_search_str = req.url.split('/vibe')[1]
+        let [page='', id=undefined] = url_search_str.split('/').filter(x => x)
+        if (page.length > 8 && !id) {
+            id = page
+            page = 'map'
+        }
+        console.debug('[vibe] url parsed:', url_search_str, page, id)
+        if ((page === 'map' || page === 'post') && id) {
+            const { post } = await vibe.model.get_post('site', { id })
+            if (post) {
+                const icon = (isDevelopment() ? 'http://localhost:5050' : 'https://freshman.dev') + post.hrefs[0] || '/raw/vibe/icon-2.png'
+                Object.assign(replacements, {
+                    title: `${post.location} (vibe)`,
+                    icon,
+                })
+            }
         }
     }
 

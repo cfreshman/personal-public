@@ -66,7 +66,7 @@ export default () => {
   return <Style id='list-picker' className='tall wide' onDrop={async e => {
     e.preventDefault()
     handle.file(e.dataTransfer.items[0].getAsFile())
-  }}>
+  }} onDragOver={e => e.preventDefault()}>
     <InfoBody className='column'>
       {beam ? <>
         <InfoSection labels={[
@@ -96,7 +96,7 @@ export default () => {
         ]} className='column h100 w100'>
           <div className='spacer' />
           <div className='center-column wide'>
-            <InfoFile label='SELECT FILE TO BEAM' setValue={handle.file} className='large' />
+            <InfoFile label='SELECT FILE TO BEAM 🛸' setValue={handle.file} className='large' />
             <HalfLine />
             <div className='description center-row spaced'>{file ? <>uploading <Loader color='#fff' /></> : <>create a one-hour download link</>}</div>
           </div>

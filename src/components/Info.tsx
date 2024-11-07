@@ -1138,10 +1138,9 @@ export const InfoSlider = ({
   }
 
   useGrab(down)
-  return <_InfoSliderStyle ref={ref} {...props} className={`slider ${props.className??''}`} style={S(`
+  return <_InfoSliderStyle ref={ref} {...props} className={`slider ${props.className??''}`} style={{...S(`
   color: ${color};
-  ${props.style??''}
-  `)}>
+  `), ...(props.style||{})}}>
     <div className='slider-track' onClick={handle.move}></div>
     <div className='slider-handle-container'>
       <div className='slider-track-reference'>
@@ -1865,7 +1864,7 @@ export const ScrollText = withRef(({
       scroller.style.transition = ''
       scroller.style.left = `0`
       scroller.style.transition = `left ${ms}ms linear ${buffer}ms`
-      scroller.style.left = `-${scroller.clientWidth - scroller.parentNode.clientWidth}px`
+      scroller.style.left = `-${scroller.clientWidth - scroller.parentNode.parentNode.clientWidth}px`
 
       scrolled.current = false
       scrolling.current = true
@@ -1882,7 +1881,7 @@ export const ScrollText = withRef(({
             if (!scrolling.current && e.target === scroller) {
               scrolling.current = true
               scroller.style.transition = `left ${ms}ms linear`
-              scroller.style.left = `-${scroller.clientWidth - scroller.parentNode.clientWidth}px`
+              scroller.style.left = `-${scroller.clientWidth - scroller.parentNode.parentNode.clientWidth}px`
               return handle.reset(ms + buffer)
             }
           },

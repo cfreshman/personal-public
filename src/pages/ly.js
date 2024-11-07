@@ -281,8 +281,10 @@ const LinkView = ({handle, ly}) => {
   const display = !isMe || lyView
   const [modal, setModal] = useState(display)
   const close = () => {
-    setModal(false)
-    url.push(parseSubdomain() ? '/' : '/-search')
+    // location.reload()
+    history.back()
+    // setModal(false)
+    // url.push(parseSubdomain() ? '/' : '/-search')
   }
 
   return <>
@@ -326,7 +328,7 @@ const LinkView = ({handle, ly}) => {
       })} */}
     </InfoSection>
 
-    {modal ? <Modal><ModalStyle onClick={() => close()} style={{
+    {modal ? <Modal><ModalStyle style={{
       background: `hsl(${hashString(ly.hash) % 360} 100% 97%)`,
     }}>
       {ly.links.length === 0 ? '' : <InfoBody onClick={e => e.stopPropagation()}>
