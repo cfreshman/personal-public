@@ -64,8 +64,6 @@ CANNON.Demo = function(options){
     var visuals = this.visuals = [];
     var scenes = [];
     var gui = null;
-    var smoothie = null;
-    var smoothieCanvas = null;
     var scenePicker = {};
 
     var three_contactpoint_geo = new THREE.SphereGeometry( 0.1, 6, 6);
@@ -379,9 +377,9 @@ CANNON.Demo = function(options){
     var SHADOW_MAP_WIDTH = 1024;
     var SHADOW_MAP_HEIGHT = 1024;
     var MARGIN = 0;
-    const ASPECT = 12 / 9
     var SCREEN_WIDTH = window.innerWidth;
     var SCREEN_HEIGHT = window.innerHeight - 2 * MARGIN;
+    let ASPECT = 12 / 9 // SCREEN_WIDTH/SCREEN_HEIGHT 
     var camera, controls, renderer;
     var container;
     var NEAR = 5, FAR = 2000;
@@ -404,8 +402,8 @@ CANNON.Demo = function(options){
         camera = new THREE.PerspectiveCamera( 24, SCREEN_WIDTH / SCREEN_HEIGHT, NEAR, FAR );
 
         camera.up.set(0,0,1);
-        camera.position.set(0, 300, 300);
-        camera.lookAt(new THREE.Vector3(0,0,0))
+        camera.position.set(0, 250, 325);
+        camera.lookAt(new THREE.Vector3(0,0,-15))
 
         // SCENE
         scene = that.scene = new THREE.Scene();
@@ -488,66 +486,6 @@ CANNON.Demo = function(options){
         renderer.shadowMapEnabled = true;
         renderer.shadowMapSoft = true;
 
-        // Smoothie
-        smoothieCanvas = document.createElement("canvas");
-        smoothieCanvas.width = SCREEN_WIDTH;
-        smoothieCanvas.height = SCREEN_HEIGHT;
-        smoothieCanvas.style.opacity = 0.5;
-        smoothieCanvas.style.position = 'absolute';
-        smoothieCanvas.style.top = '0px';
-        smoothieCanvas.style.zIndex = 90;
-        container.appendChild( smoothieCanvas );
-        smoothie = new SmoothieChart({
-            labelOffsetY:50,
-            maxDataSetLength:100,
-            millisPerPixel:2,
-            grid: {
-                strokeStyle:'none',
-                fillStyle:'none',
-                lineWidth: 1,
-                millisPerLine: 250,
-                verticalSections: 6
-            },
-            labels: {
-                fillStyle:'rgb(180, 180, 180)'
-            }
-        });
-        smoothie.streamTo(smoothieCanvas);
-        // Create time series for each profile label
-        var lines = {};
-        var colors = [[255, 0, 0],[0, 255, 0],[0, 0, 255],[255,255,0],[255,0,255],[0,255,255]];
-        var i=0;
-        for(var label in world.profile){
-            var c = colors[i%colors.length];
-            lines[label] = new TimeSeries({
-                label : label,
-                fillStyle : "rgb("+c[0]+","+c[1]+","+c[2]+")",
-                maxDataLength : 500,
-            });
-            i++;
-        }
-
-        // Add a random value to each line every second
-        world.addEventListener("postStep",function(evt) {
-            for(var label in world.profile)
-                lines[label].append(world.time * 1000, world.profile[label]);
-        });
-
-        // Add to SmoothieChart
-        var i=0;
-        for(var label in world.profile){
-            var c = colors[i%colors.length];
-            smoothie.addTimeSeries(lines[label],{
-                strokeStyle : "rgb("+c[0]+","+c[1]+","+c[2]+")",
-                //fillStyle:"rgba("+c[0]+","+c[1]+","+c[2]+",0.3)",
-                lineWidth:2
-            });
-            i++;
-        }
-        world.doProfiling = false;
-        smoothie.stop();
-        smoothieCanvas.style.display = "none";
-
         // STATS
         stats = new Stats();
         stats.domElement.style.cssText = `
@@ -555,7 +493,7 @@ CANNON.Demo = function(options){
         top: 0; right: 0;
         z-index: 100;
         `
-        container.appendChild( stats.domElement );
+        // container.appendChild( stats.domElement );
 
         // // Trackball controls
         // controls = new THREE.TrackballControls( camera, renderer.domElement );

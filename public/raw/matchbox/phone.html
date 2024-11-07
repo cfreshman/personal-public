@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>matchbox.html (phone)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="icon" href="/raw/matchbox/app/icon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: inherit;
+      user-select: none;
+      touch-action: none;
+    }
+    :root {
+      font-size: 16px;
+      font-family: monospace;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+    }
+
+    body {
+      overflow: hidden;
+      background: #f8f8f8;
+      --control-bg: #fff8ee;
+      padding: .5em;
+      position: relative;
+    }
+
+    #matchbox-controller {
+      position: absolute;
+      bottom: 100%; left: 0;
+      width: 100vh;
+      height: 100vw;
+      rotate: 90deg;
+      transform-origin: bottom left;
+      /* background: #f8f8f8; */
+    }
+
+    #joystick {
+      width: 50vmin;
+      height: 50vmin;
+      border: 1px solid #000;
+      border-radius: 50%;
+      background: var(--control-bg);
+      margin: 10px;
+      position: absolute;
+      top: 50%;
+      left: 33%;
+      transform: translate(-50%, -50%);
+    }
+
+    #thumb {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50%; height: 50%;
+      background: #000;
+      border-radius: 50%;
+    }
+
+    button {
+      appearance: none;
+      background: var(--control-bg);
+      color: #000;
+      border: 1px solid currentcolor;
+      height: 1.5em;
+      border-radius: .75em;
+      padding: 0 .5em;
+      font-size: inherit;
+    }
+    button:active {
+      scale: 1.1;
+    }
+
+    #buttons {
+      position: absolute;
+      top: 50%;
+      right: 25%;
+      transform: translate(50%, -50%);
+      font-size: 3em;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="matchbox-controller">
+    <div id="joystick">
+      <div id="thumb"></div>
+    </div>
+    <div id="buttons" class="center-column spaced">
+      <button id="jump">jump</button>
+      <button id="boost">boost</button>
+    </div>
+    <button id="start" style="
+    visibility: hidden;
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    ">start</button>
+  </div>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="/lib/socket.io.min.js"></script>
+  <script type="text/javascript">
+    let socket
+    if (this.io) {
+      const backend = location.host.replace(':3000', ':5050')
+      console.debug('[socket CONNECT]', backend)
+      window.socket = socket = io(backend, {
+        closeOnBeforeunload: false,
+      })
+      socket?.on('connect', () => console.debug('[socket CONNECTED]'))
+    }
+  </script>
+  <script>
+    // matchbox.html (phone)
+    const id = location.hash.slice(1)
+    const player = store.load('matchbox-player', () => rand.alphanum(12))
+
+    const joystick = Q('#joystick')
+    const thumb = Q('#thumb')
+    const jump = Q('#jump')
+    const boost = Q('#boost')
+    const start = Q('#start')
+
+    let down
+    const handle = {
+      move: (e) => {
+        if (!down) return
+        e.preventDefault()
+        const { clientX, clientY } = e
+        const { left, top, width, height } = joystick.getBoundingClientRect()
+        let y = 1 - (clientX - left) / width
+        let x = (clientY - top) / height
+        // clip to circle
+        v = V.ne(x*2-1, 1-y*2)
+        if (v.ma() > 1) {
+          v = v.no()
+        }
+        socket.emit('matchbox', { id, player, x:v.x , y:v.y })
+        // update UI
+        thumb.style.left = (v.x/2+.5) * 100 + '%'
+        thumb.style.top = (-v.y/2+.5) * 100 + '%'
+      },
+      reset: () => {
+        socket.emit('matchbox', { id, player, x: 0, y: 0 })
+        thumb.style.left = '50%'
+        thumb.style.top = '50%'
+      },
+      join: () => {
+        socket.emit('matchbox', { id, player, join:true })
+      },
+    }
+    on(joystick, 'pointerdown', e => {
+      down = true
+      handle.move(e)
+    })
+    on(joystick, 'pointermove', handle.move)
+    on(joystick, 'pointerup pointercancel', () => {
+      down = false
+      handle.reset()
+    })
+
+    on(jump, 'pointerdown', () => socket.emit('matchbox', { id, player, jump: true }))
+    on(jump, 'pointerup pointercancel', () => socket.emit('matchbox', { id, player, jump: false }))
+
+    on(boost, 'pointerdown', () => socket.emit('matchbox', { id, player, boost: true }))
+    on(boost, 'pointerup pointercancel', () => socket.emit('matchbox', { id, player, boost: false }))
+
+    on(start, 'pointerdown', () => socket.emit('matchbox', { id, player, start: true }))
+
+    on(window, 'beforeunload', () => socket.emit('matchbox', { id, player, leave:true }))
+
+    socket.on('matchbox', ({ id:_id, ready, setting, color, host }) => {
+      if (id === _id) {
+        if (ready) {
+          handle.join()
+        }
+        if (setting) {
+          if (color) {
+            document.body.style['background'] = color
+          }
+          if (host) {
+            Q('#start').style.visibility = 'visible'
+          } else {
+            Q('#start').style.visibility = 'hidden'
+          }
+        }
+      }
+    })
+    handle.join()
+
+
+    // get rid of text selection
+    const f_e = e => e.preventDefault()
+    list('touchstart touchmove touchend touchcancel').map(e => on(document, e, f_e, { passive: false }))
+</script>
+</body>
+
+</html>
