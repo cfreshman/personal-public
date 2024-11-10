@@ -75,7 +75,7 @@ const _projects = {
   'timer': 'timer',
   // 'domains': '',
   // 'spot': ['smolify', 'simple Spotify UI'],
-  'matchbox': 'joycon couch game',
+  'matchbox': 'car-racing joycon couch game (local multiplayer)',
   'wwl-gallery': '<a href="/lib/2/wwl/script.js">wwl.js</a> gallery',
   // 'bugs':'',
   // 'uh':'',
@@ -134,7 +134,11 @@ const _projects = {
   'poll': 'create a textable poll',
   'beam': '1hr download link',
   'square': 'put stuff in a square',
-  'vibe': '24hr photos from bars/cafes/etc'
+  'vibe': '24hr photos from bars/cafes/etc',
+  'bracket': 'create a tournament bracket',
+  'matchbox.html': 'car-racing couch game (local multiplayer)',
+  'circuit.html': 'compilation of couch games (local multiplayer)',
+  'rephrase': 'x7 variations of your phrase',
 }
 // ''.split(' ').forEach(p => {
 //     if (!_projects[p]) _projects[p] = '' });
@@ -164,13 +168,13 @@ export const project_years = {
 export const tags = {
   all: '',
   // game: 'befruited snackman snakes wordbase minesweeper dots-and-boxes',
-  game: 'snackman snakes wordbase dots-and-boxes fishbowl matchbox tappy-square daily-nonogram lettercomb quadbase multipals letterpress apple-orange-banana chess cards',
+  game: 'snackman snakes wordbase dots-and-boxes fishbowl matchbox tappy-square daily-nonogram lettercomb quadbase multipals letterpress apple-orange-banana chess cards matchbox.html',
   // visual: 'cloud floating models terrain graffiti slime speckle arm color pixelworld bubble tube garden egg',
   visual: 'cloud floating models terrain graffiti slime-ants speckle arm gradients pixelworld bubble tube pixels egg gradients color optimal-maps',
   // social: 'chat graffiti live records speckle turt-smurts turt-smurts-2D u wordbase dots-and-boxes garden wall dinder',
   social: 'chat graffiti live records speckle turt-smurts u pixels wall dinder audio_form greeter proses plat not-linkedin cowork light vibe',
   site: 'notify reset search settings cookies otp donoboard developer-program',
-  tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat running emoji-banner poll beam square list-picker',
+  tool: 'tally txt follow-sync mastodon-dm switches morse websocket mouse-text keys wrap wwl-builder timer spot uh bugs ly manual-follows html-resume gradients link-timer optimal-maps plat itly rent-splitter selfchat running emoji-banner poll beam square list-picker bracket',
   demo: 'paths bloom kmeans',
   me: 'about coffee domains home projects guestbook',
 }

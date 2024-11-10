@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>tron.html (tv)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="icon" href="/raw/tv-phone/tron/app/icon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      font-size: 16px;
+      font-family: monospace;
+
+      * {
+        box-sizing: border-box;
+        font-family: inherit;
+      }
+    }
+
+    body {
+      overflow: hidden;
+      background: #111;
+    }
+
+    #tron-container {
+      position: relative;
+      canvas {
+        z-index: 1;
+      }
+    }
+    #tron-background {
+      content: '';
+      position: absolute;
+      /* background: url(./app/back.jpg) no-repeat center center fixed; */
+      background-size: cover;
+      background-color: #000000;
+      opacity: .5;
+      image-rendering: pixelated;
+    }
+
+    #tron-qr {
+      width: 50vmin;
+      height: 50vmin;
+      padding: 1em;
+      background: #fff;
+      border: 1px solid #000;
+
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    button,
+    select {
+      appearance: none;
+      height: 1.5em;
+      border-radius: .75em;
+      border: 1px solid #000;
+      box-shadow: 0 2px #ddd;
+      translate: 0 -2px;
+      background: #fff;
+      color: #000;
+      padding: 0 .5em;
+      text-align: center;
+      cursor: pointer;
+
+      &:active {
+        box-shadow: none;
+        translate: none;
+      }
+    }
+
+    .gui {
+      z-index: 1;
+      color: #fff;
+      padding: .5em;
+      visibility: hidden;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="tron-container" class="cover center">
+    <div id="tron-background"></div>
+  </div>
+  <div id="gui-menu" class="gui cover center column spaced">
+    <div class="center-column gap" style="
+    background: #111;
+    padding: .5em;
+    border: 1px solid #fff;
+    border-radius: .5em;
+    /* box-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000; */
+    ">
+      <div>lightcycle couch game</div>
+      <div style="font-size: 2em"><b>tron.html</b></div>
+      <div id="tron-qr"></div>
+      <div class="center-row pre" style="font-size: 2em"><span id="tron-joined">0</span> joined <img src="./app/bike.png" style="height:1em; scale:1.5"></div>
+    </div>
+    <div class="row spaced">
+      <button onclick="new_game()" style="font-size: 2em">start</button>
+    </div>
+  </div>
+  <div id="gui-play" class="gui cover">
+  </div>
+  <div id="gui-end" class="gui cover center column spaced">
+    <div id="tron-winner" class="center-row" style="font-size: 2em">game over</div>
+    <div class="row spaced">
+      <button style="font-size: 2em" onclick="
+      new_game()
+      ">again</button>
+      <button style="font-size: 2em" onclick="
+      state = STATES.MENU
+      update_gui()
+      ">menu</button>
+    </div>
+  </div>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="/lib/ext/qrcode.min.js"></script>
+  <script src="/lib/ext/noise.js"></script>
+  <script src="/raw/tv-phone/circuit/script.js"></script>
+  <script src="/lib/ext/socket.io.min.js"></script>
+  <script type="text/javascript">
+    let socket
+    if (this.io) {
+      const backend = location.host.replace(':3000', ':5050')
+      console.debug('[socket CONNECT]', backend)
+      window.socket = socket = io(backend, {
+        closeOnBeforeunload: false,
+      })
+      socket.on('connect', () => console.debug('[socket CONNECTED]'))
+      const emit_after_connect = (event, data) => {
+        if (socket.connected) {
+          socket.emit(event, data)
+        } else {
+          socket.once('connect', () => {
+            socket.emit(event, data)
+          })
+        }
+      }
+    }
+  </script>
+
+  <script>
+    const NAME = 'tron'
+    const log = named_log(NAME)
+
+    const id = location.hash = store.load('tron-id', () => rand.alphanum(12))
+    const room = `tron:${id}`
+    const target_emit = `emit:${room}`
+    const emit_to_room = (data) => socket.emit('emit', room, data)
+
+    const colors_player = rand.shuffle([
+      '#ff0000',
+      '#ffff00',
+      '#00ff00',
+      '#00ffff',
+      '#0000ff',
+      '#ff00ff',
+    ])
+    const colors_back = '#7dfdfe'
+
+    const players = []
+    const N_BOOSTS = 3
+    const BOOST_LEN = 7
+
+    const STATES = {
+      MENU: 'menu',
+      PLAY: 'play',
+      END: 'end',
+    }
+    let state = STATES.MENU
+
+    const ui = {
+      final: () => {
+        const winner = players.length === 1 ? players[0] : players.find(player => !player.out)
+        Q('#tron-winner').innerHTML = winner ? `
+        <div class="center-column">
+          👑
+          <span style="
+          background: ${winner.color};
+          border: 1px solid #fff;
+          height: 1em;
+          width: 1em;
+          display: inline-block;
+          border-radius: 50%;
+          "></span>
+        </div>
+        ` : 'draw'
+      }
+    }
+    const update_gui = () => {
+      QQ('.gui').map(x => x.style.visibility = 'hidden')
+      QQ(`#gui-${state}`).map(x => x.style.visibility = 'visible')
+
+      if (state === STATES.MENU) {
+        const l_qr = Q('#tron-qr')
+        l_qr.innerHTML = ''
+        const qr = new QRCode(l_qr, {
+          text: location.href.replace('tv.html', 'phone.html'),
+          width: 512,
+          height: 512,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        })
+      }
+
+      if (state === STATES.END) {
+        ui.final()
+      }
+    }
+    update_gui()
+
+    const keys = {}
+    on(window, 'keydown', e => {
+      keys[e.key] = true
+    })
+    on(window, 'keyup', e => {
+      keys[e.key] = false
+    })
+
+    const WIDTH = 120
+    const HEIGHT = 90
+    let canvas, ctx
+    let loop_handle
+    let fps = 20
+    let field
+
+    const init_game = () => {
+
+      canvas = node('canvas')
+      canvas.width = WIDTH
+      canvas.height = HEIGHT
+      canvas.style['image-rendering'] = 'pixelated'
+      canvas.style['border'] = '1px solid #fff'
+
+      ctx = canvas.getContext('2d')
+      ctx.imageSmoothingEnabled = false
+
+      Q('#tron-container').appendChild(canvas)
+
+      const do_resize = () => {
+        const { innerWidth, innerHeight } = window
+        const scale = Math.min(innerWidth / WIDTH, innerHeight / HEIGHT)
+        canvas.style.width = scale * WIDTH + 'px'
+        canvas.style.height = scale * HEIGHT + 'px'
+
+        const l_background = Q('#tron-background')
+        const scale_background = Math.min(innerWidth / WIDTH, innerHeight / HEIGHT)
+        l_background.style.width = scale_background * WIDTH + 'px'
+        l_background.style.height = scale_background * HEIGHT + 'px'
+      }
+      on(window, 'resize', do_resize)
+      do_resize()
+    }
+
+    const new_game = () => {
+      players.map(player => {
+        player.out = false
+        player.boosts = N_BOOSTS
+      })
+
+      field = range(WIDTH).map(x => range(HEIGHT).map(y => undefined))
+
+      // spawn players in circle
+      const n = players.length
+      const r = Math.min(WIDTH, HEIGHT) / 3
+      const center = V.ne(WIDTH / 2, HEIGHT / 2)
+      const start_angle = rand.f(maths.TAU)
+      players.map((player, i) => {
+        const angle = i / n * maths.TAU + start_angle
+        const raw_pos = V.p(angle, r).ad(center)
+        player.pos = V.ne(Math.round(raw_pos.x), Math.round(raw_pos.y))
+        player.last_dir = V.p(angle + Math.PI, 1)
+      })
+
+      state = STATES.PLAY
+      update_gui()
+
+      loop()
+    }
+
+    let last_t = Date.now()
+    const update = () => {
+      if (state === STATES.MENU) return
+      if (state === STATES.END) return
+
+      players.map(player => {
+        if (player.out) return
+
+        const { x, y } = player.pos
+        const { boost } = player
+
+        const norm_angle = (raw_angle) => (raw_angle % maths.TAU + maths.TAU) % maths.TAU
+        const get_cardinal = (raw_angle) => {
+          const angle = norm_angle(raw_angle)
+          if (angle < maths.TAU / 8) return 0
+          if (angle < 3 * maths.TAU / 8) return 1 * maths.TAU / 4
+          if (angle < 5 * maths.TAU / 8) return 2 * maths.TAU / 4
+          if (angle < 7 * maths.TAU / 8) return 3 * maths.TAU / 4
+          return 0
+        }
+
+        // convert player.x player.y to cardinal direction
+        const last_angle = get_cardinal(Math.atan2(player.last_dir.y, player.last_dir.x))
+        let angle
+        if (Math.sqrt(Math.pow(player.x, 2) + Math.pow(player.y, 2)) < .2) {
+          angle = last_angle
+        } else {
+          angle = get_cardinal(Math.atan2(-player.y, player.x))
+          // avoid moving backwards
+          if (norm_angle(angle - last_angle) === maths.TAU / 2) {
+            angle = last_angle
+          } else {
+            player.last_dir = V.ne(player.x, -player.y)
+          }
+        }
+
+        const moves = boost ? [1, 2] : [1]
+        const cells = moves.map(x => player.pos.ad(V.p(angle, x)))
+        // check for collision and paint cells
+        cells.map(cell => {
+          if (field[cell.x] && field[cell.x][cell.y]) {
+            player.out = true
+          } else {
+            field[cell.x][cell.y] = player.color + (boost ? '88' : '')
+          }
+        })
+        player.pos = cells.at(-1)
+        if (boost) {
+          player.boost -= 1
+        }
+
+        const { x:px, y:py } = player.pos
+        if (px < 0 || px >= WIDTH || py < 0 || py >= HEIGHT) {
+          player.out = true
+        }
+
+        if (player.out) {
+          if (players.filter(player => !player.out).length <= 1) {
+            state = STATES.END
+            loop_handle.interrupt()
+            update_gui()
+
+            // next circuit game
+            const scores = Object.fromEntries(players.map(player => [player.player, player.out ? 0 : 1]))
+            circuit.gameover(scores)
+            circuit.execute()
+            circuit.navigate(socket)
+          }
+        }
+
+        player.last_pos = V.ne(x, y)
+      })
+    }
+
+    const adj = [
+      [0, -1],
+      [0, 1],
+      [-1, 0],
+      [1, 0],
+    ]
+    const draw = () => {
+      ctx.clearRect(0, 0, WIDTH, HEIGHT)
+
+      field.map((row, x) => row.map((color, y) => {
+        if (color) {
+          ctx.fillStyle = color
+          ctx.fillRect(x, y, 1, 1)
+          // color adjacent pixels with transparency for glow effect
+          const pos = V.ne(x, y)
+          ctx.fillStyle = color.slice(0, 7) + '11'
+          adj.map(([dx, dy]) => {
+            const adj_pos = pos.ad(V.ne(dx, dy))
+            if (field[adj_pos.x] && field[adj_pos.x][adj_pos.y]) return
+            ctx.fillRect(adj_pos.x, adj_pos.y, 1, 1)
+          })
+        }
+      }))
+
+      players.map(player => {
+        if (player.out) return
+
+        const { x, y } = player.pos
+        ctx.fillStyle = player.color
+        ctx.fillRect(x, y, 1, 1)
+      })
+    }
+
+    const loop = () => {
+      loop_handle = defer(loop, 1000 / fps)
+
+      update()
+      draw()
+    }
+
+    socket.on('emit:' + room, data => {
+      const { id:data_id, player, x, y, boost, join, leave, start } = data
+      if (data_id !== id || !player) return
+      if (start && players.find(x => x.host)) {
+        if (state === STATES.MENU) new_game()
+        if (state === STATES.END) new_game()
+      }
+      let i = players.findIndex(p => p.player === player)
+      if (!leave) {
+        log('join', player)
+        if (i < 0) {
+          i = players.length
+          const claimed_colors = set(players.map(x => x.color))
+          const available_colors = colors_player.filter(x => !claimed_colors.has(x))
+          const color = available_colors.length ? rand.sample(available_colors) : rand.sample(colors_player)
+          const host = !players.find(x => x.host)
+          players.push({
+            player,
+            x: 0,
+            y: 0,
+            boosts: N_BOOSTS,
+            color,
+            host,
+          })
+          Q('#tron-joined').innerText = players.length
+        }
+        const { color, host, boosts } = players[i]
+        emit_to_room({ id, player, setting:true, color, host, boosts })
+      } else if (leave) {
+        log('leave', player)
+        const data = players.find(x => x.player === player)
+        if (data) {
+          if (state === STATES.MENU) {
+            // handle_leave(data)
+          } else {
+            data.left = true
+            Object.assign(data, {
+              x: 0,
+              y: 0,
+            })
+          }
+        }
+        return
+      }
+      
+      if (x !== undefined) players[i].x = x
+      if (y !== undefined) players[i].y = y
+      if (boost !== undefined) {
+        if (!boost) {
+          players[i].boosted = false
+        } else if (!players[i].boosted && boost && players[i].boosts > 0 && !players[i].boost) {
+          players[i].boost = BOOST_LEN
+          players[i].boosts -= 1
+          emit_to_room({ id, player, boosts: players[i].boosts })
+        }
+      }
+    })
+
+    const on_connect = () => {
+      log('connected')
+      emit_to_room({ id, ready: true }) // join room
+    }
+    socket.on('connect', on_connect)
+    on_connect()
+
+    init_game()
+  </script>
+</body>
+
+</html>

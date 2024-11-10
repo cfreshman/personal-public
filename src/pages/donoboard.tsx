@@ -25,7 +25,7 @@ export default () => {
   }
 
   // const [mode, set_mode] = useS('all')
-  const [mode, set_mode]: ['claimed'|'all', any] = store.use('donoboard-mode', { default: 'claimed' })
+  const [mode, set_mode]: ['claimed'|'all', any] = store.use('donoboard-mode', { default: 'all' })
   const last_mode = useR()
   const chart_data = useM(sponsors, slots, mode, () => {
     if (sponsors && slots) {
@@ -80,7 +80,7 @@ export default () => {
   usePageSettings({
     professional: true,
     uses: objects.new('chart.js'),
-    expand: true,
+    // expand: true,
   })
   return <Style>
     <InfoBody>

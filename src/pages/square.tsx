@@ -484,9 +484,9 @@ export default () => {
                 height:100%;
                 width:100%;
                 image-rendering: pixelated;
-                ${data.shadow ? `box-shadow: ${data.shadow_x||0}px ${data.shadow_y||2}px ${data.shadow_color||'#000'};` : ''}
+                ${data.shadow ? `box-shadow: ${data.shadow_x??0}px ${data.shadow_y??2}px ${data.shadow_color??'#000'};` : ''}
                 ${data.oval ? 'border-radius: 50%;' : ''}
-                ${data.border ? `border: ${data.border_width||1}px solid ${data.border_color||'#000'};` : ''}
+                ${data.border ? `border: ${data.border_width??1}px solid ${data.border_color??'#000'};` : ''}
                 ${data.color ? `background: ${data.color};` : ''}
                 ${data.opacity ? `opacity: ${data.opacity};` : ''}
                 `)} />
@@ -563,7 +563,7 @@ export default () => {
                 line-height: 1.1;
                 ${data.bold ? 'font-weight: bold;' : ''}
                 ${data.italic ? 'font-style: italic;' : ''}
-                ${data.shadow ? `text-shadow: ${data.shadow_x||0}px ${data.shadow_y||2}px ${data.shadow_color||'#000'};` : ''}
+                ${data.shadow ? `text-shadow: ${data.shadow_x??0}px ${data.shadow_y??2}px ${data.shadow_color??'#000'};` : ''}
                 ${data.opacity ? `opacity: ${data.opacity};` : ''}
                 `)}>{data.text}</span>
                 <div className='control' style={S(`
@@ -709,16 +709,16 @@ export default () => {
             <div className='center-row wide gap'>
               <InfoCheckbox label='shadow' value={entity.data.shadow||false} setter={shadow => handle.set_data({ shadow })} />
               {entity.data.shadow ? <>
-                <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.shadow_color || '#000'} setValue={value => {
+                <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.shadow_color ?? '#000'} setValue={value => {
                   entity.data.shadow_color = value
                   set_entities([...entities])
                 }} /></InfoButton>
                 <label>depth:</label>
-                <InfoSlider value={entity.data.shadow_x || 0} setValue={value => {
+                <InfoSlider value={entity.data.shadow_x ?? 0} setValue={value => {
                   entity.data.shadow_x = value
                   set_entities([...entities])
                 }} range={[-10, 10]} snap={1} style={S(`flex-shrink:1`)} />
-                <InfoSlider value={entity.data.shadow_y || 2} setValue={value => {
+                <InfoSlider value={entity.data.shadow_y ?? 2} setValue={value => {
                   entity.data.shadow_y = value
                   set_entities([...entities])
                 }} range={[-10, 10]} snap={1} style={S(`flex-shrink:1`)} />

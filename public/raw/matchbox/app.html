@@ -92,13 +92,8 @@
   <script src="/lib/noise.js"></script>
   <script src="/lib/three.js"></script>
   <script src="./app/cannon.js"></script>
-  <script src="./app/cannon.demo.js"></script>
-  <script src="./app/dat.gui.js"></script>
-  <!-- <script src="./lib/Three.js"></script> -->
-  <script src="./app/TrackballControls.js"></script>
+  <script src="./app/cannon-runner.js"></script>
   <script src="./app/Detector.js"></script>
-  <script src="./app/Stats.js"></script>
-  <script src="./app/smoothie.js"></script>
   <script>
     const log = named_log('matchbox')
     const T = THREE
@@ -158,7 +153,7 @@
       return (noise.simplex2(angle / 32 + 10_000_000, 0) + noise.simplex2(angle / 8 + 20_000_000, 0) + noise.simplex2(angle * 2 + 30_000_000, 0)) / 10 + 1
     }
 
-    const demo = new CANNON.Demo()
+    const runner = new CANNON.Runner()
     const MAX_COINS = 5
     const MAX_BOOST_PARTICLES = 20
     let boost_particles = []
@@ -221,7 +216,7 @@
       started = true
       
       if (!world) {
-        world = demo.getWorld()
+        world = runner.getWorld()
         world.broadphase = new CANNON.SAPBroadphase(world)
         world.gravity.set(0, 0, -20)
         world.defaultContactMaterial.friction = 1
@@ -309,7 +304,7 @@
       hfBody.position.set(-sizeX * hfShape.elementSize / 2, -sizeY * hfShape.elementSize / 2, -1)
       world.add(hfBody)
       terrain_body = hfBody
-      demo.addVisual(hfBody, new THREE.MeshLambertMaterial({ color: COLOR_SAND }))
+      runner.addVisual(hfBody, new THREE.MeshLambertMaterial({ color: COLOR_SAND }))
 
       liquid_meshes = range(N_LIQUID_LAYERS).map(i => {
         // add liquid layers to create the illusion of depth. lerp from min_height to liquid_height
@@ -324,7 +319,7 @@
           opacity: i === 0 ? 1 : 0.15,
           side: T.DoubleSide,
         }))
-        demo.getScene().add(liquid)
+        runner.getScene().add(liquid)
         return liquid
       })
 
@@ -335,7 +330,7 @@
         const coin_body = new CANNON.Body({ mass: 1 })
         coin_body.position.set(0, 0, -100)
         coin_body.addShape(coin_shape)
-        demo.addVisual(coin_body, new THREE.MeshStandardMaterial({ color: 0xffd700 }))
+        runner.addVisual(coin_body, new THREE.MeshStandardMaterial({ color: 0xffd700 }))
         world.add(coin_body)
         return coin_body
       })
@@ -348,7 +343,7 @@
           transparent: true,
           opacity: 0.25,
         }))
-        demo.getScene().add(boost)
+        runner.getScene().add(boost)
 
         // hide off screen
         boost.position.set(0, 0, -100)
@@ -378,7 +373,7 @@
       body_chassis.addShape(new CANNON.Box(new CANNON.Vec3(.9, 1, .67)), new CANNON.Vec3(-.3, 0, (.5 + .67) / 2))
       body_chassis.position.set(0, 0, 4)
       // body_chassis.angularVelocity.set(0, 0, 0.5)
-      demo.addVisual(body_chassis, new THREE.MeshLambertMaterial({ color: COLORS_CAR[rand.i(COLORS_CAR.length)] }))
+      runner.addVisual(body_chassis, new THREE.MeshLambertMaterial({ color: COLORS_CAR[rand.i(COLORS_CAR.length)] }))
 
       // Create the vehicle
       vehicle = new CANNON.RaycastVehicle({
@@ -434,7 +429,7 @@
         q.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), Math.PI / 2)
         wheelBody.addShape(cylinderShape, new CANNON.Vec3(), q)
         wheelBodies.push(wheelBody)
-        demo.addVisual(wheelBody, new THREE.MeshLambertMaterial({ color: 0x111111 }))
+        runner.addVisual(wheelBody, new THREE.MeshLambertMaterial({ color: 0x111111 }))
       }
       wheels = wheelBodies
 
@@ -483,8 +478,8 @@
       document.getElementById('final-score').innerText = score
     }
     const clear_game = () => {
-      demo.removeAllVisuals()
-      const scene = demo.getScene()
+      runner.removeAllVisuals()
+      const scene = runner.getScene()
       liquid_meshes.map(liquid => scene.remove(liquid))
       cleanups.map(cleanup => cleanup())
       cleanups = []
@@ -492,11 +487,11 @@
       document.getElementById('score').innerText = score
     }
     const reset_game = () => {
-      demo.changeScene(0) // triggers init_game
+      runner.changeScene(0) // triggers init_game
     }
 
-    demo.addScene('default', init_game)
-    demo.start()
+    runner.addScene('default', init_game)
+    runner.start()
 
     var max_steer = 0.7
     const drive_force = 2_000

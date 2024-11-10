@@ -480,10 +480,10 @@ io.on('connection', socket => {
     })
     socket.on('echo', (room, ...rest) => {
         const echoRoom = `echo:${room}`
-        console.log('[IO:echo]', room, rest)
+        // console.log('[IO:echo]', room, rest)
         socket.join(echoRoom)
 
-        if (!echoIgnores[room]?.has(rest[0])) console.log('[IO:echo]', echoRoom, !echoIgnores[room]?.has('data-'+rest[0]) ? JSON.stringify(rest) : undefined)
+        // if (!echoIgnores[room]?.has(rest[0])) console.log('[IO:echo]', echoRoom, !echoIgnores[room]?.has('data-'+rest[0]) ? JSON.stringify(rest) : undefined)
         if (rest.length) io.to(echoRoom).emit(echoRoom, ...rest)
     })
     socket.on('emit', async (room, ...rest) => {
@@ -491,13 +491,14 @@ io.on('connection', socket => {
         socket.join(echoRoom)
 
         const action = rest[0]
-        if (!echoIgnores[room]?.has(action)) console.log('[IO:emit]', echoRoom, !echoIgnores[room]?.has('data-'+action) ? JSON.stringify(rest) : undefined)
+        // if (!echoIgnores[room]?.has(action)) console.log('[IO:emit]', echoRoom, !echoIgnores[room]?.has('data-'+action) ? JSON.stringify(rest) : undefined)
         if (rest.length) socket.to(echoRoom).emit(echoRoom, ...rest)
 
-        const [room_type, _user] = room.split('-')
-        const user = await login.exists(_user) && _user
+        // const [room_type, _user] = room.split('-')
+        // const user = await login.exists(_user) && _user
+        const room_type = room
         const save = echoSaves[room_type]
-        if (!echoSaves[room] && user) echoSaves[room] = { history: [] } // save per-user history
+        if (save && !echoSaves[room] /* && user */) echoSaves[room] = { history: [] } // save per-user history
         if (save && save.ignore && !save.ignore.has(action)) {
             if (save.on.has(action)) echoSaves[room].history = []
             // console.debug('emit history', echoRoom, action, save.on.has(action), save)

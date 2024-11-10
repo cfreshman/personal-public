@@ -2,10 +2,10 @@
 <html>
 
 <head>
-  <title>matchbox.html (phone)</title>
+  <title>tron.html (phone)</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
-  <link rel="icon" href="/raw/matchbox/app/icon.png" />
+  <link rel="icon" href="/raw/tv-phone/tron/app/icon.png" />
   <style>
     * {
       margin: 0;
@@ -31,7 +31,7 @@
       position: relative;
     }
 
-    #matchbox-controller {
+    #tron-controller {
       position: absolute;
       bottom: 100%; left: 0;
       width: 100vh;
@@ -80,21 +80,24 @@
       border-radius: .75em;
       padding: 0 .5em;
       font-size: inherit;
-    }
-    button:is(:active, .active) {
-      scale: 1.1;
+      &:not(:disabled):is(:active, .active) {
+        scale: 1.1;
+      }
+      &:disabled {
+        filter: contrast(.5) brightness(.9);
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <div id="matchbox-controller">
+  <div id="tron-controller">
     <div id="joystick">
       <div id="thumb"></div>
     </div>
     <div id="buttons" class="column spaced">
-      <button id="jump">jump</button>
+      <!-- <button id="jump">jump</button> -->
       <!-- <button id="brake">brake</button> -->
       <button id="boost">boost</button>
     </div>
@@ -126,17 +129,14 @@
     circuit.handle_phone(socket)
     
     const id = location.hash.slice(1)
-    const player = store.load('matchbox-player', () => rand.alphanum(12))
+    const room = `tron:${id}`
+    const target_emit = `emit:${room}`
+    const emit_to_room = (data) => socket.emit('emit', room, data)
 
-    const AUDIO = {
-      coin: new Audio('./app/coin.mp3'),
-      // engine: new Audio('./app/engine.mp3'),
-      // boost: new Audio('./app/boost.mp3'),
-    }
-    AUDIO.coin.volume = 0.1
+    const player = store.load('tron-player', () => rand.alphanum(12))
 
     // necessary because 100vh is broken
-    const container = Q('#matchbox-controller')
+    const container = Q('#tron-controller')
     const resize = () => {
       container.style.height = window.innerWidth + 'px'
       container.style.width = window.innerHeight + 'px'
@@ -165,18 +165,18 @@
         if (v.ma() > 1) {
           v = v.no()
         }
-        socket.emit('matchbox', { id, player, x:v.x , y:v.y })
+        emit_to_room({ id, player, x:v.x , y:v.y })
         // update UI
         thumb.style.left = (v.x/2+.5) * 100 + '%'
         thumb.style.top = (-v.y/2+.5) * 100 + '%'
       },
       reset: () => {
-        socket.emit('matchbox', { id, player, x: 0, y: 0 })
+        emit_to_room({ id, player, x: 0, y: 0 })
         thumb.style.left = '50%'
         thumb.style.top = '50%'
       },
       join: () => {
-        socket.emit('matchbox', { id, player, join:true })
+        emit_to_room({ id, player, join:true })
       },
     }
     on(joystick, 'pointerdown', e => {
@@ -189,43 +189,43 @@
       handle.reset()
     })
 
-    on(jump, 'pointerdown', () => {
-      socket.emit('matchbox', { id, player, jump: true })
-      jump.classList.add('active')
-    })
-    on(jump, 'pointerup pointercancel', () => {
-      socket.emit('matchbox', { id, player, jump: false })
-      jump.classList.remove('active')
-    })
+    // on(jump, 'pointerdown', () => {
+    //   socket.emit('tron', { id, player, jump: true })
+    //   jump.classList.add('active')
+    // })
+    // on(jump, 'pointerup pointercancel', () => {
+    //   socket.emit('tron', { id, player, jump: false })
+    //   jump.classList.remove('active')
+    // })
 
     on(boost, 'pointerdown', () => {
-      socket.emit('matchbox', { id, player, boost: true })
+      emit_to_room({ id, player, boost: true })
       boost.classList.add('active')
     })
     on(boost, 'pointerup pointercancel', () => {
-      socket.emit('matchbox', { id, player, boost: false })
+      emit_to_room({ id, player, boost: false })
       boost.classList.remove('active')
     })
     
     // on(brake, 'pointerdown', () => {
-    //   socket.emit('matchbox', { id, player, brake: true })
+    //   socket.emit('tron', { id, player, brake: true })
     //   brake.classList.add('active')
     // })
     // on(brake, 'pointerup pointercancel', () => {
-    //   socket.emit('matchbox', { id, player, brake: false })
+    //   socket.emit('tron', { id, player, brake: false })
     //   brake.classList.remove('active')
     // })
 
     on(start, 'pointerdown', () => {
-      socket.emit('matchbox', { id, player, start: true })
+      emit_to_room( { id, player, start: true })
       start.classList.add('active')
     })
     on(start, 'pointerup pointercancel', () => {
-      socket.emit('matchbox', { id, player, start: false })
+      emit_to_room({ id, player, start: false })
       start.classList.remove('active')
     })
 
-    socket.on('matchbox', ({ id:_id, player:_player, ready, setting, color, host, coin }) => {
+    socket.on(target_emit, ({ id:_id, player:_player, ready, setting, color, host, boosts }) => {
       if (id === _id) {
         if (ready) {
           handle.join()
@@ -241,16 +241,15 @@
               Q('#start').style.visibility = 'hidden'
             }
           }
-          if (coin) {
-            // AUDIO.coin.currentTime = 0
-            // AUDIO.coin.play()
-          }
+          if (boosts !== undefined) {
+            boost.innerHTML = `boost x${boosts}`
+            boost.disabled = !boosts
+          } 
         }
       }
     })
 
     const on_connect = () => {
-      socket.emit('join', `matchbox-${id}`)
       handle.join()
     }
     socket.on('connect', on_connect)
@@ -259,7 +258,7 @@
 
     // ping once every 5s to keep connection alive
     setInterval(() => {
-      socket.emit('matchbox', { id, player })
+      emit_to_room({ id, player })
     }, 5_000)
 
     // get rid of text selection

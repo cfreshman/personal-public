@@ -512,4 +512,40 @@ export const replace = {
     keywords: 'vibe, social, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/vibe/icon-2.png',
   },
+  'matchbox.html': {
+    title: 'matchbox.html',
+    description: 'car-racing couch game (local multiplayer)',
+    keywords: 'matchbox, racing, couch game, local multiplayer, social, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/matchbox/app/icon.png',
+  },
+  'bumperships.html': {
+    title: 'bumperships.html',
+    description: 'starfield couch game (local multiplayer)',
+    keywords: 'bumperships, starfield, couch game, local multiplayer, social, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/tv-phone/bumperships/app/icon.png',
+  },
+  'tron.html': {
+    title: 'tron.html',
+    description: 'lightcycle couch game (local multiplayer)',
+    keywords: 'tron, lightcycle, couch game, local multiplayer, social, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/tv-phone/tron/app/icon.png',
+  },
+  'doodle.html': {
+    title: 'doodle.html',
+    description: 'drawing couch game (local multiplayer)',
+    keywords: 'doodle, drawing, couch game, local multiplayer, social, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/tv-phone/doodle/app/icon.png',
+  },
+  'circuit.html': {
+    title: 'circuit.html',
+    description: 'couch games (local multiplayer)',
+    keywords: 'circuit, couch games, local multiplayer, social, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/tv-phone/circuit/app/icon.png',
+  },
+  'rephrase': {
+    title: '/rephrase',
+    description: 'x7 variations of a phrase',
+    keywords: 'rephrase, reword, social, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-rephrase.png',
+  },
 }

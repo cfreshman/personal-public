@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>circuit.html (tv)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="icon" href="/raw/tv-phone/circuit/app/icon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    :root {
+      font-size: 16px;
+      font-family: monospace;
+
+      * {
+        box-sizing: border-box;
+        font-family: inherit;
+      }
+    }
+
+    body {
+      overflow: hidden;
+      background: #eee;
+    }
+
+    #circuit-qr {
+      width: 50vmin;
+      height: 50vmin;
+      padding: 1em;
+      background: #fff;
+      border: 1px solid #000;
+
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    button,
+    select {
+      appearance: none;
+      height: 1.5em;
+      border-radius: .75em;
+      border: 1px solid #000;
+      box-shadow: 0 2px #000;
+      translate: 0 -2px;
+      background: #fff;
+      color: #000;
+      padding: 0 .5em;
+      text-align: center;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .67em;
+
+      &:active {
+        box-shadow: none;
+        translate: none;
+      }
+    }
+    
+    /* https://moderncss.dev/pure-css-custom-checkbox-style/ */
+    input[type=checkbox] {
+      appearance: none;
+      background-color: transparent;
+      border: 1px solid currentcolor;
+      font-size: inherit;
+      height: .8em;
+      width: .8em;
+      display: grid;
+      place-content: center;
+      cursor: pointer;
+      border-radius: .1em;
+    }
+    input[type=checkbox]::before {
+      content: "";
+      width: calc(.8em - 4px);
+      height: calc(.8em - 4px);
+      transform: scale(0);
+      transition: 25ms transform ease-in-out;
+      box-shadow: inset 1em 1em #0088ff;
+      border-radius: calc(.1em - 1px);
+    }
+    input[type=checkbox]:checked::before {
+      transform: scale(1);
+    }
+
+    .gui {
+      z-index: 1;
+      color: #000;
+      /* text-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000; */
+      padding: .5em;
+      visibility: hidden;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="circuit-root">
+
+  </div>
+  <div id="gui-menu" class="gui cover center column spaced">
+    <div class="center-column gap" style="
+    color: #fff;
+    background: #111;
+    padding: .5em;
+    border-radius: .5em;
+    border: 1px solid gold;
+    ">
+      <div>couch games</div>
+      <div style="font-size: 2em"><b>circuit.html</b></div>
+      <div id="circuit-qr"></div>
+      <div style="font-size: 2em"><span id="circuit-joined">0</span> joined <span style="font-family:system-ui">🕹️</span></div>
+    </div>
+    <div class="row spaced">
+      <button onclick="new_circuit()" style="font-size: 2em">start</button>
+    </div>
+  </div>
+  <div id="gui-play" class="gui cover row spaced" style="
+  color: #000;
+  text-shadow: none;
+  "></div>
+  <div id="gui-end" class="gui cover center column spaced">
+    <div id="circuit-final" class="row gap" style="font-size:2em; align-items:end">game over</div>
+    <div style="font-size: 2em; font-weight: bold;">circuit complete</div>
+    <div class="row spaced">
+      <button style="font-size: 2em" onclick="
+      circuit.reset()
+      circuit.execute()
+      circuit.navigate(socket)
+      ">again</button>
+      <button style="font-size: 2em" onclick="
+      circuit.clear()
+      state = STATES.MENU
+      update_gui()
+      ">close circuit</button>
+    </div>
+  </div>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="/lib/ext/qrcode.min.js"></script>
+  <script src="/lib/ext/noise.js"></script>
+  <script src="/raw/tv-phone/circuit/script.js"></script>
+  <script src="/lib/ext/socket.io.min.js"></script>
+  <script type="text/javascript">
+    let socket
+    if (this.io) {
+      const backend = location.host.replace(':3000', ':5050')
+      console.debug('[socket CONNECT]', backend)
+      window.socket = socket = io(backend, {
+        closeOnBeforeunload: false,
+      })
+      socket.on('connect', () => console.debug('[socket CONNECTED]'))
+      const emit_after_connect = (event, data) => {
+        if (socket.connected) {
+          socket.emit(event, data)
+        } else {
+          socket.once('connect', () => {
+            socket.emit(event, data)
+          })
+        }
+      }
+    }
+  </script>
+  <script>
+    const NAME = 'circuit'
+    const log = named_log(NAME)
+
+    circuit.prep_tv()
+    const id = location.hash = store.load('circuit-id', () => rand.alphanum(12))
+    const room = `circuit:${id}`
+    const target_emit = `emit:${room}`
+    const emit_to_room = (data) => socket.emit('emit', room, data)
+    
+    const colors_player = rand.shuffle([
+      '#ff0000',
+      '#ffff00',
+      '#00ff00',
+      '#00ffff',
+      '#0000ff',
+      '#ff00ff',
+    ])
+    const colors_back = '#eeeeee'
+
+    const players = []
+
+    const STATES = {
+      MENU: 'menu',
+      CREATE: 'play',
+      END: 'end',
+    }
+    let state = circuit.is_complete() ? STATES.END : circuit.is_active() ? STATES.CREATE : STATES.MENU
+
+    const ui = {
+      setup: () => {
+        const l_play = Q('#gui-play')
+        l_play.innerHTML = ''
+        if (circuit.is_active()) {
+          const state = circuit.get()
+          const l_state = node(`<div class="cover center column gap">
+            <div style="font-size: 2em"><b>round ${state.round + 1} / ${state.order.length}</b></div>
+            <button id="input-enter" style="font-size: 2em">enter circuit</button>
+            <br />
+            <button id="input-exit">exit circuit</button>
+          </div>`)
+          l_play.appendChild(l_state)
+          on(Q('#input-exit'), 'click', () => {
+            circuit.clear()
+            location.reload()
+          })
+          on(Q('#input-enter'), 'click', () => {
+            circuit.navigate(socket)
+          })
+        } else {
+          const l_games = node(`<div class="cover center column gap">
+            <div class="column gap">
+              <div style="font-size: 2em"><b>game selection:</b></div>
+              <div class="column gap">
+                ${keys(circuit.games).map(game => `<button style="font-size: 2em" onclick="event.target === event.currentTarget && Q(event.target, 'input').click()">
+                  <input id="input-game-${game}" type="checkbox" checked>
+                  ${game}
+                </button>
+                `).join('')}
+              </div>
+              <br />
+              <div style="font-size: 2em">options:</div>
+              <div>
+                <select id="input-rounds" style="font-size: 2em">
+                  ${circuit.round_options.map((option, i) => `<option value="${option}" ${i === 0 ? 'selected' : ''}>${option}</option>`).join('')}
+                </select>
+                <label style="font-size: 2em">rounds</label>
+              </div>
+              <button style="font-size: 2em" onclick="event.target === event.currentTarget && Q(event.target, 'input').click()">
+                <input id="input-shuffle" type="checkbox" checked>
+                shuffle
+              </button>
+              <br />
+              <br />
+              <div class="row spaced">
+                <button id="input-back" style="font-size: 2em">back</button>
+                <button id="input-start" style="font-size: 2em">play!</button>
+              </div>
+            </div>
+          </div>`)
+          l_play.appendChild(l_games)
+  
+          const l_start = Q(l_play, '#input-start')
+          on(l_start, 'click', () => {
+            const games = keys(circuit.games).filter(game => Q(`#input-game-${game}`).checked)
+            const shuffle = Q('#input-shuffle').checked
+            const rounds = parseInt(Q('#input-rounds').value)
+            log('start', {games, shuffle, rounds})
+            circuit.create({
+              games,
+              shuffle,
+              rounds,
+            })
+            circuit.execute()
+            circuit.navigate(socket)
+          })
+
+          const l_back = Q(l_play, '#input-back')
+          on(l_back, 'click', () => {
+            state = STATES.MENU
+            update_gui()
+          })
+        }
+      },
+      final: () => {
+        const circuit_state = circuit.get()
+        log({ circuit_state, players })
+        players.map(player => {
+          player.score = circuit_state.wins[player.player]
+        })
+        const l_scores = Q('#circuit-final')
+        l_scores.innerHTML = ''
+        const max_score = maths.max(players.map(p => p.score))
+        players.map((player, i) => {
+          l_scores.appendChild(node(`<div class="center-column gap" style="align-items: flex-end">
+            ${max_score && player.score === max_score ? '<div style="font-size: 1.5em">👑</div>' : ''}
+            <div style="
+            background: ${player.color};
+            color: ${colors.readable(player.color)};
+            padding: .25em;
+            // border: 1px solid #fff;
+            box-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
+            min-height: 1em;
+            min-width: 1.5em;
+            ">
+              <div style="font-size: 1.5em">${player.score}</div>
+            </div>
+          </div>`))
+        })
+      },
+    }
+    const update_gui = () => {
+      QQ('.gui').map(x => x.style.visibility = 'hidden')
+      QQ(`#gui-${state}`).map(x => x.style.visibility = 'visible')
+
+      if (state === STATES.MENU) {
+        const l_qr = Q('#circuit-qr')
+        l_qr.innerHTML = ''
+        const qr = new QRCode(l_qr, {
+          text: location.href.replace('tv.html', 'phone.html'),
+          width: 512,
+          height: 512,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        })
+      }
+
+      if (state === STATES.CREATE) {
+        ui.setup()
+      }
+      if (state === STATES.END) {
+        ui.final()
+      }
+    }
+    update_gui()
+
+    const new_circuit = () => {
+      state = STATES.CREATE
+      update_gui()
+    }
+
+    socket.on('emit:' + room, message => {
+      log(message)
+      const { id:data_id, player, join, leave, start } = message
+      if (data_id !== id || !player) return
+      if (start && players.find(x => x.host)) {
+        if (state === STATES.MENU) new_circuit()
+        if (state === STATES.END) new_circuit()
+      }
+      let i = players.findIndex(p => p.player === player)
+      if (!leave) {
+        log('join', player)
+        if (i < 0) {
+          i = players.length
+          const claimed_colors = set(players.map(x => x.color))
+          const available_colors = colors_player.filter(x => !claimed_colors.has(x))
+          const color = available_colors.length ? rand.sample(available_colors) : colors.random()
+          const host = !players.find(x => x.host)
+          players.push({
+            player,
+            score: 0,
+            color,
+            host,
+            circuit: undefined,
+          })
+          Q('#circuit-joined').innerText = players.length
+        }
+        const { color, host } = players[i]
+        emit_to_room({ id, player, setting:true, color, host })
+        if (state === STATES.END) ui.final()
+      } else if (leave) {
+        log('leave', player)
+        const p_data = players.find(x => x.player === player)
+        if (p_data) {
+          if (state === STATES.MENU) {
+            // handle_leave(data)
+          } else {
+            p_data.left = true
+          }
+        }
+        return
+      }
+    })
+
+    const on_connect = () => {
+      log('connected')
+      emit_to_room({ id, ready: true }) // join room
+    }
+    socket.on('connect', on_connect)
+    on_connect()
+  </script>
+</body>
+
+</html>

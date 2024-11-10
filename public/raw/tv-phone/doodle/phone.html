@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>doodle.html (phone)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="icon" href="/raw/tv-phone/doodle/app/icon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: inherit;
+      user-select: none;
+      touch-action: none;
+    }
+    :root {
+      font-size: 16px;
+      font-family: monospace;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      overflow: hidden;
+      background: #f8f8f8;
+      --control-bg: #fff8ee;
+      padding: .5em;
+      position: relative;
+    }
+
+    button {
+      appearance: none;
+      background: var(--control-bg);
+      color: #000;
+      border: 1px solid currentcolor;
+      height: 1.5em;
+      border-radius: .75em;
+      padding: 0 .5em;
+      font-size: inherit;
+      &:not(:disabled):is(:active, .active) {
+        scale: 1.1;
+      }
+      &:disabled {
+        filter: contrast(.5) brightness(.9);
+      }
+    }
+
+    #doodle-canvas {
+      background: #fff;
+      border: 1px solid #000;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="doodle-controller" class="cover">
+    <div id="gui-init" class="gui cover center column spaced">
+      <div>waiting for game to start</div>
+      <button id="start" style="visibility: hidden">start</button>
+    </div>
+    <div id="gui-doodle" class="gui cover column center">
+      <div id="doodle-word"></div>
+      <canvas id="doodle-canvas" height="512" width="512"></canvas>
+    </div>
+    <div id="gui-guess" class="gui cover center">
+      <div id="doodle-guesslist" class="middle-row wrap spaced"></div>
+    </div>
+  </div>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="/raw/tv-phone/circuit/script.js"></script>
+  <script src="/lib/socket.io.min.js"></script>
+  <script type="text/javascript">
+    let socket
+    if (this.io) {
+      const backend = location.host.replace(':3000', ':5050')
+      console.debug('[socket CONNECT]', backend)
+      window.socket = socket = io(backend, {
+        closeOnBeforeunload: true,
+      })
+      socket?.on('connect', () => console.debug('[socket CONNECTED]'))
+    }
+  </script>
+  <script>
+    circuit.prep_phone()
+    circuit.handle_phone(socket)
+
+    const log = named_log('doodle')
+    const id = location.hash.slice(1)
+    const room = `doodle:${id}`
+    const target_emit = `emit:${room}`
+    const emit_to_room = (data) => socket.emit('emit', room, data)
+
+    const player = store.load('doodle-player', () => rand.alphanum(12))
+    const STATES = {
+      INIT: 'init',
+      DOODLE: 'doodle',
+      GUESS: 'guess',
+    }
+    const data = {}
+    const do_init = () => {
+      data.state = STATES.INIT
+      data.doodle = undefined
+      data.out = false
+      data.doodler = false
+      Q('#doodle-canvas').getContext('2d').clearRect(0, 0, 512, 512)
+    }
+    do_init()
+
+    const update_gui = () => {
+      QQ('.gui').map(x => x.style.visibility = 'hidden')
+      QQ(`#gui-${data.state}`).map(x => x.style.visibility = 'visible')
+    }
+    const render = {
+      game: () => {
+        if (!data.doodle) return
+        if (data.state === STATES.DOODLE) {
+          // show word
+          Q('#doodle-word').innerText = data.doodle.word
+        } else {
+          // show guess list
+          const { word, others, order } = data.doodle
+          const guesses = order.map(x => !x ? word : others[x-1])
+
+          const container = Q('#doodle-guesslist')
+          container.innerHTML = ''
+          guesses.map((x, i) => {
+            const l_guess = node(`<button style="font-size:1.5em">${x}</button>`)
+            on(l_guess, 'pointerdown', () => {
+              emit_to_room({ id, player, guess: x })
+            })
+            container.appendChild(l_guess)
+          })
+        }
+      },
+    }
+
+    let down = undefined
+    const canvas = Q('#doodle-canvas')
+    const do_resize = () => {
+      const aspect = canvas.width / canvas.height
+      const min_outer = Math.min(window.innerWidth, window.innerHeight)
+      const size = min_outer * .9
+      canvas.style.width = size + 'px'
+      canvas.style.height = size / aspect + 'px'
+    }
+    on(window, 'resize', do_resize)
+    do_resize()
+    const ctx = canvas.getContext('2d')
+    const e_to_pos = (e) => {
+      const { clientX, clientY } = e
+      const { left, top, width, height } = canvas.getBoundingClientRect()
+      const x = (clientX - left) / width * canvas.width
+      const y = (clientY - top) / height * canvas.height
+      return [x, y]
+    }
+    const handle = {
+      join: () => {
+        emit_to_room({ id, player, join:true })
+      },
+      down: (e) => {
+        e.preventDefault()
+        down = e_to_pos(e)
+      },
+      move: (e) => {
+        if (!down) return
+        e.preventDefault()
+        const pos = e_to_pos(e)
+        ctx.strokeStyle = '#000'
+        ctx.lineWidth = 16
+        ctx.lineCap = 'round'
+        ctx.beginPath()
+        ctx.moveTo(...down)
+        ctx.lineTo(...pos.map(x => x + .001)) // add titny offset to force line
+        ctx.stroke()
+        ctx.imageSmoothingEnabled = false
+        down = pos
+        emit_to_room({ id, player, image: canvas.toDataURL() })
+      }
+    }
+    on(canvas, 'pointerdown', e => {
+      handle.down(e)
+      handle.move(e)
+    })
+    on(window, 'pointermove', e => {
+      handle.move(e)
+    })
+    on(window, 'pointerup pointercancel', () => {
+      down = undefined
+    })
+
+    const start = Q('#start')
+    on(start, 'pointerdown', () => {
+      emit_to_room( { id, player, start: true })
+      start.classList.add('active')
+    })
+    on(start, 'pointerup pointercancel', () => {
+      emit_to_room({ id, player, start: false })
+      start.classList.remove('active')
+    })
+
+    update_gui()
+
+    socket.on(target_emit, (message) => {
+      const { id:_id, player:_player, ready, setting, color, host, active, out, doodle, end } = message
+      log(data)
+      if (id === _id) {
+        if (ready) {
+          handle.join()
+          do_init()
+        }
+        if (end) {
+          do_init()
+        }
+        if (player === _player) {
+          if (setting) {
+            if (color) {
+              document.body.style['background'] = color
+            }
+            if (host) {
+              Q('#start').style.visibility = 'inherit'
+            } else {
+              Q('#start').style.visibility = 'hidden'
+            }
+          }
+          if (active !== undefined) {
+            data.doodler = active
+            data.state = active ? STATES.DOODLE : STATES.GUESS
+          }
+          if (out !== undefined) {
+            data.out = out
+          }
+          if (doodle) {
+            data.doodle = doodle
+          }
+          render.game()
+        }
+      }
+      update_gui()
+    })
+
+    const on_connect = () => {
+      handle.join()
+    }
+    socket.on('connect', on_connect)
+    on(window, 'focus hashchange', on_connect)
+    on_connect()
+
+    // ping once every 5s to keep connection alive
+    setInterval(() => {
+      emit_to_room({ id, player })
+    }, 5_000)
+
+    // get rid of text selection
+    const f_e = e => e.preventDefault()
+    list('touchstart touchmove touchend touchcancel').map(e => on(document, e, f_e, { passive: false }))
+</script>
+</body>
+
+</html>

@@ -1,13 +1,6 @@
 /* global CANNON,THREE,Detector */
 
 CANNON = CANNON || {};
-
-/**
- * Demo framework class. If you want to learn how to connect Cannon.js with Three.js, please look at the examples/ instead.
- * @class Demo
- * @constructor
- * @param {Object} options
- */
 CANNON.Demo = function(options){
 
     var that = this;
@@ -374,18 +367,16 @@ CANNON.Demo = function(options){
         Detector.addGetWebGLMessage();
     }
 
-    var SHADOW_MAP_WIDTH = 1024;
-    var SHADOW_MAP_HEIGHT = 1024;
+    const SHADOW_MAP_SIZE = 1024
+    var SHADOW_MAP_WIDTH = SHADOW_MAP_SIZE;
+    var SHADOW_MAP_HEIGHT = SHADOW_MAP_SIZE;
     var MARGIN = 0;
     var SCREEN_WIDTH = window.innerWidth;
     var SCREEN_HEIGHT = window.innerHeight - 2 * MARGIN;
     let ASPECT = 12 / 9 // SCREEN_WIDTH/SCREEN_HEIGHT 
-    var camera, controls, renderer;
+    var camera, renderer;
     var container;
     var NEAR = 5, FAR = 2000;
-    var sceneHUD, cameraOrtho, hudMaterial;
-
-    var mouseX = 0, mouseY = 0;
 
     var windowHalfX = window.innerWidth / 2;
     var windowHalfY = window.innerHeight / 2;
@@ -419,14 +410,12 @@ CANNON.Demo = function(options){
 
         light.castShadow = true;
 
-        light.shadowCameraNear = 10;
-        light.shadowCameraFar = 1000;//camera.far;
-        light.shadowCameraFov = 180;
+        light.shadow.mapSize.width = SHADOW_MAP_WIDTH
+        light.shadow.mapSize.height = SHADOW_MAP_HEIGHT
 
-        light.shadowMapBias = 0.0039;
-        light.shadowMapDarkness = 0.5;
-        light.shadowMapWidth = SHADOW_MAP_WIDTH;
-        light.shadowMapHeight = SHADOW_MAP_HEIGHT;
+        light.shadowCameraNear = 150;
+        light.shadowCameraFar = 1000;//camera.far;
+        light.shadowCameraFov = 90;
 
         scene.add(new T.AmbientLight(0x333333))
         // {
@@ -469,9 +458,6 @@ CANNON.Demo = function(options){
         const renderWidth = Math.min(SCREEN_WIDTH, SCREEN_HEIGHT * ASPECT)
         const renderHeight = renderWidth / ASPECT
         renderer.setSize( renderWidth, renderHeight );
-        renderer.domElement.style.position = "relative";
-        renderer.domElement.style.top = MARGIN + 'px';
-        // container.appendChild( renderer.domElement );
         container.style.cssText = `
         height: 100%;
         width: 100%;
@@ -484,33 +470,7 @@ CANNON.Demo = function(options){
         renderer.autoClear = false;
 
         renderer.shadowMapEnabled = true;
-        renderer.shadowMapSoft = true;
-
-        // STATS
-        stats = new Stats();
-        stats.domElement.style.cssText = `
-        position: absolute;
-        top: 0; right: 0;
-        z-index: 100;
-        `
-        // container.appendChild( stats.domElement );
-
-        // // Trackball controls
-        // controls = new THREE.TrackballControls( camera, renderer.domElement );
-        // controls.rotateSpeed = 1.0;
-        // controls.zoomSpeed = 1.2;
-        // controls.panSpeed = 0.2;
-        // controls.noZoom = false;
-        // controls.noPan = false;
-        // controls.staticMoving = false;
-        // controls.dynamicDampingFactor = 0.3;
-        // var radius = 100;
-        // controls.minDistance = 0.0;
-        // controls.maxDistance = radius * 1000;
-        // //controls.keys = [ 65, 83, 68 ]; // [ rotateKey, zoomKey, panKey ]
-        // controls.screen.width = SCREEN_WIDTH;
-        // controls.screen.height = SCREEN_HEIGHT;
-
+        renderer.shadowMapType = THREE.PCFSoftShadowMap;
 
         camera.aspect = ASPECT
         camera.updateProjectionMatrix()
@@ -526,7 +486,6 @@ CANNON.Demo = function(options){
             updatePhysics();
         }
         render();
-        stats.update();
     }
 
     var lastCallTime = 0;

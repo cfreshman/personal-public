@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>doodle.html (tv)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="icon" href="/raw/tv-phone/doodle/app/icon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      font-size: 16px;
+      font-family: monospace;
+
+      * {
+        box-sizing: border-box;
+        font-family: inherit;
+      }
+    }
+
+    body {
+      overflow: hidden;
+      background: #eee;
+    }
+
+    #doodle-qr {
+      width: 50vmin;
+      height: 50vmin;
+      padding: 1em;
+      background: #fff;
+      border: 1px solid #000;
+
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    button,
+    select {
+      appearance: none;
+      height: 1.5em;
+      border-radius: .75em;
+      border: 1px solid #000;
+      box-shadow: 0 2px #000;
+      translate: 0 -2px;
+      background: #fff;
+      color: #000;
+      padding: 0 .5em;
+      text-align: center;
+      cursor: pointer;
+
+      &:active {
+        box-shadow: none;
+        translate: none;
+      }
+    }
+
+    .gui {
+      z-index: 1;
+      color: #fff;
+      text-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
+      padding: .5em;
+      visibility: hidden;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="doodle-root">
+
+  </div>
+  <div id="gui-menu" class="gui cover center column spaced">
+    <div class="center-column gap" style="
+    background: #111;
+    padding: .5em;
+    border-radius: .5em;
+    border: 1px solid gold;
+    ">
+      <div>drawing couch game</div>
+      <div style="font-size: 2em"><b>doodle.html</b></div>
+      <div id="doodle-qr"></div>
+      <div style="font-size: 2em"><span id="doodle-joined">0</span> joined <span style="font-family:system-ui">✏️</span></div>
+    </div>
+    <div class="row spaced">
+      <button onclick="new_game()" style="font-size: 2em">start</button>
+    </div>
+  </div>
+  <div id="gui-play" class="gui cover row spaced">
+    <div class="column gap end">
+      <div id="doodle-scores" class="column gap"></div>
+      <div style="font-size: 2em" id="timer">0s</div>
+    </div>
+    <div id="doodle-container" class="tall wide center middle-column">
+      <img id="doodle-image" style="appearance:none; background-color:#fff; border:1px solid #000; image-rendering: pixelated;" alt="">
+    </div>
+  </div>
+  <div id="gui-end" class="gui cover center column spaced">
+    <div id="doodle-final" class="row gap" style="font-size:2em; align-items:end">game over</div>
+    <div class="row spaced">
+      <button style="font-size: 2em" onclick="
+      new_game()
+      ">again</button>
+      <button style="font-size: 2em" onclick="
+      state = STATES.MENU
+      update_gui()
+      ">menu</button>
+    </div>
+  </div>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="/lib/ext/qrcode.min.js"></script>
+  <script src="/lib/ext/noise.js"></script>
+  <script src="/raw/tv-phone/circuit/script.js"></script>
+  <script src="/lib/ext/socket.io.min.js"></script>
+  <script type="text/javascript">
+    let socket
+    if (this.io) {
+      const backend = location.host.replace(':3000', ':5050')
+      console.debug('[socket CONNECT]', backend)
+      window.socket = socket = io(backend, {
+        closeOnBeforeunload: false,
+      })
+      socket.on('connect', () => console.debug('[socket CONNECTED]'))
+      const emit_after_connect = (event, data) => {
+        if (socket.connected) {
+          socket.emit(event, data)
+        } else {
+          socket.once('connect', () => {
+            socket.emit(event, data)
+          })
+        }
+      }
+    }
+  </script>
+
+  <script>
+    const NAME = 'doodle'
+    const log = named_log(NAME)
+
+    const id = location.hash = store.load('doodle-id', () => rand.alphanum(12))
+    const room = `doodle:${id}`
+    const target_emit = `emit:${room}`
+    const emit_to_room = (data) => socket.emit('emit', room, data)
+
+    let nouns
+    fetch('./app/nouns.txt').then(x => x.text()).then(x => {
+      nouns = x.split('\n').filter(x => x)
+    })
+
+    const colors_player = rand.shuffle([
+      '#ff0000',
+      '#ffff00',
+      '#00ff00',
+      '#00ffff',
+      '#0000ff',
+      '#ff00ff',
+    ])
+    const colors_back = '#eeeeee'
+
+    const players = []
+    const data = {
+      // order
+      // turn
+      // expire
+    }
+
+    const STATES = {
+      MENU: 'menu',
+      PLAY: 'play',
+      END: 'end',
+    }
+    let state = STATES.MENU
+
+    const ui = {
+      timer: () => {
+        Q('#timer').innerText = `${Math.floor((data.expire - Date.now()) / 1000)}s`
+      },
+      scores: () => {
+        const l_scores = Q('#doodle-scores')
+        l_scores.innerHTML = ''
+        players.map((player, i) => {
+          l_scores.appendChild(node(`<div class="center-row gap">
+            <div style="
+            background: ${player.color};
+            padding: .25em;
+            // border: 1px solid #fff;
+            box-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
+            min-width: 1em;
+            min-height: 1.5em;
+            ">
+              <div style="font-size: 1.5em">${player.score}</div>
+            </div>
+          </div>`))
+        })
+      },
+      final: () => {
+        const l_scores = Q('#doodle-final')
+        l_scores.innerHTML = ''
+        const max_score = maths.max(players.map(p => p.score))
+        players.map((player, i) => {
+          l_scores.appendChild(node(`<div class="center-column gap" style="align-items: flex-end">
+            ${max_score && player.score === max_score ? '<div style="font-size: 1.5em">👑</div>' : ''}
+            <div style="
+            background: ${player.color};
+            padding: .25em;
+            // border: 1px solid #fff;
+            box-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
+            min-height: 1em;
+            min-width: 1.5em;
+            ">
+              <div style="font-size: 1.5em">${player.score}</div>
+            </div>
+          </div>`))
+        })
+      },
+    }
+    const update_gui = () => {
+      QQ('.gui').map(x => x.style.visibility = 'hidden')
+      QQ(`#gui-${state}`).map(x => x.style.visibility = 'visible')
+
+      if (state === STATES.MENU) {
+        const l_qr = Q('#doodle-qr')
+        l_qr.innerHTML = ''
+        const qr = new QRCode(l_qr, {
+          text: location.href.replace('tv.html', 'phone.html'),
+          width: 512,
+          height: 512,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        })
+      }
+
+      if (state === STATES.PLAY) {
+        ui.scores()
+      } else if (state === STATES.END) {
+        ui.final()
+      }
+    }
+    update_gui()
+
+    const keys = {}
+    on(window, 'keydown', e => {
+      keys[e.key] = true
+    })
+    on(window, 'keyup', e => {
+      keys[e.key] = false
+    })
+
+    const WIDTH = 512
+    const HEIGHT = 512
+    let img = Q('#doodle-image')
+
+    const init_game = () => {
+      const do_resize = () => {
+        const aspect = WIDTH / HEIGHT
+        const outer = img.parentElement.getBoundingClientRect()
+        const min_outer = Math.min(outer.width, outer.height)
+        const size = min_outer * .95
+        img.style.width = size + 'px'
+        img.style.height = size / aspect + 'px'
+      }
+      on(window, 'resize', do_resize)
+      do_resize()
+    }
+
+    const new_game = () => {
+      delete img.src
+
+      players.map(player => {
+        player.score = 0
+
+        const word = rand.sample(nouns)
+        const others = range(7).map(() => rand.sample(nouns))
+        player.doodle = {
+          word,
+          others,
+          order: rand.shuffle(range(8)),
+          image: undefined,
+        }
+      })
+      data.order = rand.shuffle(range(players.length))
+      data.turn = -1
+
+      state = STATES.PLAY
+      update_gui()
+
+      next_turn()
+    }
+
+    let timer_handle
+    const next_turn = () => {
+      img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=='
+
+      data.turn = data.turn + 1
+      clearTimeout(timer_handle)
+      data.expire = Date.now() + duration({ s:60 })
+
+      if (data.turn >= players.length) {
+        state = STATES.END
+        emit_to_room({ id, end: true })
+        update_gui()
+
+        // next circuit game
+        const scores = Object.fromEntries(players.map(player => [player.player, player.score]))
+        circuit.gameover(scores)
+        circuit.execute()
+        circuit.navigate(socket)
+        return
+      }
+
+      const doodler = players[data.order[data.turn]]
+      players.map(player => {
+        emit_to_room({ id, player: player.player, active: player === doodler, doodle: doodler.doodle })
+      })
+      data.doodle = doodler.doodle
+
+      update_gui()
+
+      timer_handle = setInterval(() => {
+        ui.timer()
+        if (data.expire < Date.now()) {
+          next_turn()
+        }
+      }, 1_000)
+      ui.timer()
+    }
+
+    socket.on('emit:' + room, message => {
+      log(message)
+      const { id:data_id, player, join, leave, start, image, guess } = message
+      if (data_id !== id || !player) return
+      if (start && players.find(x => x.host)) {
+        if (state === STATES.MENU) new_game()
+        if (state === STATES.END) new_game()
+      }
+      let i = players.findIndex(p => p.player === player)
+      if (!leave) {
+        log('join', player)
+        if (i < 0) {
+          i = players.length
+          const claimed_colors = set(players.map(x => x.color))
+          const available_colors = colors_player.filter(x => !claimed_colors.has(x))
+          const color = available_colors.length ? rand.sample(available_colors) : colors.random()
+          const host = !players.find(x => x.host)
+          players.push({
+            player,
+            score: 0,
+            color,
+            host,
+            doodle: undefined,
+          })
+          Q('#doodle-joined').innerText = players.length
+        }
+        const { color, host } = players[i]
+        emit_to_room({ id, player, setting:true, color, host })
+      } else if (leave) {
+        log('leave', player)
+        const p_data = players.find(x => x.player === player)
+        if (p_data) {
+          if (state === STATES.MENU) {
+            // handle_leave(data)
+          } else {
+            p_data.left = true
+          }
+        }
+        return
+      }
+
+      if (image) {
+        players[i].doodle.image = image
+        img.src = image
+      }
+
+      if (guess) {
+        const doodler = players[data.order[data.turn]]
+        if (guess === doodler.doodle.word && !players[i].out) {
+          doodler.score += 1
+          players[i].score += 1
+          next_turn()
+        } else {
+          players[i].score = Math.max(0, players[i].score - 1)
+          players[i].out = true
+          emit_to_room({ id, player, out: true })
+
+          if (players.filter(x => !x.out).length === 1) {
+            next_turn()
+          }
+        }
+      }
+    })
+
+    const on_connect = () => {
+      log('connected')
+      emit_to_room({ id, ready: true }) // join room
+    }
+    socket.on('connect', on_connect)
+    on_connect()
+
+    init_game()
+  </script>
+</body>
+
+</html>

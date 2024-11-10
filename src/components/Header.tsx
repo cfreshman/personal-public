@@ -383,7 +383,9 @@ const User = ({ expand }: { expand: boolean }) => {
       <>
         <div className='middle-column gap'>
           <br/>
-          <div style={S(`width:max-content; padding:0 .5em`)}><A tab='/contact' className='middle-column'>hire me!<br/>(SWE)</A></div>
+          <div style={S(`width:max-content; padding:0 .5em`)}><button className='cute'><A tab='/donate'>tip me <span style={S('font-family:system-ui')}>☕️</span></A></button></div>
+          <HalfLine />
+          <div style={S(`width:max-content; padding:0 .5em`)}><button className='cute'><A tab='/contact'>hire me!</A></button></div>
           <br/>
         </div>
 
@@ -474,6 +476,33 @@ const User = ({ expand }: { expand: boolean }) => {
     ${set(`wait one moment`, ',').has(error) ? '' : `
     color: red !important;
     `}
+  }
+
+  #header button.cute {
+    background: #bfb !important; 
+    color: #000 !important; 
+    border: 1px solid currentcolor !important;
+    box-shadow: 0 2px #fff !important;
+    translate: 0 -2px !important;
+    border-radius: 99em !important;
+    padding: 0 .5em !important;
+    height: 1.5em;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer !important;
+    font-family: monospace !important;
+
+    background: #405f92 !important;
+    background: #2869d3 !important;
+    background: #2e7dff !important;
+    color: #fff !important;
+
+    &:active, &.active {
+      box-shadow: none !important;
+      translate: 0 !important;
+    }
+    *:hover {
+      text-decoration: none !important;
+    }
   }
   `)
   useF(new_user, async () => {

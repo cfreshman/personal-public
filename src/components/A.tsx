@@ -6,7 +6,7 @@ import { openFrame } from './Modal'
 import { S } from 'src/lib/util'
 
 
-export const A = ({ href=undefined, func=undefined, frame=undefined, tab=undefined, close=undefined, bold=false, ...props }) => {
+export const A = ({ href=undefined, func=undefined, frame=undefined, tab=undefined, close=undefined, bold=false, line=false, ...props }) => {
   href = href || (typeof(tab) === 'string' ? tab : undefined)
   href = useM(href, () => href.replace(/^(https?:\/\/)+/, 'http://'))
   if (!func) func = tab ? url.new : (href) => {
@@ -51,5 +51,6 @@ export const A = ({ href=undefined, func=undefined, frame=undefined, tab=undefin
     }
   }} style={{ ...S(`
   ${bold ? `font-weight: bold` : ''}
+  ${line ? `text-decoration: underline` : ''}
   `), ...(props.style||{}) }}>{props.children || href.replace(/^(https?:\/\/)+/, '')}</a>
 }

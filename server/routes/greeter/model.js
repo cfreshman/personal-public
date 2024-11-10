@@ -370,7 +370,7 @@ async function set_hangout(viewer, data) {
 
     // if from today and made by cyrus and title is worksesh, update /ly's 'today' to this hangout
     if (viewer === 'cyrus' && item.t > Date.now() - duration({ d:1 }) && item.title === 'worksesh') {
-        const { ly:ly_data } = await ly.update('cyrus', 'today', { links:[`https://freshman.dev/greeter/hangout/${item.id}`] })
+        const { ly:ly_data } = await ly.update('cyrus', 'today', { links:[`https://freshman.dev/greeter/hangout/${item.id}/${item.code}`] })
         log('set_hangout set ly worksesh', ly_data)
     }
 

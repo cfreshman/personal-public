@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>bumperships.html (tv)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="icon" href="/raw/tv-phone/bumperships/app/icon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      font-size: 16px;
+      font-family: monospace;
+
+      * {
+        box-sizing: border-box;
+        font-family: inherit;
+      }
+    }
+
+    body {
+      overflow: hidden;
+      background: #111;
+    }
+
+    #bumperships-container {
+      position: relative;
+    }
+    #bumperships-background {
+      content: '';
+      position: absolute;
+      background: url(./app/space.jpg) no-repeat center center fixed;
+      background-size: cover;
+      /* opacity: .6; */
+      image-rendering: pixelated;
+      filter: brightness(.5) saturate(.5);
+    }
+
+    #bumperships-qr {
+      width: 50vmin;
+      height: 50vmin;
+      padding: 1em;
+      background: #fff;
+      border: 1px solid #000;
+
+      img {
+        width: 100%;
+        height: 100%;
+      }
+    }
+
+    button,
+    select {
+      appearance: none;
+      height: 1.5em;
+      border-radius: .75em;
+      border: 1px solid #000;
+      box-shadow: 0 2px #ddd;
+      translate: 0 -2px;
+      background: #fff;
+      color: #000;
+      padding: 0 .5em;
+      text-align: center;
+      cursor: pointer;
+
+      &:active {
+        box-shadow: none;
+        translate: none;
+      }
+    }
+
+    .gui {
+      z-index: 1;
+      color: #fff;
+      text-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
+      padding: .5em;
+      visibility: hidden;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="bumperships-container" class="cover center">
+    <div id="bumperships-background"></div>
+  </div>
+  <div id="gui-menu" class="gui cover center column spaced">
+    <div class="center-column gap" style="
+    background: #111;
+    padding: .5em;
+    border: 1px solid #fff;
+    border-radius: .5em;
+    /* box-shadow: 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000; */
+    ">
+      <div>starfield couch game</div>
+      <div style="font-size: 2em"><b>bumperships.html</b></div>
+      <div id="bumperships-qr"></div>
+      <div style="font-size: 2em"><span id="bumperships-joined">0</span> joined 🚀</div>
+    </div>
+    <div class="row gap">
+      <button onclick="new_game()" style="font-size: 2em">start</button>
+    </div>
+  </div>
+  <div id="gui-play" class="gui cover">
+  </div>
+  <div id="gui-end" class="gui cover center column spaced">
+    <div id="bumperships-winner" class="center-row" style="font-size: 2em">game over</div>
+    <div class="row gap">
+      <button style="font-size: 2em" onclick="
+      new_game()
+      ">again</button>
+      <button style="font-size: 2em" onclick="
+      state = STATES.MENU
+      update_gui()
+      ">menu</button>
+    </div>
+  </div>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="/lib/ext/qrcode.min.js"></script>
+  <script src="/lib/ext/decomp.min.js"></script>
+  <script src="/lib/ext/raycast.min.js"></script>
+  <script src="/lib/ext/matter.min.js"></script>
+  <script src="/lib/ext/noise.js"></script>
+  <script src="/raw/tv-phone/circuit/script.js"></script>
+  <script src="/lib/ext/socket.io.min.js"></script>
+  <script type="text/javascript">
+    let socket
+    if (this.io) {
+      const backend = location.host.replace(':3000', ':5050')
+      console.debug('[socket CONNECT]', backend)
+      window.socket = socket = io(backend, {
+        closeOnBeforeunload: false,
+      })
+      socket.on('connect', () => console.debug('[socket CONNECTED]'))
+      const emit_after_connect = (event, data) => {
+        if (socket.connected) {
+          socket.emit(event, data)
+        } else {
+          socket.once('connect', () => {
+            socket.emit(event, data)
+          })
+        }
+      }
+    }
+  </script>
+
+  <script>
+    const NAME = 'bumperships'
+    const log = named_log(NAME)
+
+    const id = location.hash = store.load('bumperships-id', () => rand.alphanum(12))
+    const room = `bumperships:${id}`
+    const target_emit = `emit:${room}`
+    const emit_to_room = (data) => socket.emit('emit', room, data)
+
+    const color_collider = '#eeeeee'
+    const colors_ship = rand.shuffle([
+      // '#ff0000',
+      // '#ffff00',
+      // '#00ff00',
+      // '#00ffff',
+      // '#0000ff',
+      // '#ff00ff',
+      '#285ff4',
+      '#65c467',
+      '#f8ce46',
+      '#ec4d3e',
+    ])
+
+    const N_PLAYERS = 0 // 4 // fill with AI players
+    const players = []
+    const PLAYER_ENGINE_POWER = .0005
+
+    const STATES = {
+      MENU: 'menu',
+      PLAY: 'play',
+      END: 'end',
+    }
+    let state = STATES.MENU
+
+    const ui = {
+      final: () => {
+        const winner = players.length === 1 ? players[0] : players.find(player => !player.out)
+        Q('#bumperships-winner').innerHTML = winner ? `
+        <div class="center-column">
+          👑
+          <span style="
+          background: ${winner.color};
+          border: 1px solid #fff;
+          height: 1em;
+          width: 1em;
+          display: inline-block;
+          border-radius: 50%;
+          "></span>
+        </div>
+        ` : 'draw'
+      }
+    }
+    const update_gui = () => {
+      QQ('.gui').map(x => x.style.visibility = 'hidden')
+      QQ(`#gui-${state}`).map(x => x.style.visibility = 'visible')
+
+      if (state === STATES.MENU) {
+        const l_qr = Q('#bumperships-qr')
+        l_qr.innerHTML = ''
+        const qr = new QRCode(l_qr, {
+          text: location.href.replace('tv.html', 'phone.html'),
+          width: 512,
+          height: 512,
+          colorDark: "#000000",
+          colorLight: "#ffffff",
+          correctLevel: QRCode.CorrectLevel.H
+        })
+      }
+
+      if (state === STATES.END) {
+        ui.final()
+      }
+    }
+    update_gui()
+
+    const keys = {}
+    on(window, 'keydown', e => {
+      keys[e.key] = true
+    })
+    on(window, 'keyup', e => {
+      keys[e.key] = false
+    })
+
+    const WIDTH = 1200
+    const HEIGHT = 900
+    const { Engine, Render, Runner, Events, MouseConstraint, Mouse, Composite, Bodies, Body, Common, Vector, Query } = Matter
+    Common.setDecomp(decomp)
+    let engine, world, render, runner
+
+    const init_game = () => {
+
+      // create engine
+      engine = Engine.create({
+        gravity: { scale: 0}
+      })
+      world = engine.world
+
+      // create renderer
+      render = Render.create({
+        element: Q('#bumperships-container'),
+        engine: engine,
+        options: {
+          width: WIDTH,
+          height: HEIGHT,
+          wireframes: false
+        }
+      })
+      Render.run(render)
+
+      const do_resize = () => {
+        const { innerWidth, innerHeight } = window
+        const scale = Math.min(innerWidth / WIDTH, innerHeight / HEIGHT)
+        render.canvas.style.background = 'transparent'
+        render.canvas.style.transform = `scale(${scale})`
+
+        const l_background = Q('#bumperships-background')
+        const scale_background = Math.min(innerWidth / WIDTH, innerHeight / HEIGHT)
+        l_background.style.width = scale_background * WIDTH + 'px'
+        l_background.style.height = scale_background * HEIGHT + 'px'
+      }
+      on(window, 'resize', do_resize)
+      do_resize()
+
+      // create runner
+      runner = Runner.create()
+      Runner.run(runner, engine)
+    }
+
+    
+    const new_game = () => {
+      Composite.clear(world)
+      runner.events = {}
+      engine.events = {}
+      players.map(player => {
+        player.out = false
+      })
+      
+      // create border collider sensors: top, right, bottom, left - create as trapezoids inset from border
+      const wall_width = 2
+      const walls = [
+        [WIDTH / 2, 0, WIDTH, wall_width],
+        [WIDTH, HEIGHT / 2, wall_width, HEIGHT],
+        [WIDTH / 2, HEIGHT, WIDTH, wall_width],
+        [0, HEIGHT / 2, wall_width, HEIGHT],
+      ].map(([x, y, w, h]) => {
+        const collider = Bodies.rectangle(x, y, w, h, {
+          isSensor: true,
+          isStatic: true,
+          render: {
+            fillStyle: color_collider,
+            strokeStyle: color_collider,
+            lineWidth: 2,
+          }
+        })
+        collider.data = {
+          type: 'collider',
+        }
+        Composite.add(world, collider)
+        return collider
+      })
+
+      // create asteroid colliders
+      const n_colliders = rand.i(2, 6)
+      const min_dimension = Math.min(WIDTH, HEIGHT)
+      const min_asteroid = min_dimension / 10
+      const max_asteroid = min_dimension / 5
+      const asteroids = range(n_colliders).map(i => {
+        const position = {
+          x: rand.i(0, WIDTH),
+          y: rand.i(0, HEIGHT),
+        }
+
+        // create cool asteroid shapes
+        const vertices = []
+        const n_vertices = rand.i(3, 16)
+        for (let i = 0; i < n_vertices; i++) {
+          const angle = i / n_vertices * Math.PI * 2
+          const radius = rand.f(min_asteroid, max_asteroid)
+          vertices.push({
+            x: Math.cos(angle) * radius,
+            y: Math.sin(angle) * radius,
+          })
+        }
+
+        const collider = Bodies.fromVertices(
+          position.x,
+          position.y,
+          vertices,
+          {
+            isSensor: true,
+            isStatic: true,
+            render: {
+              fillStyle: color_collider,
+              strokeStyle: color_collider,
+              lineWidth: 1,
+            }
+          }
+        )
+        log(collider)
+        collider.data = {
+          type: 'collider',
+        }
+        Composite.add(world, collider)
+        return collider
+      })
+
+      // add AI players
+      range(N_PLAYERS - players.length).map(i => {
+        const taken_colors = set(players.map(player => player.color))
+        const available_colors = colors_ship.filter(color => !taken_colors.has(color))
+        const color = available_colors.length ? rand.sample(available_colors) : rand.sample(colors_ship)
+        players.push({
+          player: `AI ${i}`,
+          x: 0,
+          y: 0,
+          color,
+          ai: true,
+        })
+      })
+      const ships = players.map(player => {
+        const shadow = Bodies.circle(
+          0,
+          0,
+          15,
+          {
+            isSensor: true,
+            render: {
+              fillStyle: '#fff',
+              strokeStyle: '#fff',
+              lineWidth: 2,
+            }
+          }
+        )
+        const ship = Bodies.circle(
+          rand.i(0, WIDTH),
+          rand.i(0, HEIGHT),
+          15,
+          {
+            mass: 1,
+            frictionAir: 0.01,
+            restitution: 1,
+            render: {
+              fillStyle: player.color,
+              strokeStyle: '#fff',
+              lineWidth: 2,
+            }
+          }
+        )
+        ship.data = {
+          type: 'ship',
+          player,
+          shadow,
+        }
+        Composite.add(world, [shadow, ship])
+        return ship
+      })
+
+      const colliders = Composite.allBodies(world).filter(body => body.data?.type === 'collider')
+      ships.map(ship => {
+        while (1) {
+          const collisions = Query.collides(ship, colliders)
+          if (collisions.length) {
+            Body.setPosition(ship, {
+              x: rand.i(0, WIDTH),
+              y: rand.i(0, HEIGHT),
+            })
+          } else {
+            break
+          }
+        }
+      })
+
+      let started = false
+      setTimeout(() => {
+        started = true
+      }, 1000)
+
+      Events.on(engine, 'collisionStart', function (event) {
+        const pairs = event.pairs
+        for (let i = 0, j = pairs.length; i != j; ++i) {
+          const pair = pairs[i]
+          let { bodyA, bodyB } = pair
+          while (bodyA.parent && bodyA.parent !== bodyA) bodyA = bodyA.parent
+          while (bodyB.parent && bodyB.parent !== bodyB) bodyB = bodyB.parent
+          const collider = [bodyA, bodyB].find(body => body.data?.type === 'collider')
+          const ship = [bodyA, bodyB].find(body => body.data?.type === 'ship')
+          if (collider && ship) {
+            if (started && state === STATES.PLAY) {
+              // flash red
+              collider.parts.map(body => {
+                body.render.fillStyle = body.render.strokeStyle = '#ff0000'
+              })
+              const t = collider.t = Date.now()
+              setTimeout(() => {
+                if (collider.t === t) {
+                  collider.parts.map(body => {
+                    body.render.fillStyle = body.render.strokeStyle = color_collider
+                  })
+                }
+              }, 1000)
+
+              // player is out
+              const player = ship.data.player
+              player.out = true
+              // remove ship
+              Composite.remove(world, [ship, ship.data.shadow])
+              const n_out = players.filter(player => player.out).length
+              if (n_out >= players.length - 1) {
+                players.map(player => {
+                  state = STATES.END
+                  update_gui()
+
+                  // next circuit game
+                  const scores = Object.fromEntries(players.map(player => [player.player, player.out ? 0 : 1]))
+                  circuit.gameover(scores)
+                  circuit.execute()
+                  circuit.navigate(socket)
+                })
+              }
+            } else {
+              // respawn ship
+              Body.setPosition(ship, {
+                x: rand.i(0, WIDTH),
+                y: rand.i(0, HEIGHT),
+              })
+            }
+          }
+        }
+      })
+
+      Events.on(engine, 'collisionEnd', function (event) {
+        const pairs = event.pairs
+        for (let i = 0, j = pairs.length; i != j; ++i) {
+          const pair = pairs[i]
+          const { bodyA, bodyB } = pair
+        }
+      })
+
+      // fit the render viewport to the scene
+      Render.lookAt(render, {
+        min: { x: 0, y: 0 },
+        max: { x: WIDTH, y: HEIGHT }
+      })
+
+      let last_t = Date.now()
+      const update = () => {
+        const t = Date.now()
+        const dt = (t - last_t) / 1000
+        last_t = t
+
+        // move ships based on x, y in [-1, 1]
+        ships.map(ship => {
+          const player = ship.data.player
+          let { x, y, boost } = player
+
+          // AI
+          if (player.ai) {
+            const target = {
+              x: rand.f(-1, 1),
+              y: rand.f(-1, 1),
+            }
+            x = target.x
+            y = target.y
+            boost = rand.f() < .1
+          }
+
+          const boost_mult = PLAYER_ENGINE_POWER * (boost ? 3 : 1)
+          const force = V.ne(x, -y).sc(boost_mult)
+          Body.applyForce(ship, ship.position, force)
+
+          // move shadow
+          const acc_shadow_diff = 2
+          Body.setPosition(ship.data.shadow, {
+            x: ship.position.x - force.x * acc_shadow_diff,
+            y: ship.position.y - force.y * acc_shadow_diff,
+          })
+        })
+
+        // grow colliders slightly
+        if (state === STATES.PLAY) {
+          const growth = 1 + .05 * dt
+          asteroids.map(body => {
+            if (body.data.type === 'collider') {
+              Body.scale(body, growth, growth, body.position)
+            }
+          })
+        }
+      }
+
+      Events.on(runner, 'beforeUpdate', update)
+
+      state = STATES.PLAY
+      update_gui()
+    }
+
+    socket.on('emit:' + room, data => {
+      const { id:data_id, player, x, y, boost, join, leave, start } = data
+      if (data_id !== id || !player) return
+      if (start) {
+        if (state === STATES.MENU) new_game()
+        if (state === STATES.END) new_game()
+      }
+      let i = players.findIndex(p => p.player === player)
+      if (!leave) {
+        log('join', player)
+        if (i < 0) {
+          i = players.length
+          const claimed_colors = set(players.map(x => x.color))
+          const available_colors = colors_ship.filter(x => !claimed_colors.has(x))
+          const color = available_colors.length ? rand.sample(available_colors) : rand.sample(colors_ship)
+          const host = !players.find(x => x.host)
+          players.push({
+            player,
+            x: 0,
+            y: 0,
+            color,
+            host,
+          })
+          Q('#bumperships-joined').innerText = players.length
+        }
+        const { color, host } = players[i]
+        emit_to_room({ id, player, setting:true, color, host })
+      } else if (leave) {
+        log('leave', player)
+        const data = players.find(x => x.player === player)
+        if (data) {
+          if (state === STATES.MENU) {
+            // handle_leave(data)
+          } else {
+            data.left = true
+            Object.assign(data, {
+              x: 0,
+              y: 0,
+            })
+          }
+        }
+        return
+      }
+      
+      if (x !== undefined) players[i].x = x
+      if (y !== undefined) players[i].y = y
+      if (boost !== undefined) players[i].boost = boost
+    })
+
+    const on_connect = () => {
+      log('connected')
+      emit_to_room({ ready: true }) // join room
+    }
+    socket.on('connect', on_connect)
+    on_connect()
+
+    init_game()
+  </script>
+</body>
+
+</html>

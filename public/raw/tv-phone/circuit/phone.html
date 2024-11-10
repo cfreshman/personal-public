@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>circuit.html (phone)</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+  <link rel="icon" href="/raw/tv-phone/circuit/app/icon.png" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: inherit;
+      user-select: none;
+      touch-action: none;
+    }
+    :root {
+      font-size: 16px;
+      font-family: monospace;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      overflow: hidden;
+      background: #f8f8f8;
+      --control-bg: #fff8ee;
+      padding: .5em;
+      position: relative;
+    }
+
+    #circuit-controller {
+      position: absolute;
+      bottom: 100%; left: 0;
+      width: 100vh;
+      height: 100vw;
+      rotate: 90deg;
+      transform-origin: bottom left;
+    }
+
+    button {
+      appearance: none;
+      background: var(--control-bg);
+      color: #000;
+      border: 1px solid currentcolor;
+      height: 1.5em;
+      border-radius: .75em;
+      padding: 0 .5em;
+      font-size: inherit;
+      &:not(:disabled):is(:active, .active) {
+        scale: 1.1;
+      }
+      &:disabled {
+        filter: contrast(.5) brightness(.9);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="circuit-controller">
+    <div class="cover center">waiting for circuit to start</div>
+    <button id="start" style="
+    visibility: hidden;
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    ">start</button>
+  </div>
+
+  <script src="/lib/2/common/script.js"></script>
+  <script src="/raw/tv-phone/circuit/script.js"></script>
+  <script src="/lib/socket.io.min.js"></script>
+  <script type="text/javascript">
+    let socket
+    if (this.io) {
+      const backend = location.host.replace(':3000', ':5050')
+      console.debug('[socket CONNECT]', backend)
+      window.socket = socket = io(backend, {
+        closeOnBeforeunload: true,
+      })
+      socket?.on('connect', () => console.debug('[socket CONNECTED]'))
+    }
+  </script>
+  <script>
+    circuit.prep_phone()
+    circuit.handle_phone(socket)
+    const id = location.hash.slice(1)
+    const room = `circuit:${id}`
+    const target_emit = `emit:${room}`
+    const emit_to_room = (data) => socket.emit('emit', room, data)
+
+    const player = store.load('circuit-player', () => rand.alphanum(12))
+
+    // necessary because 100vh is broken
+    const container = Q('#circuit-controller')
+    const resize = () => {
+      container.style.height = window.innerWidth + 'px'
+      container.style.width = window.innerHeight + 'px'
+    }
+    on(window, 'resize', resize)
+    resize()
+
+    const start = Q('#start')
+
+    let down
+    const handle = {
+      join: () => {
+        emit_to_room({ id, player, join:true })
+      },
+    }
+
+    on(start, 'pointerdown', () => {
+      emit_to_room( { id, player, start: true })
+      start.classList.add('active')
+    })
+    on(start, 'pointerup pointercancel', () => {
+      emit_to_room({ id, player, start: false })
+      start.classList.remove('active')
+    })
+
+    socket.on(target_emit, ({ id:_id, player:_player, ready, setting, color, host }) => {
+      if (id === _id) {
+        if (ready) {
+          handle.join()
+        }
+        if (player === _player) {
+          if (setting) {
+            if (color) {
+              document.body.style['background'] = color
+            }
+            if (host) {
+              Q('#start').style.visibility = 'visible'
+            } else {
+              Q('#start').style.visibility = 'hidden'
+            }
+          }
+        }
+      }
+    })
+
+    const on_connect = () => {
+      handle.join()
+    }
+    socket.on('connect', on_connect)
+    on(window, 'focus hashchange', on_connect)
+    on_connect()
+
+    // ping once every 5s to keep connection alive
+    setInterval(() => {
+      emit_to_room({ id, player })
+    }, 5_000)
+
+    // get rid of text selection
+    const f_e = e => e.preventDefault()
+    list('touchstart touchmove touchend touchcancel').map(e => on(document, e, f_e, { passive: false }))
+</script>
+</body>
+
+</html>

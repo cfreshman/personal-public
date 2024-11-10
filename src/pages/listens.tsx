@@ -4,7 +4,7 @@ import { dangerous } from 'src/components/individual/Dangerous'
 import { useCached, useEventListener, useF, useInput, useM, useS } from 'src/lib/hooks'
 import { Tabbed, usePageSettings } from 'src/lib/hooks_ext'
 import { JSX } from 'src/lib/types'
-import { S, duration, elapsed, from, fromYearMonthDay, getCssVar, list, named_log, values } from 'src/lib/util'
+import { S, duration, elapsed, from, fromYearMonthDay, getCssVar, list, named_log, server, values } from 'src/lib/util'
 import styled from 'styled-components'
 import { HalfLine, InfoBadges, InfoBody, InfoRequireMe, InfoSection, InfoStyles, Multiline } from '../components/Info'
 import queue from './queue'
@@ -77,7 +77,7 @@ export default () => {
   })
   useF(handle.load)
   const [listens=[], reloadListens] = useCached('listens-definition', () => {
-    return api.external(`https://freshman.dev/api/file/${FILE}`).then(r => {
+    return api.external(server + `/api/file/${FILE}`).then(r => {
       log(r)
       return r.text()
     }).then(definition => {
@@ -266,12 +266,13 @@ export default () => {
   return <Style>
     <InfoBody className='column'>
       <Scroller />
-      <InfoRequireMe>
+      {user === 'cyrus' ? <>
         <InfoSection labels={[
           'admin panel',
           { edit: () => url.push(`/file/${encodeURIComponent(FILE)}`) },
-        ]}></InfoSection>
-      </InfoRequireMe>
+        ]} />
+      </>
+      : null}
       <InfoSection labels={[
         'suggestions',
         q?.list?.length && user === 'cyrus' && { clear:()=>{ api.get(`/q/flush/${QUEUE}`) } },

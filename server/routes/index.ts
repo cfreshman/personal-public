@@ -62,6 +62,7 @@ import poll from './poll'
 import beam from './beam'
 import vibe from './vibe'
 import matchbox from './matchbox'
+import rephrase from './rephrase'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -136,6 +137,7 @@ export default {
   poll,
   beam,
   vibe,
+  rephrase,
 }
 
 export const ios = [
