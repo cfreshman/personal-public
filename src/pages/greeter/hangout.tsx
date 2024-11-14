@@ -155,6 +155,7 @@ export const Hangout = ({ id, handle, join=undefined }) => {
       set_edit_data(new_edit_data)
     }
   })
+  useF(edit_data, () => log({edit_data}))
   // const edit_data_view = useM(hangout, edit_data, () => strings.json.clone(merge(hangout, edit_data)))
   const edit_data_view = useM(hangout, edit_data, () => {
     const hangout_clone = strings.json.clone(hangout)
@@ -200,7 +201,7 @@ export const Hangout = ({ id, handle, join=undefined }) => {
       log('add manual attendee', {profile})
       if (profile) {
         set_edit_data({
-          edit_data,
+          ...edit_data,
           users: edit_data_view.users.concat([manual_attendee]),
         })
         set_manual_attendee('')

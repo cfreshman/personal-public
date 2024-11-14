@@ -25,15 +25,13 @@ import { Scroller } from '../Scroller';
 import { List } from './List';
 import { Highlights } from './Highlights';
 
-const { named_log, Q, icon, rand, devices } = window as any
+const { named_log, Q, icon, rand, devices, xhr, css, js_html } = window as any
 const log = named_log('Base')
 if (location.href === 'https://cyrusfre.sh') location.href = 'https://cyrusfre.sh/man'
 if (location.href === 'https://cfre.sh') location.href = 'https://cfre.sh/man'
 if (location.href === 'https://matchbox.zip') location.href = 'https://raw.tu.fo/matchbox'
 
 export const Base = () => {
-  const { named_log, xhr, css, js_html } = window as any
-
   const [{user:viewer}] = auth.use()
   
   const [originalBase, setOriginalBase] = useState(false)
@@ -97,7 +95,7 @@ export const Base = () => {
     --background: #eeebe6;
 
     --background: #fffefe;
-    --background: var(--id-color);
+    --background: var(--id-color) !important;
   }
   @font-face {
       font-family: Duospace;
@@ -667,34 +665,20 @@ export const Base = () => {
     background: none !important;
   }
   :root {
-    --id-color: #fff497;
-    background: var(--id-color) !important;
+    --rotate-color: #fff0b0;
     animation: id-color-keyframes 3s infinite linear;
+    
+    --id-color: var(--rotate-color) !important;
+    background: var(--id-color) !important;
   }
   :root.ouch {
     animation-duration: .15s;
   }
   @keyframes id-color-keyframes {
-    0% { --id-color: #ecff97 }
-    33% { --id-color: #bbff99 }
-    67% { --id-color: #ffb297 }
-    100% { --id-color: #ecff97 }
-  }
-  @keyframes id-color-keyframes {
-    0% {}
-    33% { --id-color: #bbff99 }
-    67% { --id-color: #ffb297 }
-    100% {}
-  }
-
-  :root {
-    --id-color: #fff0b0;
-  }
-  @keyframes id-color-keyframes {
-    0% { --id-color: #fff0b0 }
-    33% { --id-color: #d2ffbb }
-    67% { --id-color: #ffd0bf }
-    100% { --id-color: #fff0b0 }
+    0% { --rotate-color: #fff0b0; }
+    33% { --rotate-color: #d2ffbb }
+    67% { --rotate-color: #ffd0bf }
+    100% { --rotate-color: #fff0b0 }
   }
 
   `)
@@ -772,7 +756,7 @@ export const Base = () => {
 
   const tabs = 
   <div id='tabs' style={toStyle(``)}>{[
-    '',
+    subdomain ? 'home' :'',
     // 'contents',
     // 'tldr',
     'about',
@@ -837,7 +821,7 @@ export const Base = () => {
       {/* <li>mw-aui: modular Weather.app-esque ui</li> */}
     </ol>
     <div>
-      <A href='/resume'>rèsumè</A> - <a onClick={() => setMore(true)}>personal site</a> - <span><A href='https://twitter.com/freshman_dev'>@freshman_dev</A>/Twitter</span>
+      <A href='/resume'>rèsumè</A> - <a onClick={() => setMore(true)}>personal site</a> - <span><A href='https://twitter.com/__freshman'>@__freshman</A>/Twitter</span>
     </div>
     {/* <a href="/resume-CyrusFreshman.pdf">rèsumè</a> */}
   </div> : originalBase ? <OriginalBase /> : (

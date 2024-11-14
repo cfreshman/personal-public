@@ -90,7 +90,7 @@ const convertLinks = str => {
 }
 
 function buildRequest(subject, domain, to, message, extraHeaders=[]) {
-  console.log(domain, 'from:', entryMap(Object.values(domains), x => ({ [x]: `notifications@${x}` }))[domain] || 'notifications@freshman.dev')
+  // console.log(domain, 'from:', entryMap(domains.map(x => x[1]), x => ({ [x]: `notifications@${x}` }))[domain] || 'notifications@freshman.dev')
   message = convertLinks(message)
   const content = [
     'Content-Type: text/html; charset="UTF-8"',

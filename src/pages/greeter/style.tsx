@@ -197,7 +197,8 @@ export const Style = styled(InfoStyles)`
 }
 
 input {
-  color: inherit !important;
+  background: var(--id-color-text) !important;
+  color: var(--id-color-text-readable) !important;
   &[type=date] {
     width: fit-content;
   }

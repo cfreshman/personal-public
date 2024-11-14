@@ -576,6 +576,9 @@ export default () => {
         !different_room && { 'copy room url': e => {
           copy(location.href)
           display_status(e.target, 'copied!')
+          navigator.share({
+            url: location.href,
+          })
         } },
         // { 'new game': () => set_room('') },
         !different_room && { text:'new game', href:`/chess/${rand.unambiguous(6)}`, tab:true },

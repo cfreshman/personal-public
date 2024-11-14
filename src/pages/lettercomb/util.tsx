@@ -157,38 +157,34 @@ height: max-content;
 width: max-content;
 `)
 export const open_about = () => open_popup(close => <>
-  <InfoBody id='capitals-menu-about'>
+  <InfoBody id='capitals-menu-about' style={S(`max-width: 30em`)}>
     <div className='column gap' style={S(`gap:2em;`)}>
       <div className='row gap wide between' style={S(`align-items:center;gap:1em;justify-content:space-between`)}>
         <div className='column start'>
-          <div><A tab href='https://en.wikipedia.org/wiki/NimbleBit'>NimbleBit</A> released Capitals for iOS in 2015: <A tab href='https://www.youtube.com/watch?v=vckV_9Qb9uE'>Capitals - Free Word Battle (YouTube)</A></div>
-          {/* <div><A tab href='https://www.youtube.com/watch?v=vckV_9Qb9uE'>Capitals - Free Word Battle (YouTube)</A></div> */}
+          <div><A tab href='https://en.wikipedia.org/wiki/NimbleBit'>NimbleBit</A> created Capitals for iOS in 2015: <A tab href='https://www.youtube.com/watch?v=vckV_9Qb9uE'>Capitals - Free Word Battle (YouTube)</A></div>
         </div>
         <img src='/raw/capitals/original-logo.png' style={S(`width: 4em;`)}/>
       </div>
       <div className='row gap wide between' style={S(`align-items:center;gap:1em;justify-content:space-between`)}>
         <div className='column start'>
-          <div>but <A tab href='https://support.nimblebit.com/support/solutions/articles/150000013114-retired-games'>they retired it</A> so I remade it - for the web! (March 2024)<br/>(similar to <A tab href='/wordbase'/>)</div>
-          {/* <div></div> */}
+          <div>then <A tab href='https://support.nimblebit.com/support/solutions/articles/150000013114-retired-games'>they retired it</A> - when i went to play it again and couldn't, i remade it!</div>
         </div>
         <img src='/raw/capitals/icon.png' style={S(`width: 4em;`)} />
       </div>
-      <HalfLine />
       <div className='row gap' style={S(`align-items:center;gap:1em;`)}>
         <div className='column start'>
-          <div>June 2024 update: they just <A tab href='https://apps.apple.com/us/app/capitals-word-game/id6499354232?uo=2'>re-released it</A> across iOS/iPad/macOS!?</div>
+          <div>but <A tab href='https://apps.apple.com/us/app/capitals-word-game/id6499354232?uo=2'>they've re-released it</A> since! (June 2024)</div>
           {/* <A tab href='https://apps.apple.com/us/app/capitals-word-game/id6499354232'><img src='/raw/capitals/actual_new_version.png' style={S(`height: 10em; border-radius: .25em; border:1px solid currentcolor`)}/></A> */}
-          
-          <HalfLine />
-          <div>I do like my version:</div>
-          <div style={S(`text-align:left;border:1px solid currentcolor;padding:.25em;border-radius:.25em;`)}>
-            <div>- cross-platform web app</div>
-            <div>- 3-try limit, not disabled submit</div>
-            <div>- <A tab href='/notify'>cross-platform Telegram notifs</A></div>
-            <div>- chat</div>
-          </div>
-          <div>but it's officially back! I reached out and had to change this from <A tab href='/capitals'/> to <A tab href='/lettercomb'/></div>
         </div>
+      </div>
+      <div className='column start wide'>
+        <div>I do like my version:</div>
+        <div className='column wide'>
+          <div>- cross-platform web app</div>
+          <div>- 3-try limit</div>
+          <div>- chat</div>
+        </div>
+        <div>but it's officially back!</div>
       </div>
     </div>
     <HalfLine />

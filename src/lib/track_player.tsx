@@ -657,7 +657,7 @@ export const tracks: { [id:string]: {
         audio: '/raw/audio/tracks/theme/when_am_i_gonna_lose_you.mp3',
         image: '/raw/audio/tracks/theme/when_am_i_gonna_lose_you.jpg',
         href: 'https://open.spotify.com/track/7ze7X8r4fopBs9ZRtwYFOX?si=f9ea0b87a9204c53',
-        flavor: 'user rentention 👀',
+        flavor: 'user rentention',
     },
     [track_ids.WHEN_I_GET_HOME]: {
         title: 'When I Get Home',

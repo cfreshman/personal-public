@@ -367,7 +367,7 @@ export const addStyle = (style) => {
     return () => L.remove()
 }
 export const useStyle = (...deps_style) => {
-    (dev ? useE : useInline)(...deps_style.slice(0, deps_style.length > 1 ? -1 : 1), () => addStyle(deps_style.at(-1)))
+    useInline(...deps_style.slice(0, deps_style.length > 1 ? -1 : 1), () => addStyle(deps_style.at(-1)))
 }
 export const useStyleE = (...deps_style) => {
     useE(...deps_style.slice(0, deps_style.length > 1 ? -1 : 1), () => addStyle(deps_style.at(-1)))

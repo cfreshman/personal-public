@@ -55,11 +55,11 @@ export const About = ({ handle=undefined }={}) => {
       <div className='heading'>^ flashy little slogan</div>
       <HalfLine />
 
-      {/* <InfoBadges labels={[
+      <InfoBadges labels={[
         // 'new?',
-        { text: "join today's work sesh hangout", href: 'https://freshman.dev/today-greeter' },
+        { text: "demo: join today's worksesh hangout", href: '/intro-greeter' },
       ]} />
-      <HalfLine /> */}
+      <HalfLine />
 
       {/* <div className='heading'>new</div>
       <div>- opt-in AI suggestions for things to do next based on your past logs!</div>

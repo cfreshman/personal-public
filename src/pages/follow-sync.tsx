@@ -1882,8 +1882,8 @@ ${previewMastodonLink}`,
       `)}>
         <div className='section-description'>
           {/* by <img src='/icon.png' style={{ width: '1em' }} /> freshman.dev <br/> */}
-          by <a href='https://twitter.com/freshman_dev'>
-            @freshman_dev
+          by <a href='https://twitter.com/__freshman'>
+            @__freshman
           </a> (<a
           href={`https://twitter.com/messages/compose?recipient_id=1351728698614042626&text=${
             encodeURIComponent(`follow-sync: `)

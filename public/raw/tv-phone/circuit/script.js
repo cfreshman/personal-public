@@ -28,7 +28,7 @@
     // circuit/tv.html
     definition.create = ({ games:game_list, shuffle=true, rounds=round_options[1] }) => {
         // if shuffle, first shuffle games used to construct list of length n, then shuffle that list
-        games = shuffle ? rand.shuffle(game_list) : game_list
+        game_list = shuffle ? rand.shuffle(game_list) : game_list
         let order = range(rounds).map(i => game_list[i % game_list.length])
         if (shuffle) order = rand.shuffle(order)
         const state = {

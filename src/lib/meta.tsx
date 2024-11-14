@@ -5,7 +5,7 @@ import { readable_text, with_opacity } from "./color";
 import url from "./url";
 import { parsePage } from "./page";
 import api, { auth } from "./api";
-import { setBackground, setTextColor } from "./hooks_ext";
+// import { setBackground, setTextColor } from "./hooks_ext";
 import { draw } from "./draw";
 import { none, pass } from "./types";
 import { socket } from "./socket";
@@ -96,14 +96,14 @@ const default_theme_color = '#eeebe6'
 const theme_color_l = Q('[name=theme_color]') as HTMLMetaElement
 const theme_color = trigger.value(default_theme_color)
 // theme_color.add(value => document.documentElement.style.background = value)
-theme_color.add(value => [
-  setBackground(value),
-  setTextColor(colors.hex_readable(value)),
-  (prev_theme_color => {
-    theme_color_l.content = value
-    return () => theme_color_l.content = prev_theme_color
-  })(theme_color_l.content),
-])
+// theme_color.add(value => [
+//   setBackground(value),
+//   setTextColor(colors.hex_readable(value)),
+//   (prev_theme_color => {
+//     theme_color_l.content = value
+//     return () => theme_color_l.content = prev_theme_color
+//   })(theme_color_l.content),
+// ])
 
 // see https://medium.com/@alshakero/how-to-setup-your-web-app-manifest-dynamically-using-javascript-f7fbee899a61
 // replaced by manifest in copyright.js

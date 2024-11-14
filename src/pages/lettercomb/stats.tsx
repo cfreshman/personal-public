@@ -186,6 +186,7 @@ export default ({ user, hf, handle, profile_map, embedded=false }) => {
         self && { share: e => {
           copy(location.origin + `/lettercomb/stats/${user}`)
           display_status(e.target, 'copied!')
+          navigator.share({ url: location.origin + `/lettercomb/stats/${user}` })
         } }
         ]} />
       {profile ? <>

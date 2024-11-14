@@ -42,19 +42,20 @@ const Style = styled.div`
 // </>)
 const landing = []
 
+const subdomain = parseSubdomain()
 const external = list('matchbox.zip').map(url => <Route path={'/'+url} render={() => location.href = 'http://'+url} />)
 const reloads = list('/raw /lib /api /resume-* /stream /git:* /pea-rice-explainer /prp /PRP').map(path => <Route path={path} render={() => location.reload()} />)
 const aliases = loaded => [
     ['\:<', 'face'],
     ['\.*', 'ly'],
-    [':*', 'ly'],
+    // [':*', 'ly'],
+    ...(subdomain ? [[`:`, subdomain]] : []),
     ['~*', 'u'],
     ['paper', 'txt'],
 ].flatMap(pair => [
     <Route path={'/'+pair[0]} key={pair.join()} children={<Page {...{ override: pair[1], loaded }} />} />,
-    <Route path={'/'+pair[0].replace('/', '/-')} key={'-'+pair.join()} children={<Page {...{ override: pair[1].replace('/', '/-'), loaded }} />} />,
+    <Route path={'/-'+pair[0]} key={'-'+pair.join()} children={<Page {...{ override: pair[1], loaded }} />} />,
 ])
-const subdomain = parseSubdomain()
 const redirects = [
     ['/capitals', '/lettercomb'],
     ['/1', '/donoboard'],
@@ -114,7 +115,7 @@ const redirects = [
 ])
 
 const subdomainPaths = {
-    wordbase: ['/new'],
+    // wordbase: ['/new'],
 }
 export const Main = ({ loaded }) => {
     useI(() => console.debug('Main init'))
@@ -134,7 +135,6 @@ export const Main = ({ loaded }) => {
     //         page.current = new_page
     //     }
     // }, true))
-    const subdomain = useSubdomain()
 
     const ref = useR()
     const shrink = useShrink(1)
@@ -211,32 +211,55 @@ export const Main = ({ loaded }) => {
                     + routeProps.location.hash
                 }/>
             }/> */}
+
             {/* for subdomains, override subpaths like /new to /wordbase */}
-            {subdomainPaths[subdomain]
+            {/* {subdomainPaths[subdomain]
             ? subdomainPaths[subdomain].map(path =>
                 <Route key={path} path={path} children={() =>
                     <Page {...{ override: subdomain, loaded }} />} />)
-            : ''}
-            {subdomain
-            ?
-            <Route exact path={'/'+subdomain} render={() => {
-                console.debug('subdomain redirect', parseLogicalPath(), '=>', parseLogicalPath().replace('/'+subdomain, ''))
-                return <Redirect to={parseLogicalPath().replace('/'+subdomain, '')} />
-            }} />
-            :''}
+            : ''} */}
+
             <Route path={['/t-', '/p-']} render={props => <Txt short={true} />} />
             <Route path={'/@*'} render={routeProps => {
                 const { pathname, search, hash } = routeProps.location
                 return <Redirect to={pathname.replace(/@/, 'u/') + search + hash} />
             }}/>
-            <Route path='/*' children={<Page loaded={loaded} />} />
+
+            {subdomain
+            ?
+            <>
+                <Route exact path='/' render={() => {
+                    console.debug('subdomain redirect', parseLogicalPath(), '=>', parseLogicalPath().replace('/'+subdomain, ''))
+                    return <Redirect to={'/:'} />
+                }} />
+                <Route exact path='/-' render={() => {
+                    console.debug('subdomain redirect', parseLogicalPath(), '=>', parseLogicalPath().replace('/'+subdomain, ''))
+                    return <Redirect to={'/-:'} />
+                }} />
+                {/* required to avoid hitting regular path at below */}
+                <Route path={'/'+subdomain} render={() => {
+                    console.debug('subdomain redirect', parseLogicalPath(), '=>', parseLogicalPath().replace('/'+subdomain, ''))
+                    return <Redirect to={parseLogicalPath().replace('/'+subdomain, '/:')} />
+                }} />
+                {/* VERY weird bug requires this HERE not below block */}
+                <Route path='/*' children={<Page loaded={loaded} />} />
+            </>
+            : <>
+                <Route path='/*' children={<Page loaded={loaded} />} />
+            </>}
+            
+            {/* <Route path='*' render={() => {
+                const page = parseLogicalPath().split('/').filter(x => x)[0]
+                alert(page)
+                return <Page {...{ override:page, loaded }} />
+            }} /> */}
             {/* <Route path='/:id' children={<Page loaded={loaded} />} />
             {subdomain
             ? <Route path='/' children={() =>
                 <Page {...{ override: subdomain, loaded }} />} />
             : ''} */}
 
-            <Route path='*' children={<Missing {...{ loaded }} />} />
+            {/* <Route path='*' children={<Missing {...{ loaded }} />} /> */}
         </Switch>
     </Style>
     )

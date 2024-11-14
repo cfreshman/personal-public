@@ -10,7 +10,7 @@ import url from './url';
 import { S, dev, getCssVar, isMobile, originalSearch, randi, range, set, squash, timezoneOffset } from './util';
 import { ColorPicker } from 'src/components/Info';
 import { meta } from './meta';
-import { setBackground, setTextColor } from './hooks_ext';
+// import { setBackground, setTextColor } from './hooks_ext';
 import { readable_text } from './color';
 import { useS } from './hooks';
 import { socket } from './socket';

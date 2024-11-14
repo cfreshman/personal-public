@@ -33,6 +33,7 @@ const get_color = (id, colors) => {
 }
 
 let ol
+let name_to_activity // shouldn't need here but can't figure out scope issue with on_click
 export default ({ handle }) => {
   const { posts, page, id, post_id, preserve_view } = handle.data
 
@@ -119,7 +120,7 @@ export default ({ handle }) => {
     
     // index posts
     const activity_to_name = (x) => `activity-${x.id}`
-    const name_to_activity = Object.fromEntries(posts.map(x => [activity_to_name(x), x]))
+    name_to_activity = Object.fromEntries(posts.map(x => [activity_to_name(x), x]))
 
     // create circles to simulate activity - small (100) dark purple for 1 activity, large (500) light purple for more
     // randomize location around user
@@ -179,7 +180,7 @@ export default ({ handle }) => {
       })
     }
 
-    const on_move = (e=undefined) => {
+    const on_move = ((e=undefined) => {
       last_pixel = e ? e.pixel : last_pixel
       // set all features to default circle geometry, then increase scale of hovered feature
       let hit = false
@@ -198,17 +199,16 @@ export default ({ handle }) => {
       } else {
         map_2.current.getTargetElement().style.cursor = ''
       }
-    }
+    }).bind(this)
     map_2.current.on('pointermove', on_move)
     uns.push(() => map_2.current.un('pointermove', on_move))
 
     const on_click = e => {
-      const feature = map_2.current.getFeaturesAtPixel(e.pixel)[0]
-      log({ feature })
-      if (feature) {
+      const features = map_2.current.getFeaturesAtPixel(e.pixel)
+      if (features.length) {
         // handle.set_post_id(name_to_activity[feature.get('name')].id)
         // handle.set_modal(MODALS.POST)
-        handle.set_path([MODALS.POST, name_to_activity[feature.get('name')].id])
+        handle.set_path([MODALS.POST, features.map(feature => name_to_activity[feature.get('name')].id).join('&')])
       } else {
         handle.set_path([])
       }

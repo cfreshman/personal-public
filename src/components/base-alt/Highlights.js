@@ -42,12 +42,14 @@ export const Highlights = () => {
         {/* <A href='/matchbox'>/matchbox (joycon couch game)</A> */}
         {/* <A href='/raw/stream'>stream (microblog)</A> */}
         {/* <A href='/twitter/install'>Twitter blue Threads icon</A> */}
-        <A href='/itly'>/itly (smaller iMessage previews)</A>
+        {/* <A href='/itly'>/itly (smaller iMessage previews)</A> */}
+        <A href='/tap'>/tap (habit tracker)</A>
         <HalfLine />
       </>}
       <span>new</span>
+      <A href='/vibe'>/vibe (map of 24hr pics)</A>
       <A href='/list-picker'>/list-picker (picks random menu item)</A>
-      <A href='/emoji-banner'>/emoji-banner (create twitter header)</A>
+      {/* <A href='/emoji-banner'>/emoji-banner (create twitter header)</A> */}
       {/* <A href='/stream-pledge'>/stream-pledge (get livestreaming)</A> */}
       {/* <A href='/running'>/running (get faster)</A> */}
       {/* <A href='/light'>/light (text-only twitter)</A> */}

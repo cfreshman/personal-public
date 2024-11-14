@@ -1,15 +1,20 @@
 import { projects } from "./projects"
 import { squash } from "./util"
 
-export const domains = {
-  'wordbase': 'wordbase.app',
-  'pico-repo': 'pico-repo.com',
-  'dinder': 'dinder.social',
-  'tally': 'tally.gallery',
-  'crowdmeal': 'crowdmeal.app',
-  'buystream': 'buystream.app',
-  'fishbowl': 'basin.fish', 'basin': 'basin.fish',
-}
+export const domains = [
+  ['wordbase', 'wordbase.app'],
+  ['dinder', 'dinder.social'],
+  ['pico-repo', 'pico-repo.com'],
+  ['tally', 'tally.gallery'],
+  ['crowdmeal', 'crowdmeal.app'],
+  ['buystream', 'buystream.app'],
+  ['fishbowl', 'basin.fish'],
+  ['greeter', 'grtr.app'],
+  ['greeter', 'grtr.xyz'],
+  ['greeter', 'greeter.social'],
+  ['vibe', 'vibe.photos'],
+  ['greeter', 'localhost'],
+]
 
 const common = {
   'fishbowl': {
@@ -223,18 +228,6 @@ export const replace = {
     keywords: 'not-linkedin, not LinkedIn, professional network, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/not-linkedin/icon-64.png',
   },
-  'splink': {
-    title: '/splink: smaller spotify link preview',
-    description: '',
-    keywords: 'splink, smaller spotify link preview, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
-    icon: 'https://freshman.dev/raw/splink/icon-64.png',
-  },
-  'developer-program': {
-    title: 'build web apps on freshman.dev',
-    description: '',
-    keywords: 'developer-program, build web apps on freshman.dev, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
-    icon: 'https://freshman.dev/raw/developer-program/icon-64.png',
-  },
   'itly': {
     title: '/itly: smaller iMessage link preview',
     description: '',
@@ -331,15 +324,6 @@ export const replace = {
     description: 'BOGGLE',
     keywords: 'boggle, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/boggle/icon2-64.png',
-  },
-  'uglychat': {
-    title: '/uglychat',
-    description: 'ugllychat',
-    keywords: 'uglychat, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
-    icon: 'https://freshman.dev/raw/uglychat/icon-64.png',
-    twitter: {
-      image: 'https://freshman.dev/raw/uglychat/icon.png',
-    },
   },
   'sitechat': {
     title: '/sitechat',
@@ -547,5 +531,24 @@ export const replace = {
     description: 'x7 variations of a phrase',
     keywords: 'rephrase, reword, social, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/images/icon-rephrase.png',
+  },
+  'tap': {
+    title: '/tap',
+    description: 'habit tracker',
+    keywords: 'tap, tally, habit tracker, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-tap-2.png',
+    // twitter: {
+    //   image: 'https://freshman.dev/raw/images/icon-tap-2.png',
+    // },
+  },
+  'llm': {
+    title: '/llm',
+    description: 'a personal LLM',
+    keywords: 'llm, a personal LLM, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-llm-3-large.png',
+    // icon: 'https://freshman.dev/raw/images/icon-llm-2.png',
+    // twitter: {
+    //   image: 'https://freshman.dev/raw/images/icon-llm-2-large.png',
+    // },
   },
 }

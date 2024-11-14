@@ -134,7 +134,8 @@ export default () => {
     term: string,
     mode: ''|'create'|'edit'|'include'|'bulk'|'dots'|'settings',
   }>({
-    prefix: 'tally', sep: '#',
+    // prefix: 'tally-1',
+    sep: '#',
     from: (p, h) => {
       // const [mode, term] = p.split('/').filter(pass).map(x => x.replace(/\+/g, ' ').replace(/^-$/, '')) as any
       // return { term, mode }

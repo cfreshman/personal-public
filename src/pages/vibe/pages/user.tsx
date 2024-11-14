@@ -35,10 +35,14 @@ export default ({ handle }) => {
         border: 1px solid ${ACCENT};
         padding: .25em;
         `)}>
-          <Post key={post.id} {...{ post, handle, close:()=>{} }} full_size />
+          <Post key={post.id} {...{ post, handle, close:()=>{} }} full_size left />
           <div className='row wide between'>
             <InfoBadges labels={[
-              `${datetimes.durations.pretty((post.t + duration({ d:1 }) - Date.now()))} left`,
+              { 'delete': async () => {
+                if (confirm('delete this post?')) {
+                  await handle.delete_post(post)
+                }
+              } },
             ]} />
             <InfoBadges labels={[
               `${n_likes} ${strings.plural(n_likes, 'like', 's')}`,

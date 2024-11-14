@@ -20,13 +20,13 @@ R.post('/', J(async rq => {
       messages: [{
         role: "user",
         content: [
-          { type: "text", text: `give me 7 variations of "${phrase}" in a JSON list. do not respond with anything else. return variations in the same writing style as the original, such as using lowercase letters. don't just use a thesaurus, build phrases from scratch with the same semantics` },
+          { type: "text", text: `give me 7 variations of "${phrase}" in a JSON list. do not respond with anything else. return variations in the same writing style as the original, such as using lowercase letters. don't just be a thesaurus, build phrases from scratch with the same SEMANTICS - take the SEMANTIC MEANING of metaphors and remix that, not the words used, for example "you blow chunks" means "you suck"` },
         ],
       }],
     })
     const raw_result = response.choices[0].message.content
     const raw_list = raw_result.match(/```json([^`]+)```/)[1]
-    log(raw_list)
+    // log(raw_list)
     return { list: JSON.parse(raw_list) }
   } catch (e) {
     log(e)

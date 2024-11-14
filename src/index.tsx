@@ -228,7 +228,7 @@ const App = () => {
 
     // redirect from /<subdomain>/* to /*
     // (react-router Redirect doesn't preserve rest / hash)
-    if (path !== parseSubpath(path) && !preserved.has(path)) url.replace(getPath())
+    // if (path !== parseSubpath(path) && !preserved.has(path)) url.replace('/:' + getPath())
     console.debug('TOP LEVEL', path, path !== parseSubpath(path) && !preserved.has(path))
 
   }, true))
@@ -286,7 +286,9 @@ const Contents = ({ loading }: { loading: TriggerValue<boolean | number> }) => {
     const page = usePage()
     const initialExpand = useR()
     // useI(page, () => initialExpand.current = subdomain === page || location.pathname[1] === '-')
-    useI(() => initialExpand.current = subdomain === page || location.pathname[1] === '-')
+    // useI(() => initialExpand.current = subdomain === page || location.pathname[1] === '-')
+    // useI(() => location.pathname[1] === '-')
+    useI(() => initialExpand.current = location.pathname[1] === '-')
     
     let [{ expand }] = auth.use()
     useI(expand, () => console.debug('expand value', expand))
@@ -770,7 +772,8 @@ ${css.common.base}
       font-weight: bold;
       &.label {
         color: var(--id-color-text);
-        background: none; backdrop-filter: invert(1) opacity(0.15);
+        background: none; backdrop-filter: invert(1) opacity(0.25);
+        // background: none; backdrop-filter: invert(1) opacity(0.15);
         // background: none; backdrop-filter: invert(1) saturate(0) opacity(0.5) brightness(10) contrast(10);
         // background: none; backdrop-filter: invert(1) saturate(0) opacity(0.25) brightness(10) contrast(10);
         // background: none; backdrop-filter: saturate(.5) brightness(2) opacity(0.25);
@@ -793,9 +796,9 @@ ${css.common.base}
     *:is(.body, .section) > textarea:not(.wwl-attach *),
     label.select:not(.wwl-attach *),
     .action:not(.wwl-attach *) {
-      background: var(--id-color-text) !important;
+      background: var(--id-color-text);
       color: #fff; /* var(--info-background) !important; */
-      color: var(--id-color-text-readable) !important;
+      color: var(--id-color-text-readable);
       border: 0;
       border-radius: 0;
       font-size: ${devices.is_mobile ? `max(1em, 16px)` : `1em`};

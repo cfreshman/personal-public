@@ -712,7 +712,7 @@ background: none;
     }
     &::after {
       content: "";
-      height: 50%;
+      height: 50%; width: 100%;
       flex-grow: 1;
       flex-shrink: 0;
     }

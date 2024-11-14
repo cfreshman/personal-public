@@ -81,6 +81,9 @@ export default () => {
                 <button onClick={e => {
                   copy(location.href)
                   display_status(e.target, 'copied!')
+                  navigator.share({
+                    url: location.href,
+                  })
                 }}>copy link</button>
               </div>
               <button className='large' onClick={handle.download}>download {beam.name}</button>

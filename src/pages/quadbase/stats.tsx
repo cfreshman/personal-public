@@ -161,6 +161,7 @@ export default ({ user, hf, handle, profile_map, embedded=false }) => {
         self && { share: e => {
           copy(location.origin + `/quadbase/stats/${user}`)
           display_status(e.target, 'copied!')
+          navigator.share({ url: location.origin + `/quadbase/stats/${user}` })
         } }
         ]} />
       {profile ? <>

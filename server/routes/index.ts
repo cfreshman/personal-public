@@ -63,6 +63,8 @@ import beam from './beam'
 import vibe from './vibe'
 import matchbox from './matchbox'
 import rephrase from './rephrase'
+import tly from './tly'
+import companion from './companion'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -138,6 +140,8 @@ export default {
   beam,
   vibe,
   rephrase,
+  tly,
+  companion,
 }
 
 export const ios = [

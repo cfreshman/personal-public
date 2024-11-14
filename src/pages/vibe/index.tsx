@@ -17,6 +17,7 @@ import Feed from './pages/feed'
 import User from './pages/user'
 import { openLogin } from 'src/lib/auth'
 import { a_get_geo } from './func/general'
+import { parseSubdomain } from 'src/lib/page'
 
 const { named_log, truthy, node, range, rand, devices, Q, values } = window as any
 const NAME = 'vibe'
@@ -41,25 +42,30 @@ export default () => {
   const [zip, set_zip] = store.use('vibe-zip', { default:'02904' })
   const [posts, set_posts] = useS(undefined)
   const [post_id, set_post_id] = useS(undefined)
+  const [post_ids, set_post_ids] = useS(undefined)
 
   useF(page, id, () => {
     if (page === MODALS.POST && id) {
       set_modal(MODALS.POST)
-      set_post_id(id)
+      // set_post_id(id)
+      set_post_ids(id.split('&'))
     }
   })
   useF(modal, post_id, () => {
     if (!modal && post_id) {
       if (page === MODALS.POST) set_path([])
       set_post_id(undefined)
+      set_post_ids(undefined)
     } else if (modal === MODALS.POST && post_id) {
       set_path([MODALS.POST, post_id])
+    } else if (modal === MODALS.POST && post_ids) {
+      set_path([MODALS.POST, post_ids.join('&')])
     }
   })
 
   const handle = {
     data: {
-      a, page, id, preserve_view, modal, zip, posts, post_id,
+      a, page, id, preserve_view, modal, zip, posts, post_id, post_ids
     },
     set_path, set_preserve_view, set_modal, set_zip, set_post_id,
     load_posts: async () => {
@@ -185,6 +191,7 @@ export default () => {
       'OpenLayers': ['https://openlayers.org/','https://github.com/openlayers/openlayers'],
     },
     icon: '/raw/vibe/icon-2.png',
+    title: parseSubdomain() === 'vibe' ? location.host : 'vibe',
   })
   return <Style id='vibe'>
     {modal ? <Modal outerClose={() => {

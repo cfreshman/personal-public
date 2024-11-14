@@ -482,7 +482,7 @@ const User = ({ expand }: { expand: boolean }) => {
     background: #bfb !important; 
     color: #000 !important; 
     border: 1px solid currentcolor !important;
-    box-shadow: 0 2px #fff !important;
+    box-shadow: 0 2px var(--id-color-text-readable) !important;
     translate: 0 -2px !important;
     border-radius: 99em !important;
     padding: 0 .5em !important;
@@ -956,7 +956,7 @@ export const Header = () => {
           ${devices.is_mobile ? `font-size: max(1em, 16px);` : ''}
           `)}>
           {/* <hr /> */}
-          <A href='/'>home</A>
+          <A href='/home'>home</A>
           <a onClick={e => {
             const AppIconTile = ({
               name,

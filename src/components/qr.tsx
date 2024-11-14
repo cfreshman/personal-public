@@ -1,6 +1,7 @@
 import React from 'react'
 import { useF, useM, useR, useS, useTimed } from "src/lib/hooks"
 import { useCachedScript } from 'src/lib/hooks_ext'
+import { parseSubdomain } from 'src/lib/page'
 import { action } from 'src/lib/types'
 import { S } from 'src/lib/util'
 import styled from 'styled-components'
@@ -76,16 +77,19 @@ const StyleQR = styled.div`&{
     }
 }`
 
+const subdomain = parseSubdomain()
 export const useQr = ({ href, size=128 }: {
     href: string,
     size: string | number,
 }) => {
+    href = useM(href, () => href && subdomain === 'greeter' ? href.replace(`/${subdomain}`, '/:') : href)
     const [copied, set_copied] = useTimed(3_000, false)
     const [expanded, set_expanded] = useS(false)
     const ref_qr = useR()
     const handle = {
         copy: async () => {
             await copy(href)
+            navigator.share({ url: href })
             set_copied(true)
         },
         toggle_expand: async () => {

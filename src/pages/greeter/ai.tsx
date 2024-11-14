@@ -185,7 +185,7 @@ export const AI = ({ handle=undefined }={}) => {
         .&nbsp;<a onClick={() => set_begin(true)}>begin →</a>
       </> : null}</AiText> */}
       {/* <AiText>i am an <A tab href='https://en.wikipedia.org/wiki/Large_language_model'>LLM</A> assistant. your favorite LLM (<A tab href='https://chatgpt.com/'>ChatGPT</A>, etc) will ingest your /greeter logs and suggest new hangouts using <b>MATH</b></AiText> */}
-      <AiText>i am here to <b><i>improve your life</i></b>, not just keep you repeating the same hangouts every week. but you can always ask the LLM for more low-key hangouts too!</AiText>
+      <AiText>i am here to <b><i>improve your life</i></b>, not keep you repeating the same hangouts every week. but you can always ask for more low-key hangouts too</AiText>
       {!begin ? <AiText><a onClick={() => set_begin(true)}>begin →</a></AiText> : null}
       {/* {!begin
       ? <AiText>
@@ -244,8 +244,7 @@ export const AI = ({ handle=undefined }={}) => {
             display_status(e.target, 'copied!')
           }}>copy</a> and paste the query into <A tab href={'https://chatgpt.com/'}>ChatGPT</A> (or any LLM). {`tips:
 - query too long? use `}{convertLinks('https://chatgpt-prompt-splitter.vercel.app')}{`
-- if you pay for an LLM it *should* remove the limit
-- (cyrus is trying paid ChatGPT for a month and it is VERY cool)`}
+- if you pay for an LLM it *should* remove the limit`}
         </AiText>
       </>}
     </InfoSection>

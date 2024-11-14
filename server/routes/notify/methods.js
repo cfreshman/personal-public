@@ -166,7 +166,7 @@ const twitter = {
 
                                         io.send([notify.user], 'rerender')
                                     } else {
-                                        reply = `unable to verify, try again at freshman.dev/notify or message me @freshman_dev`
+                                        reply = `unable to verify, try again at freshman.dev/notify or message me @__freshman`
                                         // await update(notify.user, notify)
                                     }
                                 } break

@@ -1663,6 +1663,7 @@ export const Reorderable = ({ elements, reorder=pass, ...props }: {
   const drag_display = useR()
   const drag_start_ms = useM(drag_i, () => Date.now())
 
+  const r_off = useR()
   const handle = {
     _reorderable: (node) => {
       while (node && !node.classList?.contains('reorderable-item')) node = node.parentNode
@@ -1685,10 +1686,12 @@ export const Reorderable = ({ elements, reorder=pass, ...props }: {
         x = e.clientX
         y = e.clientY
       }
-      const rect = drag_display.current.getBoundingClientRect()
+      const dx = x - r_off.current[0]
+      const dy = y - r_off.current[1]
+      const rect = source.current.getBoundingClientRect()
       drag_display.current.style.position = 'fixed'
-      drag_display.current.style.left = `${x - rect.width/2}px`
-      drag_display.current.style.top = `${y - rect.height/2}px`
+      drag_display.current.style.left = `${dx + rect.x}px`
+      drag_display.current.style.top = `${dy + rect.y}px`
       drag_display.current.style['pointer-events'] = 'none'
       drag_display.current.style['z-index'] = '2'
       // log(drag_display.current)
@@ -1702,6 +1705,12 @@ export const Reorderable = ({ elements, reorder=pass, ...props }: {
       } else {
         drag_display.current = node(target.innerHTML)
         target.parentNode.append(drag_display.current)
+        if (e.targetTouches) {
+          const touch = e.targetTouches[0]
+          r_off.current = [touch.clientX, touch.clientY]
+        } else {
+          r_off.current = [e.clientX, e.clientY ]
+        }
         handle._move_drag_display(e)
       }
     },
@@ -1959,7 +1968,7 @@ export const ColorPicker = withRef(({ value, setValue, ...props }: props & { val
 })
 
 
-export const Multiline = (({ ref=useR(), children, value, setValue, extra_height='.25em', row_limited, min_rows=0, ...props }: props) => {
+export const Multiline = withRef(({ ref=useR(), children, value, setValue, extra_height='.25em', row_limited, min_rows=0, ...props }: props) => {
   useF(value, () => {
     if (props.rows) return
     const area = ref.current
@@ -1972,7 +1981,7 @@ export const Multiline = (({ ref=useR(), children, value, setValue, extra_height
     area.textContent = area.value = value
     ;[area.selectionStart, area.selectionEnd] = [start, end]
   })
-  return setValue ? <textarea autoCapitalize={false} ref={ref} {...props} style={{...S(`
+  return setValue ? <textarea autoCapitalize={'off'} ref={ref} {...props} style={{...S(`
   resize: none;
   `), ...(props.style||{})}} onKeyDown={e => {
     // theres a textarea bug which requires us to set the textContent manually
@@ -1984,6 +1993,7 @@ export const Multiline = (({ ref=useR(), children, value, setValue, extra_height
       const new_start = Math.max(0, start - 1)
       l.textContent = l.value.slice(0, new_start) + l.value.slice(end)
     }
+    props.onKeyDown && props.onKeyDown(e)
   }} onChange={e => {
     props.onChange && props.onChange(e)
     const l = e.target as any

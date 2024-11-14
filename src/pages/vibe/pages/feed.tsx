@@ -31,7 +31,12 @@ export default ({ handle }) => {
           <Post {...{ post, handle, close:()=>{} }} full_size />
           <div className='row wide between'>
             <InfoBadges labels={[
-              a.user === post.user && datetimes.durations.pretty(Date.now() - post.t),
+              // a.user === post.user && datetimes.durations.pretty(Date.now() - post.t),
+              a.user === post.user && { 'delete': async () => {
+                if (confirm('delete this post?')) {
+                  await handle.delete_post(post)
+                }
+              } }
             ]} />
             <InfoBadges labels={[
               a.user && (post.likes[a.user] ? 'liked' : { 'like': async () => {

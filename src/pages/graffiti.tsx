@@ -174,15 +174,6 @@ export default () => {
   useF(a.expand, handle.resize)
   useEventListener(window, 'resize', handle.resize)
 
-  useEventListener(window, 'mousedown', handle.down)
-  useEventListener(window, 'touchstart', e => {
-    touches = e.touches
-    if (touches.length > 1) down = undefined
-    else if (touches.length === 1) {
-      const touch = touches[0]
-      down = V.ne(touch.clientX, touch.clientY)
-    }
-  })
   useEventListener(window, 'pointermove', handle.move)
   useEventListener(window, 'pointerup', handle.up)
   useEventListener(window, 'touchend', e => {
@@ -270,7 +261,17 @@ export default () => {
         pointer-events: none;
         "></div>`)
         document.body.appendChild(over)
-      }} onPointerOut={e => over?.remove() } />
+      }}
+      onPointerOut={e => over?.remove() }
+      onMouseDown={handle.down}
+      onTouchStart={e => {
+        touches = e.touches
+        if (touches.length > 1) down = undefined
+        else if (touches.length === 1) {
+          const touch = touches[0]
+          down = V.ne(touch.clientX, touch.clientY)
+        }
+      }} />
     </div>
     <div id='controls-container' className='middle-row wide'>
       <div className='middle-column gap'>

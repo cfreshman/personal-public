@@ -58,6 +58,7 @@ export default () => {
         url_in && { 'copy': e => {
           copy(url_out)
           display_status(e.target, 'copied!')
+          navigator.share({ url: url_out })
           handle.add_history()
         }, label: !url_in },
       ]}>
@@ -65,6 +66,7 @@ export default () => {
           <div onClick={e => {
             copy(url_out)
             display_status(e.target, 'copied!')
+            navigator.share({ url: url_out })
             handle.add_history()
           }} className='itly-block itly-block-dark pointer'>{url_out}</div>
         </> : `paste link above to generate link with smaller iMessage display`}</div>

@@ -81,6 +81,7 @@ export default () => {
           { share: e => {
             copy(location.origin + '/twitter/install'),
             display_status(e.target, `copied!`)
+            navigator.share({ url: location.origin + '/twitter/install' })
           } }
         ]} />
       </InfoSection>

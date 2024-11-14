@@ -26,15 +26,21 @@ export const User = ({ user, handle }) => {
   const self = viewer && user === viewer
 
   const [profile, setProfile] = useS(undefined)
-  useF(viewer, user, () => handle.load_profile(user, setProfile))
+  useF(viewer, user, () => handle.load_user_profile())
   const followed = useM(viewer, profile, () => profile?.follows?.includes(viewer)||self)
 
   const [viewer_profile, setViewerProfile] = useS(undefined)
-  useF(viewer, () => handle.load_profile(viewer, setViewerProfile))
+  useF(viewer, () => handle.load_viewer_profile())
   const following = useM(user, viewer_profile, () => viewer_profile?.follows?.includes(user)||self)
   const authorized = useM(viewer_profile, user, self, () => viewer_profile 
   ? self || viewer_profile.followers.includes(user)
   : viewer)
+
+  handle = {
+    ...handle,
+    load_user_profile: async () => await handle.load_profile(user, setProfile),
+    load_viewer_profile: async () => await handle.load_profile(viewer, setViewerProfile),
+  }
 
   const [meet, setMeet] = useS(undefined)
   useF(viewer, user, () => handle.load_meet(viewer, user, setMeet))
@@ -210,6 +216,13 @@ export const User = ({ user, handle }) => {
 
   return <>
     {viewer ? <InfoBadges style={S(`font-size: 1.25em; padding-bottom: .125em`)} labels={[
+        !self && !following && { 'follow': () => {
+          api.post(`/profile/${user}/follow`, {}).then(() => {
+            handle.load_viewer_profile()
+            handle.load_user_profile()
+          })
+          // api.post(`/profile/${user}/follow`, {}).then(() => location.reload())
+        } },
         viewer && { 'add hangout': (e) => {
           store.set(APP_COOKIE.HANGOUT_PREFILL, { users:lists.unique([viewer, user]) })
           handle.setPath([undefined, 'hangout', undefined], e)
@@ -245,15 +258,18 @@ export const User = ({ user, handle }) => {
       self ? 'your follows' : `${user}'s meetings`,
       ...(viewer ? [
         !self && !following && { 'follow': () => {
-          // api.post(`/profile/${user}/follow`, {}).then(() => handle.load_profile(viewer, setViewerProfile))
-          api.post(`/profile/${user}/follow`, {}).then(() => location.reload())
+          api.post(`/profile/${user}/follow`, {}).then(() => {
+            handle.load_viewer_profile()
+            handle.load_user_profile()
+          })
+          // api.post(`/profile/${user}/follow`, {}).then(() => location.reload())
         } },
-        !self && !following && 'follow to add meeting',
+        // !self && !following && 'follow to add meeting',
         !self && following && !meet?.t && { [meet?.t ? 'view meet' : 'add meeting']: e => handle.setPath([viewer, 'met', user], e) },
         
-        'view:',
-        user && followed && { 'summary': e => handle.setPath([user, 'summary'], e)},
-        { 'calendar': e => handle.setPath([user, 'calendar'], e)},
+        followed && 'view:',
+        followed && { 'summary': e => handle.setPath([user, 'summary'], e)},
+        followed && { 'calendar': e => handle.setPath([user, 'calendar'], e)},
         // self && { 'about greeter': () => handle.setPath([undefined, 'about']) },
   
         // !self && !following && 'follow to add meeting',
@@ -278,12 +294,16 @@ export const User = ({ user, handle }) => {
           }} />)}
           {view_users?.length ? null : <div>
             {profile
-            ? !followed ? 'friend this user to view meetings' : (self ? 'no follows' : 'no meetings')
+            ? !followed ? null : (self ? 'no follows' : 'no meetings')
             : 'loading profile'}
           </div>}
         </div>
         {!authorized
-        ? <GreeterUnauthorized {...{ viewer, users:[user] }} />
+        ? <GreeterUnauthorized {...{ viewer, users:[user], style:S(`
+          border: 1px solid currentcolor;
+          padding: .5em;
+          border-radius: .5em;
+          `) }} />
         : null}
       </InfoLoginBlock>
     </InfoSection>
@@ -355,7 +375,7 @@ export const User = ({ user, handle }) => {
         store.set(APP_COOKIE.HANGOUT_PREFILL, { users:lists.unique([viewer, user]) })
         handle.setPath([undefined, 'hangout', undefined], e)
       }},
-      viewer && !self && { 'joint calendar': (e) => handle.setPath([viewer, 'calendar', user], e) },
+      followed && !self && { 'joint calendar': (e) => handle.setPath([viewer, 'calendar', user], e) },
       // viewer && { spacer:true },
       // viewer && 'search:',
       // viewer && {

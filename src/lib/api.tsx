@@ -130,8 +130,8 @@ const api = window['api'] = {
                                 ◡̈<br/>
                                 It looks like you're having connection issues.<br/>
                                 Try waiting 30s, then maybe message me <a
-                                href={`https://twitter.com/messages/compose?recipient_id=1351728698614042626&text=${encodeURIComponent(location.href)}`}
-                                >@freshman_dev</a>/Twitter <a
+                                href={`https://twitter.com/messages/compose?recipient_id=1794362902888992768&text=${encodeURIComponent(location.href)}`}
+                                >@__freshman</a>/Twitter <a
                                 href='mailto:cyrus@freshman.dev'
                                 >cyrus@freshman.dev</a>/email
                             </>,
@@ -155,7 +155,7 @@ const api = window['api'] = {
                     }
                     
                     // MessageUtil.post({
-                    //     text: 'warning: server offline – you might want to message me twitter.com/freshman_dev',
+                    //     text: 'warning: server offline – you might want to message me twitter.com/__freshman',
                     //     id: 'offline',
                     //     delete: 'offline online',
                     // })

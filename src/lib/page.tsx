@@ -22,6 +22,11 @@ const pagedomains = {
   'cyrusfre.sh': '',
   'matchbox.app': 'matchbox',
   'spo.tu.fo': 'spot',
+  'grtr.xyz': 'greeter',
+  'grtr.app': 'greeter',
+  'greeter.social': 'greeter',
+  'vibe.photos': 'vibe',
+  'localhost:3030': 'greeter',
 }
 const ignore = set('www')
 export const parseSubdomain = () => {
@@ -40,7 +45,7 @@ export const parseSubdomain = () => {
     const parts = host.split('.').filter(part => !ignore.has(part))
     const domain = parts.slice(-2).join('.')
     const path = parts.slice(0, -2)
-      .concat(pagedomains[domain] ?? [])
+      .concat(pagedomains[location.host] ?? [])
       .map(part => subdomains[part] || part)
       .reverse()
       .join('/')
@@ -62,7 +67,8 @@ export const parseSubpath = (path=nonExpandedPathname(), prefix='') => {
   const subdomain = parseSubdomain()
   path = path.replace(RegExp(`^(https?://)?${location.host}`), '') // remove duplicated subdomain in path
   // path = path.replace(/^\/-/, '/') // remove '-' (used to expand page)
-  const fullSubpath = subdomain ? path.replace(RegExp(`^/${subdomain}`), '') || '/' : path
+  // const fullSubpath = path // subdomain ? path.replace(RegExp(`^/${subdomain}`), '') || '/' : path
+  const fullSubpath = subdomain ? (path.slice(1) ? path.replace(RegExp(`^/${subdomain}`), '/:') || '/' : '/:') : path
   // remove requested prefix
   return fullSubpath.replace(RegExp(`^${prefix}`), '')
 }
@@ -81,14 +87,14 @@ export const parseLogicalPath = (path=nonExpandedPathname(), prefix='') => {
   // OR insert /~ for all subdomain links
   // OR link from subdomain l.<> (no probably not, we'd have to leave the page)
 
-  path = path.replace(/^\/-/, '/')
   const subdomain = parseSubdomain()
-  const subpath = parseSubpath(path)
-
-  const first = subpath.split('/').filter(truthy)[0]
-  path = projects[first]
-    ? subpath
-    : ('/' + subdomain + subpath).replace(/\/+/g, '/')
+  path = path.replace(/^\/-/, '/').replace('/:', '/'+subdomain).replace(/\/+/g, '/')
+  // const subpath = parseSubpath(path)
+  // const first = subpath.split('/').filter(truthy)[0]
+  // path = projects[first]
+  //   ? subpath
+  //   : ('/' + subdomain + subpath).replace(/\/+/g, '/')
+  // path = first === ':' ? ('/' + subdomain + subpath).replace(/\/+/g, '/') : subpath
   return path.replace(RegExp(`^${prefix}`), '').replace(/\/$/, '') || '/'
 }
 console.debug('LOGICAL PATH', parseLogicalPath() || '<empty>')

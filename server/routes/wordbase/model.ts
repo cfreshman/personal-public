@@ -986,7 +986,7 @@ async function resultTwitterHTML(rs, id) {
         'twitter:url': `https://wordbase.app/replay/${info.id}`,
         'twitter:title': `${info.p1} vs ${info.p2}`,
         'twitter:site': '@wordbase_app',
-        'twitter:creator': '@freshman_dev',
+        'twitter:creator': '@__freshman',
         'twitter:description': `${['BLUE', 'ORANGE'][info.status]} wins!`,
         'twitter:image': info.img || 'https://wordbase.app/raw/wordbase/favicon256.png',
         // 'twitter:image': 'https://wordbase.app/raw/wordbase/favicon256.png',

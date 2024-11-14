@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { ErrorBoundary } from '../components/ErrorBoundary';
 import api from './api';
 import { auth, expandPlacement, useBasicDropdown, useExpand, useExpandPlacement, useHideExpandedControls, useHideLogin, usePopup } from './auth';
-import { addStyle, useCached, useDomains, useE, useEventListener, useF, useHideFooter, useM, useR, useRerender, useS, useScript, useStyle, useTimeout } from './hooks';
+import { addStyle, useCached, useDomains, useE, useEventListener, useF, useHideFooter, useInline, useM, useR, useRerender, useS, useScript, useStyle, useTimeout } from './hooks';
 import { meta } from './meta';
 import { parseLogicalPath, parsePage, parseSubdomain, parseSubpage, parseSubpath } from './page';
 import { store } from './store';
@@ -42,6 +42,9 @@ export const useProject = () => {
 }
 
 export const setBackground = (background:string, embedded=false) => {
+    useInline(() => {
+        console.log('here')
+    })
     const hex_bg = hex(getCssVar(background))
     const hex_text = colors.hex_readable(hex_bg)
     const hex_text_readable = colors.hex_readable(hex_text)
@@ -59,9 +62,9 @@ export const setBackground = (background:string, embedded=false) => {
         --id-color-l: ${l}%;
         --id-color-d: ${l < 40 ? 0 : 100}%;
 
-        --id-color: ${hex_bg};
-        --id-color-text: ${hex_text};
-        --id-color-text-readable: ${hex_text_readable};
+        --id-color: ${hex_bg} !important;
+        --id-color-text: ${hex_text} !important;
+        --id-color-text-readable: ${hex_text_readable} !important;
     }
     `:'')
     // return addStyle(background ? `
@@ -182,9 +185,9 @@ export const useCheckin = (page:string|boolean=true) => {
             }
         })
 }
-export const usePageSettings = ({ checkin, background, text_color, professional, hideLogin, hideExpandedControls, hideFooter, basicDropdown, expand, expandPlacement, domains, title, icon, expandStyle, transparentHeader, invertHeader, popup, uses }: {
+export const usePageSettings = ({ checkin, background, text_color, professional, white, hideLogin, hideExpandedControls, hideFooter, basicDropdown, expand, expandPlacement, domains, title, icon, expandStyle, transparentHeader, invertHeader, popup, uses }: {
     checkin?: string | boolean,
-    background?: string, text_color?: string, professional?: boolean,
+    background?: string, text_color?: string, professional?: boolean, white?: boolean,
     hideLogin?: boolean, hideExpandedControls?: boolean,
     hideFooter?: boolean,
     basicDropdown?: boolean,
@@ -200,7 +203,8 @@ export const usePageSettings = ({ checkin, background, text_color, professional,
 }={}) => {
     useCheckin(checkin)
     const [{ user:viewer }] = auth.use()
-    const used_background = background ?? ((professional || !viewer) && '#eeebe6')
+    const [theme_color] = meta.theme_color.use()
+    const used_background = background ?? ((professional || !viewer) ? '#eeebe6' : theme_color)
     useBackground(used_background)
     // useE(background, () => (x => x && meta.theme_color.set(x) && (() => meta.theme_color.set(`var(--id-color)`)))(used_background))
     // useE(background, () => (x => x && meta.theme_color.set(x) && (() => meta.theme_color.set(`var(--id-color)`)))(background ?? ((professional || !auth_user) && '#eeebe6')))
@@ -221,6 +225,38 @@ export const usePageSettings = ({ checkin, background, text_color, professional,
     const [{ expand:pageExpand }] = auth.use()
     useStyle(pageExpand, pageExpand ? expandStyle ?? '' : '')
 
+    useStyle(`${
+        white ? `
+        :root {
+            --id-color: #fff !important;
+            --id-color-text: #000 !important;
+            --id-color-text-readable: #fff !important;
+            --from: hook_ext usePageSettings white;
+        }` : professional ? `
+        :root {
+            --id-color: #eeebe6 !important;
+            --id-color-text: #000 !important;
+            --id-color-text-readable: #fff !important;
+            --from: hook_ext usePageSettings professional;
+        }` : ''
+        }
+        ${used_background ? `
+        :root {
+            --id-color: ${used_background} !important;
+            --id-color-text: ${colors.readable(used_background)} !important;
+            --id-color-text-readable: ${colors.readable(colors.readable(used_background))} !important;
+            --from: hook_ext usePageSettings background;
+        }
+        ` : ''}
+        ${text_color ? `
+        :root {
+            --id-color-text: ${text_color} !important;
+            --id-color-text-readable: ${colors.readable(text_color)} !important;
+            --from: hook_ext usePageSettings text_color;
+        }
+        ` : ''}
+        `)
+
     // rerender ~1s after page load apparently (to fix transparent header not showing correctly)
     useF(() => {
         if (transparentHeader) {
@@ -233,7 +269,8 @@ export const usePageSettings = ({ checkin, background, text_color, professional,
     })
 }
 
-export const useSubdomain = () => parseSubdomain() // not an actual hook, won't change
+const subdomain = parseSubdomain()
+export const useSubdomain = () => subdomain // not an actual hook, won't change
 export const useSubpath = (pathname=undefined) => url.as(() => parseSubpath(pathname))[0]
 export const useLogicalPath = (pathname=undefined) => url.as(() => parseLogicalPath(pathname))[0]
 export const usePage = (pathname=undefined) => url.as(() => parsePage(pathname))[0]
@@ -244,7 +281,7 @@ export const useSublocation = () => {
     const subdomain = useSubdomain()
 
     const update = location => Object.assign({}, location, {
-        pathname: `${subdomain}${location.pathname}`
+        pathname: location.pathname.replace(/^\/:/, `/${subdomain}`),
     })
     const [value, setValue] = useState(update(location))
     useF(location, () => setValue(update(location)))
@@ -299,14 +336,18 @@ export const usePathState = ({
 }={}) => {
     // if undefined, use first slash as page
     prefix = fromPath(prefix ?? parseLogicalPath().split('/').filter(p=>p)[0])
-    const _from = (path=fromPath(parseLogicalPath())) => (
-        fromPath(path).startsWith(prefix)
+    const _from = (path=fromPath(parseLogicalPath())) => {
+        // if (subdomain) path = path.replace(':', subdomain)
+        // alert(JSON.stringify({path, prefix, fromPath: fromPath(path), startsWith: fromPath(path).startsWith(prefix), out: from(fromPath(path.replace(prefix, ''))) || empty}))
+        return fromPath(path).startsWith(prefix)
         ? from(fromPath(path.replace(prefix, ''))) || empty
-        : undefined)
+        : undefined
+    }
 
     const [value, setValue] = useState(_from())
     const initialized = useR(false)
     useF(value, () => {
+        // alert(`${prefix}: ${toPath([prefix.replace('/'+subdomain, '/:'), to(value)], location.hash, sep)}`)
         readonly || url.to(initialized.current && push, toPath([prefix, to(value)], location.hash, sep))
         initialized.current = true
     })

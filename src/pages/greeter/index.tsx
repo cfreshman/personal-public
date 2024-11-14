@@ -19,6 +19,7 @@ import { Hangout } from './hangout'
 import GreeterHangout from './GreeterHangout'
 import { AI } from './ai'
 import { Style } from './style'
+import { parseSubdomain } from 'src/lib/page'
 
 const { named_log, list, truthy, datetime, values, set, node, Q, range, keys } = window as any
 const log = named_log('greeter')
@@ -329,6 +330,7 @@ export const create_handle = (context) => {
   return handle
 }
 
+const is_app = 'greeter' === parseSubdomain()
 export default () => {
   const [{user:viewer}] = auth.use()
   // just reload after login to avoid issue w/ profile load
@@ -403,6 +405,7 @@ export default () => {
       modes.summary ? `${users[0]}'s summary` :
       modes.hangout ? `hangout` :
       modes.ai ? 'greeter AI' :
+      is_app ? location.host :
       '/greeter'
     ),
     icon: '/raw/greeter/icon.png',

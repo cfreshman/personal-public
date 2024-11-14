@@ -15,7 +15,7 @@ const OrsRegExp = (flags:string=undefined, ...xs:RegExp[]) => {
 //                              http or s         alphanum sub                   tail (doesn't cover
 //                              |                 |    alpha domain or local     |     all cases)
 const linkRegex =
-  /(^|[^.\w\d\-_:/?=&%#@+\n])(?<h0>(?:\w+?:\/\/)*(?:(?:(?:[\w\d-]+\.)+\w{1,}|localhost)(?:[\w\d\-_:/?=&%#@+.]{1,}))|(?:\d{1,3}\.){3}\d+)(\.(?:! ))?/im
+  /(^|[^.\w\d\-_:/?=&%#@+\n])(?<h0>(?:\w+?:\/\/)*(?:(?:(?:[\w\d-]+\.)+\w{1,}|localhost)(?:[\w\d\-_:/?=&%#@+.]*[\w\d\-_:/?=&%#@+]))|(?:\d{1,3}\.){3}\d+)(\.(?:! ))?/im
 const internalLinkRegex =
   /(^|[^.\w\d\-_:/?=&%#@+\n])(?<h1>[/?](?:[\w\d\-_:/?=&%#@+.]{1,}[\w\d\-_]{1,}))(\.(?:! ))?/im
 const userRegex = /@(?<h2>[a-zA-Z0-9]+)/im

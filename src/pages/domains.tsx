@@ -7,10 +7,13 @@ import { usePageSettings } from 'src/lib/hooks_ext';
 
 export const domains = [
     // 'freshman.dev',
-    { text: 'freshman.dev', label: ' default ', direct: true },
+    { text: 'freshman.dev', label: 'default' },
     // 'uh.software',
     // 'f6n.co',
-    ' ',
+    'cyru.us',
+    'frsh.mn',
+    'tu.fo',
+    // ' ',
     // { text: 'wordbase.app', label: ' → /wordbase ', direct: true},
     // { text: 'basin.fish', label: ' → /fishbowl ', direct: true},
     // { text: 'matchbox.zip', label: ' → /matchbox ', direct: true},
@@ -25,12 +28,14 @@ export const domains = [
     // { text: 'webputer.page', label: ' → /computer.html ', direct: true},
     // 'oatmeal.zip',
     // ' ',
-    'frsh.mn',
-    'cyrusman.xyz',
+    // 'cyrusman.xyz',
     // 'cyrusfre.sh/man',
     // 'f8n.co',
     // 'f3n.co',
     // 'cfre.sh/man', 
+    ' ',
+    { text: 'greeter.social', label: '→ /greeter', direct: true },
+    // { text: 'vibe.photos', label: '→ /vibe', direct: true },
     // { text: 'cyrusfreshman.com', label: ' → freshman.dev ' },
     // { text: 'bowl.fish', label: ' → /fishbowl ', direct: true },
     // { text: 'tally.gallery', label: ' → /tally ', direct: true },
@@ -38,8 +43,8 @@ export const domains = [
     // { text: 'wwl.watch', label: ' → /raw/wwl ', direct: true },
     // { text: 'webputer.page', label: ' → /computer.html ', direct: true },
     ' ',
-    { text: 'tu.fo', label: ' url shortnr ', direct: true },
-    // { text: 'nn.fo', label: ' url shortnr ', direct: true },
+    // { text: 'tu.fo', label: 'url shortener', direct: true },
+    { text: 'nn.fo', label: 'url shortener', direct: true },
     // ' ',
     // { text: 'paper.chat', label: ' social media concept ', direct: true },
 ].filter(truthy).map((d: any) => ({ 
@@ -55,6 +60,7 @@ export default () => {
     return <InfoStyles>
         <InfoBody>
             <InfoSection>
+                <div /> {/* needed to avoid margin after first badges line */}
                 {domains.map(d =>
                 d.text.trim()
                 ?

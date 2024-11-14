@@ -795,7 +795,7 @@ export const Base = () => {
       {/* <li>mw-aui: modular Weather.app-esque ui</li> */}
     </ol>
     <div>
-      <A href='/resume'>rèsumè</A> - <a onClick={() => setMore(true)}>personal site</a> - <span><A href='https://twitter.com/freshman_dev'>@freshman_dev</A>/Twitter</span>
+      <A href='/resume'>rèsumè</A> - <a onClick={() => setMore(true)}>personal site</a> - <span><A href='https://twitter.com/__freshman'>@__freshman</A>/Twitter</span>
     </div>
     {/* <a href="/resume-CyrusFreshman.pdf">rèsumè</a> */}
   </div> : originalBase ? <OriginalBase /> : (

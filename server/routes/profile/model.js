@@ -57,7 +57,7 @@ async function _get(user) {
     if (!profile) {
         if (await login.get(user)) {
             profile = { user, bio: '', friends: [], follows: [], followers: [], t: Date.now() }
-            C.profile().insertOne(profile)
+            await C.profile().insertOne(profile)
         }
     } else {
         if (!profile.t) {

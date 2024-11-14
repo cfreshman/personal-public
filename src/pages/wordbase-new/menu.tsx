@@ -1598,8 +1598,8 @@ export const Support = () => {
       <br/>
       {/* <br/> */}
       <p className='support-links'>
-        by <a href='https://twitter.com/freshman_dev'>
-          @freshman_dev
+        by <a href='https://twitter.com/__freshman'>
+          @__freshman
         </a> – <A href='/coffee'>buy me a coffee</A>
         {/* &nbsp;(<a
         href={`https://twitter.com/messages/compose?recipient_id=1351728698614042626&text=${

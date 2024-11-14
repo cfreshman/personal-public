@@ -206,7 +206,7 @@ const LinkMenu = ({handle, lys}) => {
           console.debug('LY COPY', shortLink)
           copy(shortLink)
           setCopied(i)
-          if (e.metaKey) url.new('/:'+ly.hash)
+          if (e.metaKey) url.new('/ly/'+ly.hash)
           }}>
           {copied === i ? 'copied!' : `/${copySep}${ly.hash}`}</div>
       </InfoLine>

@@ -113,7 +113,7 @@ let goodbye = false
         if (!goodbye) {
             goodbye = true
             io.emit('message', {
-                // text: 'warning: server offline – you might want to message me <a href="https://twitter.com/freshman_dev">@freshman_dev</a>/twitter',
+                // text: 'warning: server offline – you might want to message me <a href="https://twitter.com/__freshman">@__freshman</a>/twitter',
                 // text: 'warning: server restart. please wait one minute',
                 // text: 'warning: server restart. please wait one minute. possible reasons: /weeklog (view when back online)',
                 // text: 'server restart, 1 minute wait.\nwhy @ x.com/freshman_log',
@@ -179,12 +179,17 @@ app.use(express.raw({
 app.get('/wordbase/replay/:id', (req, res) =>
     wordbase.model.resultTwitterHTML(res, req.params.id))
 app.get('/*', async (req, res, next) => {
-    Object.entries(domains).concat([['test', 'test.example']]).some(([name, domain]) => {
-        if (req.url.match(new RegExp(`^/${name}/.+`, 'i'))) {
+    if (req.url.startsWith('/api')) return next()
+    domains.concat([
+        ['test', 'test.example'],
+        ['local', 'square'],
+    ]).some(([name, domain]) => {
+        if (req.hostname === domain) {
+            log('domain_app', domain, name, req.url)
             req.domain_app = name
-            req.url = req.url.replace(new RegExp(`${name}/?`, 'i'), '')
+            req.url = req.url.replace(new RegExp(`(^/:)|(^/$)`, 'i'), '/'+name)
             req.origin = domain
-            // console.debug('forward app routes for', domain, name, req.url, req.domain_app)
+            log('forward app routes for', domain, name, req.url, req.domain_app)
             next()
             return true
         }
@@ -707,11 +712,11 @@ app.get('/*', async (req, res, next) => {
     // res.sendFile(path.join(basedir, '..', 'build', 'index.html'))
     // NVM - fill meta info for preview (e.g. text messages)
 
-    const page = (req.domain_app || req.url.split('/').filter(x => x)[0] || req.hostname).replace(/^-/, '')
+    const page = (req.url.split('/').filter(x => x)[0] || req.hostname).replace(/^-/, '')
     const id_color = `hsl(${parseInt(ipToId(req.ip), 16) % 365}deg 100% 80%)`
     let replacements = {}
     try {
-        const encodedPage = decodeURIComponent((req.domain_app || '') + req.url)
+        const encodedPage = decodeURIComponent(req.url)
             .replace(/^\/-\/?/, '/')
             .replace(/\/$/, '')
         // console.debug(encodedPage)
@@ -1116,11 +1121,13 @@ app.get('/*', async (req, res, next) => {
         const [id] = url_search_str.split('/').filter(x => x)
         console.debug('[beam] url parsed:', url_search_str, id)
         if (id) {
-            const { data } = await beam.model.get(id)
-            Object.assign(replacements, {
-                title: data.name ? `${data.name} (1hr download)` : `1hr download link`,
-                description: '/beam',
-            })
+            try {
+                const { data } = await beam.model.get(id)
+                Object.assign(replacements, {
+                    title: data.name ? `${data.name} (1hr download)` : `1hr download link`,
+                    description: '/beam',
+                })
+            } catch (e) {}
         }
     }
     else if (page === 'vibe') {
@@ -1132,6 +1139,7 @@ app.get('/*', async (req, res, next) => {
         }
         console.debug('[vibe] url parsed:', url_search_str, page, id)
         if ((page === 'map' || page === 'post') && id) {
+            id = id.split('&')[0]
             const { post } = await vibe.model.get_post('site', { id })
             if (post) {
                 const icon = (isDevelopment() ? 'http://localhost:5050' : 'https://freshman.dev') + post.hrefs[0] || '/raw/vibe/icon-2.png'

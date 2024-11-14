@@ -58,11 +58,12 @@ export default () => {
 
   usePageSettings({
     expand:true,
+    professional:true,
   })
   useStyle(`
   #header {
     border-bottom: 1px solid currentcolor !important;
-  }  
+  }
   `)
   return <Style>
     <InfoBody>
@@ -151,6 +152,7 @@ export default () => {
               !unsaved && { 'copy link': e => {
                 copy(location.href)
                 display_status(e.target, 'copied!')
+                navigator.share({ url: location.href })
               } },
               unsaved && 'you have unsaved changes:',
               unsaved && { 'reset': async () => {
@@ -167,7 +169,7 @@ export default () => {
       </div>
     </InfoBody>
 
-    {stars.map(({ x, y, a }) => <div className='sp-star' style={S(`top:${y}%; left:${x}%; rotate: ${a}deg`)}>{sp_pro?.decoration||'⭐️'}</div>)}
+    {stars.map(({ x, y, a }) => <div className='sp-star' style={S(`top:${y}%; left:${x}%; rotate: ${a}deg; user-select:none`)}>{sp_pro?.decoration||'⭐️'}</div>)}
   </Style>
 }
 

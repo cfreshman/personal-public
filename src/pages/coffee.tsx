@@ -33,9 +33,8 @@ export default () => {
     <InfoBody>
       <InfoSection>
         <div>buy me a coffee!</div>
-        <img src='/raw/coffee/mug.jpg' style={S(`
+        <img src='/raw/coffee/mug.png' style={S(`
         width: 16em;
-        filter: brightness(1.2);
         `)} />
         <HalfLine />
         {null && <>

@@ -81,6 +81,7 @@ export const Page = ({ loaded, override }) => {
     // then we import the same page here for display
 
     const [path] = page.loadTriggerValue.use()
+    // useF(path, () => alert(path))
     // useE(path, () => meta.title.set(parseLogicalPath()))
 
     const [subdomainSubpage, setSubdomainSubpage] = useState(false)

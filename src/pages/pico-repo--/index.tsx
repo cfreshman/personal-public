@@ -906,7 +906,7 @@ const renderImages = entry => {
       <a className='action button' href='https://buy.stripe.com/cN26pRf2Rgns3ni7ss'
       >Pico W Starter Kit</a>
       <a className='action button' href='https://buy.stripe.com/14k29BbQF5IO9LG28g'
-      >with add-on options</a><Help linger><A tab href='/:starter-reference' >component reference</A></Help>
+      >with add-on options</a><Help linger><A tab href='/ly/starter-reference' >component reference</A></Help>
       <div style={{flexBasis:'100%'}}/>
       <a className='action button' onClick={e => {
         if (!e.metaKey) {
@@ -1627,8 +1627,8 @@ const renderImages = entry => {
             &nbsp;
             {sponsor}
             <p>
-              by <a href='https://twitter.com/freshman_dev'>
-                @freshman_dev
+              by <a href='https://twitter.com/__freshman'>
+                @__freshman
               </a> &nbsp;(<A
               href={`https://twitter.com/messages/compose?recipient_id=1351728698614042626&text=${
                 encodeURIComponent(`(wordbase.app) `)

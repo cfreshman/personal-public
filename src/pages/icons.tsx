@@ -883,6 +883,7 @@ export default () => {
           padding: 16em;
           line-height: 1;
           overflow: hidden;
+          position: relative;
           `)}>
             <span style={S(`
             font-size: calc(128em + 32em + 8em);
@@ -1087,6 +1088,22 @@ export default () => {
             pointer-events: none;
             font-size: calc(128em);
             `)}>{`VIBE`}</span>
+          </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #000;
+          color: #fff;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          overflow: hidden;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-weight: bold;
+            pointer-events: none;
+            `)}>{`✅`}</span>
           </div>
         </div>
       </InfoSection>

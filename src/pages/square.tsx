@@ -1,15 +1,17 @@
 import React from 'react'
 import styled from 'styled-components'
-import { ColorPicker, HalfLine, InfoBody, InfoButton, InfoCheckbox, InfoSection, InfoSelect, InfoSlider, InfoStyles, Select } from '../components/Info'
+import { ColorPicker, HalfLine, InfoBadges, InfoBody, InfoButton, InfoCheckbox, InfoSection, InfoSelect, InfoSlider, InfoStyles, Select } from '../components/Info'
 import { useCachedScript, usePageSettings, usePathState } from 'src/lib/hooks_ext'
 import { useEventListener, useF, useM, useR, useS } from 'src/lib/hooks'
 import api, { auth } from 'src/lib/api'
 import { S } from 'src/lib/util'
 import { store } from 'src/lib/store'
+import { Modal } from 'src/components/Modal'
 
 const { named_log, values, from, node, rand, defer, Q, QQ, canvases, V, colors, strings, range, devices, pick } = window as any
 const NAME = 'square'
 const log = named_log(NAME)
+const bound = (x, min, max) => Math.min(max, Math.max(min, x))
 
 const evt_stop = (e) => {
   e.preventDefault()
@@ -80,13 +82,13 @@ const SizeDot = ({ size, value, on_click }) => {
 }
 let draw_down, draw_over, draw_touches
 
-let _l, _data, down, resize, rotate
+let _l, _data, down, resize, crop_ne, crop_sw
 
 export default () => {
   useCachedScript('https://html2canvas.hertzen.com/dist/html2canvas.min.js')
 
   const [a] = auth.use()
-  const [id, set_id] = usePathState()
+  // const [id, set_id] = usePathState()
 
   const [slot_i, set_slot_i] = store.use('collage-slot', { default:0 })
 
@@ -107,7 +109,11 @@ export default () => {
   // useF(types, () => log({ types }))
 
   const [selected, set_selected] = useS(undefined)
-  const entity = useM(selected, () => entities.find(x => x.id === selected))
+  const entity = useM(selected, () => {
+    const actual_entity = entities.find(x => x.id === selected)
+    return actual_entity && {...actual_entity}
+  })
+  useF(entity, () => log({ entity }))
 
   const [color, set_color] = store.use('collager-color', { default:'#fff' })
 
@@ -117,6 +123,12 @@ export default () => {
   const [draw_mode, set_draw_mode] = useS(DRAW.MODES.DRAW)
   const [draw_scale, set_draw_scale] = useS(1)
   const is_draw = entity && entity.type === TYPE.DRAW
+
+  const [crop, set_crop] = useS(false)
+  const [crop_new, set_crop_new] = useS(undefined)
+  const [crop_new_move, set_crop_new_move] = useS(undefined)
+  useF(crop_new, () => set_crop_new_move(strings.json.clone(crop_new)))
+  const r_crop = useR()
 
   const resize_wait = useR()
   useEventListener(window, 'resize', () => {
@@ -144,17 +156,70 @@ export default () => {
       l.style.width = `${(data.w + dx) * 100}%`
       l.style.height = `${(data.h - dy) * 100}%`
     }
+    if (crop_ne) {
+      evt_stop(e)
+      const rect = r_crop.current.getBoundingClientRect()
+      let {x, w, y, h} = crop_new
+      let { clientX:ex, clientY:ey } = e
+      if (rect.x <= ex && ex <= rect.x + rect.width) {
+        const dx = (ex - crop_ne[0]) / rect.width
+        w = bound(crop_new.w + dx, 0, 1)
+      } else if (ex < rect.x) {
+        w = 0
+      } else if (rect.x + rect.width < ex) {
+        w = 1 - crop_new.x
+      }
+      if (rect.y <= ey && ey <= rect.y + rect.height) {
+        const dy = (ey - crop_ne[1]) / rect.height
+        h = bound(crop_new.h - dy, 0, 1)
+        y = bound(crop_new.y + dy, 0, crop_new.y + crop_new.h)
+      } else if (ey < rect.y) {
+        h = crop_new.y + crop_new.h
+        y = 0
+      } else if (rect.y + rect.height < ey) {
+        h = 0
+        y = crop_new.y + crop_new.h
+      }
+      set_crop_new_move({ x, y, w, h })
+    }
+    if (crop_sw) {
+      evt_stop(e)
+      const rect = r_crop.current.getBoundingClientRect()
+      let {x, w, y, h} = crop_new
+      let { clientX:ex, clientY:ey } = e
+      if (rect.x <= ex && ex <= rect.x + rect.width) {
+        const dx = (ex - crop_sw[0]) / rect.width
+        w = bound(crop_new.w - dx, 0, 1)
+        x = bound(crop_new.x + dx, 0, crop_new.x + crop_new.w)
+      } else if (ex < rect.x) {
+        w = crop_new.x + crop_new.w
+        x = 0
+      } else if (rect.x + rect.width < ex) {
+        w = 0
+        x = crop_new.x + crop_new.w
+      }
+      if (rect.y <= ey && ey <= rect.y + rect.height) {
+        const dy = (ey - crop_sw[1]) / rect.height
+        h = bound(crop_new.h + dy, 0, 1)
+      } else if (ey < rect.y) {
+        h = 0
+      } else if (rect.y + rect.height < ey) {
+        h = 1 - crop_new.y
+      }
+      set_crop_new_move({ x, y, w, h })
+    }
   })
   useEventListener(window, 'pointerup pointercancel click', e => {
     const l = _l, data = _data
+    let do_change
     if (down) {
       evt_stop(e)
       const rect = r.current.getBoundingClientRect()
       const [dx, dy] = [(e.clientX - down[0]) / rect.width, (e.clientY - down[1]) / rect.height]
       data.x += dx
       data.y += dy
-      set_entities([...entities])
       down = undefined
+      do_change = true
     }
     if (resize) {
       evt_stop(e)
@@ -171,9 +236,23 @@ export default () => {
         data.y += data.h
         data.h = -data.h
       }
-      set_entities([...entities])
       resize = undefined
+      do_change = true
     }
+    if (crop_ne) {
+      evt_stop(e)
+      set_crop_new(crop_new_move)
+      crop_ne = undefined
+      do_change = true
+    }
+    if (crop_sw) {
+      evt_stop(e)
+      set_crop_new(crop_new_move)
+      crop_sw = undefined
+      do_change = true
+    }
+
+    do_change && set_entities([...entities])
   })
 
   const handle = {
@@ -342,6 +421,28 @@ export default () => {
     draw_touches = undefined
   })
 
+  const r_crop_container = useR()
+  const r_crop_container_dim = useR()
+  useF(entities, entity, () => {
+    if (entity?.type === TYPE.IMAGE) {
+      r_crop_container_dim.current = undefined
+      const img = new Image()
+      img.onload = e => {
+        log(img.width, img.height)
+        const max = Math.max(img.width, img.height)
+        const h = img.height / max
+        const w = img.width / max
+        log({ h, w })
+        if (r_crop_container.current) {
+          r_crop_container.current.style.height = `calc(7min * ${h})`
+          r_crop_container.current.style.width = `calc(7min * ${w})`
+        }
+        r_crop_container_dim.current = { h, w }
+      }
+      img.src = entity.data.src
+    }
+  })
+
   const r = useR()
   usePageSettings({
     professional:true,
@@ -357,6 +458,93 @@ export default () => {
       handle.read_image_file(e.dataTransfer.items[0].getAsFile())
     }
   }} onDragOver={e => e.preventDefault()}>
+    {crop ? <Modal style={`
+    background: #0004;
+    `}><InfoStyles style={S(`
+    // height: 90vmin;
+    // width: 90vmin;
+    height: fit-content;
+    width: fit-content;
+    border: 1px solid currentcolor;
+    box-shadow: 0 2px currentcolor;
+    `)}><InfoBody>
+      <InfoSection labels={['crop']} className='column'>
+        <div ref={r_crop_container} style={S(`
+        overflow: hidden;
+        padding: 1em;
+        border: 1px solid currentcolor;
+        `)}>
+          <div ref={r_crop} style={S(`
+          position: relative;
+          overflow: visible;
+          display: flex;
+          `)}>
+            {entity ? <img src={entity.data.src} style={S(`
+            max-height: 100%;
+            max-width: 100%;
+            image-rendering: pixelated;
+            `)} /> : null}
+            {crop_new_move ? <>
+            <svg className='cover' xmlns="http://www.w3.org/2000/svg" style={S(`
+            pointer-events: none;
+            `)}>
+              <defs>
+                <mask id="mask">
+                  <rect x="0" y="0" width="100%" height="100%" fill="#fff3"/>
+                  <rect id="mask-rect" x={`${crop_new_move.x * 100}%`} y={`${crop_new_move.y * 100}%`} width={`${crop_new_move.w * 100}%`} height={`${crop_new_move.h * 100}%`} fill="#000" stroke="#fff" />
+                </mask>
+              </defs>
+              <rect x="0" y="0" width="100%" height="100%" fill="#000" mask="url(#mask)"/>
+            </svg>
+            {[
+              [crop_new_move.x, crop_new_move.y + crop_new_move.h],
+              [crop_new_move.x + crop_new_move.w, crop_new_move.y],
+            ].map((p, i) => {
+              const [x, y] = p
+              return <div key={i} id={`crop-${i ? 'ne' : 'sw'}`} className='control' style={S(`
+              position: absolute;
+              height: 20px; width: 20px; border-radius: 50%;
+              left: calc(${x * 100}% - 10px); top: calc(${y * 100}% - 10px);
+              background: #fff; border: 1px solid #000;
+              cursor: move;
+              z-index: 1;
+              `)} onPointerDown={e => {
+                evt_stop(e)
+                defer(() => {
+                  if (i === 0) {
+                    crop_sw = [e.clientX, e.clientY]
+                  } else {
+                    crop_ne = [e.clientX, e.clientY]
+                  }
+                })
+              }} />
+            })}
+            </> : null}
+          </div>
+        </div>
+        <div className='center-row wide between'>
+          <InfoBadges labels={[
+            { 'cancel': () => set_crop(false) },,
+          ]} />
+          <InfoBadges labels={[
+            { 'crop': () => {
+              // handle change in crops to entity x y w h
+              const crop_old = entity.data.crop
+              const old_crop_w = crop_old.w
+              const old_crop_h = crop_old.h
+              const new_crop_w = crop_new.w
+              const new_crop_h = crop_new.h
+              entity.data.w *= new_crop_w / old_crop_w
+              entity.data.h *= new_crop_h / old_crop_h
+
+              entity.data.crop = crop_new
+              set_entities(entities.slice())
+              set_crop(false)
+            } },,
+          ]} />
+        </div>
+      </InfoSection>
+    </InfoBody></InfoStyles></Modal> : null}
     <InfoBody className='column'>
       <InfoSection labels={[
         a.expand && NAME,
@@ -478,18 +666,36 @@ export default () => {
                 // handle.move_to_front(id)
                 l.focus()
                 defer(() => down = [e.clientX, e.clientY], _l = l, _data = data)
+              }} onClick={e => {
+                evt_stop(e)
+                defer(() => down = undefined)
               }}>
                 {/* present image with corner control point for resizing */}
-                <img src={data.src} style={S(`
-                height:100%;
-                width:100%;
-                image-rendering: pixelated;
-                ${data.shadow ? `box-shadow: ${data.shadow_x??0}px ${data.shadow_y??2}px ${data.shadow_color??'#000'};` : ''}
-                ${data.oval ? 'border-radius: 50%;' : ''}
-                ${data.border ? `border: ${data.border_width??1}px solid ${data.border_color??'#000'};` : ''}
-                ${data.color ? `background: ${data.color};` : ''}
-                ${data.opacity ? `opacity: ${data.opacity};` : ''}
-                `)} />
+                <div className='img-container' style={S(`
+                height: 100%; width: 100%;
+                overflow: ${crop && selected === id ? 'visibile' : 'hidden'};
+                display: flex; align-items: center; justify-content: center;
+                position: relative;
+                `)}>
+                  <img src={data.src} style={S(`
+                  height:100%;
+                  width:100%;
+                  ${data.crop ? `
+                  position: absolute;
+                  width: ${100/data.crop.w}%;
+                  height: ${100/data.crop.h}%;
+                  top: ${-100*data.crop.y/data.crop.h}%;
+                  left: ${-100*data.crop.x/data.crop.w}%;
+                  ` : ''}
+                  position: absolute;
+                  image-rendering: pixelated;
+                  ${data.shadow ? `box-shadow: ${data.shadow_x??0}px ${data.shadow_y??2}px ${data.shadow_color??'#000'};` : ''}
+                  ${data.oval ? 'border-radius: 50%;' : ''}
+                  ${data.border ? `border: ${data.border_width??1}px solid ${data.border_color??'#000'};` : ''}
+                  ${data.color ? `background: ${data.color};` : ''}
+                  ${data.opacity ? `opacity: ${data.opacity};` : ''}
+                  `)} />
+                </div>
                 {selected === id ? <div style={S(`
                 height: 100%; width: 100%;
                 position: absolute; top: 0; left: 0;
@@ -548,6 +754,9 @@ export default () => {
                 // handle.move_to_front(id)
                 l.focus()
                 defer(() => down = [e.clientX, e.clientY], _l = l, _data = data)
+              }} onClick={e => {
+                evt_stop(e)
+                defer(() => down = undefined)
               }} onPointerMove={e => {
                 if (resize && _l === l) {
                   defer(resize_text)
@@ -631,155 +840,170 @@ export default () => {
             }
           })}
         </div>
-        {entity ? <>
-          {entity.type === TYPE.IMAGE || entity.type === TYPE.TEXT ? <>
-          <div>
-            {type_to_display(entity.type)} selected
-          </div>
-          </> : null}
-          {entity.type === TYPE.TEXT ? <>
-            <div className='center-row wide'>
-              <input type='text' value={entity.data.text} onChange={e => {
-                entity.data.text = e.target.value
-                set_entities([...entities])
-              }} />
+        <div className='column gap wide'>
+          {entity ? <>
+            {entity.type === TYPE.IMAGE || entity.type === TYPE.TEXT ? <>
+            <div>
+              {type_to_display(entity.type)} selected
             </div>
-            <div className='center-row wide gap'>
-              color:
-              <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.color || '#000'} setValue={value => {
-                entity.data.color = value
-                set_entities([...entities])
-              }} /></InfoButton>
-              <InfoButton onClick={() => {
-                entity.data.color = colors.random()
-                if (entity.data.background) {
-                  entity.data.background = colors.readable(entity.data.color)
-                }
-                set_entities([...entities])
-              }}>random</InfoButton>
-              <InfoCheckbox label='back' value={!!entity.data.background} setter={value => handle.set_data({ background: value ? colors.readable(entity.data.color || '#000') : undefined })} />
-              {entity.data.background ? <>
-                <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.background} setValue={value => {
-                  entity.data.background = value
+            </> : null}
+            {entity.type === TYPE.TEXT ? <>
+              <div className='center-row wide'>
+                <input type='text' value={entity.data.text} onChange={e => {
+                  entity.data.text = e.target.value
+                  set_entities([...entities])
+                }} />
+              </div>
+              <div className='center-row wide gap'>
+                color:
+                <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.color || '#000'} setValue={value => {
+                  entity.data.color = value
                   set_entities([...entities])
                 }} /></InfoButton>
-              </> : null}
-            </div>
-            <div className='center-row wide gap'>
-              font:
-              <Select value={entity.data.font || FONTS.DUOSPACE} setter={value => {
-                entity.data.font = value
-                set_entities([...entities])
-              }} options={values(FONTS)} />
-              <InfoCheckbox label='bold' value={entity.data.bold || false} setter={bold => handle.set_data({ bold })} />
-              <InfoCheckbox label='italic' value={entity.data.italic || false} setter={italic => handle.set_data({ italic })} />
-            </div>
-          </> : null}
-          {entity.type === TYPE.IMAGE ? <>
-            <div className='center-row wide gap'>
-              <InfoCheckbox label='oval' value={entity.data.oval || false} setter={oval => handle.set_data({ oval })} />
-              color:
-              <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.color || '#000'} setValue={value => {
-                entity.data.color = value
-                set_entities([...entities])
-              }} /></InfoButton>
-              <InfoButton onClick={() => handle.set_data({ color:colors.random() })}>random</InfoButton>
-            </div>
-            <div className='center-row wide gap'>
-              <InfoCheckbox label='border' value={entity.data.border || false} setter={border => handle.set_data({ border })} />
-              {entity.data.border ? <>
-                <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.border_color || '#000'} setValue={value => {
-                  entity.data.border_color = value
+                <InfoButton onClick={() => {
+                  entity.data.color = colors.random()
+                  if (entity.data.background) {
+                    entity.data.background = colors.readable(entity.data.color)
+                  }
+                  set_entities([...entities])
+                }}>random</InfoButton>
+                <InfoCheckbox label='back' value={!!entity.data.background} setter={value => handle.set_data({ background: value ? colors.readable(entity.data.color || '#000') : undefined })} />
+                {entity.data.background ? <>
+                  <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.background} setValue={value => {
+                    entity.data.background = value
+                    set_entities([...entities])
+                  }} /></InfoButton>
+                </> : null}
+              </div>
+              <div className='center-row wide gap'>
+                font:
+                <Select value={entity.data.font || FONTS.DUOSPACE} setter={value => {
+                  entity.data.font = value
+                  set_entities([...entities])
+                }} options={values(FONTS)} />
+                <InfoCheckbox label='bold' value={entity.data.bold || false} setter={bold => handle.set_data({ bold })} />
+                <InfoCheckbox label='italic' value={entity.data.italic || false} setter={italic => handle.set_data({ italic })} />
+              </div>
+            </> : null}
+            {entity.type === TYPE.IMAGE ? <>
+              <div className='center-row wide gap'>
+                <InfoCheckbox label='oval' value={entity.data.oval || false} setter={oval => handle.set_data({ oval })} />
+                color:
+                <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.color || '#000'} setValue={value => {
+                  entity.data.color = value
                   set_entities([...entities])
                 }} /></InfoButton>
-                <InfoSlider value={entity.data.border_width || 1} setValue={value => {
-                  entity.data.border_width = value
+                <InfoButton onClick={() => handle.set_data({ color:colors.random() })}>random</InfoButton>
+              </div>
+              <div className='center-row wide gap'>
+                <InfoCheckbox label='border' value={entity.data.border || false} setter={border => handle.set_data({ border })} />
+                {entity.data.border ? <>
+                  <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.border_color || '#000'} setValue={value => {
+                    entity.data.border_color = value
+                    set_entities([...entities])
+                  }} /></InfoButton>
+                  <InfoSlider value={entity.data.border_width || 1} setValue={value => {
+                    entity.data.border_width = value
+                    set_entities([...entities])
+                  }} range={[1, 10]} snap={1} style={S(`flex-shrink:1`)} />
+                </> : null}
+              </div>
+            </> : null}
+            {entity.type === TYPE.IMAGE || entity.type === TYPE.TEXT ? <>
+              <div className='center-row wide gap'>
+                <label>angle:</label>
+                <InfoSlider value={entity.data.angle||0} setValue={angle => handle.set_data({ angle})} range={[0, 360]} snap={5} style={S(`flex-shrink:1`)} />
+                <label>opacity:</label>
+                <InfoSlider value={entity.data.opacity||1} setValue={opacity => handle.set_data({ opacity})} range={[.1, 1]} snap={.1} style={S(`flex-shrink:1`)} />
+              </div>
+              <div className='center-row wide gap'>
+                <InfoCheckbox label='shadow' value={entity.data.shadow||false} setter={shadow => handle.set_data({ shadow })} />
+                {entity.data.shadow ? <>
+                  <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.shadow_color ?? '#000'} setValue={value => {
+                    entity.data.shadow_color = value
+                    set_entities([...entities])
+                  }} /></InfoButton>
+                  <label>depth:</label>
+                  <InfoSlider value={entity.data.shadow_x ?? 0} setValue={value => {
+                    entity.data.shadow_x = value
+                    set_entities([...entities])
+                  }} range={[-10, 10]} snap={1} style={S(`flex-shrink:1`)} />
+                  <InfoSlider value={entity.data.shadow_y ?? 2} setValue={value => {
+                    entity.data.shadow_y = value
+                    set_entities([...entities])
+                  }} range={[-10, 10]} snap={1} style={S(`flex-shrink:1`)} />
+                </> : null}
+              </div>
+            </> : null}
+            {entity.type === TYPE.IMAGE ? <>
+              <div className='center-row wide gap'>
+                <InfoButton onClick={e => {
+                  set_crop(true)
+                  if (!entity.data.crop) {
+                    entity.data.crop = { x:0, y:0, w:1, h:1 }
+                    set_entities(entities.slice())
+                  }
+                  set_crop_new(strings.json.clone(entity.data.crop))
+                }}>crop</InfoButton>
+                <InfoButton onClick={() => {
+                  Object.assign(entity.data, {
+                    x: 0, y: 0, w: 1, h: 1,
+                  })
                   set_entities([...entities])
-                }} range={[1, 10]} snap={1} style={S(`flex-shrink:1`)} />
-              </> : null}
-            </div>
-          </> : null}
-          {entity.type === TYPE.IMAGE || entity.type === TYPE.TEXT ? <>
-            <div className='center-row wide gap'>
-              <label>angle:</label>
-              <InfoSlider value={entity.data.angle||0} setValue={angle => handle.set_data({ angle})} range={[0, 360]} snap={5} style={S(`flex-shrink:1`)} />
-              <label>opacity:</label>
-              <InfoSlider value={entity.data.opacity||1} setValue={opacity => handle.set_data({ opacity})} range={[.1, 1]} snap={.1} style={S(`flex-shrink:1`)} />
-            </div>
-            <div className='center-row wide gap'>
-              <InfoCheckbox label='shadow' value={entity.data.shadow||false} setter={shadow => handle.set_data({ shadow })} />
-              {entity.data.shadow ? <>
-                <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.shadow_color ?? '#000'} setValue={value => {
-                  entity.data.shadow_color = value
+                }}>fit to square</InfoButton>
+                <InfoButton onClick={() => {
+                  Object.assign(entity.data, {
+                    x: .5 - entity.data.w/2, y: .5 - entity.data.h/2
+                  })
                   set_entities([...entities])
-                }} /></InfoButton>
-                <label>depth:</label>
-                <InfoSlider value={entity.data.shadow_x ?? 0} setValue={value => {
-                  entity.data.shadow_x = value
-                  set_entities([...entities])
-                }} range={[-10, 10]} snap={1} style={S(`flex-shrink:1`)} />
-                <InfoSlider value={entity.data.shadow_y ?? 2} setValue={value => {
-                  entity.data.shadow_y = value
-                  set_entities([...entities])
-                }} range={[-10, 10]} snap={1} style={S(`flex-shrink:1`)} />
-              </> : null}
-            </div>
-          </> : null}
-          {entity.type === TYPE.IMAGE ? <>
-            <div className='center-row wide gap'>
-              <InfoButton onClick={() => {
-                Object.assign(entity.data, {
-                  x: 0, y: 0, w: 1, h: 1,
-                })
-                handle.move_to_back(entity.id)
-                set_entities([...entities])
-              }}>fit to square and send to back</InfoButton>
-            </div>
-          </> : null}
-          {entity.type === TYPE.DRAW ? <>
-            <div id='controls-container' className='middle-row wide'>
-              <div className='middle-column gap'>
-                {draw_mode === DRAW.MODES.ERASE ? 'erasing' : <div id='palette' className='row gap'>{draw_colors.map((x, i) => <ColorDot {...{ color:x, active:draw_color_i===i, on_click:()=>set_draw_color_i(i) }} />)}</div>}
-                <div id='picker-and-size' className='middle-row wide gap' style={S(`
-                justify-content: space-between;
-                `)}>
-                  {draw_mode === DRAW.MODES.ERASE ? null : <>
-                    <div id='picker' className='row gap'>
-                      <button onClick={e => {
-                        const picker = Q(e.target, 'input') || e.target
-                        picker.click()
-                      }} style={S(`background:${draw_colors[draw_color_i]}; height:3em`)}><ColorPicker {...{ value:draw_colors[draw_color_i], setValue: (new_color) => {
-                        const curr_index = draw_color_i
-                        const new_colors = draw_colors.slice()
-                        new_colors[curr_index] = new_color
-                        set_draw_colors(new_colors)
-                      } }} /></button>
-                      <button style={S(`height:3em`)} onClick={e => {
-                        const curr_index = draw_color_i
-                        const new_colors = draw_colors.slice()
-                        new_colors[curr_index] = values(DRAW.COLORS)[curr_index]
-                        set_draw_colors(new_colors)
-                      }}>reset</button>
-                    </div>
-                  </>}
-                  <div id='size' className='row gap'>{values(DRAW.BRUSHES).map(x => <SizeDot {...{ size:x, value:draw_size, on_click:()=>set_draw_size(x) }} />)}</div>
+                }}>center</InfoButton>
+              </div>
+            </> : null}
+            {entity.type === TYPE.DRAW ? <>
+              <div id='controls-container' className='middle-row wide'>
+                <div className='middle-column gap'>
+                  {draw_mode === DRAW.MODES.ERASE ? 'erasing' : <div id='palette' className='row gap'>{draw_colors.map((x, i) => <ColorDot {...{ color:x, active:draw_color_i===i, on_click:()=>set_draw_color_i(i) }} />)}</div>}
+                  <div id='picker-and-size' className='middle-row wide gap' style={S(`
+                  justify-content: space-between;
+                  `)}>
+                    {draw_mode === DRAW.MODES.ERASE ? null : <>
+                      <div id='picker' className='row gap'>
+                        <button onClick={e => {
+                          const picker = Q(e.target, 'input') || e.target
+                          picker.click()
+                        }} style={S(`background:${draw_colors[draw_color_i]}; height:3em`)}><ColorPicker {...{ value:draw_colors[draw_color_i], setValue: (new_color) => {
+                          const curr_index = draw_color_i
+                          const new_colors = draw_colors.slice()
+                          new_colors[curr_index] = new_color
+                          set_draw_colors(new_colors)
+                        } }} /></button>
+                        <button style={S(`height:3em`)} onClick={e => {
+                          const curr_index = draw_color_i
+                          const new_colors = draw_colors.slice()
+                          new_colors[curr_index] = values(DRAW.COLORS)[curr_index]
+                          set_draw_colors(new_colors)
+                        }}>reset</button>
+                      </div>
+                    </>}
+                    <div id='size' className='row gap'>{values(DRAW.BRUSHES).map(x => <SizeDot {...{ size:x, value:draw_size, on_click:()=>set_draw_size(x) }} />)}</div>
+                  </div>
                 </div>
               </div>
+            </> : null}
+            <HalfLine />
+          </> : <>
+            <div className='center-row wide gap'>
+              {color !== 'transparent' ? <>
+                <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={color || '#000'} setValue={set_color} /></InfoButton>
+                <InfoButton onClick={() => set_color(colors.random())}>random</InfoButton>
+                <InfoButton onClick={() => set_color('transparent')}>remove background</InfoButton>
+              </> : <>
+                <InfoButton onClick={() => set_color('#fff')}>add background</InfoButton>
+              </>}
             </div>
-          </> : null}
-          <HalfLine />
-        </> : <>
-          <div className='center-row wide gap'>
-            {color !== 'transparent' ? <>
-              <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={color || '#000'} setValue={set_color} /></InfoButton>
-              <InfoButton onClick={() => set_color(colors.random())}>random</InfoButton>
-              <InfoButton onClick={() => set_color('transparent')}>remove background</InfoButton>
-            </> : <>
-              <InfoButton onClick={() => set_color('#fff')}>add background</InfoButton>
-            </>}
-          </div>
-          <HalfLine />
-        </>}
+            <HalfLine />
+          </>}
+        </div>
         <div className='center-row gap buttons-green'>
           {/* <button onClick={e => {
             handle.save_slot()
@@ -808,8 +1032,8 @@ export default () => {
               html2canvas(r.current, {
                 backgroundColor: null,
               }).then(canvas => {
-                // on mobile, there are white 1px lines on the sides - resize to a smaller canvas
-                if (devices.is_mobile) {
+                // there are white 1px lines on the sides - resize to a smaller canvas
+                if (true) {
                   const broken_canvas = canvas
                   canvas = document.createElement('canvas')
                   canvas.width = broken_canvas.width - 2

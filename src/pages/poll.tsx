@@ -179,6 +179,7 @@ export default () => {
               <button onClick={e => {
                 copy(location.origin + `/poll/${id}`)
                 display_status(e.target, 'copied!')
+                navigator.share({ url: location.origin + `/poll/${id}` })
               }}>copy link</button></div>
             {!is_over ? <div>time remaining: {datetimes.durations.pretty(Math.max(0, poll.t + poll.d - Date.now()))}</div>
             : <div>ended {datetimes.durations.pretty(Math.max(0, Date.now() - (poll.t + poll.d)))} ago</div>}

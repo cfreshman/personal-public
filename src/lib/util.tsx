@@ -429,8 +429,7 @@ export const toPath = (pathname, hash='', sep=undefined) => {
   const end = hash
     ? sep ? sep + hash : '/' + toHash(hash)
     : ''
-  return ('/' + fromPath(pathname) + end
-  ).replace(/ /g, '+').replace(/^\/+/, '/')
+  return ('/' + fromPath(pathname) + end).replace(/ /g, '+').replace(/^\/+/, '/')
 }
 
 export const toPathHash = path => {

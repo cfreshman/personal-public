@@ -143,7 +143,7 @@ export const Base = () => {
         </Links>
         <Links className={"right " + (isHome ? "home" : "")}>
           <a href="https://github.com/cfreshman" data-content='github'>github</a>
-          <a href="https://twitter.com/freshman_dev" data-content='twitter'>twitter</a>
+          <a href="https://twitter.com/__freshman" data-content='twitter'>twitter</a>
           <a href="https://www.linkedin.com/in/cfreshman/" data-content='linkedin'>linkedin</a>
         </Links>
         <Switch>
