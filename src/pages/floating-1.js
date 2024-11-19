@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import * as THREE from 'three';
-import { Geometry, Face3 } from 'three/examples/jsm/deprecated/Geometry.js';
 import Delaunator from 'delaunator';
 import { useAnimate, useEventListener } from '../lib/hooks';
 import { JSX } from '../lib/types';
@@ -66,34 +65,48 @@ function init() {
             THREE.MathUtils.randFloatSpread(SCALE/1000), 0)))
     }
 
-    delaunay = Delaunator.from(points, p => p.position.x, p => p.position.y);
-    let geometry = new Geometry();
-    geometry.vertices.push(...points.map(p => p.position));
-    let faces = []
-    for (let t = 0; t < delaunay.triangles.length/3; t++) {
-        faces.push(new Face3(
-            ...[3*t, 3*t + 1, 3*t + 2].map(e => delaunay.triangles[e]),
-            null, new THREE.Color(Math.random(), Math.random(), Math.random())))
-    }
-    geometry.faces.push(...faces);
+    delaunay = Delaunator.from(points, p => p.position.x, p => p.position.y)
+    // let geometry = new Geometry();
+    // geometry.vertices.push(...points.map(p => p.position));
+    // let faces = []
+    // for (let t = 0; t < delaunay.triangles.length/3; t++) {
+    //     faces.push(new Face3(
+    //         ...[3*t, 3*t + 1, 3*t + 2].map(e => delaunay.triangles[e]),
+    //         null, new THREE.Color(Math.random(), Math.random(), Math.random())))
+    // }
+    // geometry.faces.push(...faces);
 
-    mesh = new THREE.Mesh(
-        geometry.toBufferGeometry(),
-        new THREE.MeshBasicMaterial({ wireframe: true, side: THREE.DoubleSide, vertexColors: THREE.VertexColors }))
+    // use BufferGeometry for delaunay instead of Geometry
+    const vertices = points.map(p => p.position);
+    const faces = []
+    for (let t = 0; t < delaunay.triangles.length/3; t++) {
+        faces.push(delaunay.triangles.slice(3*t, 3*t + 3))
+    }
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(
+        new Float32Array(vertices.flat().map(v => v.toArray()).flat()), 3));
+    geometry.setIndex(new THREE.BufferAttribute(
+        new Uint32Array(faces.flat()),
+        1));
+
+    // mesh = new THREE.Mesh(
+    //     geometry,
+    //     new THREE.MeshBasicMaterial({ wireframe: true, side: THREE.DoubleSide }))
+    mesh = new THREE.Mesh(new THREE.BoxGeometry(SCALE, SCALE, 1), new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true }))
     scene.add(mesh);
 
     // add circles
-    // [...Array(10).keys()].forEach(i => {
-    //     const radius = SCALE/2 * (.95 - .1*i);
-    //     const curve = new THREE.EllipseCurve(
-    //         // 0,  0, SCALE/2 * (1.05**i), SCALE/2 * (1.05**i),
-    //         0,  0, radius, radius,
-    //         0,  2 * Math.PI, false, 0
-    //     );
-    //     scene.add(new THREE.Line(
-    //         new THREE.BufferGeometry().setFromPoints(curve.getPoints(90)),
-    //         new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: i/42 + .1 })));
-    // })
+    [...Array(10).keys()].forEach(i => {
+        const radius = SCALE/2 * (.95 - .1*i);
+        const curve = new THREE.EllipseCurve(
+            // 0,  0, SCALE/2 * (1.05**i), SCALE/2 * (1.05**i),
+            0,  0, radius, radius,
+            0,  2 * Math.PI, false, 0
+        );
+        scene.add(new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints(curve.getPoints(90)),
+            new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: i/42 + .1 })));
+    })
 
     onWindowResize();
 

@@ -551,4 +551,26 @@ export const replace = {
     //   image: 'https://freshman.dev/raw/images/icon-llm-2-large.png',
     // },
   },
+  'sd': {
+    title: '/sd',
+    description: 'image generation toy',
+    keywords: 'stable diffusion, image generation, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-sd-2-large.png',
+    // icon: 'https://freshman.dev/raw/images/icon-llm-2.png',
+    // twitter: {
+    //   image: 'https://freshman.dev/raw/images/icon-llm-2-large.png',
+    // },
+  },
+  'slices': {
+    title: '/slices',
+    description: 'pretty color slices',
+    keywords: 'slices, pretty color slices, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-slices.png',
+  },
+  'slices-2': {
+    title: '/slices-2',
+    description: 'pretty color slices - with controls',
+    keywords: 'slices-2, slices, pretty color slices - with controls, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-slices.png',
+  },
 }

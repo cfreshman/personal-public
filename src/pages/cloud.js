@@ -28,7 +28,7 @@ function init() {
     scene = new THREE.Scene();
     scene.fog = new THREE.Fog( 0x000000, 1, 1000 );
 
-    var geometry = new THREE.BoxBufferGeometry( 150, 150, 150, 2, 2, 2 );
+    var geometry = new THREE.BoxGeometry( 150, 150, 150, 2, 2, 2 );
     var material = new THREE.MeshNormalMaterial();
     mesh = new THREE.Mesh( geometry, material );
     scene.add( mesh );

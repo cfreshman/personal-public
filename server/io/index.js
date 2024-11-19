@@ -36,8 +36,11 @@ export async function send(users, event, ...eventArgs) {
    return (isSingle) ? results[0] : results
 }
 
+export async function send_room(room, event, ...x) {
+   inst().to(room).emit(`${room}:${event}`, ...x)
+}
 export async function update(room, ...x) {
-   inst().to(room).emit(`${room}:update`, ...x)
+   send_room(room, 'update', ...x)
 }
 
 const toConfirm = {}
@@ -115,4 +118,4 @@ export function roomed(io, socket, info, name, onJoin=undefined, onLeave=undefin
 }
 
 export const model = M
-export default { set, inst, emit, send, update, confirm, roomed, model }
+export default { set, inst, emit, send, update, send_room, confirm, roomed, model }

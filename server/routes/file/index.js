@@ -23,14 +23,14 @@ const remove = (filename) => {
 }
 const write = (filename, content) => {
     const filepath = getPath(filename)
-    mkdir(filepath)
+    mkdir(path.dirname(filepath))
     console.log('[FILE:WRITE]', filename, content?.length)
     fs.writeFileSync(filepath, content)
     return filepath
 }
 const append = (filename, content) => {
     const filepath = getPath(filename)
-    mkdir(filepath)
+    mkdir(path.dirname(filepath))
     console.log('[FILE:APPEND]', filename, content?.length)
     fs.appendFileSync(filepath, content)
     return filepath

@@ -59,7 +59,8 @@ button {
     color: #888;
     // background: #ccc;
   }
-  line-height: 1.3em;
+  min-height: 1.5em;
+  padding: 0 .67em;
 }
 
 --id-color: #eee;

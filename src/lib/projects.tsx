@@ -141,7 +141,8 @@ const _projects = {
   'matchbox.html': 'car-racing couch game (local multiplayer)',
   'circuit.html': 'compilation of couch games (local multiplayer)',
   'rephrase': 'x7 variations of your phrase',
-  // 'llm': 'talk to a personal LLM',
+  'llm': 'talk to a personal LLM',
+  'sd': 'image generation toy',
 }
 // ''.split(' ').forEach(p => {
 //     if (!_projects[p]) _projects[p] = '' });

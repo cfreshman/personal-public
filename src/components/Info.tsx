@@ -10,7 +10,7 @@ import url from '../lib/url'
 import { randAlphanum, rands, toClass, toStyle, isMobile, S, isWatch, eventToRelative } from '../lib/util'
 import { A } from './A';
 
-const { Q, node, defer, set, on, ons, pick, unpick, merge, named_log, elements:window_elements, V, range, hydrate, hydrates, strings, colors } = window as any
+const { Q, node, defer, set, on, ons, pick, unpick, merge, named_log, elements:window_elements, V, range, hydrate, hydrates, strings, colors, devices } = window as any
 const log = named_log('info')
 
 export type InfoLabelType = printable | {
@@ -1467,9 +1467,9 @@ export const Comment = ({ text }: { text: string }) => {
 };
 
 
-export const Markdown = ({ text }) => {
+export const Markdown = ({ text, ...props }) => {
   const __html = useM(text, () => DOMPurify.sanitize(marked.parse(text || '')) )
-  return <div dangerouslySetInnerHTML={{ __html }} />
+  return <div {...props} dangerouslySetInnerHTML={{ __html }} />
 }
 
 
@@ -1968,7 +1968,8 @@ export const ColorPicker = withRef(({ value, setValue, ...props }: props & { val
 })
 
 
-export const Multiline = withRef(({ ref=useR(), children, value, setValue, extra_height='.25em', row_limited, min_rows=0, ...props }: props) => {
+export const Multiline = withRef(({ ref, children, value, setValue, extra_height='.25em', row_limited, min_rows=0, ...props }: props) => {
+  ref = ref || useR()
   useF(value, () => {
     if (props.rows) return
     const area = ref.current
@@ -1978,9 +1979,11 @@ export const Multiline = withRef(({ ref=useR(), children, value, setValue, extra
     // area.textContent = area.value = value
     area.style.height = 0
     area.style.height = `calc(${area.scrollHeight}px + ${extra_height})`
+    // alert(area.style.height)
     area.textContent = area.value = value
     ;[area.selectionStart, area.selectionEnd] = [start, end]
   })
+  const r_backspace = useR()
   return setValue ? <textarea autoCapitalize={'off'} ref={ref} {...props} style={{...S(`
   resize: none;
   `), ...(props.style||{})}} onKeyDown={e => {
@@ -1989,15 +1992,23 @@ export const Multiline = withRef(({ ref=useR(), children, value, setValue, extra
     // after each enter keypress
     const l = e.target as HTMLTextAreaElement
     if (e.key === 'Backspace') {
+      r_backspace.current = true
       const [start, end] = [l.selectionStart, l.selectionEnd]
       const new_start = Math.max(0, start - 1)
       l.textContent = l.value.slice(0, new_start) + l.value.slice(end)
+    } else {
+      r_backspace.current = false
     }
     props.onKeyDown && props.onKeyDown(e)
   }} onChange={e => {
     props.onChange && props.onChange(e)
     const l = e.target as any
-    let new_value = l.value || l.textContent || ''
+    let new_value
+    if (devices.is_mobile && r_backspace.current) {
+      new_value = l.value || l.textContent || ''
+    } else {
+      new_value = l.value
+    }
     if (row_limited) {
       l.value = l.textContent = new_value = new_value.split('\n').slice(0, props.rows || row_limited).join('\n')
     }

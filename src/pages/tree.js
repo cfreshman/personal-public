@@ -56,7 +56,7 @@ function init() {
     }
 
     var circle = new THREE.Mesh(
-        new THREE.CircleBufferGeometry( SCALE/4, 16 ),
+        new THREE.CircleGeometry( SCALE/4, 16 ),
         new THREE.MeshBasicMaterial({
             color: 0x0c0c0c,
             side: THREE.DoubleSide

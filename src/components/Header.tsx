@@ -1,8 +1,8 @@
 import React, { Fragment, useState } from 'react'
+import styled from 'styled-components'
 import { Link } from 'react-router-dom'
 import { copy } from '../lib/copy'
 import { JSX, pass, truthy } from '../lib/types'
-import styled from 'styled-components'
 import api, { auth } from '../lib/api'
 import { login, token as token_auth, logout, signup, auth as authAuth } from '../lib/auth'
 import { Conditions } from '../lib/conditions'
@@ -14,7 +14,7 @@ import user from '../lib/user'
 import { A, Comment, External, HalfLine, InfoBadges, InfoBody, InfoButton, InfoSection, InfoStyles, Typed } from './Info'
 import { Unread } from './Unread'
 import { Modal, Tooltip, openFeedback, openFrame, openPopup } from './Modal'
-import { S, dev, duration, elapsed, is_mobile, mobile, named_log } from '../lib/util'
+import { S, dev, duration, elapsed, is_mobile, mobile } from '../lib/util'
 import { parseLogicalPath, parsePage } from '../lib/page'
 import { message } from './Messages'
 import { Dropdown } from './individual/Dropdown'
@@ -29,7 +29,7 @@ import { DropdownTrackPlayerFill } from 'src/lib/track_player'
 import { GoogleLogin } from '@react-oauth/google'
 import { QR } from './qr'
 
-const {css,range,defer,node,datetime,Q,set,entries,devices} = window as any
+const {named_log,css,range,defer,node,datetime,Q,set,entries,devices} = window as any
 
 const url_params = new URLSearchParams(location.search)
 const hide_ui = url_params.has('hide-freshman-ui')
@@ -381,10 +381,12 @@ const User = ({ expand }: { expand: boolean }) => {
         <hr />
       </> : null}
       <>
-        <div className='middle-column gap'>
+        <div className='middle-column'>
           <br/>
+          {/* <div style={S(`width:max-content; padding:0 .5em`)}><button className='cute'><A tab='https://www.trustpilot.com/review/freshman.dev'>review <span style={S('font-family:system-ui')}>✏️</span></A></button></div>
+          <br/> */}
           <div style={S(`width:max-content; padding:0 .5em`)}><button className='cute'><A tab='/donate'>tip me <span style={S('font-family:system-ui')}>☕️</span></A></button></div>
-          <HalfLine />
+          <br/>
           <div style={S(`width:max-content; padding:0 .5em`)}><button className='cute'><A tab='/contact'>hire me!</A></button></div>
           <br/>
         </div>

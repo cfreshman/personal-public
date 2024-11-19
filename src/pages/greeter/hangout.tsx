@@ -48,7 +48,6 @@ export const Hangout = ({ id, handle, join=undefined }) => {
   const loaded = useR(false)
   useF(viewer, id, () => handle.load_hangout(id, value => {
     if ((!id || (value?.users.includes(viewer) && !value.t)) && !loaded.current) {
-      setEdit(true)
       // log('prefill', store.get(APP_COOKIE.HANGOUT_PREFILL), merge(value||{}, store.get(APP_COOKIE.HANGOUT_PREFILL)))
       prefill = store.get(APP_COOKIE.HANGOUT_PREFILL)
       if (prefill) {
@@ -58,6 +57,7 @@ export const Hangout = ({ id, handle, join=undefined }) => {
         value.public = public_save
       }
       setHangout(prefill)
+      setEdit(true)
       store.clear(APP_COOKIE.HANGOUT_PREFILL)
     } else {
       log('set hangout', value)
@@ -132,7 +132,9 @@ export const Hangout = ({ id, handle, join=undefined }) => {
   const [edit, setEdit] = useS(false)
   const rerender = useRerender()
   const [edit_data, set_edit_data] = useS<any>({})
+  const r_edited = useR(false)
   useF(hangout, edit, () => {
+    log('setting edit data', { edit, hangout, prefill })
     if (hangout) {
       // const new_edit_data = hangout.id ? {
       //   id: hangout.id,
@@ -151,8 +153,10 @@ export const Hangout = ({ id, handle, join=undefined }) => {
         links: hangout.links,
         ...(prefill||{}),
       }
-      prefill = undefined
       set_edit_data(new_edit_data)
+      if (r_edited.current) {
+        prefill = undefined
+      }
     }
   })
   useF(edit_data, () => log({edit_data}))
@@ -168,6 +172,7 @@ export const Hangout = ({ id, handle, join=undefined }) => {
       ...hangout_clone.public,
       ...(edit_data_clone.public||{}),
     }
+    log({ merged })
     return merged
   })
 
@@ -195,6 +200,7 @@ export const Hangout = ({ id, handle, join=undefined }) => {
     save_hangout: async () => {
       await handle.set_hangout(edit_data, setHangout)
       setEdit(false)
+      r_edited.current = true
     },
     add_manual_attendee: async () => {
       const { profile } = await api.get(`/profile/${manual_attendee}`)
@@ -258,9 +264,9 @@ export const Hangout = ({ id, handle, join=undefined }) => {
 
   return <>
     {modal ? <Modal outerClose={close_modal}><Style 
-    style={S(`height:max-content;width:max-content;min-height:400px;min-width:300px;border:1px solid currentcolor;box-shadow:0 2px currentcolor`)}
+    style={S(`height:max-content;width:max-content;min-height:400px;min-width:300px;max-height:calc(100vh - 4em);max-width:calc(100vw - 2em);border:1px solid currentcolor;box-shadow:0 2px currentcolor`)}
     ><InfoBody>
-      {modal === MODALS.ICON_CREATE ? <IconCreate {...{ close:close_modal, set_icon:icon => set_edit_data({ ...edit_data, icon }) }} />
+      {modal === MODALS.ICON_CREATE ? <IconCreate {...{ data:edit_data_view, close:close_modal, set_icon:icon => set_edit_data({ ...edit_data, icon }) }} />
       : null}
     </InfoBody></Style></Modal> : null}
     <InfoSection labels={[
@@ -284,6 +290,7 @@ export const Hangout = ({ id, handle, join=undefined }) => {
       }} : { del: () => set_confirm_del(true) }),
       edit && { save: handle.save_hangout },
       edit && { cancel: () => {
+        r_edited.current = true
         if (id) {
           setEdit(false)
         } else {

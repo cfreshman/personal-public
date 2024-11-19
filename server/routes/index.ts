@@ -65,6 +65,8 @@ import matchbox from './matchbox'
 import rephrase from './rephrase'
 import tly from './tly'
 import companion from './companion'
+import overlay from './overlay'
+import tennis from './tennis'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -142,6 +144,8 @@ export default {
   rephrase,
   tly,
   companion,
+  overlay,
+  tennis,
 }
 
 export const ios = [
@@ -161,4 +165,5 @@ export const ios = [
   cowork.io,
   graffiti_2.io,
   matchbox.io,
+  companion.io,
 ]

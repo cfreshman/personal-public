@@ -137,7 +137,7 @@ export const AI = ({ handle=undefined }={}) => {
 
         const query_parts = []
 
-        query_parts.push(`meta info: username ${viewer}, friends on freshman.dev include ${viewer_profile.friends.join(', ')}`)
+        query_parts.push(`meta info: username ${viewer}, friends on freshman.dev include ${viewer_profile.friends.join(', ')}. today is ${datetime.ymd()}`)
 
         both_list.map(entry => {
           if (entry.type === 'meet') {
@@ -157,7 +157,7 @@ export const AI = ({ handle=undefined }={}) => {
 
         const response = await api.post(`/greeter/ai/suggestions`, { logs:query })
         log(response)
-        set_suggestions(response.query)
+        set_suggestions(response)
         set_error(undefined)
       } catch (e) {
         set_error(e.error || e)
@@ -166,9 +166,6 @@ export const AI = ({ handle=undefined }={}) => {
   }
   useF(begin, () => begin && handle.began())
   useF(query, log)
-  // useF(begin, suggestions, error, query, () => {
-  //   QQ('.greeter-ai-text').at(-1)?.scrollIntoView()
-  // })
   defer(() => {
     QQ('.greeter-ai-text').at(-1)?.scrollIntoView({ block:'start' })
     Q('#inner-index')?.scrollIntoView({ block:'end' })
@@ -180,24 +177,8 @@ export const AI = ({ handle=undefined }={}) => {
       { text: 'home', href: '/greeter' },
     ]}>
       <AiText>hello {viewer || <>(<a onClick={() => openLogin()}>sign in</a>)</>}. i am GREETER-AI</AiText>
-      {/* <AiText>i am an <a href='https://en.wikipedia.org/wiki/Large_language_model'>LLM</a>. i ingest your past hangouts and suggest new ones using <b>MATH</b></AiText> */}
-      {/* <AiText>i am an <A tab href='https://en.wikipedia.org/wiki/Large_language_model'>LLM</A> assistant. your favorite LLM (<A tab href='https://chatgpt.com/'>ChatGPT</A>, etc) will ingest your /greeter logs and suggest new hangouts using <b>MATH</b>{!begin ? <>
-        .&nbsp;<a onClick={() => set_begin(true)}>begin →</a>
-      </> : null}</AiText> */}
-      {/* <AiText>i am an <A tab href='https://en.wikipedia.org/wiki/Large_language_model'>LLM</A> assistant. your favorite LLM (<A tab href='https://chatgpt.com/'>ChatGPT</A>, etc) will ingest your /greeter logs and suggest new hangouts using <b>MATH</b></AiText> */}
       <AiText>i am here to <b><i>improve your life</i></b>, not keep you repeating the same hangouts every week. but you can always ask for more low-key hangouts too</AiText>
       {!begin ? <AiText><a onClick={() => set_begin(true)}>begin →</a></AiText> : null}
-      {/* {!begin
-      ? <AiText>
-        <a onClick={() => set_begin(true)}>begin →</a>
-      </AiText>
-      : !suggestions
-      ? <AiText>
-        <AiAction>loading meets & hangouts</AiAction> <Loader />
-      </AiText>
-      : <>
-        <AiText>{`here are my hangout suggestions:\n${suggestions}`}</AiText>
-      </>} */}
       {!begin
       ? null
       : !(suggestions || error)
@@ -205,47 +186,27 @@ export const AI = ({ handle=undefined }={}) => {
         <AiAction>loading meets & hangouts</AiAction> <Loader />
       </AiText>
       : <>
-        {/* <AiText>{`this was the query i generated for you:\n${query}`}</AiText> */}
-        {/* {dev ? <AiText user>{query}</AiText> : null} */}
-        {/* <AiText>{`here are my suggestions:\n`}{suggestions ? suggestions : <>
-          {`\n`}
-          {`error: ${error || 'no response'}`}
-          {`\n\n`}
-          instead, <a onClick={e => {
-            copy(query)
-            display_status(e.target, 'copied!')
-          }}>copy</a> the query and paste into <A tab href={'https://chatgpt.com/'}>ChatGPT</A> (or any LLM) yourself. if it's too long, use this prompt splitter: {convertLinks('https://chatgpt-prompt-splitter.vercel.app')}
-        </>}</AiText> */}
         <AiText><i>*generated GREETER-AI LLM query from /greeter logs*</i></AiText>
-        {/* <AiText>
-          <a onClick={e => {
-            copy(suggestions)
-            display_status(e.target, 'copied!')
-          }}>copy</a> and paste the query into <A tab href={'https://chatgpt.com/?temporary-chat=true'}>ChatGPT</A> (or any LLM). if it's too long, use this prompt splitter: {convertLinks('https://chatgpt-prompt-splitter.vercel.app')} (but if you pay for an LLM it'll usually remove the limit - cyrus himself it trying out the paid version of ChatGPT for a month and he want to say that it is VERY cool)
-        </AiText> */}
-        {/* <AiText>
-          <a onClick={e => {
-            copy(suggestions)
-            display_status(e.target, 'copied!')
-          }}>copy</a> and paste the query into <A tab href={'https://chatgpt.com/?temporary-chat=true'}>ChatGPT</A> (or any LLM)
-        </AiText> */}
-        {/* <AiText>
-          <a onClick={e => {
-            copy(suggestions)
-            display_status(e.target, 'copied!')
-          }}>copy</a> and paste the query into <A tab href={'https://chatgpt.com/?temporary-chat=true'}>ChatGPT</A> (or any LLM). {`tips:
-- query too long? use `}{convertLinks('https://chatgpt-prompt-splitter.vercel.app')}{`
-- if you pay for an LLM it *should* remove the limit
-- (cyrus is trying paid ChatGPT for a month and it is VERY cool)`}
-        </AiText> */}
         <AiText>
-          <a onClick={e => {
-            copy(suggestions)
+          <a onClick={async e => {
+            try {
+              await copy(suggestions.query)
+            } catch (e) {
+              alert(e.message || e)
+            }
             display_status(e.target, 'copied!')
-          }}>copy</a> and paste the query into <A tab href={'https://chatgpt.com/'}>ChatGPT</A> (or any LLM). {`tips:
+          }}>copy</a> and paste the query into <A tab href={'https://chatgpt.com/'}>ChatGPT</A> (recommended) or any LLM. {`tips:
 - query too long? use `}{convertLinks('https://chatgpt-prompt-splitter.vercel.app')}{`
 - if you pay for an LLM it *should* remove the limit`}
         </AiText>
+        <AiText>or, <a onClick={async e => {
+            try {
+              await copy(suggestions.site_query)
+            } catch (e) {
+              alert(e.message || e)
+            }
+            display_status(e.target, 'copied!')
+          }}>copy</a> and continue with <A tab='/llm'>/llm →</A> (doesn't support all features)</AiText>
       </>}
     </InfoSection>
   </>

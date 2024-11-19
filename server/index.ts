@@ -1,4 +1,5 @@
 import '../build/lib/2/common/script'
+globalThis.ReadableStream = undefined as any // nasty bug fix
 
 import express from 'express';
 import path from 'path';

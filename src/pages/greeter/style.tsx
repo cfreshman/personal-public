@@ -196,11 +196,15 @@ export const Style = styled(InfoStyles)`
   }
 }
 
-input {
+input, textarea {
   background: var(--id-color-text) !important;
   color: var(--id-color-text-readable) !important;
+  border-radius: 0 !important;
   &[type=date] {
     width: fit-content;
+  }
+  &::placeholder {
+    color: var(--id-color) !important;
   }
   &.card-inner.card-inner.card-inner.card-inner.card-inner {
     background: #000 !important;

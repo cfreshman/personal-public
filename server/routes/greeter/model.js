@@ -407,8 +407,12 @@ log({ GREETER_RAW_PATH })
 async function get_ai_suggestions(viewer, { logs=`(no logs. make something up! my username is ${viewer})` }) {
     const ai_template = fs.readFileSync(path.join(GREETER_RAW_PATH, `ai_template${viewer==='cyrus'?'_cyrus':''}.txt`)).toString()
     const query = ai_template.replace('\$\{logs\}', logs)
+
+    const site_ai_template = fs.readFileSync(path.join(GREETER_RAW_PATH, 'site_ai_template.txt')).toString()
+    const site_query = site_ai_template.replace('\$\{user\}', viewer).replace('\$\{logs\}', logs)
+
     // log({ai_template, query})
-    return { query }
+    return { query, site_query }
 
     // return await query_llm(query)
 }

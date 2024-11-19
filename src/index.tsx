@@ -35,6 +35,7 @@ import css from './lib/css'
 import { Dropdown } from './components/individual/Dropdown'
 import { GlobalTrackPlayer, track_play } from './lib/track_player'
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import overlay from './overlay/overlay'
 
 const { devices, QQ } = window as any
 if (location.pathname.length > 1 && location.pathname.endsWith('/')) location.href = location.href.replace(location.pathname, location.pathname.slice(0, -1))
@@ -243,6 +244,7 @@ const App = () => {
       <Switch>
         <Route exact path={'/-'} render={() => <Redirect to='/' />}/>,
         <Route exact path={`/(${bases.join('|')})`} component={Base} />
+        <Route exact path='/overlay' component={overlay} />
         <Route path='*'>
           <LoadIcon {...{ loading }} />
           {contents}

@@ -32,10 +32,21 @@ export default () => {
   return <Style>
     <InfoBody>
       <InfoSection>
-        <div>buy me a coffee!</div>
-        <img src='/raw/coffee/mug.png' style={S(`
-        width: 16em;
-        `)} />
+        <div>donate a coffee!</div>
+        <div className='row wrap' style={S(`
+        color: #000;
+        border: 1px solid currentcolor;
+        padding: .25em;
+        gap: .25em;
+        width: min(30em, 100%);
+        `)}>
+          {[['/raw/coffee/mug.png', `filter: contrast(1.2) saturate(0.5)`], ['/raw/coffee/wave.jpg']].map(([src, css='']) => <img src={src} style={S(`
+          width: 10em;
+          flex-grow: 1;
+          // border: 1px solid currentcolor;
+          ${css}
+          `)} />)}
+        </div>
         <HalfLine />
         {null && <>
           <div>just venmo:</div>

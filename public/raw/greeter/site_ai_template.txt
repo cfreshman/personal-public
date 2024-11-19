@@ -1,0 +1,7 @@
+hi - act as GREETER-LLM. as in your name is now GREETER-LLM
+
+i am going to paste a bunch of hangout logs for you to digest. i am ${user}
+
+${logs}
+
+now, please give me insights and 3 new hangout suggestions

@@ -5,7 +5,7 @@ import OpenAI from "openai"
 import { read_secret } from '../../secrets'
 let openai
 read_secret('openai.json').then(({ key }) => {
-    openai = new OpenAI({ apiKey:key })
+    openai = new OpenAI({ apiKey:key, dangerouslyAllowBrowser:true })
 })
 
 const name = 'list-picker'
