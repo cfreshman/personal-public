@@ -283,6 +283,7 @@ export default ({ handle }) => {
             const generic_geo = await a_get_geo()
             const [lng, lat] = ol.proj.transform([generic_geo.long, generic_geo.lat], 'EPSG:4326', view.current.getProjection())
             set_lat_lang(lat, lng)
+            view.current.setRotation(0)
             handle.set_path([])
           } },
           post && { 'directions': () => {

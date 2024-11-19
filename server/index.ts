@@ -98,6 +98,7 @@ import { get_sponsors } from './routes/donoboard';
 import poll from './routes/poll';
 import beam from './routes/beam';
 import vibe from './routes/vibe';
+import cost from './routes/cost';
 // console.log(randAlphanum(16))
 process.on('uncaughtException', e => {
     console.error('uncaughtException', e);
@@ -391,6 +392,12 @@ io.on('connection', socket => {
         })
     })
 
+    // remove messages once deleted somewhere else
+    socket.on('message:received', (user, receive_id) => {
+        log('message:received', user, receive_id)
+        ioModule.send([user], 'message:received', receive_id)
+    })
+
     // if (Date.now() - backOnline < 60_000) {
         
     //     // socket.emit('message', {
@@ -418,10 +425,16 @@ io.on('connection', socket => {
             logout()
             info.user = user
             if (user) {
-                ioR.model.addIo(user, socket.id)
+                await ioR.model.addIo(user, socket.id)
                 console.log('[IO:login]', info)
                 online[user] = 1 + (online[user] ?? 0)
                 socket.join(`user:${user}`)
+
+                // // TESTING
+                // if (user === 'cyrus') defer(() => ioModule.message([user], {
+                //     text: 'TEST',
+                //     id: 'test-receive', delete: 'test-receive'
+                // }), 100)
 
                 // login messages
                 const _profile = await profile._get(user)
@@ -442,31 +455,36 @@ io.on('connection', socket => {
                 // donation messages
                 if (Date.now() - _profile.t > 28 * day_ms) {
                     // after a moon cycle
-                    !(await supporter(user)) && popup({
-                        text: `if u were going to buy a coffee today, buy me one too! /coffee`,
-                        id: 'sponsor-mooncycle',
-                        once: true,
-                        ms: 60_000,
-                    })
+                    if (!await cost.model.get_or_set_note(user, 'sponsor-mooncycle')) {
+                        popup({
+                            text: `if u were going to buy a coffee today, buy me one too! /coffee`,
+                            id: 'sponsor-mooncycle',
+                            once: true,
+                            ms: 60_000,
+                        })
+                    }
                 }
 
                 {
                     // once per year
                     const years = Math.floor((Date.now() - _profile.t) / (365 * day_ms))
                     if (years) {
-                        popup({
-                            text: `if u were going to buy a coffee today, buy me one too! /coffee`,
-                            id: `sponsor-year-${years}`,
-                            delete: 'sponsor-mooncycle',
-                            once: true,
-                            ms: 60_000,
-                        })
-                        popup({
-                            text: `you joined ${years} year${years===1?'':'s'} ago!`,
-                            id: `year-${years}`,
-                            once: true,
-                            ms: 60_000,
-                        })
+                        const note_id = `sponsor-year-${years}`
+                        if (!await cost.model.get_or_set_note(user, note_id)) {
+                            popup({
+                                text: `if u were going to buy a coffee today, buy me one too! /coffee`,
+                                id: `sponsor-year-${years}`,
+                                delete: 'sponsor-mooncycle',
+                                once: true,
+                                ms: 60_000,
+                            })
+                            popup({
+                                text: `you joined ${years} year${years===1?'':'s'} ago!`,
+                                id: `year-${years}`,
+                                once: true,
+                                ms: 60_000,
+                            })
+                        }
                     }
                 }
 

@@ -9,8 +9,17 @@ const names = {
         // dollars: number
         // name: string
         // data: any
+    note: 'cost-note'
+        // user: string
+        // id: string
 }
 const C = entryMap(names, name => () => db.collection(name))
+
+async function get_or_set_note(user, note_id) {
+    const entry = await C.note().findOne({ user, id:note_id })
+    if (!entry) await C.note().insertOne({ user, id:note_id })
+    return !!entry
+}
 
 // C.default().deleteMany({})
 // add(0, 6, new Date('8/1/22'), 'Maurice Maltbia')
@@ -70,6 +79,8 @@ async function add(id, dollars, t, name, data) {
 }
 
 export {
+    get_or_set_note,
+
     get,
     supporter,
     month,

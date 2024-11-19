@@ -16,8 +16,11 @@ export function emit(...args) {
 }
 
 export async function send(users, event, ...eventArgs) {
-   let isSingle = typeof users === 'string'
    console.log('[IO:send]', users, event)
+   let isSingle = typeof users === 'string'
+   if (event === 'message') {
+      eventArgs[0].receive = rand.alphanum(12)
+   }
    let results = await Promise.all((isSingle ? [users] : users).map(async user => {
       let { io } = user ? await M.get(user) : {}
       if (!io || !io.ids.length) return false
@@ -34,6 +37,9 @@ export async function send(users, event, ...eventArgs) {
       return true
    }))
    return (isSingle) ? results[0] : results
+}
+export async function message(users, message) {
+   return send(users, 'message', message)
 }
 
 export async function send_room(room, event, ...x) {

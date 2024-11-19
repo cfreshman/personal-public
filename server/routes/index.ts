@@ -67,6 +67,7 @@ import tly from './tly'
 import companion from './companion'
 import overlay from './overlay'
 import tennis from './tennis'
+import ai from './ai'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -146,6 +147,7 @@ export default {
   companion,
   overlay,
   tennis,
+  ai,
 }
 
 export const ios = [

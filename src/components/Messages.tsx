@@ -18,10 +18,10 @@ import url from '../lib/url';
 import user from '../lib/user';
 import { InfoBody, InfoLabel, InfoStyles } from './Info';
 import { Modal } from './Modal';
-import { message } from '../lib/message';
 import { JSX } from '../lib/types';
 import { S } from 'src/lib/util';
 import { Dangerous } from './individual/Dangerous';
+import { message } from '../lib/message';
 
 const { named_log, defer, set, list, strings } = window as any
 const log = named_log('messages')
@@ -35,7 +35,7 @@ const Message = ({ message, outer }: {
     ms?: number, delay?: number, expire?: number,
     to?: string,
     style?: string,
-    delete?: string, replace?: string, require?: string,
+    id?: string, delete?: string, replace?: string, require?: string,
     clear?: string,
   }, outer,
 }) => {
@@ -96,9 +96,21 @@ export const Messages = () => {
   Object.assign(seen, hints)
   useF(() => setSeen(Object.assign({}, seen, hints))) // trigger rerender on first time
 
+  const [{ user:viewer }] = auth.use()
+  const socket = useSocket({
+    on: {
+      'message:received': (receive_id) => {
+        setMessages(messages.filter(m => m.receive !== receive_id))
+      }
+    }
+  })
+
   const handle = {
     delete: message => {
       message.id?.split(' ').map(id => seen[id] = true)
+      if (message.receive) {
+        socket.emit('message:received', viewer, message.receive)
+      }
       setSeen(seen)
       // send locally seen hints back to cloud setting
       user.settings.update('hints', Object.assign(settings.hints ?? {}, seen))

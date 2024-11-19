@@ -63,6 +63,10 @@ button {
   padding: 0 .67em;
 }
 
+.section.h100 {
+  margin: 0;
+}
+
 --id-color: #eee;
 --id-color-text: #222;
 --id-color-text-readable: #eee;

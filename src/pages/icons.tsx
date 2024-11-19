@@ -1075,6 +1075,8 @@ export default () => {
           background: #eeebe6;
           background: #000;
           background: url(/raw/vibe/bg.jpg);
+          background-size: cover;
+          background-position: center;
           color: #fff;
           border-radius: 0;
           width: 256em; height: 256em;
