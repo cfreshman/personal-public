@@ -72,7 +72,7 @@ export default () => {
     const start = rand.f(360)
     const color_dir = rand.i(2) ? 1 : -1
     const rotate_dir = 1 // rand.i(2) ? 1 : -1
-    const borders = 1 // rand.i(2) ? 1 : 0
+    const borders = 0 // 1 // rand.i(2) ? 1 : 0
     log('vars', { start, color_dir, rotate_dir, borders })
     range(N_SLICES).map(i => {
       const SLICE_SIZE = 7

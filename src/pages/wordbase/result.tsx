@@ -264,7 +264,7 @@ wordbase.app/replay/${info.id}`)}`)
             {/* {JSON.stringify(info, null, 2)} */}
         </div>
 
-        <div id='result-sponsor-button' style={toStyle(`
+        {/* <div id='result-sponsor-button' style={toStyle(`
             position: fixed;
             bottom: 1em;
             left: 0;
@@ -275,7 +275,7 @@ wordbase.app/replay/${info.id}`)}`)
             z-index: 2;
             `)}>
             <Sponsor hideForSupporter dark />
-        </div>
+        </div> */}
     </Style>
 }
 

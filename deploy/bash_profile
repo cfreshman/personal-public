@@ -66,6 +66,12 @@ cert() {
             cert_list+="-d $domain -d *.$domain ";
         fi
     done < /var/www/personal/deploy/domains
+    while read special_domain; do
+        if ! [ -z "$special_domain" ]; then
+            special_domain=$(echo $special_domain | cut -d " " -f1)
+            cert_list+="-d $special_domain ";
+        fi
+    done < /var/www/personal/deploy/domains_special
 
     echo "sudo certbot
     --cert-name freshman.dev

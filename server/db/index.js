@@ -59,11 +59,11 @@ function store() {
 }
 const simple = {
     get: async (key) => {
-        console.debug('[DB:get]', key)
+        // console.debug('[DB:get]', key)
         return ((await store().findOne({ [key]: { $exists: true } })) ?? {})[key];
     },
     set: async (key, value) => {
-        console.debug('[DB:set]', key)
+        // console.debug('[DB:set]', key)
         return await store().updateOne({ [key]: { $exists: true } }, {
             $set: { [key]: value }
         }, { upsert: true })

@@ -1,21 +1,68 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset=utf-8>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>submerse</title><meta name=description content="ocean game" />
+  <style>
+    :root {
+      filter: none;
+    }
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
 
-    <title>Submerse</title>
-    <link rel="stylesheet" type="text/css" href="/styles.css">
-    <link rel="stylesheet" type="text/css" href="styles.css">
-  </head>
-  <body>
-    <div class="outer container">
-      <div class="inner container">
-        <canvas id="gameCanvas"></canvas>
-      </div>
+    #root > * {
+      height: 100%;
+      width: 100%;
+    }
+
+    @keyframes blink {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body class="cover column" style="
+background: #eeebe6;
+color: #222;
+">
+
+  <div data-hydrate data-title></div>
+  <div>
+    explore the ocean and caves
+  </div>
+  <div id="root-container" class="middle-row" style="
+  width: 100%;
+  height: 0; flex-grow: 1;
+  /* background: #ccc; */
+  ">
+    <div id="root" style="
+    position: relative;
+    ">
+      <canvas id="canvas" style="
+      image-rendering: pixelated;
+      user-select: none;
+      background: #141c2d;
+      border: 1px solid #222;
+      "></canvas>
+      <div id="ui" class="cover"></div>
     </div>
+  </div>
+  <script src="/lib/2/arc/script.js"></script>
+  <script src="/lib/ext/noise.js"></script>
+  <script src="/lib/ext/matter.min.js"></script>
+  <script async type="module" src="./script.mjs"></script>
 
-    <script src="/lib/utils.js"></script>
-    <script type="module" src="src/main.js"></script>
-  </body>
+</body>
 </html>

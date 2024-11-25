@@ -184,16 +184,16 @@ export default () => {
             ctx.fill()
           }
           break
-        case SHAPES.CROSS:
-          {
-            ctx.beginPath()
-            // largest cross possible centered on HF, HF
-            const width = HF / 2
-            ctx.fillRect(HF - width / 2, 0, width, SZ)
-            ctx.fillRect(0, HF - width / 2, SZ, width)
-            ctx.fill()
-          }
-          break
+        // case SHAPES.CROSS:
+        //   {
+        //     ctx.beginPath()
+        //     // largest cross possible centered on HF, HF
+        //     const width = HF / 2
+        //     ctx.fillRect(HF - width / 2, 0, width, SZ)
+        //     ctx.fillRect(0, HF - width / 2, SZ, width)
+        //     ctx.fill()
+        //   }
+        //   break
         case SHAPES.HEART:
           {
             ctx.beginPath()

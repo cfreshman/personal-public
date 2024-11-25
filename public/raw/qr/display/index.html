@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>qr</title><meta name=description content="simple generator" />
+  <style>
+    :root {
+      filter: none;
+      background: #000;
+      color: #fff;
+    }
+    img, video, iframe {
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    textarea {
+      width: -webkit-fill-available;
+    }
+    input, textarea {
+      border: 1px solid currentcolor;
+    }
+
+    #ref_qr {
+      background: #fff;
+      border: 1px solid black;
+      > img {
+        width: 100% !important; 
+        height: 100% !important;
+        padding: 10%;
+      }
+    }
+  </style>
+
+  <script src="/lib/2/external/qrcode.min.js"></script>
+</head>
+<body class="cover center">
+  <div id="ref_qr"></div>
+  <script>
+    const log = named_log('qr display')
+    const ref_qr = Q('#ref_qr')
+    ;(href => {
+      if (!href) return
+      ref_qr.innerHTML = ''
+      const { QRCode } = window
+      const qr_instance = new QRCode(ref_qr, {
+        width: 512,
+        height: 512,
+      })
+      qr_instance.makeCode(href)
+
+      const do_resize = () => {
+        const size = Math.min(innerWidth, innerHeight) * .9
+        log(size)
+        ref_qr.style.width = `${size}px`
+        ref_qr.style.height = `${size}px`
+      }
+      on(window, 'resize deviceorientation', do_resize)
+      do_resize()
+    })(new URLSearchParams(location.search).get(''))
+  </script>
+
+</body>
+</html>

@@ -29,7 +29,7 @@ const common = {
     keywords: 'profile, u, social, social media, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/profile/icon-64.png',
   },
-  'capitals': {
+  capitals: {
     // title: 'capitals',
     // description: 'word strategy game',
     // keywords: 'capitals, word, strategy, game, multiplayer, singleplayer, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
@@ -38,6 +38,9 @@ const common = {
     keywords: 'lettercomb, capitals, word, strategy, game, multiplayer, singleplayer, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/capitals/icon-small.png',
     twitter: {
+      image: 'https://freshman.dev/raw/capitals/icon.png',
+    },
+    og: {
       image: 'https://freshman.dev/raw/capitals/icon.png',
     },
   },
@@ -572,5 +575,11 @@ export const replace = {
     description: 'pretty color slices - with controls',
     keywords: 'slices-2, slices, pretty color slices - with controls, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/images/icon-slices.png',
+  },
+  'voicetimer': {
+    title: '/voicetimer',
+    description: 'set timers with your voice',
+    keywords: 'voicetimer, set timers with your voice, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-voicetimer.png',
   },
 }

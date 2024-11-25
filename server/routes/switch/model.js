@@ -81,6 +81,10 @@ async function _sync(space, name) {
 
     try {
         const item = await C.default().findOne({ space, name })
+        if (!item) {
+            console.debug('sync item missing - was it deleted?', space, name)
+            return
+        }
         const to = toKey({ space, name })
         console.debug('sync to', to, item.gate, item.inputs)
         const toUser = await key.model.user(APP, _spaceLockIdentifier(space))

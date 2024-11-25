@@ -90,6 +90,20 @@ server {
     return 301 $scheme://$domain.$tld$request_uri$is_args$args;
 }
 
+# NEW BLOCK 2024-11-22 - user.x.domain.tld
+server {
+    server_name ~^(?<user>[^.]+)\.x\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
+    include sites-available/fragments/personal-ssl;
+    include sites-available/fragments/gzip;
+    location / {
+        try_files @proxy @proxy;
+    }
+    location @proxy {
+        include sites-available/fragments/proxy;
+        proxy_pass https://[::1]/api/x/html/$user;
+    }
+}
+
 # public git
 server {
     server_name ~^public\.;
@@ -324,6 +338,23 @@ server {
     }
 }
 
+# shr.ooo/m
+server {
+    server_name shr.ooo;
+    listen 80;
+    include sites-available/fragments/personal-ssl;
+    include sites-available/fragments/gzip;
+    location ~ ^/(o*)m$ {
+        try_files /raw/simple/shroom.html =404;
+    }
+    location ~ ^/(o*)ms$ {
+        try_files /raw/uh-no/index.html =404;
+    }
+    location / {
+        return 301 https://shr.ooo/m;
+    }
+}
+
 # .computer .codes *OS. webputer.page computer.
 server {
     server_name ~^computer\. ~^.+\.(computer|codes) ~^.+\.(computer|codes) webputer.page sickos.xyz;
@@ -369,30 +400,6 @@ server {
     location /static { return 418; }
     location /raw { return 418; }
     location ~ ^/(lib|fonts) { return 418; }
-}
-
-# shr.ooo/m
-server {
-    server_name shr.ooo;
-    listen 80;
-    include sites-available/fragments/personal-ssl;
-    include sites-available/fragments/gzip;
-    location ~ ^/(o*)m$ {
-        try_files /raw/simple/shroom.html =404;
-    }
-    location ~ ^/(o*)ms$ {
-        try_files /raw/uh-no/index.html =404;
-    }
-    location / {
-        return 301 https://shr.ooo/m;
-    }
-}
-
-# online check - o
-server {
-    server_name ~^o\.(?<domain>[^.]+)\.(?<tld>[^.]+)$;
-    include sites-available/fragments/personal-ssl;
-    return 301 $scheme://$domain.$tld/api/online;
 }
 
 # mastodon

@@ -1,7 +1,9 @@
 import express from 'express'
-import { J, P, U, named_log } from '../../util'
+import { J, P, U, isDevelopment, named_log } from '../../util'
 import db from '../../db'
 import io from '../../io'
+
+// ONLY RUN IN DEVELOPMEN
 
 const { strings } = window
 const name = 'overlay'
@@ -55,7 +57,7 @@ const set_face = async (face) => {
     data.face = face
     do_client_update()
 }
-db.queueInit(async () => {
+isDevelopment() && db.queueInit(async () => {
     ComfyJS.onJoin = (user, self, extra) => {
         if (user.startsWith('justinfan')) return
         const join_message = `${user} joined the stream`

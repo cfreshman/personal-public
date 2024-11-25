@@ -3,14 +3,14 @@
 import React from 'react'
 import styled from 'styled-components'
 import { InfoBody, InfoSection, InfoStyles } from '../components/Info'
-import { useCachedScript } from 'src/lib/hooks_ext'
+import { useCachedScript, useHashState } from 'src/lib/hooks_ext'
 import { useF, useR, useS } from 'src/lib/hooks'
 
 const { named_log, Q, copy, defer } = window as any
 const log = named_log('qr page')
 
 export default () => {
-  const [href, set_href] = useS('')
+  const [href, set_href] = useHashState()
 
   const ref_qr = useR()
   const create_qr = useR()

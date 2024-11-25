@@ -35,6 +35,8 @@ import collector from './routes/collector'
 
 import './routes/login/deleter'
 
+const { datetimes, keys, from } = window as any
+
 // set('trace debug log warn error').forEach(method => window.console[method] = () => {})
 const log = named_log('index')
 
@@ -187,11 +189,11 @@ app.get('/*', async (req, res, next) => {
         ['local', 'square'],
     ]).some(([name, domain]) => {
         if (req.hostname === domain) {
-            log('domain_app', domain, name, req.url)
+            // log('domain_app', domain, name, req.url)
             req.domain_app = name
             req.url = req.url.replace(new RegExp(`(^/:)|(^/$)`, 'i'), '/'+name)
             req.origin = domain
-            log('forward app routes for', domain, name, req.url, req.domain_app)
+            // log('forward app routes for', domain, name, req.url, req.domain_app)
             next()
             return true
         }
@@ -306,6 +308,7 @@ const silence = new Set([
     'POST /state',
     'GET /api/ip',
     'GET /api/user_id_color',
+    'GET /api/online', 'GET /api/daily',
 ])
 let last_requestor = ''
 app.use((req, res, next) => {
@@ -354,7 +357,20 @@ app.use(simple.routes)
 ios.push(simple.io)
 
 const online = {}
-const backOnline = Date.now()
+const get_day = () => {
+    // SWITCH TO WEEKLY USERS
+    // set day to first day of week
+    const now = new Date()
+    now.setDate(now.getDate() - now.getDay())
+    return datetimes.ymd(now)
+}
+let daily_accounts = {}, daily_day = get_day()
+db.queueInit(async () => daily_accounts = {
+    ...daily_accounts,
+    ...(await db.simple.get('daily-accounts')) || {},
+})
+db.queueClose(async () => await db.simple.set('daily-accounts', daily_accounts))
+
 const echoIgnores = {
     'cards': set('cursor c init i'),
 }
@@ -428,9 +444,17 @@ io.on('connection', socket => {
                 await ioR.model.addIo(user, socket.id)
                 console.log('[IO:login]', info)
                 online[user] = 1 + (online[user] ?? 0)
+
+                const curr_day = get_day()
+                if (daily_day !== curr_day) {
+                    daily_day = curr_day
+                    daily_accounts = from(keys(online).filter(x => x.length <= 8).map(x => [x, true]))
+                }
+                daily_accounts[user] = true
+                
                 socket.join(`user:${user}`)
 
-                // // TESTING
+                // // TESTING - messages dismiss everywhere when dismissed anywhere
                 // if (user === 'cyrus') defer(() => ioModule.message([user], {
                 //     text: 'TEST',
                 //     id: 'test-receive', delete: 'test-receive'
@@ -590,6 +614,7 @@ io.on('connection', socket => {
     ios.forEach(x => x(io, socket, info))
 });
 app.get('/api(/o|/online)', J(async _ => Object.keys(online) ))
+app.get('/api/daily', J(async _ => Object.keys(daily_accounts) ))
 app.get('(/api|)/ping', (_, rs) => rs.send('pong') )
 
 // production build

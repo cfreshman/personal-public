@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=/copyright.js></script><meta data-hydrate data-style />
+  <title>submerse</title><meta name=description content="ocean game" />
+  <style>
+    :root {
+      filter: none;
+    }
+    img, video, iframe {
+      max-width: 60%;
+      flex-shrink: 1;
+      object-fit: contain;
+      object-position: left;
+      image-rendering: pixelated;
+    }
+    iframe {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body class="cover column" style="
+background: #eeebe6;
+color: #222;
+">
+
+  <div data-hydrate data-title></div>
+  <div id="root-container" class="middle-row" style="
+  width: 100%;
+  height: 0; flex-grow: 1;
+  /* background: #ccc; */
+  ">
+    <canvas id="root" style="
+    image-rendering: pixelated;
+    user-select: none;
+    background: #141c2d;
+    border: 1px solid #222;
+    "></canvas>
+  </div>
+  <script src="/lib/2/arc/script.js"></script>
+  <script src="/lib/ext/noise.js"></script>
+  <script async type="module" src="./script.mjs"></script>
+
+</body>
+</html>

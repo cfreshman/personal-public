@@ -4,6 +4,8 @@ import { Board, ITile, Tile } from "./board";
 import { dict, getDict } from "./dict";
 import { pass } from "src/lib/types";
 
+const { rand } = window as any
+
 
 const trie = {
   instance: undefined,
@@ -57,10 +59,12 @@ export class AI {
     // console.debug(history.map(h => h.map(t => t.letter).join('')))
     const possible = this.difficulty === 4 ? wordles : Array.from(getDict())
     console.log('WORDBASE AI PLAYS', owner, possible.length)
-    return starts
-    .map(start => this._search([start], board, possible))
-    // .map(start => grid_search.square(start, board.board, trie.instance))
-    .flat()
+    return rand.shuffle(
+      starts
+      .map(start => this._search([start], board, possible))
+      // .map(start => grid_search.square(start, board.board, trie.instance))
+      .flat()
+    )
     .filter(word => !history.some(played => played.length === word.length && played.every((t, i) => Tile.eq(t, word[i]))))
     .sort((a, b) => {
       if (owner === 0) {

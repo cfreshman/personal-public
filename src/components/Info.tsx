@@ -1232,7 +1232,7 @@ const _InfoSliderStyle = styled.div`
 `
 
 const _InfoFile = withRef(({
-  image=false, audio=false, accept, label, setValue, multiple=false, inline, onChange, children, ...props
+  image=false, audio=false, accept, label, setValue, multiple=false, inline, hide_name, onChange, children, ...props
 }: props & {
   image?:boolean, audio?:boolean, accept?:string, label?:string, multiple?:boolean,
   setValue?: consumer<File | File[]>, onChange?,
@@ -1256,18 +1256,20 @@ const _InfoFile = withRef(({
       _setFiles(e.target.files)
       onChange && onChange(e)
       setValue && setValue(multiple ? [...e.target.files] : e.target.files[0])
-    }} />
+    }}
+    {...hide_name ? {value:''} : {}}
+    />
   </label>
 })
 export const InfoFile = withRef((props: props & {
   image?:boolean, accept?:string, label?:string, multiple?:boolean,
   setValue?: consumer<File>, onChange?,
-  inline?,
+  inline?, hide_name?,
 }) => <_InfoFile {...props} multiple={false} />)
 export const InfoMultiFile = withRef((props: props & {
   image?:boolean, accept?:string, label?:string, multiple?:boolean,
   setValue?: consumer<File[]>, onChange?,
-  inline?,
+  inline?, hide_name?,
 }) => <_InfoFile {...props} multiple={true} />)
 
 

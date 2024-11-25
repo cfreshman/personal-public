@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>submerse</title>
+
+  <script src="/copyright.js"> </script>
+  <meta charset=utf-8>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      background: #111;
+    }
+
+    .container {
+      user-select: none;
+      flex-grow: 1;
+      width: 100%;
+      display: flex;
+    }
+
+    .outer.container {
+      /* padding: 1rem; */
+      height: 100%;
+    }
+
+    .inner.container {
+      justify-content: center;
+      align-items: center;
+    }
+
+    #game-canvas {
+      image-rendering: pixelated;
+      user-select: none;
+    }
+
+    .gui-container {
+      position: absolute;
+      z-index: 1000;
+    }
+
+    .gui {
+      width: 100%;
+      height: 100%;
+    }
+
+    .gui button,
+    .gui div {
+      position: absolute;
+      border: none;
+      outline: none;
+      transition: 0s;
+      image-rendering: pixelated;
+      background-repeat: no-repeat;
+      transform-origin: top left;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="outer container">
+    <div class="inner container">
+      <canvas id="game-canvas"></canvas>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+
+</html>

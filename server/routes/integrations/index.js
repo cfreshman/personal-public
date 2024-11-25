@@ -41,7 +41,7 @@ export const respondWithTwitterCard = (rs, query) => {
 
 R.get('/twitter/card/image/:filename', async (rq, rs) => {
   const { filename } = rq.params
-  console.debug('[INTEGRATIONS:TWITTER:CARD:IMAGE]', filename)
+  // console.debug('[INTEGRATIONS:TWITTER:CARD:IMAGE]', filename)
   if (!/^twitter-/.test(filename)) throw `unexpected twitter card image filename`
   file.send(filename, rs)
 })
@@ -51,7 +51,7 @@ R.get('/twitter/card/:blob', async (rq, rs) => {
 
 R.get('/dataurl/:filename', async (rq, rs) => {
   const { filename } = rq.params
-  console.debug('[INTEGRATIONS:DATAURL]', filename)
+  // console.debug('[INTEGRATIONS:DATAURL]', filename)
   if (!/^dataurl-/.test(filename)) throw `unexpected twitter card image filename`
   file.send(filename, rs)
 })

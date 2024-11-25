@@ -1591,14 +1591,14 @@ export const Support = () => {
          }} target='_blank' rel='noreferrer'>email</a>
         {/* &nbsp;&nbsp; <Link to='/contact'>something else?</Link> */}
       </p>
-      <p>
+      {/* <p>
         Play IRL with Bananagram/Scrabble tiles or something idk but lmk if you do
-      </p>
-      <br/>
+      </p> */}
       <br/>
       {/* <br/> */}
+      {/* <br/> */}
       <p className='support-links'>
-        <A href='/coffee/default'>donate a coffee</A>
+        <div>Or <A href='/coffee'>donate a coffee!</A></div>
         {/* &nbsp;(<a
         href={`https://twitter.com/messages/compose?recipient_id=1351728698614042626&text=${
           encodeURIComponent(`(wordbase.app) `)

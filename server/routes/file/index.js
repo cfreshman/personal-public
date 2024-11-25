@@ -43,13 +43,13 @@ R.post('/*', async (req, res) => {
 })
 
 const send = (filename, res) => {
-    console.log('[FILE:SEND]', filename)
+    // console.log('[FILE:SEND]', filename)
     const filePath = getPath(filename)
     res.sendFile(filePath)
     return filePath
 }
 R.get('/*', async (req, res) => {
-    console.log(`[FILE]`, req.user, req.url)
+    // console.log(`[FILE]`, req.user, req.url)
     if (!req.url.startsWith('/public-') && req.user !== 'cyrus') throw 'unauthorized'
     send(req.url, res)
 })
