@@ -409,6 +409,13 @@ export default () => {
       '/greeter'
     ),
     icon: '/raw/greeter/icon.png',
+    manifest: {
+      name: 'greeter',
+      start_url: '/greeter',
+      icon: '/raw/greeter/icon.png',
+      display: 'standalone',
+      background_color: theme_color,
+    },
   })
   // useE(viewer, getCssVar('var(--id-color)'), () => {
   //   if (!viewer) return

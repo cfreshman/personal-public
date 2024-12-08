@@ -22,7 +22,7 @@
         <input
             class="input year form-control form-control-sm"
             type="number" spellCheck="false"
-            placeholder="year" value="2022" min="2015" max="2022"/>
+            placeholder="year" value="2022" min="2015" max="2024"/>
         <input
             class="input day form-control form-control-sm"
             type="number" spellCheck="false"
@@ -53,12 +53,16 @@
     <div class="login-warning">
         open login link in new tab and paste input above
         |
-        <a id="day-link" href="https://adventofcode.com/2021/day/1">link to day</a>
+        <a id="day-link" href="https://adventofcode.com/2021/day/1" onclick="
+        console.debug(event)
+        if (!event.metaKey && !event.ctrlKey) {
+            event.preventDefault()
+            window.open(this.href, '_blank', `popup,height=550,width=800,left=0,top=10000`)
+        }
+        ">link to day</a>
     </div>
-    <div class='doc'>
-        <iframe
-            title="aoc" src="https://adventofcode.com/2021/day/1"
-            frameBorder="0"></iframe>
+    <div class='doc' style="display:none">
+        <iframe title="aoc" src="https://adventofcode.com/2021/day/1" frameBorder="0"></iframe>
     </div>
 
     <!-- <div class="output form-control form-control-sm"></div> -->

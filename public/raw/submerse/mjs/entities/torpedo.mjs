@@ -9,16 +9,17 @@ export class Torpedo extends Entity {
       z: 1,
       drag: V.ne(0, 1),
       ttl: 2,
+      damage: 1,
       ...props,
       anim: new Anim({
         sheet: get_sheet(),
         names: ['torpedo'],
       }),
       ranged: true,
-      damage: 1,
       takes_melee: true,
       physical: true, size: V.ne(5, 3),
       from_friendly: true,
+      fragile: true,
     })
   }
 
@@ -46,7 +47,7 @@ export class Torpedo extends Entity {
 
     // spawn bubble explosion
     const bubbles = []
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 100; i++) {
       bubbles.push(new Bubble({
         pos: this.pos,
         vel: this.vel.ad(V.p(rand.f(maths.TAU), Math.sqrt(rand.f(25 * 25)))),

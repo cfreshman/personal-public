@@ -35,7 +35,7 @@ window.generate_manifest = async () => {
 
     // ;!Q('[rel=manifest]')?.href && 
     let icon_href = Q(`[rel=icon]:not([data-keep], [href="${location.href.replace(':3030', ':5050')}"])`)?.href
-    if (icon_href === `${location.origin}/icon.png`) icon_href = false
+    if (icon_href === `${location.origin}/base-icon.png`) icon_href = false
     return JSON.stringify({
         name,
         display: `minimal-ui`,
@@ -49,7 +49,9 @@ window.generate_manifest = async () => {
     })
 }
 
+window._pause_replace_manifest = false
 window._replace_manifest = async () => {
+    if (_pause_replace_manifest) return
     const new_manifest = await generate_manifest()
     const old_manifest = -1 // undefined // await fetch(manifest().href).then(r=>r.text())
     if (new_manifest !== old_manifest) {

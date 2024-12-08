@@ -155,7 +155,72 @@ export default () => {
         </div>
       </InfoSection>
       <InfoSection id='plain' labels={['plain', { scale: toggleFullSize }]}>
-        <div className='row gap wrap' style={S(`flex-wrap:wrap-reverse`)}>
+        <div className='row gap wrap' style={S(`
+          // flex-wrap:wrap-reverse
+          `)}>
+
+          <div className='rendered-icon row' style={S(`
+          color: #000;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+
+          font-family: roboto-mono;
+          background: #000;
+          color: #fff;
+          // background: url(/base-icon.png);
+          background-size: cover;
+          background: #222;
+          line-height: 1.1;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-size: 48em;
+            text-align: left;
+            `)}>web-app-store</span>
+            {/* <span className='spacer' /> */}
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-size: 48em;
+            text-align: right;
+            `)}>🌐📱🛍️</span>
+          </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          color: #000;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+
+          font-family: roboto-mono;
+          background: #000;
+          color: #fff;
+          // background: url(/base-icon.png);
+          background-size: cover;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            `)}>📋</span>
+          </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          background: #000;
+          color: #fff;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+          overflow: hidden;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            font-weight: bold;
+            pointer-events: none;
+            `)}>{`⚔️`}</span>
+          </div>
+
           <div className='rendered-icon column' style={S(`
           background: #333;
           color: #fff;
@@ -296,7 +361,7 @@ export default () => {
           width: 256em; height: 256em;
           padding: 16em;
           line-height: 1;
-          background: url(/icon.png);
+          background: url(/base-icon.png);
           background-size: cover;
           `)}>
             <span style={S(`
@@ -310,7 +375,7 @@ export default () => {
           width: 256em; height: 256em;
           padding: 16em;
           line-height: 1;
-          background: url(/icon.png);
+          background: url(/base-icon.png);
           background-size: cover;
           font-family: system-ui;
           `)}>
@@ -486,11 +551,32 @@ export default () => {
 
           font-family: roboto-mono;
           background: linear-gradient(blue, pink);
-          color: #0004;
+          color: #000;
+          `)}>
+            {/* <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            `)}>᧫</span> */}
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            `)}>🌄</span>
+          </div>
+
+          <div className='rendered-icon middle-row' style={S(`
+          color: #000;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+
+          font-family: roboto-mono;
+          background: #000;
+          color: #fff;
+          background: url(/base-icon.png);
+          background-size: cover;
           `)}>
             <span style={S(`
             font-size: calc(128em + 32em + 8em);
-            `)}>᧫</span>
+            `)}>🌄</span>
           </div>
 
           {/* <div className='rendered-icon middle-row' style={S(`

@@ -185,7 +185,7 @@ export const useCheckin = (page:string|boolean=true) => {
             }
         })
 }
-export const usePageSettings = ({ checkin, background, text_color, professional, white, hideLogin, hideExpandedControls, hideFooter, basicDropdown, expand, expandPlacement, domains, title, icon, expandStyle, transparentHeader, invertHeader, popup, uses }: {
+export const usePageSettings = ({ checkin, background, text_color, professional, white, hideLogin, hideExpandedControls, hideFooter, basicDropdown, expand, expandPlacement, domains, title, icon, expandStyle, transparentHeader, invertHeader, popup, uses, manifest }: {
     checkin?: string | boolean,
     background?: string, text_color?: string, professional?: boolean, white?: boolean,
     hideLogin?: boolean, hideExpandedControls?: boolean,
@@ -200,6 +200,7 @@ export const usePageSettings = ({ checkin, background, text_color, professional,
     transparentHeader?: boolean, invertHeader?: boolean,
     popup?: string | boolean,
     uses?: typeof meta.uses.value,
+    manifest?: { name: string, start_url: string, icon: string, short_name?: string, background_color?: string, theme_color?: string, display?: string },
 }={}) => {
     useCheckin(checkin)
     const [{ user:viewer }] = auth.use()
@@ -265,6 +266,42 @@ export const usePageSettings = ({ checkin, background, text_color, professional,
                 auth.set({ ..._auth, expand:!_auth.expand })
                 auth.set({ ..._auth })
             })
+        }
+    })
+
+    useE(manifest, () => {
+        if (manifest) {
+            const existing_manifest = meta.manifest.get()
+            let {
+                name,
+                short_name=undefined,
+                icon,
+                start_url,
+                display='minimal-ui',
+                background_color=undefined,
+                theme_color=undefined,
+            } = manifest
+            start_url = parseSubpath(start_url)
+            const new_manifest = {
+                id: name,
+                name, short_name,
+                start_url: start_url.startsWith('/') ? location.origin + start_url : start_url,
+                icons: [{
+                    src: icon.startsWith('/') ? location.origin + icon : icon,
+                    sizes: '256x256',
+                    type: 'image/png',
+                }],
+                display, background_color, theme_color,
+            }
+            meta.manifest.set(new_manifest)
+            meta.manifest_lock.locked = true
+            const W = window as any
+            W._pause_replace_manifest = true
+            return () => {
+                meta.manifest.set(existing_manifest)
+                meta.manifest_lock.locked = false
+                W._pause_replace_manifest = false
+            }
         }
     })
 }

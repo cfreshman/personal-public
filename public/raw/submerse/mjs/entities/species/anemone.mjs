@@ -6,6 +6,7 @@ export class Anemone extends Creature {
   constructor(props) {
     super({
       ...props,
+      name: 'anemone',
       anim: new Anim({
         sheet: get_sheet(),
         names: ['anemone0', 'anemone1', 'anemone2', 'anemone3'],

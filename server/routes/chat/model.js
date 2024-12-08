@@ -148,7 +148,7 @@ async function sendUserChat(profile, other, messages) {
         if (!chatOther.unread[chat.hash]) {
             chatOther.unread[chat.hash] = unread
             ioM.send(other, 'chat:unread', chatOther.unread)
-            !['site', other].includes(profile.user) && send(other, 'chat', `new chat from /u/${profile.user}`, `freshman.dev/chat/#/${profile.user}`)
+            !['site', other].includes(profile.user) && send(other, 'chat', `new chat from /u/${profile.user}`, `freshman.dev/chat/${profile.user}`)
         } else {
             chatOther.unread[chat.hash] += unread
         }

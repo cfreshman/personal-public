@@ -167,7 +167,7 @@ export const open_about = () => open_popup(close => <>
       </div>
       <div className='row gap wide between' style={S(`align-items:center;gap:1em;justify-content:space-between`)}>
         <div className='column start'>
-          <div>then <A tab href='https://support.nimblebit.com/support/solutions/articles/150000013114-retired-games'>they retired it</A> - when i went to play it again and couldn't, i remade it!</div>
+          <div>then <A tab href='https://support.nimblebit.com/support/solutions/articles/150000013114-retired-games'>they retired it</A> - when I went to play it again and couldn't, I remade it!</div>
         </div>
         <img src='/raw/capitals/icon.png' style={S(`width: 4em;`)} />
       </div>

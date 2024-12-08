@@ -10,7 +10,7 @@ import { draw } from "./draw";
 import { none, pass } from "./types";
 import { socket } from "./socket";
 
-const { named_log, colors } = window as any
+const { named_log, colors, node } = window as any
 const log = named_log('meta')
 
 // https://github.com/microsoft/TypeScript/pull/40336
@@ -25,13 +25,13 @@ type Prefix<S extends string, T> = Join<['x',T],''>
 
 type Icon = string|{[xDIM:Prefix<'x',Repeat<Digit>>]:(ctx:CanvasRenderingContext2D,canvas:HTMLCanvasElement)=>void}
 
-export const defaultIcon = '/icon.png' // '#333'
+export const defaultIcon = '/base-icon.png' // '#333'
 const icon = Object.assign(trigger.value<Icon>(document.querySelector('head [rel=icon]')['href']), {
   draw: html => {
     html2canvas(html).then(canvas => icon.set(canvas.toDataURL()))
   },
   render: value => {
-    if (value === location.origin + '/icon.png') value = window['icon'] ? window['icon']() : defaultIcon
+    // if (value === location.origin + defaultIcon) value = window['icon'] ? window['icon']() : defaultIcon
     if (typeof value === 'string') {
       const color = /#.{3,8}/.exec(value)
       if (color) {
@@ -107,6 +107,11 @@ const theme_color = trigger.value(default_theme_color)
 
 // see https://medium.com/@alshakero/how-to-setup-your-web-app-manifest-dynamically-using-javascript-f7fbee899a61
 // replaced by manifest in copyright.js
+let W = window as any
+W._pause_replace_manifest = true
+let manifest_lock = {
+  locked: false,
+}
 const manifest = trigger.value<{
   name?, display?, start_url?, theme_color?, icons?: { src, sizes?, type?}[], description?, rendered?
 }>({
@@ -116,21 +121,28 @@ const manifest = trigger.value<{
   // theme_color: theme_color.get(),
   theme_color: '#000',
   icons: [{
-    src: `${window.origin}/icon.png`,
+    src: `${window.origin}${defaultIcon}`,
     sizes: `384x384`,
     type: `image/png`,
   }]
 })
 manifest.add(value => {
-  const replace_manifest = (def={}) => 
+  const replace_manifest = (def:any={}) => 
     (x => { document.head.append(x); return x })
     (
-      (x => Object.assign(x, { rel: 'manifest' }, def))
-      (Q('head [rel=manifest]') || document.createElement('link'))
+      (x => {
+        // Object.assign(x, { rel: 'manifest' }, def)
+        x.href = def.href
+        return x
+      })
+      (Q('head [rel=manifest]') || node('<link rel="manifest">'))
     )
+  if (manifest_lock.locked) return
   replace_manifest({
     href: URL.createObjectURL(new Blob([JSON.stringify(value)], { type: 'application/json' })),
   })
+  log('manifest', { value })
+  console.warn('MANIFEST', value)
 
   // const element: HTMLLinkElement = document.querySelector('head [rel=manifest]')
   // const manifest_str = JSON.stringify(value)
@@ -279,7 +291,7 @@ manifest.add(value => {
         console.debug('prev_page', prev_page)
         manifest.set({ ...manifest.get(),
           name: set('home download').has(prev_page)?location.host:prev_page,
-          start_url: set('home download').has(prev_page)?location.origin: location.origin + location.pathname.replace(/^\/-?/, '/-'),
+          start_url: set('home download').has(prev_page)?location.origin: location.href, // location.origin + location.pathname.replace(/^\/-?/, '/-'),
         })
         // meta.icon.set(defaultIcon)
         // rerenderManifestIcon(undefined, true)
@@ -416,7 +428,7 @@ let called = false
 
 export const meta = {
   icon,
-  manifest,
+  manifest, manifest_lock,
   title,
   description,
   theme_color,

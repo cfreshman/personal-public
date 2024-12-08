@@ -146,18 +146,19 @@ export const generate_2 = () => {
 }
 
 
-export const generate = () => {
+export const generate = (length) => {
+  const cave_length = length || CAVE_LENGTH
   let attempts = 0
   do {
     const vs = []
     const start_end_height = 0 // (CAVE_HEIGHT - 1)/2
     vs.push(V.ne(0, start_end_height))
-    for (let c = 1; c < CAVE_LENGTH - 1; c++) {
+    for (let c = 1; c < cave_length - 1; c++) {
       for (let r = 0; r < CAVE_HEIGHT; r++) {
         vs.push(V.ne(c, r))
       }
     }
-    vs.push(V.ne(CAVE_LENGTH - 1, start_end_height))
+    vs.push(V.ne(cave_length - 1, start_end_height))
     
     const v_map = {}
     const i_to_v = {}
@@ -167,7 +168,7 @@ export const generate = () => {
     })
 
     const edge_map = {}
-    for (let c = 0; c < CAVE_LENGTH; c++) {
+    for (let c = 0; c < cave_length; c++) {
       for (let r = 0; r < CAVE_HEIGHT; r++) {
         const v = V.ne(c, r)
         const i = v_map[v.st()]
@@ -294,10 +295,18 @@ export const generate = () => {
     const path = a_star()
 
     // return non-simple cave system (no straight-line path)
-    if (path.length > CAVE_LENGTH || attempts > 10) {
+    if (path.length > cave_length + 1 || attempts > 10) {
+      const v_in_es = {}
+      for (let [i, j] of es) {
+        v_in_es[i] = true
+        v_in_es[j] = true
+      }
+      const vs_in_es = Object.keys(v_in_es).map(i => vs[i])
+
       return {
         vs,
         es,
+        v_in_es, vs_in_es,
         path,
       }
     }

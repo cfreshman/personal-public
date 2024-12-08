@@ -143,6 +143,8 @@ const _projects = {
   'rephrase': 'x7 variations of your phrase',
   'llm': 'talk to a personal LLM',
   'sd': 'image generation toy',
+  'submerse': 'explore the ocean and caves',
+  'web-app-store': 'a compilation of web apps',
 }
 // ''.split(' ').forEach(p => {
 //     if (!_projects[p]) _projects[p] = '' });
@@ -172,7 +174,7 @@ export const project_years = {
 export const tags = {
   all: '',
   // game: 'befruited snackman snakes wordbase minesweeper dots-and-boxes',
-  game: 'snackman snakes wordbase dots-and-boxes fishbowl matchbox tappy-square daily-nonogram lettercomb quadbase multipals letterpress apple-orange-banana chess cards matchbox.html',
+  game: 'snackman snakes wordbase dots-and-boxes fishbowl matchbox tappy-square daily-nonogram lettercomb quadbase multipals letterpress apple-orange-banana chess cards matchbox.html submerse',
   // visual: 'cloud floating models terrain graffiti slime speckle arm color pixelworld bubble tube garden egg',
   visual: 'cloud floating models terrain graffiti slime-ants speckle arm gradients pixelworld bubble tube pixels egg gradients color optimal-maps',
   // social: 'chat graffiti live records speckle turt-smurts turt-smurts-2D u wordbase dots-and-boxes garden wall dinder',

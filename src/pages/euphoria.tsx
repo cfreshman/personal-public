@@ -12,19 +12,20 @@ const log = named_log('euphoria')
 export default () => {
   return <Style>
     <InfoBody className='column'>
-      <InfoSection labels={['euphoria']}>
-        track days you felt true euphoria. aim for 100%
-      </InfoSection>
       <InfoSection labels={[
-        'app',
-        '(use case of /tally)',
-        { text: 'open /tally', href: '/tally' },
-      ]} style={S(`
-      flex-grow: 1;
-      `)}>
-        <iframe src="/-tally#euphoria" style={S(`
+        'euphoria',
+        '(use case of /tap)',
+        { text: 'open /tap', href: '/tap/#/euphoria' },
+        ]} style={S(`
+        flex-grow: 1;
+        overflow: hidden;
+        `)}>
+        track days you felt true euphoria. aim for 100%
+        <iframe src="/-tap#euphoria" style={S(`
         height: -webkit-fill-available;
-        border: 1px solid currentcolor;
+        border: 1px solid #0008;
+        border-radius: .25em;
+        overflow: hidden;
         `)} />
       </InfoSection>
     </InfoBody>

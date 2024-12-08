@@ -96,7 +96,7 @@ const redirects = [
     ['/tron.html', '/raw/tv-phone/tron/tv.html'],
     ['/doodle.html', '/raw/tv-phone/doodle/tv.html'],
     ['/circuit.html', '/raw/tv-phone/circuit/tv.html'],
-    ...list('stream fishbowl matchbox pico-packet bloom paths kmeans tweet-embed daily-nonogram').map(x => ['/'+x, '/raw/'+x]),
+    ...list('stream fishbowl matchbox pico-packet bloom paths kmeans tweet-embed daily-nonogram submerse').map(x => ['/'+x, '/raw/'+x]),
     ...list('gymnastic-dots').map(x => ['/'+x, '/raw/wwl/app/'+x]),
     ...list('js.html').map(x => ['/'+x, '/lib/2/'+x]),
     // ...list('cards').map(x => ['/'+x, '/raw/simple/'+x+'.html']),
@@ -228,17 +228,29 @@ export const Main = ({ loaded }) => {
             {subdomain
             ?
             <>
-                <Route exact path='/' render={() => {
+                {/* <Route exact path='/' render={() => {
                     console.debug('subdomain redirect', parseLogicalPath(), '=>', parseLogicalPath().replace('/'+subdomain, ''))
                     return <Redirect to={'/:'} />
-                }} />
-                <Route exact path='/-' render={() => {
+                }} /> */}
+                {/* <Route exact path='/-' render={() => {
                     console.debug('subdomain redirect', parseLogicalPath(), '=>', parseLogicalPath().replace('/'+subdomain, ''))
                     return <Redirect to={'/-:'} />
+                }} /> */}
+                {/*
+                commented out above to hit / instead of /:
+                thought below was needed but it isn't
+                */}
+                {/* <Route exact path='/' render={() => {
+                    return <Page {...{ override:subdomain, loaded }} />
                 }} />
+                <Route exact path='/-' render={() => {
+                    return <Page {...{ override:subdomain, loaded }} />
+                }} /> */}
+                
                 {/* required to avoid hitting regular path at below */}
                 <Route path={'/'+subdomain} render={() => {
                     console.debug('subdomain redirect', parseLogicalPath(), '=>', parseLogicalPath().replace('/'+subdomain, ''))
+                    // return <Redirect to={parseLogicalPath().replace('/'+subdomain, '/:')} />
                     return <Redirect to={parseLogicalPath().replace('/'+subdomain, '/:')} />
                 }} />
                 {/* VERY weird bug requires this HERE not below block */}

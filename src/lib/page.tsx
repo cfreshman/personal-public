@@ -25,6 +25,7 @@ const pagedomains = {
   'grtr.xyz': 'greeter',
   'grtr.app': 'greeter',
   'greeter.social': 'greeter',
+  'web-app-store.com': 'web-app-store',
   'vibe.photos': 'vibe',
   'localhost:3030': 'greeter',
 }
@@ -68,7 +69,14 @@ export const parseSubpath = (path=nonExpandedPathname(), prefix='') => {
   path = path.replace(RegExp(`^(https?://)?${location.host}`), '') // remove duplicated subdomain in path
   // path = path.replace(/^\/-/, '/') // remove '-' (used to expand page)
   // const fullSubpath = path // subdomain ? path.replace(RegExp(`^/${subdomain}`), '') || '/' : path
-  const fullSubpath = subdomain ? (path.slice(1) ? path.replace(RegExp(`^/${subdomain}`), '/:') || '/' : '/:') : path
+  let fullSubpath = path // .replace(/^\/-/, '/')
+  if (subdomain) {
+    fullSubpath = (path.slice(1) ? path.replace(RegExp(`^/${subdomain}`), '/:') || '/' : '/')
+    if (fullSubpath === '/:') {
+      fullSubpath = '/'
+    }
+  }
+  // const fullSubpath = subdomain ? (path.slice(1) ? path.replace(RegExp(`^/${subdomain}`), '/:') || '/' : '/') : path
   // remove requested prefix
   return fullSubpath.replace(RegExp(`^${prefix}`), '')
 }
@@ -88,7 +96,7 @@ export const parseLogicalPath = (path=nonExpandedPathname(), prefix='') => {
   // OR link from subdomain l.<> (no probably not, we'd have to leave the page)
 
   const subdomain = parseSubdomain()
-  path = path.replace(/^\/-/, '/').replace('/:', '/'+subdomain).replace(/\/+/g, '/')
+  path = subdomain && !path.slice(1) ? '/'+subdomain : path.replace(/^\/-/, '/').replace('/:', '/'+subdomain).replace(/\/+/g, '/')
   // const subpath = parseSubpath(path)
   // const first = subpath.split('/').filter(truthy)[0]
   // path = projects[first]

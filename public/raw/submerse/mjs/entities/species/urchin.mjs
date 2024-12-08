@@ -6,6 +6,7 @@ export class Urchin extends Creature {
   constructor(props) {
     super({
       ...props,
+      name: 'urchin',
       anim: new Anim({
         sheet: get_sheet(),
         names: ['urchin0', 'urchin1', 'urchin2', 'urchin3'],

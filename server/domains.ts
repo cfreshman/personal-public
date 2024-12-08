@@ -12,6 +12,7 @@ export const domains = [
   ['greeter', 'grtr.app'],
   ['greeter', 'grtr.xyz'],
   ['greeter', 'greeter.social'],
+  ['web-app-store', 'web-app-store.com'],
   ['vibe', 'vibe.photos'],
   ['greeter', 'localhost'],
 ]
@@ -250,20 +251,10 @@ export const replace = {
     icon: 'https://freshman.dev/raw/euphoria/icon-64.png',
   },
   'twitter': {
-    title: 'install Twitter blue Threads icon',
-    description: 'link to best twitter',
+    title: 'install Twitter blue icon for Bluesky/Threads',
+    description: '',
     keywords: 'twitter, link to best twitter, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
-    icon: 'https://freshman.dev/raw/twitter/icon.png',
-    manifest: {
-      name: 'twitter',
-      display: 'standalone',
-      start_url: '/twitter',
-      theme_color: '#1DA1F2',
-      icons: [{
-        src: '/raw/twitter/icon.svg',
-        sizes: 'any',
-      }],
-    }
+    icon: 'https://freshman.dev/raw/twitter/twitter.png',
   },
   'radio': {
     title: 'freshman.dev radio',
@@ -581,5 +572,27 @@ export const replace = {
     description: 'set timers with your voice',
     keywords: 'voicetimer, set timers with your voice, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/images/icon-voicetimer.png',
+  },
+  'submerse': {
+    title: 'submerse',
+    description: 'explore the ocean and caves',
+    keywords: 'submerse, explore the ocean and caves, game, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/submerse/icon.png',
+  },
+  'twitter-icons': {
+    title: 'twitter icons',
+    description: 'in original blue',
+    keywords: 'twitter icons, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/twitter/twitter.png',
+  },
+  'paste': {
+    title: '/paste',
+    description: 'text snippets',
+    keywords: 'paste, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+  },
+  'web-app-store': {
+    title: '/web-app-store',
+    keywords: 'web app store, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-was-5.png',
   },
 }

@@ -7,7 +7,7 @@ import api, { auth } from '../lib/api'
 import { login, token as token_auth, logout, signup, auth as authAuth } from '../lib/auth'
 import { Conditions } from '../lib/conditions'
 import { asToggle, useE, useF, useM, useR, useRerender, useS, useStyle, useToggle } from '../lib/hooks'
-import { useAuth, useCachedScript, useLogicalPath, useSupporter } from '../lib/hooks_ext'
+import { useAuth, useCachedScript, useLogicalPath, useSubdomain, useSupporter } from '../lib/hooks_ext'
 import { meta, defaultIcon as metaDefaultIcon } from '../lib/meta'
 import url from '../lib/url'
 import user from '../lib/user'
@@ -905,6 +905,7 @@ export const Header = () => {
 
   const [icon_href] = meta.icon.use()
   meta.install.use()
+  const subdomain = useSubdomain()
   
   const page_actions_control:any = { close:()=>{} }
   useF(expand, path, () => page_actions_control.close())
@@ -1105,7 +1106,7 @@ export const Header = () => {
             </InfoBody>
           </InfoStyles>})}>uses</a>
           <a onClick={() => openFeedback({ prefill:`feedback on /${parsePage()}: ` })}>feedback</a>
-          {/* {meta.install.value ? <a onClick={()=>meta.install.value.prompt()}>install</a> : null} */}
+          {subdomain && meta.install.value ? <a onClick={()=>meta.install.value.prompt()}>install</a> : null}
           {/* {popup
           ? <a onClick={e => open(location.href.replace('/'+parsePage(), '/-'+parsePage()), '_blank', 'popup,' + (popup === true ? '' : popup))}>popup</a>
           : ''} */}

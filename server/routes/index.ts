@@ -69,6 +69,8 @@ import overlay from './overlay'
 import tennis from './tennis'
 import ai from './ai'
 import x from './x'
+import paste from './paste'
+import was from './was'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -150,6 +152,8 @@ export default {
   tennis,
   ai,
   x,
+  paste,
+  was,
 }
 
 export const ios = [

@@ -17,6 +17,9 @@ export class Coin extends Entity {
       }),
       takes_ranged: false,
       physical: true, size: V.ne(4, 6),
+      body: Matter.Bodies.rectangle(props.pos.x, props.pos.y, 4, 6, {
+        isSensor: true,
+      }),
       mass: .001,
     })
   }
@@ -26,7 +29,7 @@ export class Coin extends Entity {
     if (this.ttl < 0) {
       this.die(state)
     } else {
-      this.acc = V.ne(0, -1)
+      // this.acc = V.ne(0, .5)
     }
     
     this.anim.update(state, dt)

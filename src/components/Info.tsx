@@ -433,7 +433,7 @@ label {
 .inline > .action + .action {
   margin-left: .25rem;
 }
-input.action, input:not([type=color]), textarea {
+input.action, input:not([type=color], [type=checkbox], [type=radio]), textarea {
   font-size: max(16px, 1em);
   background: white;
   border: .1rem solid #000; outline: 0 !important;
@@ -1970,7 +1970,7 @@ export const ColorPicker = withRef(({ value, setValue, ...props }: props & { val
 })
 
 
-export const Multiline = withRef(({ ref, children, value, setValue, extra_height='.25em', row_limited, min_rows=0, ...props }: props) => {
+export const Multiline = withRef(({ ref, children, value, setValue, extra_height='.25em', row_limited, min_rows=0, onChange, ...props }: props) => {
   ref = ref || useR()
   useF(value, () => {
     if (props.rows) return
@@ -1986,7 +1986,7 @@ export const Multiline = withRef(({ ref, children, value, setValue, extra_height
     ;[area.selectionStart, area.selectionEnd] = [start, end]
   })
   const r_backspace = useR()
-  return setValue ? <textarea autoCapitalize={'off'} ref={ref} {...props} style={{...S(`
+  return setValue || onChange ? <textarea autoCapitalize={'off'} ref={ref} {...props} style={{...S(`
   resize: none;
   `), ...(props.style||{})}} onKeyDown={e => {
     // theres a textarea bug which requires us to set the textContent manually
@@ -2003,7 +2003,7 @@ export const Multiline = withRef(({ ref, children, value, setValue, extra_height
     }
     props.onKeyDown && props.onKeyDown(e)
   }} onChange={e => {
-    props.onChange && props.onChange(e)
+    onChange && onChange(e)
     const l = e.target as any
     let new_value
     if (devices.is_mobile && r_backspace.current) {

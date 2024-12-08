@@ -101,6 +101,8 @@ import poll from './routes/poll';
 import beam from './routes/beam';
 import vibe from './routes/vibe';
 import cost from './routes/cost';
+import paste from './routes/paste';
+import was from './routes/was';
 // console.log(randAlphanum(16))
 process.on('uncaughtException', e => {
     console.error('uncaughtException', e);
@@ -738,6 +740,7 @@ app.use(async (req, res, next) => {
     const url_path = path.join(staticPath, req.url.replaceAll('../', ''))
     // log('FILE', url_path, fs.existsSync(url_path))
     if (fs.existsSync(url_path)) {
+        if (url_path.endsWith('.mjs')) res.set('Content-Type', 'application/javascript')
         res.sendFile(url_path)
     } else {
         next()
@@ -780,6 +783,7 @@ app.get('/*', async (req, res, next) => {
     }
     // console.debug(replacements)
 
+    const server = isDevelopment() ? 'http://localhost:5050' : 'https://freshman.dev'
     if(0)0
     // else if (page === 'pico-repo') {
     //     const app = req.url.split('/').filter(x => x && !['pico-repo', 'view', 'browse', 'saved', 'share'].some(y => y.includes(x)))[0]
@@ -882,14 +886,26 @@ app.get('/*', async (req, res, next) => {
     }
     else if (page === 'u' || page === 'profile') {
         const url_search_str = req.url.split(page === 'u' ? '/u' : '/profile')[1]
-        const user = url_search_str.split('/').filter(x => x && !([]as string[]).some(y => y.includes(x))).find(truthy) || req.user
-        console.debug('[u] url parsed:', { user }, req.url)
+        const parts = url_search_str.split('/').filter(truthy)
+        const user = parts[0]
+        const action = parts[1] ?? false
+        console.debug('[u] url parsed:', { user, action }, req.url)
         if (user) {
             const profile_item = await profile.model._get(user)
-            Object.assign(replacements, {
-                title: `u/${user}'s profile on freshman.dev`,
-                ...(profile_item.icon_url?{icon:profile_item.icon_url}:{}),
-            })
+            if (action === 'fight' && profile_item.fight) {
+                // Object.assign(replacements, {
+                //     title: `fight ${user}!`,
+                //     ...(profile_item.icon_url?{icon:profile_item.icon_url}:{
+                //         icon: server + '/raw/images/icon-fight.png'
+                //     }),
+                // })
+                return res.redirect(profile_item.fight) // EARLY RETURN
+            } else {
+                Object.assign(replacements, {
+                    title: `u/${user}'s profile on freshman.dev`,
+                    ...(profile_item.icon_url?{icon:profile_item.icon_url}:{}),
+                })
+            }
         }
     }
     else if (page === 'invite') {
@@ -1186,7 +1202,7 @@ app.get('/*', async (req, res, next) => {
             id = id.split('&')[0]
             const { post } = await vibe.model.get_post('site', { id })
             if (post) {
-                const icon = (isDevelopment() ? 'http://localhost:5050' : 'https://freshman.dev') + post.hrefs[0] || '/raw/vibe/icon-2.png'
+                const icon = server + post.hrefs[0] || '/raw/vibe/icon-2.png'
                 Object.assign(replacements, {
                     title: `${post.location} (vibe)`,
                     icon,
@@ -1194,9 +1210,37 @@ app.get('/*', async (req, res, next) => {
             }
         }
     }
+    else if (page === 'paste') {
+        const url_search_str = req.url.split('/paste')[1]
+        const [id] = url_search_str.split('/').filter(x => x)
+        console.debug('[paste] url parsed:', url_search_str, id)
+        if (id) {
+            try {
+                const { item } = await paste.model.get(undefined, id)
+                Object.assign(replacements, {
+                    title: item.title ? `${item.title} (paste)` : `paste #${item.id}`,
+                    description: '/paste: text snippets',
+                })
+            } catch (e) {}
+        }
+    }
+    else if (page === 'web-app-store') {
+        const url_search_str = req.url.split('/web-app-store')[1]
+        const [id] = url_search_str.split('/').filter(x => x)
+        console.debug('[web-app-store] url parsed:', url_search_str, id)
+        if (id) {
+            try {
+                const { item } = await was.model.app(undefined, id)
+                Object.assign(replacements, {
+                    title: `${item.name} on web-app-store`,
+                    icon: item.icon,
+                })
+            } catch (e) {}
+        }
+    }
 
     let html = indexRaw
-    if (replacements) html = replaceTemplate(html, replacements)
+    if (Object.keys(replacements).length) html = replaceTemplate(html, replacements)
     req.log('return', page, html.length)
     res.send(html)
 });

@@ -1,11 +1,13 @@
 import { Entity } from "../../entity.mjs"
 
 export class Creature extends Entity {
+  name
   state
   temperment
   sight_radius
   damage
   target_speed
+  target_dir
   force
 
   constructor(props) {
@@ -14,16 +16,19 @@ export class Creature extends Entity {
       takes_melee: false,
       takes_ranged: true,
       ...props,
+      is_creature: true,
     })
     Object.assign(this, {
+      name: 'creature',
       state: Creature.STATE.ROAM,
       temperment: Creature.TEMPERMENT.DEFAULT,
       sight_radius: 100,
       damage: 0,
       target_speed: .5,
       force: 100,
-    }, pick(props, 'state temperment sight_radius damage target_speed force'))
-    this.target_dir = rand.f(Math.PI * 2)
+      target_dir: rand.f(maths.TAU),
+      // armor: 1,
+    }, pick(props, 'name state temperment sight_radius damage target_speed force target_dir'))
   }
 
   update(state, dt) {

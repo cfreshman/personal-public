@@ -6,6 +6,7 @@ export class Sunfish extends Creature {
   constructor(props) {
     super({
       ...props,
+      name: 'sunfish',
       anim: new Anim({
         sheet: get_sheet(),
         names: ['sunfish0', 'sunfish1', 'sunfish2', 'sunfish3'],

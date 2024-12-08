@@ -35,6 +35,7 @@ export const domains = [
     // 'cfre.sh/man', 
     ' ',
     { text: 'greeter.social', label: '→ /greeter', direct: true },
+    { text: 'web-app-store.com', label: '→ /web-app-store', direct: true },
     // { text: 'vibe.photos', label: '→ /vibe', direct: true },
     // { text: 'cyrusfreshman.com', label: ' → freshman.dev ' },
     // { text: 'bowl.fish', label: ' → /fishbowl ', direct: true },

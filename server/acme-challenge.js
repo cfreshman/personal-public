@@ -13,11 +13,26 @@ setTimeout(() => {
 
 const input = `Create a file containing just this data:
 
-cGqn59af-d2aFaxSq6mOM24hk_6uMdNW5fwOkfHgS-A.A1pm8tDb58JdF_-gMNdkxU_WeVI-9PMwXQ9IdDt2xhk
+wsr6oKw8L7BPyQOB65ueD9vxazD0tnt2XPLj2HTgKbw.A1pm8tDb58JdF_-gMNdkxU_WeVI-9PMwXQ9IdDt2xhk
 
 And make it available on your web server at this URL:
 
-http://vibe.photos/.well-known/acme-challenge/cGqn59af-d2aFaxSq6mOM24hk_6uMdNW5fwOkfHgS-A
+http://nn.fo/.well-known/acme-challenge/wsr6oKw8L7BPyQOB65ueD9vxazD0tnt2XPLj2HTgKbw
+
+(This must be set up in addition to the previous challenges; do not remove,
+replace, or undo the previous challenge tasks yet.)
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Press Enter to Continue
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Create a file containing just this data:
+
+vDtTblXBvnR75Ga-y2hQr4p8IGVtc6WWp_Eah5rp96I.A1pm8tDb58JdF_-gMNdkxU_WeVI-9PMwXQ9IdDt2xhk
+
+And make it available on your web server at this URL:
+
+http://tu.fo/.well-known/acme-challenge/vDtTblXBvnR75Ga-y2hQr4p8IGVtc6WWp_Eah5rp96I
 
 (This must be set up in addition to the previous challenges; do not remove,
 replace, or undo the previous challenge tasks yet.)

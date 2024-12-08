@@ -4,7 +4,7 @@ export class Anim {
     this.names = []
     this.time = 1
     this.counter = rand.f(this.time)
-    this.index = 0
+    this.index = rand.i(props.names?.length || 0)
     this.is_left = false
     Object.assign(this, props)
   }
@@ -17,7 +17,7 @@ export class Anim {
     }
   }
 
-  draw(state, ctx, x, y, { is_left=undefined, is_upside_down=undefined }={}) {
-    arc.draw_sprite(ctx, this.sheet[this.names[this.index]], x, y, { flip:is_left, upside_down:is_upside_down, center:true, camera:state })
+  draw(state, ctx, x, y, { is_left=undefined, is_upside_down=undefined, scale=undefined }={}) {
+    arc.draw_sprite(ctx, this.sheet[this.names[this.index]], x, y, { flip:is_left, upside_down:is_upside_down, scale, center:true, camera:state })
   }
 }

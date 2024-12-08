@@ -1,7 +1,7 @@
 import 'react'
 import styled from 'styled-components';
 import { ColorPicker, HalfLine, InfoBody, InfoButton, InfoCheckbox, InfoSection, InfoStyles, Reorderable } from '../components/Info';
-import { useEventListener, useF, useM, useR, useS, useStyle } from '../lib/hooks';
+import { useEventListener, useF, useM, useR, useS, useStyle, useTimeout } from '../lib/hooks';
 import { useCachedScript, usePageSettings, usePathHashState } from '../lib/hooks_ext';
 import { S } from '../lib/util';
 import api, { auth } from 'src/lib/api';
@@ -99,6 +99,12 @@ export default () => {
   }
   useF(viewer, () => handle.load())
   useEventListener(window, 'focus', () => handle.load())
+  {
+    const next_day = new Date()
+    next_day.setDate(next_day.getDate() + 1)
+    next_day.setHours(0, 0, 0, 0)
+    useTimeout(() => handle.load(), Number(next_day) - Date.now() + 1_000)
+  }
   useRoom({
     room: `tly:${viewer}`,
     on: {
@@ -109,6 +115,10 @@ export default () => {
       },
     },
   })
+
+  if (tally && tally.terms[term] === undefined) {
+    tally.terms[term] = {}
+  }
 
   useF(mono_cal, tally, term, mode, bulk_day, dots_day, () => {
     const { mono_cal } = window as any

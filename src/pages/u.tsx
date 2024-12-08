@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { A, HalfLine, InfoBadges, InfoBody, InfoFuncs, InfoLine, InfoLinks, InfoLoginBlock, InfoSearch, InfoSection, InfoStyles } from '../components/Info';
 import api from '../lib/api';
-import { useCached, useEventListener, useF, useM, useR, useRerender, useS } from '../lib/hooks';
+import { useCached, useEventListener, useF, useInline, useM, useR, useRerender, useS } from '../lib/hooks';
 import { useAuth, usePageSettings } from '../lib/hooks_ext';
 import { parseParts } from '../lib/page';
 import { useSocket } from '../lib/socket';
@@ -11,14 +11,13 @@ import { settings } from '../lib/user';
 import { S } from 'src/lib/util';
 import styled from 'styled-components';
 import { UserBadges } from 'src/components/user_badges';
-import { copy } from 'src/lib/copy';
 import { meta } from 'src/lib/meta';
 import { useQr } from 'src/components/qr';
 import { openPopup } from 'src/components/Modal';
 import { NiceModal } from 'src/components/nice_modal';
 
 
-const { named_log, node, qr } = window as any
+const { named_log, node, qr, copy, display_status } = window as any
 const log = named_log('u')
 const siteAccounts = ['site']
 
@@ -32,14 +31,18 @@ export const UserList = ({labels, users}: {labels, users}) => {
 export default () => {
   const rerender = useRerender()
   const auth = useAuth()
-  const [user] = url.as(() => {
-    const [page, user] = parseParts(2)
+  const [[user, action]] = url.as(() => {
+    let [page, user, action=false] = parseParts(3)
     console.debug('AS', page, user)
-    if (page[0] === '~') return page.slice(1)
-    if (user) return user
+    if (page[0] === '~') {
+      action = user
+      user = page.slice(1)
+      page = 'u'
+    }
+    if (user) return [user, action]
 
     if (auth.user && 'profile u'.includes(page)) url.replace(`/u/${auth.user}`)
-    return auth.user
+    return [auth.user, false]
   })
   const self = auth.user && auth.user === user
   const [loaded, setLoaded] = useState(false)
@@ -47,6 +50,16 @@ export default () => {
   let [info, setInfo]: [{ [key: string]: any }, any] = useState({})
   const searchRef = useR()
   const [similar, setSimilar] = useState(undefined)
+
+  useInline(action, profile, () => {
+    if (action === 'fight' && profile?.fight) {
+      if (profile.fight.startsWith(location.origin)) {
+        url.replace(profile.fight.replace(location.origin, ''))
+      } else {
+        location.href = profile.fight
+      }
+    }
+  })
 
   const bioInput = useR()
 
@@ -76,8 +89,8 @@ export default () => {
     follow: () => api.post(`/profile/${user}/follow`, {}).then(handle.parse),
     unfollow: () => api.post(`/profile/${user}/unfollow`, {}).then(handle.parse),
     // bio: bio => api.post(`/profile/bio`, { bio }).then(handle.parse),
-    save: async ({ bio=profile.bio, icon=profile.icon }) => {
-      return await api.post(`/profile/bio`, { bio, icon }).then(handle.parse)
+    save: async ({ bio=profile.bio, icon=profile.icon, fight=profile.fight }) => {
+      return await api.post(`/profile/bio`, { bio, icon, fight }).then(handle.parse)
     },
     parse: data => {
       log(data)
@@ -142,6 +155,10 @@ export default () => {
   const isSupporter = cost?.supporters?.includes(user)
   const [hideSupport] = settings.as(x => x['profile.hideSupport'])
 
+  const [fight_edit, set_fight_edit] = useS(false)
+  const [fight, set_fight] = useState(undefined)
+  useF(profile, fight_edit, () => set_fight(profile?.fight))
+
   useEventListener(window, 'keydown', e => {
     if (bioEdit && e.metaKey && e.key === 's') {
       e.preventDefault()
@@ -180,6 +197,12 @@ export default () => {
       {show_starter_at_top ? starter : null}
       <InfoSection labels={[
         user === 'cyrus' ? 'site owner' : siteAccount ? 'not a user' : 'user',
+        self && !fight_edit && fight && { text: 'copy fight link', func: e => {
+          copy(location.origin + `/u/${user}/fight`)
+          display_status(e.target, 'copied!')
+          navigator.share({ url:fight })
+        } },
+        self && !fight_edit && { text: fight ? 'edit' : 'set fight link', func: () => set_fight_edit(true) },
         isSupporter && (bioEdit
         ? { 
           text: hideSupport ? 'show support' : 'hide support',
@@ -204,7 +227,29 @@ export default () => {
         //   href: `/greeter/${user}/greet`,
         //   text: 'greet',
         // },
+        !self && fight && { text: 'fight!', func: e => {
+          url.push(`/u/${user}/fight`)
+        } },
       ]}>
+        {fight_edit ? <InfoSection className='edit-container' style={{ width: '100%' }} labels={[
+          'fight link',
+          { text: 'cancel', func: () => set_fight_edit(false) },
+          { text: 'remove', func: () => {
+            set_fight_edit(false)
+            handle.save({fight:''})
+          } },
+          { text: 'save', func: () => {
+            set_fight_edit(false)
+            handle.save({fight})
+          } },
+        ]}>
+          <input
+          className='input' spellCheck='false'
+          value={fight || ''}
+          onChange={e => {
+            set_fight(e.target.value)
+          }} />
+        </InfoSection> : null}
         <InfoLine labels={[
           // info.isFriend ? 'friend' : (info.isFollower ? 'follows you' : ''),
           // info.canFollow && !siteAccount ? { text: 'follow', func: handle.follow } : '',

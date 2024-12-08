@@ -38,7 +38,7 @@ if (names.some(name => !window[name])) {
       const ctx = canvas.getContext('2d')
       ctx.imageSmoothingEnabled = false
       ctx.drawImage(image, x, y, w, h, 0, 0, w * scale, h * scale)
-      sheet[name] = {image:canvas, x, y, w, h}
+      sheet[name] = {image:canvas, url:canvas.toDataURL(), x, y, w, h}
     })
 
     return sheet

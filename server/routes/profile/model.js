@@ -20,6 +20,7 @@ const names = {
         // icon_url string-url
         // hidden { string:true }
         // invite: string
+        // fight: string-url
     profile_invite: 'profile_invite',
         // id: string
         // user: string
@@ -190,10 +191,11 @@ async function bio(user, bio) {
     return await update(user, { bio })
 }
 async function save(user, body) {
-    const { bio, icon } = body
+    const { bio, icon, fight } = body
     return await update(user, {
         ...(bio!==undefined?{bio}:{}),
         ...(icon!==undefined?{icon, icon_url:icon&&url_for_data_url(icon)}:{}),
+        ...(fight!==undefined?{fight}:{}),
     })
 }
 async function game(user, body) {

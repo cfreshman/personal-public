@@ -5,7 +5,7 @@ import { InfoBody, InfoLine, InfoLoginBlock, InfoSection, InfoStyles, InfoSelect
 import Vote from '../components/Vote';
 import api from '../lib/api';
 import { useCached, useF, useR, useTimed } from '../lib/hooks';
-import { useAuth, useHashState, usePageSettings } from '../lib/hooks_ext';
+import { useAuth, useHashState, usePageSettings, usePathState } from '../lib/hooks_ext';
 import { sub, unsub } from '../lib/notify';
 import { parseSubdomain } from '../lib/page';
 import { useSocket } from '../lib/socket';
@@ -244,6 +244,14 @@ export default () => {
   })
 
   const [tested, set_tested] = useTimed(3_000, false)
+
+  const [change, set_change] = usePathState()
+  useF(change, notify, changes, () => {
+    if (change && notify && changes) {
+      setChanges({ ...changes, method:change })
+      set_change('')
+    }
+  })
 
   usePageSettings()
   return <InfoLoginBlock to='manage notifications'><Style>

@@ -6,6 +6,7 @@ export class MantaRay extends Creature {
   constructor(props) {
     super({
       ...props,
+      name: 'manta ray',
       anim: new Anim({
         sheet: get_sheet(),
         names: ['manta0', 'manta0', 'manta0', 'manta0', 'manta0', 'manta1', 'manta2', 'manta3', 'manta4', 'manta5'],

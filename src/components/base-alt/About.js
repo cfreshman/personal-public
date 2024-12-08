@@ -55,9 +55,10 @@ export const About = () => {
     ? <>{sponsor_slots.unclaimed} ${RATE}/mo dono slots to go!</>
     : '(loading sponsor slot info)'}</A></div> */}
 
-    <div>i worked at Amazon Robotics out of university (UMass Amherst) but found Amazon evil so i left and started doing this</div>
+    {/* <div>i worked at Amazon Robotics out of university (UMass Amherst) but found Amazon evil so i left and started doing this</div> */}
+    <div>past Amazon Robotics, MathWorks, UMass Amherst. i left Amazon in 2022 and started working on this site!</div>
     
-    <div>i want to keep making free apps - <A href='/donoboard'><>claim a ${RATE}/mo donation slot!</></A></div>
+    <div>i want to keep making free web apps - <A href='/donoboard'><>claim a ${RATE}/mo donation slot!</></A></div>
 
     {/* <Dangerous className='middle-row' style={S(`
     scale: .7;
