@@ -71,6 +71,8 @@ import ai from './ai'
 import x from './x'
 import paste from './paste'
 import was from './was'
+import petals from './petals'
+import lettergo from './lettergo'
 
 import io_live from '../io/live'
 import io_speckle from '../io/speckle'
@@ -154,6 +156,8 @@ export default {
   x,
   paste,
   was,
+  petals,
+  lettergo,
 }
 
 export const ios = [

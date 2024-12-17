@@ -1,6 +1,6 @@
 import React, { Fragment, ReactNode, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { addStyle, useE, useF, useR, useS } from '../lib/hooks';
+import { addStyle, useE, useF, useInline, useM, useR, useS } from '../lib/hooks';
 import { trigger } from '../lib/trigger';
 import url from '../lib/url';
 import { QQ, S, defer, entries, isMobile, is_mobile, list, merge, named_log, node, on, randAlphanum, range, set, toStyle } from '../lib/util';
@@ -18,7 +18,7 @@ const log = named_log('modal')
 export const Modal = ({ target, children, full=true, block=true, outerClose=false, resizable, style, id='', className='' }: {
     target?: string, children: any, full?: boolean, block?: boolean, outerClose?: boolean | any, style?:string, id?:string, className?:string, resizable?: boolean
 }) => {
-    const [l, setElement] = useS()
+    const [l, set_element] = useS()
 
     /* resizable
     z-index: -1;
@@ -33,44 +33,46 @@ export const Modal = ({ target, children, full=true, block=true, outerClose=fals
     border: 0.15em solid transparent;
     */
 
+    const modal = useM(id, className, block, full, style, () => 
+        node(`<div id="${id}" class="${'modal ' + className}" style="${`
+        position: ${full ? `fixed; top: 0; left: 0;` : `absolute;`}
+        ${block ? '' : 'pointer-events: none;'}
+        ${full ? `
+        height: 100%; width: 100%;
+        ` : `
+        height: fit-content; width: fit-content;
+        box-shadow: 0px 2.5px 1px var(--id-color-text), 0px 0px 1px var(--id-color-text) !important;
+        `}
+        min-height: 10em;
+        z-index: 100100;
+        display: flex;
+        flex-direction: column;
+        align-items: center; justify-content: center;
+        opacity: 1 !important;
+        animation: none !important;
+        overflow: auto;
+        ` + style
+        }"></div>`))
+    useF(modal, set_element)
+
+    const remove_modal = (parent, modal) => parent.removeChild(modal)
     const [displayAttempts, setDisplayAttempts] = useState(0)
-    useE(displayAttempts, () => {
+    useInline(displayAttempts, () => {
         const parent = document.querySelector(target || '#index')
         if (!parent) {
             const timeout = setTimeout(
                 () => setDisplayAttempts(displayAttempts + 1),
-                100) // re-trigger this effect every 100ms until parent found
+                displayAttempts ? 100 : 0) // re-trigger this effect every 100ms until parent found
             return () => clearTimeout(timeout)
         } else {
-            const modal = node(`<div id="${id}" class="${'modal ' + className}" style="${`
-            position: ${full ? `fixed; top: 0; left: 0;` : `absolute;`}
-            ${block ? '' : 'pointer-events: none;'}
-            ${full ? `
-            height: 100%; width: 100%;
-            ` : `
-            height: fit-content; width: fit-content;
-            box-shadow: 0px 2.5px 1px var(--id-color-text), 0px 0px 1px var(--id-color-text) !important;
-            `}
-            min-height: 10em;
-            z-index: 100100;
-            display: flex;
-            flex-direction: column;
-            align-items: center; justify-content: center;
-            opacity: 1 !important;
-            animation: none !important;
-            overflow: auto;
-            ` + style
-            }"></div>`)
-
-            parent.appendChild(modal)
-            setElement(modal)
+            parent.insertAdjacentElement('afterbegin', modal)
             if (outerClose) modal.onclick = e => {
                 if (e.target === modal) {
                     if (outerClose !== true) outerClose()
-                    else parent.removeChild(modal)
+                    else remove_modal(parent, modal)
                 }
             }
-            return () => parent.removeChild(modal)
+            return () => remove_modal(parent, modal)
         }
     })
 

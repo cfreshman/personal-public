@@ -21,6 +21,7 @@ const FONTS = {
   QUICKSAND: 'quicksand',
   SEVEN_SEGMENT_DISPLAY: 'seven-segment-display',
   PIXEL: 'pixel',
+  BUBBLE: 'super-frog',
 }
 const ALIGN = {
   LEFT: 'left',

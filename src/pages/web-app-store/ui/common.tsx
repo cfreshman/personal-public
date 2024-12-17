@@ -13,3 +13,14 @@ export const Rating = ({ rating }) => {
     <Stars value={rating.value} /> {rating.value.toFixed(1)} ({rating.count})
   </div>
 }
+
+export const Title = ({ app }) => {
+  return <div style={S(`
+  white-space: pre;
+  overflow: hidden;
+  width: 0;
+  align-self: stretch;
+  min-width: 100%;
+  text-overflow: ellipsis;
+  `)}><b>{app.name}</b>{app.title ? <>: {app.title}</> : null}</div>
+}

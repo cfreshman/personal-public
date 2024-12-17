@@ -364,6 +364,7 @@ async function game_react(viewer, id, body) {
 }
 
 async function game_join(viewer, id) {
+    if (!viewer) throw 'unauthorized'
     const info = await _info(id)
     const state = await _state(id)
 

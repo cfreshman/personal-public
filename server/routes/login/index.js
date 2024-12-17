@@ -35,22 +35,33 @@ async function exists(user) {
 
 routes.get('/google-precheck/:username', J(async rq => ({ exists: await exists(P(rq, 'username')) })))
 routes.post('/google', J(async rq => {
-    const { user, client_id='1033547890894-k2liippvrka0q7j9vf5g7d26k050iu7m.apps.googleusercontent.com', jwt, info, options } = rq.body
-    console.debug('[login] [google]', { client_id, jwt, user, info, options })
-    const client = new OAuth2Client(client_id)
-    const ticket = await client.verifyIdToken({
-        idToken: jwt,
-        audience: client_id,
-    })
-    const payload = ticket.getPayload()
-    console.debug('[login] google payload', payload)
+    const { user, payload, info, options } = rq.body
+    console.debug('[login/google]', { user, info, options })
+    console.debug('[login/google] payload', payload)
 
     if (await exists(user)) {
-        return model.login(user, payload.email)
+        return model.login(user, payload.sub)
     } else {
-        return model.signup(user, payload.email, info, { ...options, type:'google' })
+        return model.signup(user, payload.sub, info, { ...options, type:'google' })
     }
 }))
+// routes.post('/google', J(async rq => {
+//     const { user, client_id, jwt, info, options } = rq.body
+//     console.debug('[login] [google]', { client_id, jwt, user, info, options })
+//     const client = new OAuth2Client(client_id)
+//     const ticket = await client.verifyIdToken({
+//         idToken: jwt,
+//         audience: client_id,
+//     })
+//     const payload = ticket.getPayload()
+//     console.debug('[login] google payload', payload)
+
+//     if (await exists(user)) {
+//         return model.login(user, payload.email)
+//     } else {
+//         return model.signup(user, payload.email, info, { ...options, type:'google' })
+//     }
+// }))
 
 async function auth(rq) {
     let user = rq.header('X-Freshman-Auth-User') ?? rq.query.user;

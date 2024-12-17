@@ -1,5 +1,5 @@
 import express from 'express';
-import { J, U, isDevelopment, HttpError, basedir, staticPath, P, pick, set, remove, unpick, hash, OP, merge, defer, transmute, deletion, request_parser, truthy, named_log } from '../../util';
+import { J, U, isDevelopment, HttpError, basedir, staticPath, P, pick, set, remove, unpick, hash, OP, merge, defer, transmute, deletion, request_parser, truthy, named_log, isProduction } from '../../util';
 
 import path, { parse } from 'node:path';
 import os from 'node:os';
@@ -10,6 +10,7 @@ import profile, { requireProfile } from '../profile'
 import io from '../../io';
 import { fetch } from '../../util'
 import { execSync } from 'node:child_process';
+import notify from '../notify';
 
 const R = express.Router()
 
@@ -228,6 +229,21 @@ R.get(['/stream/:name?', '/stream'], async (rq, rs) => {
   // console.debug('STREAM', dir)
   rs.json(dir.reverse().filter(x => _file_name.test(x)).map(x => encodeURI(x)))
 })
+
+const kv = db.of({ default:'kv' }).default
+const kv_authorized = set('cyrus felicity')
+const kv_handler = async (user, { key, value }) => {
+  if (isProduction() && !kv_authorized.has(user)) throw 'unauthorized'
+  if (!value) {
+    return { item: await kv().findOne({ key }) }
+  }
+  await kv().updateOne({ key }, { $set: { key, value } }, { upsert: true })
+  if (isProduction()) {
+    notify.send([['cyrus', 'felicity'].filter(x => x !== user), 'capture', 'your turn in capture', `freshman.dev/capture/${key}`])
+  }
+  return { success:true }
+}
+R.post('/kv', J(async (rq, rs) => kv_handler(U(rq), rq.body)))
 
 // common-state: for simple shared states between clients
 // (uses MongoDB update operators)

@@ -136,6 +136,11 @@ type settingFieldValues = {
     reacts: string,
     // music: string,
   },
+  petals: {
+    chat: boolean,
+    theme: string,
+    reacts: string,
+  },
   greeter: {
   },
 }
@@ -310,6 +315,29 @@ const settingFields = {
     //   default: capitals_music_options[0],
     //   options: capitals_music_options,
     // },
+  },
+  petals: {
+    chat: {
+      default: true,
+      label: 'enable game chat',
+    },
+    '':'',
+    reacts: {
+      label: 'emotes',
+      default: '😀😎😭🫠😈', text:true,
+      override: value => {
+        value = [...value].slice(-5).join('')
+        settings.update('petals.reacts', value)
+        return true
+      },
+    },
+    reacts_reset: {
+      label: 'reset',
+      action: () => {
+        settings.update('petals.reacts', undefined)
+      },
+    },
+    ' ':'ungroup',
   },
   dinder: {
     chat: {

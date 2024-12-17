@@ -3,7 +3,7 @@ import { A } from "src/components/A"
 import { InfoBadges } from "src/components/Info"
 import url from "src/lib/url"
 import { S } from "src/lib/util"
-import { Rating, Stars } from "./common"
+import { Rating, Stars, Title } from "./common"
 
 const { range } = window as any
 
@@ -23,8 +23,8 @@ export default ({ app, users, handle }) => {
       width: 5em;
       `)} />
     </div>
-    <div className='column'>
-      <div><b>{app.name}</b>{app.title ? <>: {app.title}</> : null}</div>
+    <div className='column grow'>
+      <Title app={app} />
       {/* <div><b>{app.name}</b></div> */}
       <Rating rating={app.rating} />
       {/* <div className={S(`

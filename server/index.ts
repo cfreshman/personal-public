@@ -103,6 +103,10 @@ import vibe from './routes/vibe';
 import cost from './routes/cost';
 import paste from './routes/paste';
 import was from './routes/was';
+import petals from './routes/petals';
+import note from './routes/note';
+import mail from './routes/mail';
+import lettergo from './routes/lettergo';
 // console.log(randAlphanum(16))
 process.on('uncaughtException', e => {
     console.error('uncaughtException', e);
@@ -141,6 +145,10 @@ let goodbye = false
  * ONLY RUN AFTER DB CONNECTION - this prevents issues with model DB access on init
  */
 function configure() {
+
+mail.on_ready(() => {
+    // mail.send('freshman.dev', 'cyrus@freshman.dev', 'test message', '<a href="freshman.dev/u/cyrus">u/cyrus</a> at freshman.dev')
+})
 
 app.use(cors())
 app.set('trust proxy', true)
@@ -311,6 +319,7 @@ const silence = new Set([
     'GET /api/ip',
     'GET /api/user_id_color',
     'GET /api/online', 'GET /api/daily',
+    'POST /api/kv',
 ])
 let last_requestor = ''
 app.use((req, res, next) => {
@@ -513,6 +522,17 @@ io.on('connection', socket => {
                         }
                     }
                 }
+
+                // // new app promo
+                // {
+                //     const note_id = `new-petals`
+                //     if (!await note.get_or_set(user, note_id)) {
+                //         popup({
+                //             text: `new word game release: /petals!`,
+                //             ms: 15_000,
+                //         })
+                //     }
+                // }
 
             } else {
                 online[socket.id] = 1
@@ -1236,6 +1256,88 @@ app.get('/*', async (req, res, next) => {
                     icon: item.icon,
                 })
             } catch (e) {}
+        }
+    }
+    else if (page === 'petals') {
+        const url_search_str = req.url.split('/petals')[1]
+        const parts = url_search_str.split('/').filter(truthy)
+        const stats = parts[0] === 'stats' && parts.length === 2
+        const challenge = parts[0] === 'new' && parts.length === 2
+        const game = !stats && parts.length === 1
+        const menu = parts.length === 0
+        const id = game && parts[0]
+        const page_id = (stats || challenge) && parts[1]
+        console.debug('[petals] url parsed:', { menu, game, id, stats, challenge, page_id })
+        if (menu) {
+            Object.assign(replacements, {
+                title: `petals`,
+            })
+        } else if (game) {
+            if (id === 'local') {
+                Object.assign(replacements, {
+                    title: `local petals game`,
+                })
+            } else {
+                const info = await petals.model._info(id)||{}
+                const users = petals.model.user_ids(info)
+                const name = 'petals'
+                console.log('[petals]', {users,name})
+                Object.assign(replacements, {
+                    title: `${users.length > 2?'vs ':''}${users.map(user => user || 'invite').join(users.length > 2?' ':' vs ')} (${name})`,
+                })
+            }
+        } else if (stats) {
+            Object.assign(replacements, {
+                title: `u/${page_id}'s petals stats`,
+            })
+        } else if (challenge) {
+            const { user } = await petals.model.get_challenge_user('site', page_id)
+            if (user) {
+                Object.assign(replacements, {
+                    title: `challenge ${user} at petals!`,
+                })
+            }
+        }
+    }
+    else if (page === 'lettergo') {
+        const url_search_str = req.url.split('/lettergo')[1]
+        const parts = url_search_str.split('/').filter(truthy)
+        const stats = parts[0] === 'stats' && parts.length === 2
+        const challenge = parts[0] === 'new' && parts.length === 2
+        const game = !stats && parts.length === 1
+        const menu = parts.length === 0
+        const id = game && parts[0]
+        const page_id = (stats || challenge) && parts[1]
+        console.debug('[lettergo] url parsed:', { menu, game, id, stats, challenge, page_id })
+        if (menu) {
+            Object.assign(replacements, {
+                title: `lettergo`,
+            })
+        } else if (game) {
+            if (id === 'local') {
+                Object.assign(replacements, {
+                    title: `local lettergo game`,
+                })
+            } else {
+                const info = await lettergo.model._info(id)||{}
+                const users = lettergo.model.user_ids(info)
+                const name = 'lettergo'
+                console.log('[lettergo]', {users,name})
+                Object.assign(replacements, {
+                    title: `${users.length > 2?'vs ':''}${users.map(user => user || 'invite').join(users.length > 2?' ':' vs ')} (${name})`,
+                })
+            }
+        } else if (stats) {
+            Object.assign(replacements, {
+                title: `u/${page_id}'s lettergo stats`,
+            })
+        } else if (challenge) {
+            const { user } = await lettergo.model.get_challenge_user('site', page_id)
+            if (user) {
+                Object.assign(replacements, {
+                    title: `challenge ${user} at lettergo!`,
+                })
+            }
         }
     }
 

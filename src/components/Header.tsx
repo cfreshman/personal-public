@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { copy } from '../lib/copy'
 import { JSX, pass, truthy } from '../lib/types'
 import api, { auth } from '../lib/api'
-import { login, token as token_auth, logout, signup, auth as authAuth } from '../lib/auth'
+import { login, token as token_auth, logout, signup, auth as authAuth, openLogin } from '../lib/auth'
 import { Conditions } from '../lib/conditions'
 import { asToggle, useE, useF, useM, useR, useRerender, useS, useStyle, useToggle } from '../lib/hooks'
 import { useAuth, useCachedScript, useLogicalPath, useSubdomain, useSupporter } from '../lib/hooks_ext'
@@ -45,7 +45,7 @@ const User = ({ expand }: { expand: boolean }) => {
   const [error, setError] = useState('')
   
   const [new_user, set_new_user] = useS('')
-  const [use_google, set_use_google]: [{ exists:boolean }, any] = store.use('login-use-google', { default:undefined })
+  const [use_google, set_use_google]: [{ exists:boolean }|false, any] = store.use('login-use-google', { default:{exists:true} })
   const [new_pass, set_new_pass] = useS('')
   const [new_pass_verify, set_new_pass_verify] = useS('')
   
@@ -421,7 +421,7 @@ const User = ({ expand }: { expand: boolean }) => {
   })
   useF(new_user, new_pass, new_pass_verify, checks, () => log({new_user, new_pass, new_pass_verify, checks}))
 
-  const show_google = false // true // location.pathname === '/admin'
+  const show_google = 1 // false // true // location.pathname === '/admin'
 
   // const google_ref = useR()
   // useF(() => {
@@ -509,9 +509,13 @@ const User = ({ expand }: { expand: boolean }) => {
   `)
   useF(new_user, async () => {
     if (use_google) {
-      const precheck = await api.get(`/login/google-precheck/${new_user}`)
-      log('google precheck', precheck)
-      set_use_google(precheck)
+      if (new_user) {
+        const precheck = await api.get(`/login/google-precheck/${new_user}`)
+        log('google precheck', precheck)
+        set_use_google(precheck)
+      } else {
+        set_use_google({ exists:true })
+      }
     } else {
       setVerify(false)
     }
@@ -529,9 +533,13 @@ const User = ({ expand }: { expand: boolean }) => {
       </div>
       {!use_google && show_google ? <>
         <div className='item info signin'><u><span className='' onClick={async () => {
-          const precheck = await api.get(`/login/google-precheck/${new_user}`)
-          log('google precheck', precheck)
-          set_use_google(precheck)
+          if (new_user) {
+            const precheck = await api.get(`/login/google-precheck/${new_user}`)
+            log('google precheck', precheck)
+            set_use_google(precheck)
+          } else {
+            set_use_google({ exists:true })
+          }
           handle.signup()
         }}>continue with google</span></u></div>
         <div className='item info'><HalfLine /></div>
@@ -683,7 +691,7 @@ const User = ({ expand }: { expand: boolean }) => {
         <div className='item info wide middle-column'>
           <div id='google-login-container' className='wait-for-checks' style={S(`
           border: 1px dashed #fff;
-          padding: .25em;
+          padding: .125em;
           border-radius: 99em;
           width: fit-content;
           `)}>
@@ -702,8 +710,8 @@ const User = ({ expand }: { expand: boolean }) => {
               log('google JWT parsed', jwt_data)
               try {
                 const new_auth = await api.post('/login/google', {
-                  user:new_user,
-                  jwt:response.credential,
+                  user: new_user,
+                  payload: jwt_data,
                   info: {
                     href: location.href,
                     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
@@ -765,9 +773,9 @@ const User = ({ expand }: { expand: boolean }) => {
         </div>
         <div className='item info'><HalfLine /></div>
         <div className='item info'><HalfLine /></div>
-        <div className='item info'><HalfLine /></div>
+        {/* <div className='item info'><HalfLine /></div> */}
         <div className='item info signin'><u><span onClick={async () => {
-          set_use_google(undefined)
+          set_use_google(false)
           setVerify(false)
         }}>use password</span></u></div>
       </> : <>
@@ -805,8 +813,9 @@ const User = ({ expand }: { expand: boolean }) => {
               }).join(''))
              return JSON.parse(json)
            }
-           log('google JWT parsed', parse_JWT(data.credential))
-           const payload = api.post('/login/google', { user:new_user, jwt:data.credential })
+           const jwt_data = parse_JWT(data.credential)
+           log('google JWT parsed', jwt_data)
+           const payload = api.post('/login/google', { user:new_user, payload:jwt_data })
            log('google server payload', payload)
           }} onError={() => log('google error')}
           size='medium' 
@@ -861,10 +870,10 @@ const User = ({ expand }: { expand: boolean }) => {
   `)
 
   const user_dropdown_control:any = {}
-  useF(!!dropdown, () => defer(() => {
-    user_dropdown_control.toggle && user_dropdown_control.toggle(!!dropdown)
-    log('user dropdown control', !!dropdown, user_dropdown_control.toggle)
-  }))
+  // useF(!!dropdown, () => defer(() => {
+  //   user_dropdown_control.toggle && user_dropdown_control.toggle(!!dropdown)
+  //   log('user dropdown control', !!dropdown, user_dropdown_control.toggle)
+  // }))
 
   return <>
     <Unread />
@@ -1001,15 +1010,17 @@ export const Header = () => {
                 font-size: min(7vw, 48px);
                 `)}>
                   {entries({
-                    'greeter': 'https://freshman.dev/raw/greeter/icon.png',
                     'lettercomb': 'https://freshman.dev/raw/capitals/icon.png',
                     'letterpress': 'https://freshman.dev/raw/letterpress/icon.png',
                     'wordbase': 'https://freshman.dev/raw/wordbase/icon.png',
+                    'petals': 'https://freshman.dev/raw/images/icon-petals.png',
+                    'greeter': 'https://freshman.dev/raw/greeter/icon.png',
                     // 'selfchat': 'https://freshman.dev/raw/chat/icon.png',
-                    'apple-orange-banana': 'https://freshman.dev/raw/apple-orange-banana/icon.png',
+                    // 'apple-orange-banana': 'https://freshman.dev/raw/apple-orange-banana/icon.png',
                     'cowork': 'https://freshman.dev/raw/cowork/icon.png',
                     'light': 'https://freshman.dev/raw/light/icon.png',
-                    'vibe': 'https://freshman.dev/raw/vibe/icon-2.png',
+                    // 'vibe': 'https://freshman.dev/raw/vibe/icon-2.png',
+                    'web-app-store': 'https://freshman.dev/raw/images/icon-was-5.png',
                     'settings': 'https://freshman.dev/raw/settings/icon.png',
                   }).map(([name, img]) => <AppIconTile {...{ name, img, close }} />)}
                 </div>

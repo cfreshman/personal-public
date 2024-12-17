@@ -25,6 +25,7 @@ const FONTS = {
   SEVEN_SEGMENT_DISPLAY: 'seven-segment-display',
   // M3X6: 'm3x6',
   PIXEL: 'pixel',
+  BUBBLE: 'super-frog',
 }
 const font_to_actual = (key) => ({
   // 'duospace': 'Duospace',
@@ -69,6 +70,7 @@ export default () => {
 
   usePageSettings({
     expand:true,
+    professional:true,
   })
   return <Style id='emoji-banner'>
     <InfoBody className='column'>

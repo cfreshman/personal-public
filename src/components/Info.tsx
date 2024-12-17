@@ -1975,6 +1975,7 @@ export const Multiline = withRef(({ ref, children, value, setValue, extra_height
   useF(value, () => {
     if (props.rows) return
     const area = ref.current
+    const focused = area === document.activeElement
     const [start, end] = [area.selectionStart, area.selectionEnd]
     const rows = value.split('\n')
     area.textContent = area.value = [...rows, ...range(min_rows - rows.length).map(() => 'abc')].join('\n')
@@ -1983,7 +1984,10 @@ export const Multiline = withRef(({ ref, children, value, setValue, extra_height
     area.style.height = `calc(${area.scrollHeight}px + ${extra_height})`
     // alert(area.style.height)
     area.textContent = area.value = value
+    area.disabled = true
     ;[area.selectionStart, area.selectionEnd] = [start, end]
+    area.disabled = undefined
+    if (focused) area.focus()
   })
   const r_backspace = useR()
   return setValue || onChange ? <textarea autoCapitalize={'off'} ref={ref} {...props} style={{...S(`

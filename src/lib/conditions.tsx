@@ -167,6 +167,7 @@ export const Conditions = ({ item=false, display=false, setChecks: outerSetCheck
   }
   #conditions.conditions-item > div input {
     margin: 0;
+    -webkit-appearance: none;
   }
   `)
 
@@ -176,15 +177,27 @@ export const Conditions = ({ item=false, display=false, setChecks: outerSetCheck
     ...(from(keys(checks).filter(k => !conditionContents[k]).map(k => [k, true]))),
   })
   const handle = {
+    toggle: (condition) => {
+      setChecks({ ...checks, [condition]: !checks[condition] })
+    },
     open: (condition) => {
+      setChecks({ ...checks, [condition]: false })
       setOpened({ ...opened, [condition]: true })
       if (conditionContents[condition]) {
         openPopup(close =>
           <InfoStyles id={`condition-${condition}`}>
             {conditionContents[condition]}
             <br/><br/>
-            <InfoButton id='condition-close' onClick={close} style={{
-            }}>CLOSE</InfoButton>
+            <div className='row gap'>
+              <InfoButton id='condition-close' onClick={e => {
+                setChecks({ ...checks, [condition]: false })
+                close()
+              }}>REJECT</InfoButton>
+              <InfoButton id='condition-close' onClick={e => {
+                setChecks({ ...checks, [condition]: true })
+                close()
+              }}>ACCEPT</InfoButton>
+            </div>
           </InfoStyles>, conditionsOuterStyle, { block: !item })
       }
     },
@@ -249,8 +262,8 @@ export const Conditions = ({ item=false, display=false, setChecks: outerSetCheck
         {/* <div dangerouslySetInnerHTML={{ __html: pptc_text }}></div>
         <div dangerouslySetInnerHTML={{ __html: cookie_text }}></div> */}
         {items.map(([condition, label]) =>
-        <div key={condition} style={{whiteSpace:'pre'}} onClickCapture={() => !opened[condition] && handle.open(condition)}>
-          <Toggle tabIndex={0} disabled={!opened[condition]} value={checks[condition]} onChange={e => setChecks(Object.assign({}, checks, { [condition]: e.target.checked }))}/>
+        <div key={condition} style={{whiteSpace:'pre'}} onClickCapture={() => !opened[condition] && handle.toggle(condition)}>
+          <Toggle tabIndex={0} disabled={false/*!opened[condition]*/} value={checks[condition]||false} onChange={e => setChecks(Object.assign({}, checks, { [condition]: e.target.checked }))}/>
           &nbsp;
           {conditionContents[condition] ? <a tabIndex={0} style={toStyle(`
           text-decoration: underline;

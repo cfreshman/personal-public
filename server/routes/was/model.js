@@ -6,6 +6,7 @@ const log = named_log(name)
 const C = db.of({
     was: 'was',
         // id: string-id
+        // t: number-date
         // user: string-id
         // name: string
         // url: string-url
@@ -15,11 +16,36 @@ const C = db.of({
         // rating: { total: number, count: number }
     rating: 'was_rating',
         // id: string-id
+        // t: number-date
         // app: string-id
         // user: string-id
         // rating: number
         // comment: string
 })
+
+db.queueInit(async () => {
+    log('web-app-store init')
+    
+    C.was().createIndex({ id:1 }, { unique:true })
+    C.was().createIndex({ user:1 })
+
+    C.rating().createIndex({ id:1 }, { unique:true })
+    C.rating().createIndex({ app:1, user:1 })
+
+    const apps = Array.from(await C.was().find({}).toArray())
+    for (const app of apps) {
+        if (!app.t) {
+            await C.was().updateOne({ id:app.id }, { $set:{ t:Date.now() } })
+        }
+    }
+
+    const ratings = Array.from(await C.rating().find({}).toArray())
+    for (const rating of ratings) {
+        if (!rating.t) {
+            await C.rating().updateOne({ id:rating.id }, { $set:{ t:Date.now() } })
+        }
+    }
+}, 30_000)
 
 async function apps(viewer) {
     log('all', {viewer})
@@ -41,6 +67,7 @@ async function publish(viewer, {id, name, url, title, icon, description}) {
     const existing = id && await C.was().findOne({ id })
     if (existing && existing.user !== viewer) throw 'unauthorized'
     const item = existing || {
+        t: Date.now(),
         user: viewer,
         rating: { total:0, count:0 },
     }
@@ -95,6 +122,7 @@ async function rate(viewer, app_id, {rating, comment}) {
     }
 
     const item = existing || {
+        t: Date.now(),
         app: app_id,
         user: viewer,
     }

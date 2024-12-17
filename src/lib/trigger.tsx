@@ -146,7 +146,7 @@ const _simple = <T,>({ name }:{ name?: string }={}): Trigger<T> => {
     add: (trigger: callback<T>) => _add(triggers, trigger),
     remove: (trigger: callback<T>) => triggers.remove(trigger),
     trigger: (value: T, oldValue?: T) => _trigger(triggers, value, oldValue),
-    use: function (options) { _use(this, options) },
+    use: function (options) { return _use(this, options) },
   })
 }
 
@@ -161,7 +161,7 @@ const _keyed: <T>()=>KeyedTrigger<T> = <T,>() => {
       console.debug('trigger', key, Object.load(triggerDict, key, empty))
       _trigger(Object.load(triggerDict, key), value, oldValue)
     },
-    use: function (key, options) { _use(this.single(key), options) },
+    use: function (key, options) { return _use(this.single(key), options) },
     single: function (key) {
       return Object.load(singles, key, () => _generateSyntacticMethods<_Trigger<T>, T>({
         add: (...rest) => this.add(key, ...rest),

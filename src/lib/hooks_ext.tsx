@@ -277,7 +277,7 @@ export const usePageSettings = ({ checkin, background, text_color, professional,
                 short_name=undefined,
                 icon,
                 start_url,
-                display='minimal-ui',
+                display='standalone',
                 background_color=undefined,
                 theme_color=undefined,
             } = manifest

@@ -116,7 +116,7 @@ export default () => {
     },
   })
 
-  if (tally && tally.terms[term] === undefined) {
+  if (tally && term && tally.terms[term] === undefined) {
     tally.terms[term] = {}
   }
 
@@ -472,6 +472,7 @@ export default () => {
                 if (del_term) {
                   delete tally.terms[del_term.trim()]
                   handle.save(tally)
+                  set_path(['', ''])
                 }
               }}>delete a term</InfoButton>
             </div>

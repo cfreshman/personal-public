@@ -1,7 +1,7 @@
-<!-- cyrusfreshman 2018 --><!-- DEFAULT --><!DOCTYPE html>
+<!-- cyrusfreshman ∞ --><!-- DEFAULT --><!DOCTYPE html>
 <html lang="en" prefix="og: http://ogp.me/ns#">
   <head>
-    <meta comment="cyrusfreshman 2018 / -- DEFAULT --" />
+    <meta comment="cyrusfreshman ∞ / -- DEFAULT --" />
     <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
     <script>window._hydrate_skip = true</script><script src=/copyright.js></script>
     <!-- <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><script src='/lib/2/css/script.js'></script> -->
@@ -17,7 +17,6 @@
     <meta property="og:image" content="https://freshman.dev/base-icon.png">
     <meta property="og:title" content="freshman.dev">
     <meta property="og:description" content="freshman.dev">
-    <link rel="apple-touch-icon-precomposed" href="/base-icon.png">
     <meta name="twitter:card" content="summary">
     <meta name="twitter:url" content="freshman.dev">
     <meta name="twitter:site" content="@__freshman">
@@ -25,6 +24,9 @@
     <meta name="twitter:image" content="https://freshman.dev/base-icon.png">
     <meta name="twitter:title" content="freshman.dev">
     <meta name="twitter:description" content="@__freshman">
+
+    <link rel="apple-touch-icon-precomposed" href="/base-icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
 
     <style>
       :root {
@@ -79,55 +81,6 @@
   <body>
 
     <div id="root"></div>
-    <script>
-
-window.dependency = src => {
-    const xhr = new XMLHttpRequest()
-    xhr.open('GET', src, false)
-    xhr.onload = () => document.head.append((x => Object.assign(x, { innerHTML:xhr.responseText }))(document.createElement('script')))
-    xhr.send()
-}
-;[
-    '/lib/2/common/script.js',
-].map(dependency)
-
-// window.manifest = (def={}) => 
-//     (x => { document.head.append(x); return x })
-//     (
-//         (x => Object.assign(x, { rel: 'manifest' }, def))
-//         (Q('head [rel=manifest]') || document.createElement('link'))
-//     )
-// window.generate_manifest = async () => {
-//     const name = location.pathname.replace(/^\/-?(raw)?/, '').replace(/\/$/,'') || location.host.split('.').reverse()[2]?.replace(/$/, '.') || location.host
-//     const color = Q('[name=theme_color]')?.content || getComputedStyle(document.documentElement).backgroundColor || getComputedStyle(document.body).backgroundColor || '#fdfcfa'
-//     const text_color = getComputedStyle(document.documentElement).color || getComputedStyle(document.body).color || '#111'
-
-//     if (Q(`[rel=icon]:not([data-keep])`)) return undefined
-
-//     // ;!Q('[rel=manifest]')?.href && 
-//     let icon_href = Q(`[rel=icon]:not([data-keep], [href="${location.href.replace(':3030', ':5050')}"])`)?.href
-//     if (icon_href === `${location.origin}/icon.png`) icon_href = false
-//     return JSON.stringify({
-//         name,
-//         display: `standalone`,
-//         start_url: location.href,
-//         theme_color: Q('[name=theme_color]')?.content || getComputedStyle(document.documentElement).backgroundColor || getComputedStyle(document.body).backgroundColor || '#fdfcfa',
-//         icons: [{
-//             src: icon_href || icon({ color, text:name, text_color, update:true }), // `${origin}/icon.png`,
-//             sizes: `256x256`,
-//             type: `image/png`,
-//         }]
-//     })
-// }
-// setInterval(async () => {
-//     const new_manifest = await generate_manifest()
-//     const old_manifest = undefined // await fetch(manifest().href).then(r=>r.text())
-//     if (new_manifest !== old_manifest) manifest({
-//         href: URL.createObjectURL(new Blob([new_manifest], { type: 'application/json' })),
-//     })
-// }, 1_000)
-
-    </script>
 
     <noscript>
       <style type="text/css">

@@ -4,7 +4,7 @@
 # send to backend on box
 server {
     # server_name [::1]:5005;
-    server_name freshman.dev frsh.mn cyru.us cyrusman.xyz grtr.app grtr.xyz greeter.social web-app-store.com vibe.photos;
+    server_name freshman.dev frsh.mn cyru.us cyrusman.xyz wordbase.app greeter.social web-app-store.com;
     include sites-available/fragments/personal-ssl;
     include sites-available/fragments/gzip;
     listen [::]:443 ssl http2;

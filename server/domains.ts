@@ -69,7 +69,7 @@ export const replace = {
   })),
   ...common,
   'wordbase': {
-    title: 'wordbase.app',
+    title: 'wordbase',
     description: 'word strategy game',
     icon: 'https://freshman.dev/raw/wordbase/icon.png',
     keywords: 'cyrus, wiggin, freshman, freshman_dev, wordbase, play, discontinued, multiplayer, word, strategy, game, app',
@@ -594,5 +594,26 @@ export const replace = {
     title: '/web-app-store',
     keywords: 'web app store, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/images/icon-was-5.png',
+  },
+  'petals': {
+    title: 'petals',
+    description: 'word strategy game',
+    keywords: 'petals, word, strategy, game, multiplayer, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-petals.png',
+    twitter: {
+      image: 'https://freshman.dev/raw/images/icon-petals-large.png',
+    },
+  },
+  'capture': {
+    title: 'capture',
+    description: 'word strategy game',
+    keywords: 'capture, word, strategy, game, multiplayer, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-capture.png',
+  },
+  'lettergo': {
+    title: 'lettergo',
+    description: 'word strategy game',
+    keywords: 'lettergo, word, strategy, game, multiplayer, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
+    icon: 'https://freshman.dev/raw/images/icon-capture.png',
   },
 }

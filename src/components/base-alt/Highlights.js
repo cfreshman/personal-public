@@ -47,7 +47,8 @@ export const Highlights = () => {
         <HalfLine />
       </>}
       <span>new</span>
-      <A href='/vibe'>/vibe (map of 24hr pics)</A>
+      <A href='https://freshman.dev/petals'>/petals (new word game)</A>
+      {/* <A href='/vibe'>/vibe (map of 24hr pics)</A> */}
       <A href='/list-picker'>/list-picker (picks random menu item)</A>
       {/* <A href='/emoji-banner'>/emoji-banner (create twitter header)</A> */}
       {/* <A href='/stream-pledge'>/stream-pledge (get livestreaming)</A> */}

@@ -87,36 +87,9 @@ async function _chain(notify, app, text, {simple=false}={}) {
     }
 
     notify.email = notify.methods.email
-    const email = () => {
-        console.log('[NOTIFY:email]', notify.user, notify.domain, app, text)
-        mail.send(notify.domain, notify.email, 'notification', text)
-        .then(res => {
-            console.log('[NOTIFY:thread]', notify.user, res.data.threadId)
-            update(notify.user, { emailThread: res.data.threadId })
-        })
-        .catch(console.log)
-    }
-    if (notify.emailThread) {
-        mail.thread(notify.emailThread)
-        .then(thread => {
-            const length = thread.data.messages.length
-            if (length >= 100) {
-                console.log('[NOTIFY:rethread]', notify.user, length, notify.emailThread)
-                email()
-            } else {
-                console.log('[NOTIFY:chain]',
-                    notify.user, length, notify.emailThread, app, text)
-                return mail.chain(notify.domain, notify.emailThread, text)
-            }
-        })
-        .catch(error => {
-            delete notify.emailThread
-            console.log(error.errors || error)
-            email()
-        })
-    } else {
-        email()
-    }
+    console.log('[NOTIFY:email]', notify.user, notify.domain, app, text)
+    mail.send(notify.domain, notify.email, 'notification', text)
+    .catch(console.log)
 }
 
 async function get(user) {

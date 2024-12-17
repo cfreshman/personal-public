@@ -1,8 +1,8 @@
 import React from 'react'
 import styled from 'styled-components'
-import { ColorPicker, HalfLine, InfoBadges, InfoBody, InfoButton, InfoCheckbox, InfoSection, InfoSelect, InfoSlider, InfoStyles, Select } from '../components/Info'
+import { ColorPicker, HalfLine, InfoBadges, InfoBody, InfoButton, InfoCheckbox, InfoSection, InfoSelect, InfoSlider, InfoStyles, Multiline, Select } from '../components/Info'
 import { useCachedScript, usePageSettings, usePathState } from 'src/lib/hooks_ext'
-import { useEventListener, useF, useM, useR, useS } from 'src/lib/hooks'
+import { useEventListener, useF, useM, useR, useS, useStyle } from 'src/lib/hooks'
 import api, { auth } from 'src/lib/api'
 import { S } from 'src/lib/util'
 import { store } from 'src/lib/store'
@@ -40,9 +40,17 @@ const FONTS = {
   QUICKSAND: 'quicksand',
   SEVEN_SEGMENT_DISPLAY: 'seven-segment-display',
   PIXEL: 'pixel',
+  BUBBLE: 'super-frog',
+  PACIFICO: 'pacifico',
+  HAND: 'hand',
 }
 const font_to_actual = (key) => ({
 }[key] || key)
+const ALIGN = {
+  LEFT: 'left',
+  CENTER: 'center',
+  RIGHT: 'right',
+}
 
 const DRAW = (() => {
   const SIZE = 512
@@ -83,6 +91,8 @@ const SizeDot = ({ size, value, on_click }) => {
 let draw_down, draw_over, draw_touches
 
 let _l, _data, down, resize, crop_ne, crop_sw
+
+const text_id_to_resize = {}
 
 export default () => {
   useCachedScript('https://html2canvas.hertzen.com/dist/html2canvas.min.js')
@@ -443,11 +453,20 @@ export default () => {
     }
   })
 
+  const [show_grid, set_show_grid] = store.use('collager-show-grid', { default:false })
+  const color_oppo_back = useM(color, () => color === 'transparent' ? '#000000': colors.readable(color))
+
   const r = useR()
   usePageSettings({
     professional:true,
   })
-  return <Style onDrop={async e => {
+  useStyle(`
+  #square {
+    --sq-handle-radius: ${devices.is_mobile ? '20px' : '10px'};
+    --sq-handle-size: calc(var(--sq-handle-radius) * 2);
+  }
+  `)
+  return <Style id='square' onDrop={async e => {
     e.preventDefault()
     const item = e.dataTransfer.items[0]
     const data = e.dataTransfer.getData('URL')
@@ -458,7 +477,7 @@ export default () => {
       handle.read_image_file(e.dataTransfer.items[0].getAsFile())
     }
   }} onDragOver={e => e.preventDefault()}>
-    {crop ? <Modal style={`
+    {crop ? <Modal target='#square' style={`
     background: #0004;
     `}><InfoStyles style={S(`
     // height: 90vmin;
@@ -503,8 +522,8 @@ export default () => {
               const [x, y] = p
               return <div key={i} id={`crop-${i ? 'ne' : 'sw'}`} className='control' style={S(`
               position: absolute;
-              height: 20px; width: 20px; border-radius: 50%;
-              left: calc(${x * 100}% - 10px); top: calc(${y * 100}% - 10px);
+              height: var(--sq-handle-size); width: var(--sq-handle-size); border-radius: 50%;
+              left: calc(${x * 100}% - var(--sq-handle-radius)); top: calc(${y * 100}% - var(--sq-handle-radius));
               background: #fff; border: 1px solid #000;
               cursor: move;
               z-index: 1;
@@ -689,7 +708,7 @@ export default () => {
                   ` : ''}
                   position: absolute;
                   image-rendering: pixelated;
-                  ${data.shadow ? `box-shadow: ${data.shadow_x??0}px ${data.shadow_y??2}px ${data.shadow_color??'#000'};` : ''}
+                  ${data.shadow ? `box-shadow: ${data.shadow_x??0}px ${data.shadow_y??2}px 0 ${data.shadow_grow??0}px ${data.shadow_color??'#000'};` : ''}
                   ${data.oval ? 'border-radius: 50%;' : ''}
                   ${data.border ? `border: ${data.border_width??1}px solid ${data.border_color??'#000'};` : ''}
                   ${data.color ? `background: ${data.color};` : ''}
@@ -703,8 +722,8 @@ export default () => {
                 `)} /> : null}
                 <div className='control' style={S(`
                 position: absolute;
-                height: 20px; width: 20px; border-radius: 50%;
-                top: -10px; right: -10px;
+                height: var(--sq-handle-size); width: var(--sq-handle-size); border-radius: 50%;
+                top: calc(-1 * var(--sq-handle-radius)); right: calc(-1 * var(--sq-handle-radius));
                 background: #fff; border: 1px solid #000;
                 cursor: ne-resize;
                 z-index: 1;
@@ -738,6 +757,7 @@ export default () => {
                 l.style.transform = transform_save
               }
               defer(resize_text)
+              text_id_to_resize[id] = resize_text
               return <div key={id} id={`e-${id}`} tabIndex={0} style={S(`
               position: absolute;
               top: ${data.y * 100}%;
@@ -769,16 +789,20 @@ export default () => {
                 background: ${data.background || 'transparent'};
                 font-size: 1px;
                 font-family: ${data.font || FONTS.DUOSPACE};
+                text-align: ${data.align || ALIGN.LEFT};
                 line-height: 1.1;
+                white-space: pre-wrap;
                 ${data.bold ? 'font-weight: bold;' : ''}
                 ${data.italic ? 'font-style: italic;' : ''}
                 ${data.shadow ? `text-shadow: ${data.shadow_x??0}px ${data.shadow_y??2}px ${data.shadow_color??'#000'};` : ''}
                 ${data.opacity ? `opacity: ${data.opacity};` : ''}
-                `)}>{data.text}</span>
+                `)}>
+                  {data.text}
+                </span>
                 <div className='control' style={S(`
                 position: absolute;
-                height: 20px; width: 20px; border-radius: 50%;
-                top: -10px; right: -10px;
+                height: var(--sq-handle-size); width: var(--sq-handle-size); border-radius: 50%;
+                top: calc(-1 * var(--sq-handle-radius)); right: calc(-1 * var(--sq-handle-radius));
                 background: #fff; border: 1px solid #000;
                 cursor: ne-resize;
                 z-index: 1;
@@ -839,6 +863,24 @@ export default () => {
               }} />
             }
           })}
+          {show_grid ? <>
+            {[
+              [6, `1px solid ${color_oppo_back}33`],
+              [3, `1px solid ${color_oppo_back}`],
+            ].map(([n, border]) => 
+              <table style={S(`
+                position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+                pointer-events: none;
+                `)}>
+                  <tbody>
+                    {range(n).map(y => <tr key={y}>
+                      {range(n).map(x => <td key={x} style={S(`
+                      border: ${border};
+                      `)} />)}
+                    </tr>)}
+                  </tbody>
+                </table>)}
+          </> : null}
         </div>
         <div className='column gap wide'>
           {entity ? <>
@@ -849,10 +891,13 @@ export default () => {
             </> : null}
             {entity.type === TYPE.TEXT ? <>
               <div className='center-row wide'>
-                <input type='text' value={entity.data.text} onChange={e => {
+                {/* <input type='text' value={entity.data.text} onChange={e => {
                   entity.data.text = e.target.value
                   set_entities([...entities])
-                }} />
+                }} /> */}
+                <Multiline value={entity.data.text} setValue={text => handle.set_data({ text })} style={S(`
+                max-height: 5em;
+                `)}/>
               </div>
               <div className='center-row wide gap'>
                 color:
@@ -875,14 +920,16 @@ export default () => {
                   }} /></InfoButton>
                 </> : null}
               </div>
-              <div className='center-row wide gap'>
+              <div className='center-row wide gap wrap'>
                 font:
                 <Select value={entity.data.font || FONTS.DUOSPACE} setter={value => {
                   entity.data.font = value
                   set_entities([...entities])
+                  setTimeout(() => text_id_to_resize[entity.id]?.(), 100)
                 }} options={values(FONTS)} />
                 <InfoCheckbox label='bold' value={entity.data.bold || false} setter={bold => handle.set_data({ bold })} />
                 <InfoCheckbox label='italic' value={entity.data.italic || false} setter={italic => handle.set_data({ italic })} />
+                <Select value={entity.data.align || ALIGN.LEFT} setter={align => handle.set_data({ align })} options={values(ALIGN)} />
               </div>
             </> : null}
             {entity.type === TYPE.IMAGE ? <>
@@ -912,12 +959,18 @@ export default () => {
             {entity.type === TYPE.IMAGE || entity.type === TYPE.TEXT ? <>
               <div className='center-row wide gap'>
                 <label>angle:</label>
-                <InfoSlider value={entity.data.angle||0} setValue={angle => handle.set_data({ angle})} range={[0, 360]} snap={5} style={S(`flex-shrink:1`)} />
+                <InfoSlider value={entity.data.angle||0} setValue={angle => handle.set_data({ angle})} range={[-180, 180]} snap={5} style={S(`flex-shrink:1`)} />
                 <label>opacity:</label>
                 <InfoSlider value={entity.data.opacity||1} setValue={opacity => handle.set_data({ opacity})} range={[.1, 1]} snap={.1} style={S(`flex-shrink:1`)} />
               </div>
               <div className='center-row wide gap'>
-                <InfoCheckbox label='shadow' value={entity.data.shadow||false} setter={shadow => handle.set_data({ shadow })} />
+                <InfoCheckbox label='shadow' value={entity.data.shadow||false} setter={shadow => {
+                  let shadow_color = entity.data.shadow_color
+                  if (shadow && !shadow_color) {
+                    shadow_color = colors.readable(entity.data.color || '#000')
+                  }
+                  handle.set_data({ shadow, shadow_color })
+                }} />
                 {entity.data.shadow ? <>
                   <InfoButton onClick={e => Q(e.target, 'input').click()}><ColorPicker value={entity.data.shadow_color ?? '#000'} setValue={value => {
                     entity.data.shadow_color = value
@@ -1000,6 +1053,7 @@ export default () => {
               </> : <>
                 <InfoButton onClick={() => set_color('#fff')}>add background</InfoButton>
               </>}
+              <InfoButton onClick={e => set_show_grid(!show_grid)}>{show_grid ? 'hide' : 'show'} grid</InfoButton>
             </div>
             <HalfLine />
           </>}
@@ -1028,6 +1082,7 @@ export default () => {
             //   })
             // }, 100)
             set_selected(undefined)
+            set_show_grid(false)
             defer(() => {
               html2canvas(r.current, {
                 backgroundColor: null,
@@ -1043,6 +1098,7 @@ export default () => {
                 }
                 canvases.download(canvas, 'square.png')
                 set_selected(selected)
+                set_show_grid(show_grid)
               })
             }, 100)
           }}>download</button>
@@ -1083,13 +1139,45 @@ export default () => {
 }
 
 const common_css = `
-input, select {
-  height: 1.5em;
-  font-size: 1em;
+input:is([type=text], [type=number]), select, textarea {
   border: 1px solid currentcolor;
-  border-radius: .25em;
+  &:not(textarea) {
+    min-height: 1.5em;
+    height: 1.5em;
+  }
   &[type=number] {
     max-width: 5em;
+  }
+}
+input:is([type=text], [type=number]), textarea {
+  font-size: max(16px, 1em);
+  background: var(--id-color-text);
+  color: var(--id-color-text-readable);
+  border-radius: 0;
+  border-radius: .25em;
+  padding: 0 .25em;
+}
+label.select.select.select.select.select, *:is(button, label).action.action.action.action.action {
+  font-size: 1em;
+  min-height: 1.5em;
+  padding: 0 .25em;
+  background: var(--id-color-text);
+  color: var(--id-color-text-readable);
+  &.select {
+    &::after {
+      content: " ⌄";
+      font-family: monospace;
+      white-space: pre;
+      pointer-events: none;
+      translate: 0 -.25em;
+    }
+    select {
+      font-family: inherit;
+      border: 0;
+      option {
+        padding: 0;
+      }
+    }
   }
 }
 
@@ -1103,6 +1191,7 @@ button {
   &:is(.buttons-green *) {
     background: #f8fff8;
     // background: #fffeee;
+    background: #fff;
   }
   // &:is(.buttons-blue *) {
   //   color: var(--id-color-text-readable);
