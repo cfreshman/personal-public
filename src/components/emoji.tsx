@@ -74,7 +74,7 @@ export const EmojiKeyboard = ({ input_selector, add_emoji, style }: { input_sele
             <div className={`emoji-keyboard-group-name ${group_name_to_class(group)}`}>{group}</div>
             <div className='emoji-keyboard-group-body row wrap'>
               {filtered.filter(x => x.primary).map(x => {
-                return <div className='emoji-keyboard-tile' title={x.description} onPointerDown={e => {
+                return <div className='emoji-keyboard-tile' title={x.description} onClick={e => {
 
                   const l_input = input_selector && Q(input_selector)
                   if (l_input) {

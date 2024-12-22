@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { InfoBody, InfoStyles } from '../components/Info';
+import { InfoBody, InfoSection, InfoStyles } from '../components/Info';
 import { auth } from '../lib/auth';
 import { Conditions } from '../lib/conditions';
 
@@ -9,7 +9,9 @@ export default () => {
   auth.use()
   return <Style>
     <InfoBody>
-      <Conditions display={true} />
+      <InfoSection>
+        <Conditions display={true} />
+      </InfoSection>
     </InfoBody>
   </Style>
 }

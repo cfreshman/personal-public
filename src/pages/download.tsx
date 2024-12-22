@@ -22,19 +22,22 @@ export default () => {
     title: location.host,
   })
   return <Style>
-  <InfoBody className='middle-column'>
-      <a onClick={handle.download}>
-        <img src={icons[0].src} style={S(`
-        width: min(100%, 20em);
-        border: 1px solid #000;
-        background: #fff;
-        `)}/>
-      </a>
-      <div style={S(`font-size: 2em;`)}>
-        <InfoBadges labels={[
-          meta.install.value ? { download: handle.download } : 'unable to download',
-        ]} />
-      </div>
+    <InfoBody className='middle-column'>
+      <InfoSection className='middle-column'>
+        <a onClick={handle.download}>
+          <img src={icons[0].src} style={S(`
+          width: min(100%, 20em);
+          border: 1px solid #000;
+          background: #fff;
+          `)}/>
+        </a>
+        <div style={S(`font-size: 2em;`)}>
+          {/* <InfoBadges labels={[
+            meta.install.value ? { download: handle.download } : 'unable to download',
+          ]} /> */}
+          add to homescreen
+        </div>
+      </InfoSection>
     </InfoBody>
   </Style>
 }

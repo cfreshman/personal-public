@@ -20,19 +20,19 @@ export default () => {
   const [custom, setCustom] = useState('')
 
   const handle = {
-    change: ({ dec:_dec='', bin:_bin='', hex:_hex='', len:_len=len, base:_base=base, custom:_custom='' }={}) => {
+    change: ({ dec:_dec=undefined, bin:_bin=undefined, hex:_hex=undefined, len:_len=len, base:_base=base, custom:_custom=undefined }={}) => {
       let actual = Number(dec)
-      if (_dec) actual = Number(_dec)
-      if (_hex) actual = Number.parseInt(_hex, 16)
-      if (_bin) actual = Number.parseInt(_bin, 2)
-      if (_custom) actual = Number.parseInt(_custom, _base)
+      if (_dec !== undefined) actual = Number(_dec || 0)
+      if (_hex !== undefined) actual = Number.parseInt(_hex || '0', 16)
+      if (_bin !== undefined) actual = Number.parseInt(_bin || '0', 2)
+      if (_custom !== undefined) actual = Number.parseInt(_custom || '0', _base)
       if (isNaN(actual)) actual = 0
-      setDec(leftPad(actual.toString(10), _len, '0'))
-      setHex(leftPad(actual.toString(16).toUpperCase(), _len, '0'))
-      setBin(leftPad(actual.toString(2), _len, '0'))
+      setDec(!actual ? '' : leftPad(actual.toString(10), _len, '0'))
+      setHex(!actual ? '' : leftPad(actual.toString(16).toUpperCase(), _len, '0'))
+      setBin(!actual ? '' : leftPad(actual.toString(2), _len, '0'))
 
       setBase(_base)
-      setCustom(leftPad(actual.toString(_base), _len, '0'))
+      setCustom(!actual ? '' : leftPad(actual.toString(_base), _len, '0'))
 
       setLen(_len)
     }
