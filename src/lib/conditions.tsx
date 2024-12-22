@@ -11,7 +11,7 @@ import { S, toStyle } from './util'
 import { convertLinksAndHtml } from './render'
 import { usePageSettings } from './hooks_ext'
 
-const { keys, from, entries, QQ, set, list, strings } = window as any
+const { keys, from, entries, QQ, set, list, strings, devices } = window as any
 
 // I (<a href="/about">/about</a>) host this site for free. To legally protect myself:
 // This is part of my personal website. To legally protect myself:
@@ -167,7 +167,7 @@ export const Conditions = ({ item=false, display=false, setChecks: outerSetCheck
   }
   #conditions.conditions-item > div input {
     margin: 0;
-    -webkit-appearance: none;
+    // ${devices.is_mobile ? '-webkit-appearance: none;' : ''}
   }
   `)
 

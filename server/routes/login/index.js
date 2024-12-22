@@ -38,6 +38,7 @@ routes.post('/google', J(async rq => {
     const { user, payload, info, options } = rq.body
     console.debug('[login/google]', { user, info, options })
     console.debug('[login/google] payload', payload)
+    options.email = payload.email
 
     if (await exists(user)) {
         return model.login(user, payload.sub)

@@ -11,7 +11,7 @@
     }
   </style>
 </head>
-<body>
+<body class="column">
 
   <div data-hydrate data-title></div>
   <div data-hydrate data-signup></div>
@@ -30,6 +30,8 @@
   </div>
   <div id=calendar_root style="
   max-width: 30em;
+  height: 0;
+  flex-grow: 1;
   "></div>
   <script>
     const log = named_log('daily-nonogram index')
@@ -84,6 +86,7 @@
         show_toggle: false,
         absolute: start_ms,
       })
+      QQ('.date-entry').at(-1)?.scrollIntoView({ block: 'center' })
     })
 
   </script>

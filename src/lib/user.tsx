@@ -316,29 +316,29 @@ const settingFields = {
     //   options: capitals_music_options,
     // },
   },
-  petals: {
-    chat: {
-      default: true,
-      label: 'enable game chat',
-    },
-    '':'',
-    reacts: {
-      label: 'emotes',
-      default: '😀😎😭🫠😈', text:true,
-      override: value => {
-        value = [...value].slice(-5).join('')
-        settings.update('petals.reacts', value)
-        return true
-      },
-    },
-    reacts_reset: {
-      label: 'reset',
-      action: () => {
-        settings.update('petals.reacts', undefined)
-      },
-    },
-    ' ':'ungroup',
-  },
+  // petals: {
+  //   chat: {
+  //     default: true,
+  //     label: 'enable game chat',
+  //   },
+  //   '':'',
+  //   reacts: {
+  //     label: 'emotes',
+  //     default: '😀😎😭🫠😈', text:true,
+  //     override: value => {
+  //       value = [...value].slice(-5).join('')
+  //       settings.update('petals.reacts', value)
+  //       return true
+  //     },
+  //   },
+  //   reacts_reset: {
+  //     label: 'reset',
+  //     action: () => {
+  //       settings.update('petals.reacts', undefined)
+  //     },
+  //   },
+  //   ' ':'ungroup',
+  // },
   dinder: {
     chat: {
       default: true,

@@ -1304,7 +1304,7 @@ import Color from 'color'
 import { trigger } from '../lib/trigger'
 import { store } from '../lib/store';
 import { Tooltip } from './Modal';
-import { Contact } from './base/Contact';
+import { Contact } from './base/old/Contact';
 import api, { auth } from '../lib/api';
 import { copy } from '../lib/copy';
 import { convertLinks } from '../lib/render';

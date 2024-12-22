@@ -4,7 +4,7 @@ import { addStyle, useE, useF, useInline, useM, useR, useS } from '../lib/hooks'
 import { trigger } from '../lib/trigger';
 import url from '../lib/url';
 import { QQ, S, defer, entries, isMobile, is_mobile, list, merge, named_log, node, on, randAlphanum, range, set, toStyle } from '../lib/util';
-import { Contact } from './base/Contact';
+import { Contact } from './base/old/Contact';
 import { Comment, External, InfoBody, InfoStyles } from './Info';
 import { message } from '../lib/message';
 import { JSX, apply } from '../lib/types';

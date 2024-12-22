@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=utf-8><script src=https://freshman.dev/copyright.js></script><meta data-hydrate data-style />
+  <title>xmas</title>
+  <link rel="icon" href="https://freshman.dev/api/file/public-xmas-tree-icon.png">
+  <style>
+    :root, body {
+      overflow: hidden;
+      height: 100%;
+    }
+    * {
+      user-select: none;
+      touch-action: none;
+    }
+    :root {
+      --b: #fff;
+      --c: #000;
+      --r: #f00;
+    }
+    #grid {
+      visibility: hidden;
+    }
+  </style>
+  <script>
+    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false })
+  </script>
+</head>
+<body style="
+background: var(--b);
+color: var(--c);
+">
+  <div class="cover center">
+    <div id="message">
+      merry christmas! you now own <b id="domain"></b>
+      <div style="
+      background: repeating-linear-gradient(45deg, var(--r), var(--r) .5em, var(--b) .5em, var(--b) 1em);
+      border: 1px solid currentcolor;
+      height: .5em;
+      width: 100%;
+      "></div>
+    </div>
+  </div>
+
+  <style id="toggle"></style>
+  <script>
+    Q('#domain').textContent = location.hostname
+
+    const body = document.body
+    const style_toggle = Q('#toggle')
+    let toggled = store.get('xmas-toggle') || false
+
+    // spawn falling matrix letters below message
+    {
+      const l_message = Q('#message')
+      l_message.style.position = 'relative'
+      const MATRIX_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789' + range(0xff66, 0xff9d).map(i => String.fromCharCode(i)).join('')
+      const H = 100, W = l_message.textContent.trim().length
+      const grid = range(H).map(i => range(W).map(j => rand.sample(MATRIX_CHARS)))
+      const html_rows = grid.map((row, r) => {
+        const html_cells = row.map((char, c) => {
+          return `<span class="cell" data-r=${r} data-c=${c}>${char}</span>`
+        }).join('')
+        return `<div class="row">${html_cells}</div>`
+      }).join('')
+      const html_grid = `<div id="grid" style="
+      position: absolute;
+      top: 100%;
+      ">
+        <style>
+          #grid {
+            width: 100%;
+            line-height: 1;
+          }
+          .row {
+            display: flex;
+            width: 100%;
+          }
+          .cell {
+            width: 0;
+            flex-grow: 1;
+            opacity: 0;
+            scale: -1 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+          }
+        </style>
+        ${html_rows}
+      </div>`
+      l_message.append(node(html_grid))
+
+      const falling = []
+      grid.forEach((row, r) => {
+        row.forEach((char, c) => {
+          const cell = grid[r][c] = {
+            node: Q(`.cell[data-r="${r}"][data-c="${c}"]`),
+            opacity: 0,
+            falling: false,
+          }
+          if (rand.i(40) === 0) falling.push({ r, c })
+        })
+      })
+
+      const do_fall = () => {
+        falling.forEach(co => {
+          co.r = (co.r + 1) % H
+          grid[co.r][co.c].falling = true
+        })
+        grid.map(row => row.map(cell => {
+          cell.opacity = cell.falling ? 1 : Math.max(0, cell.opacity - .05)
+          cell.falling = false
+          cell.node.style.opacity = cell.opacity === 1 ? 1 : cell.opacity * 2/3
+          cell.node.style.color = cell.opacity === 1 ? '#efe' : ''
+
+          if (rand.i(20) === 0) {
+            cell.node.textContent = rand.sample(MATRIX_CHARS)
+          }
+        }))
+      }
+      setInterval(do_fall, 100)
+      setTimeout(() => range(20).map(_=> do_fall()))
+    }
+
+    const toggle_on = () => {
+      style_toggle.innerHTML = `
+        :root {
+          filter: none;
+          --b: #000;
+          --c: #0f0;
+          --r: #0f0;
+          text-shadow: 0 0 1em var(--c);
+        }
+        #grid {
+          visibility: visible;
+        }
+      `
+    }
+    const toggle_off = () => {
+      style_toggle.innerHTML = ``
+    }
+    on(body, 'pointerdown', e => {
+      toggled ? toggle_off() : toggle_on()
+      toggled = !toggled
+      store.set('xmas-toggle', toggled)
+    })
+    toggled && toggle_on()
+  </script>
+
+</body>
+</html>

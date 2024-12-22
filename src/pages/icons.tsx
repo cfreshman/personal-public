@@ -159,6 +159,24 @@ export default () => {
           // flex-wrap:wrap-reverse
           `)}>
 
+          <div className='rendered-icon middle-row' style={S(`
+          color: #000;
+          border-radius: 0;
+          width: 256em; height: 256em;
+          padding: 16em;
+          line-height: 1;
+
+          font-family: roboto-mono;
+          background: #000;
+          color: #fff;
+          // background: url(/base-icon.png);
+          background-size: cover;
+          `)}>
+            <span style={S(`
+            font-size: calc(128em + 32em + 8em);
+            `)}>🎄</span>
+          </div>
+
           <div className='rendered-icon row' style={S(`
           color: #000;
           border-radius: 0;

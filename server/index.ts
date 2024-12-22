@@ -106,7 +106,7 @@ import was from './routes/was';
 import petals from './routes/petals';
 import note from './routes/note';
 import mail from './routes/mail';
-import lettergo from './routes/lettergo';
+import capture from './routes/capture';
 // console.log(randAlphanum(16))
 process.on('uncaughtException', e => {
     console.error('uncaughtException', e);
@@ -1299,8 +1299,8 @@ app.get('/*', async (req, res, next) => {
             }
         }
     }
-    else if (page === 'lettergo') {
-        const url_search_str = req.url.split('/lettergo')[1]
+    else if (page === 'capture') {
+        const url_search_str = req.url.split('/capture')[1]
         const parts = url_search_str.split('/').filter(truthy)
         const stats = parts[0] === 'stats' && parts.length === 2
         const challenge = parts[0] === 'new' && parts.length === 2
@@ -1308,34 +1308,34 @@ app.get('/*', async (req, res, next) => {
         const menu = parts.length === 0
         const id = game && parts[0]
         const page_id = (stats || challenge) && parts[1]
-        console.debug('[lettergo] url parsed:', { menu, game, id, stats, challenge, page_id })
+        console.debug('[capture] url parsed:', { menu, game, id, stats, challenge, page_id })
         if (menu) {
             Object.assign(replacements, {
-                title: `lettergo`,
+                title: `capture`,
             })
         } else if (game) {
             if (id === 'local') {
                 Object.assign(replacements, {
-                    title: `local lettergo game`,
+                    title: `local capture game`,
                 })
             } else {
-                const info = await lettergo.model._info(id)||{}
-                const users = lettergo.model.user_ids(info)
-                const name = 'lettergo'
-                console.log('[lettergo]', {users,name})
+                const info = await capture.model._info(id)||{}
+                const users = capture.model.user_ids(info)
+                const name = 'capture'
+                console.log('[capture]', {users,name})
                 Object.assign(replacements, {
                     title: `${users.length > 2?'vs ':''}${users.map(user => user || 'invite').join(users.length > 2?' ':' vs ')} (${name})`,
                 })
             }
         } else if (stats) {
             Object.assign(replacements, {
-                title: `u/${page_id}'s lettergo stats`,
+                title: `u/${page_id}'s capture stats`,
             })
         } else if (challenge) {
-            const { user } = await lettergo.model.get_challenge_user('site', page_id)
+            const { user } = await capture.model.get_challenge_user('site', page_id)
             if (user) {
                 Object.assign(replacements, {
-                    title: `challenge ${user} at lettergo!`,
+                    title: `challenge ${user} at capture!`,
                 })
             }
         }

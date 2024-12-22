@@ -1,5 +1,5 @@
 import { store } from "src/lib/store"
-import { dict, rand_alpha } from "./dict"
+import { dict, rand_alpha } from "../../lib/dict"
 import api from "src/lib/api"
 import { create_tile_bag, named_colors, named_icons } from "./util"
 import { truthy } from "src/lib/types"
@@ -7,8 +7,7 @@ import { message } from "src/lib/message"
 import { is_ai } from "./ai"
 
 const { named_log, node, svg_node, V, range, set, rand, Q, QQ, on, list, strings, keys, values, from, lists } = window as any
-const log = named_log('petals data')
-
+const log = named_log('capture data')
 
 export const local_players = {
   FIRST: 'first',
@@ -63,7 +62,7 @@ export const fetch_profile = async (name) => {
   }
   if (local_profiles[name]) return local_profiles[name]
 
-  const { profile } = await api.get(`/petals/profile/${name}`)
+  const { profile } = await api.get(`/capture/profile/${name}`)
   return profile
 }
 
@@ -72,13 +71,13 @@ export class Tile {
   pos: any // ve.js vector
   letter: string
   owner: number
-  group: number
   locked: boolean
 }
 export class Info {
   id: string
   p0: string
   p1: string
+  p2?: string
   turn: number
   owner: number
   start_t: number
@@ -89,7 +88,6 @@ export class Info {
     tiles: Tile[]
     word: string
   }[]
-  scores: number[]
   status: number
   tries: number
   words: string[]
@@ -111,11 +109,9 @@ export class State {
   id: string
   tiles: Tile[]
   deltas?: Tile[][]
-  score: number[]
-  scores?: number[][]
 }
-export const BOARD_SIZE = 5
-export const co_to_i = ({ x, y }) => x > -1 && x < BOARD_SIZE && y > -1 && y < BOARD_SIZE ? y * BOARD_SIZE + x : -1
+export const BOARD_SIZE = { W:8, H:10 }
+export const co_to_i = ({ x, y }) => x > -1 && x < BOARD_SIZE.W && y > -1 && y < BOARD_SIZE.H ? y * BOARD_SIZE.W + x : -1
 export const get_adj = ({ x, y }) => {
   const DIRS = [[0,-1],[1,0],[0,1],[-1,0]].map<any>(V.ne)
   return DIRS.map(o => {
@@ -129,10 +125,6 @@ export const get_adj = ({ x, y }) => {
 export const is_adj = ({ x, y }, positions) => {
   return positions.some(x => x.eq(V.ne(x, y)))
 }
-const TILE_OUT = [V.ne(2, 0), V.ne(2, 1), V.ne(2, 3), V.ne(2, 4), V.ne(0, 2), V.ne(1, 2), V.ne(3, 2), V.ne(4, 2)]
-const TILE_OUT_SET = set(TILE_OUT.map(x => x.st()))
-const TILE_FIRST_OUT = V.ne(2, 2)
-const TILE_FIRST_OUT_SET = set([...TILE_OUT, TILE_FIRST_OUT].map(x => x.st()))
 
 export const next_owner = (info, state=undefined) => {
   return (info.owner + 1) % user_ids(info).length
@@ -143,10 +135,10 @@ export const next_owner = (info, state=undefined) => {
   // } while (display_state.tiles.every(tile => tile.locked && tile.owner !== owner))
 }
 
-export const COOKIES_PETALS = {
-  PROFILES: 'petals-profiles',
-  INFO: 'petals-info',
-  STATE: 'petals-state',
+export const COOKIES_CAPTURE = {
+  PROFILES: 'capture-profiles',
+  INFO: 'capture-info',
+  STATE: 'capture-state',
 }
 const hydrate_info = (info_raw) => {
   const info = strings.json.clone(info_raw)
@@ -163,17 +155,17 @@ export const clone_info = (info: Info): Info => hydrate_info(info)
 export const clone_state = (state: State): State => hydrate_state(state)
 export const fetch_game = async (id: string, hf: any): Promise<{ info: Info, state: State }> => {
   if (id === 'local') {
-    const info = store.get(COOKIES_PETALS.INFO)
-    const state = store.get(COOKIES_PETALS.STATE)
+    const info = store.get(COOKIES_CAPTURE.INFO)
+    const state = store.get(COOKIES_CAPTURE.STATE)
     if (!info) return create_game(hf, ['bottom', 'top'], true)
     return { info:hydrate_info(info), state:hydrate_state(state) }
   } else {
-    const { info=undefined, state=undefined } = await api.get(`/petals/game/${id}`)
+    const { info=undefined, state=undefined } = await api.get(`/capture/game/${id}`)
     return { info:hydrate_info(info), state:hydrate_state(state) }
   }
 }
 const tutorial_messages = [
-  'find some words! tap to select tiles\n<b>start with PETALS in the top left</b>',
+  'find some words! tap to select tiles\n<b>start with CAPTURE in the top left</b>',
   'tap a letter at the top to deselect\ndrag to rearrange',
   `keep going! play words that <b>lock tiles</b>\ntiles lock when surrounded by tile color\navoid spelling with locked tiles - you won't keep them!`,
   `<b>don't let speedy beat you!</b>`,
@@ -182,25 +174,25 @@ export const update_game = async (info: Info, state: State) => {
   const { id } = info
   if (id === 'local') {
     info.last_t = Date.now()
-    store.set(COOKIES_PETALS.INFO, info)
-    store.set(COOKIES_PETALS.STATE, state)
+    store.set(COOKIES_CAPTURE.INFO, info)
+    store.set(COOKIES_CAPTURE.STATE, state)
 
     message.trigger({ delete:'tutorial-hint' })
-    if (info.turn % 2 === 0 && store.get('petals-tutorial-run')) {
-      const index = store.get('petals-tutorial-index')
+    if (info.turn % 2 === 0 && store.get('capture-tutorial-run')) {
+      const index = store.get('capture-tutorial-index')
       // alert(`tutorial ${index}`)
       if (index >= tutorial_messages.length) {
-        store.set('petals-tutorial-run', undefined)
+        store.set('capture-tutorial-run', undefined)
       } else {
         message.trigger({
           text: tutorial_messages[index],
           id: 'tutorial-hint',
         })
-        store.set('petals-tutorial-index', index + 1)
+        store.set('capture-tutorial-index', index + 1)
       }
     }
   } else {
-    await api.post(`/petals/game/${id}`, { info, state })
+    await api.post(`/capture/game/${id}`, { info, state })
   }
 }
 const new_info = (users=[], local=false): Info => {
@@ -211,7 +203,6 @@ const new_info = (users=[], local=false): Info => {
     start_t: Date.now(),
     last_t: Date.now(),
     turns: [],
-    scores: users.map(_ => 0),
     status: -1,
     tries: 0,
     words: [],
@@ -220,39 +211,30 @@ const new_info = (users=[], local=false): Info => {
   } as Info
 }
 const new_state = (hf, info): State => {
-  const size = user_ids(info).length + 3
-  
-  const is_tutorial = store.get('petals-tutorial-start')
-  store.set('petals-tutorial-start', undefined)
-  store.set('petals-tutorial-index', 0)
-  store.set('petals-tutorial-run', is_tutorial)
+  const is_tutorial = store.get('capture-tutorial-start')
+  store.set('capture-tutorial-start', undefined)
+  store.set('capture-tutorial-index', 0)
+  store.set('capture-tutorial-run', is_tutorial)
 
-  log('create state', {size, is_tutorial})
+  log('create state', {is_tutorial})
   
   let tries = 100
   let state
   while ((tries -= 1) + 1) {
-    const tile_bag = create_tile_bag()
     state = {
       id: undefined,
-      tiles: range(Math.pow(size, 2)).map((i) => {
-        const pos = V.ne(i % size, Math.floor(i / size))
+      tiles: range(BOARD_SIZE.H * BOARD_SIZE.W).map((i) => {
+        const pos = V.ne(i % BOARD_SIZE.W, Math.floor(i / BOARD_SIZE.W))
         return {
           i,
           pos,
           owner: -1,
-          letter: TILE_FIRST_OUT_SET.has(pos.st()) ? '' : tile_bag.pick(),
+          letter: rand_alpha(),
           locked: false,
         }
       }),
       deltas: [],
-      score: user_ids(info).map(_ => 0),
-      scores: [],
     }
-
-    return state
-    // TODO stuff below
-
     if (is_tutorial) {
       const get_tile = (x, y) => {
         log('get tile', { x, y })
@@ -270,25 +252,6 @@ const new_state = (hf, info): State => {
       get_tile(2, 2).letter = 's'
       get_tile(0, 3).letter = 's'
     }
-    log({tile_bag})
-
-    const anagrams = find_anagrams(state).sort((a, b) => b.length - a.length)
-    const letter_to_unplayed_tiles = construct_letter_to_tiles(state)
-    let played = 0
-    for (let i = 0; i < anagrams.length; i++) {
-      const anagram = anagrams[i]
-      for (let a_i = 0; a_i < anagram.length; a_i++) {
-        const letter = anagram[a_i]
-        const unplayed_tiles = letter_to_unplayed_tiles[letter]
-        if (unplayed_tiles.length) {
-          unplayed_tiles.pop()
-          played += 1
-          if (played === state.tiles.length) {
-            return state
-          }
-        }
-      }
-    }
   }
   return state
 }
@@ -302,29 +265,9 @@ export const create_game = async (hf: any, users: string[], local:boolean=false)
     await update_game(info, state)
     return { info, state }
   } else {
-    const { info:server_info=undefined, state:server_state=undefined } = await api.post(`/petals/game`, { info, state })
+    const { info:server_info=undefined, state:server_state=undefined } = await api.post(`/capture/game`, { info, state })
     return { info:hydrate_info(server_info), state:hydrate_state(server_state) }
   }
-}
-
-const GROUPS = [
-  [V.ne(0,0),V.ne(1,0),V.ne(0,1),V.ne(1,1)],
-  [V.ne(3,0),V.ne(4,0),V.ne(3,1),V.ne(4,1)],
-  [V.ne(0,3),V.ne(1,3),V.ne(0,4),V.ne(1,4)],
-  [V.ne(3,3),V.ne(4,3),V.ne(3,4),V.ne(4,4)],
-  [V.ne(2,2)],
-]
-export const score_turn = (tiles:Tile[], owner:number): number => {
-  const group_sets = GROUPS.map(group => set(group.map(pos => pos.st())))
-  tiles.filter(tile => tile.owner === owner).map(tile => {
-    group_sets.map((group_set) => {
-      if (group_set.has(tile.pos.st())) {
-        group_set.delete(tile.pos.st())
-      }
-    })
-  })
-  const n_groups = group_sets.filter(group_set => !group_set.size).length
-  return n_groups
 }
 
 export const construct_state = (state: State, turn_delta:number=undefined) => {
@@ -344,18 +287,13 @@ export const construct_state = (state: State, turn_delta:number=undefined) => {
       const state_tile = new_state_tile_map[tile.pos.st()]
       Object.assign(state_tile, tile)
     })
-
-    if (new_state.scores) {
-      const score = new_state.scores.shift()
-      new_state.score = new_state.score.map((x, i) => x + score[i])
-    }
   })
   return hydrate_state(new_state)
 }
 
 export const play_state = (
   state:State, new_info:Info, hf, turn=undefined, play_turn=undefined, actual_state=undefined
-): { new_state:State, new_owner:number, new_scores:number[], new_status:number } => {
+): { new_state:State, new_owner:number, new_status:number } => {
   const prior_turn = (turn ?? new_info.turn) - 1
   const selection = new_info.turns.at(prior_turn).tiles.slice(play_turn !== undefined ? 0 : undefined, play_turn)
   const turn_owner = prior_turn % 2 // new_info.turns[prior_turn]?.owner || (new_info.owner - 1 + user_ids(new_info).length) % user_ids(new_info).length
@@ -369,58 +307,56 @@ export const play_state = (
   const final_state_tile_map = {}
   final_state.tiles.map(tile => final_state_tile_map[tile.pos.st()] = tile)
 
-  // unlock tiles
-  final_state.tiles.map(tile => {
-    tile.locked = false
-  })
-  
   // reassign tiles
   selection.map(({ pos }) => {
     const tile = final_state_tile_map[pos.st()]
     tile.owner = turn_owner
-    tile.locked = true
   })
 
-  // score turn & detect game end
-  // const GROUPS = [
-  //   [V.ne(0,0),V.ne(1,0),V.ne(0,1),V.ne(1,1)],
-  //   [V.ne(3,0),V.ne(4,0),V.ne(3,1),V.ne(4,1)],
-  //   [V.ne(0,3),V.ne(1,3),V.ne(0,4),V.ne(1,4)],
-  //   [V.ne(3,3),V.ne(4,3),V.ne(3,4),V.ne(4,4)],
-  //   [V.ne(2,2)],
-  // ]
-  // const GROUP_SETS = GROUPS.map(group => set(group.map(pos => pos.st())))
-  // final_state.tiles.filter(tile => tile.owner === turn_owner).map(tile => {
-  //   log('check tile group', tile)
-  //   GROUP_SETS.map((group_set) => {
-  //     if (group_set.has(tile.pos.st())) {
-  //       group_set.delete(tile.pos.st())
-  //     }
-  //   })
-  // })
-  // const n_groups = GROUP_SETS.filter(group_set => !group_set.size).length
-  const n_groups = score_turn(final_state.tiles, turn_owner)
-  let { scores:last_scores, status:new_status, owner:new_owner } = new_info
-  let new_scores = last_scores.slice()
-  new_scores[turn_owner] += n_groups
-  if (new_scores[turn_owner] > 11) {
-    new_scores[turn_owner] = 5
-  } else if (new_scores[turn_owner] === 11) {
-    new_status = turn_owner
-  }
+  // capture tiles
+  // detect surrounded tiles
+  const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]]
+  ;[1 - turn_owner, turn_owner].map(capturing => {
+    let explored = set()
+    for (let i = 0; i < BOARD_SIZE.H; i++) {
+      for (let j = 0; j < BOARD_SIZE.W; j++) {
+        const cell = final_state_tile_map[V.ne(j, i).st()]
+        if (cell.owner !== capturing) continue
+        log(capturing, cell.owner)
+        if (explored.has(cell.pos.st())) continue
+        const region = []
+        const outer = set()
+        const frontier = [cell]
+        while (frontier.length) {
+          const curr = frontier.pop()
+          if (explored.has(curr.pos.st())) continue
+          explored.add(curr.pos.st())
+          region.push(curr)
+          dirs.forEach(([dr, dc]) => {
+            const r = curr.pos.y + dr, c = curr.pos.x + dc
+            if (r < 0 || r >= BOARD_SIZE.H || c < 0 || c >= BOARD_SIZE.W) {
+              outer.add(-1)
+              return
+            }
+            const cell = final_state_tile_map[V.ne(c, r).st()]
+            if (cell.owner === curr.owner) frontier.push(cell)
+            else outer.add(cell.owner)
+          })
+        }
+        const owner = [...outer][0]
+        log('region', region, outer, owner)
+        if (outer.size === 1 && owner > -1) {
+          region.forEach(cell => cell.owner = owner)
+        }
+      }
+    }
+  })
 
-  // spawn new letters
-  if (!actual_state) {
-    let tries = 0
-    const selection_set = set(selection.map(x => x.pos.st()))
-    const change_tiles = final_state.tiles.filter(tile => !selection_set.has(tile.pos.st()) && !TILE_OUT_SET.has(tile.pos.st()))
-    do {
-      const tile_bag = create_tile_bag(final_state)
-      window['tile_bag'] = tile_bag
-      change_tiles.map(x => final_state_tile_map[x.pos.st()]).map(tile => {
-        tile.letter = tile_bag.pick()
-      })
-    } while (!game_has_word(new_info, state) && (tries += 1) < 100)
+  // detect game end
+  let { status:new_status, owner:new_owner } = new_info
+  if (final_state.tiles.every(tile => tile.owner > -1)) {
+    const winners = lists.maxxing_list(user_id_range(new_info), i => final_state.tiles.filter(tile => tile.owner === i).length)
+    new_status = rand.sample(winners)
   }
 
   // compute state delta
@@ -437,14 +373,15 @@ export const play_state = (
     changes.sort((a, b) => (order[a.pos.st()]??100) - (order[b.pos.st()]??100))
     new_state.deltas.push(changes)
     new_state.tiles = state.tiles
-    
-    if (new_state.scores) {
-      const score_delta = user_ids(new_info).map((_, i) => i === turn_owner ? n_groups : 0)
-      new_state.scores.push(score_delta)
-    }
+  } else {
+    // this is for display while a word is playing - show in darker color using .locked
+    selection.map(({ pos }) => {
+      const tile = final_state_tile_map[pos.st()]
+      tile.locked = true
+    })
   }
 
-  return { new_state, new_owner, new_scores, new_status }
+  return { new_state, new_owner, new_status }
 }
 export const play_turn = (info:Info, state:State, tiles:Tile[], hf):{ new_info:Info, new_state:State } => {
   if (tiles.length && !('st' in tiles[0].pos)) {
@@ -452,7 +389,6 @@ export const play_turn = (info:Info, state:State, tiles:Tile[], hf):{ new_info:I
   }
   const word = tiles.map(x=>x.letter).join('')
 
-  
   const new_info = clone_info(info)
   new_info.turn += 1
   new_info.owner = next_owner(info)
@@ -470,11 +406,9 @@ export const play_turn = (info:Info, state:State, tiles:Tile[], hf):{ new_info:I
   const {
     new_state,
     new_owner,
-    new_scores,
     new_status,
   } = play_state(state, new_info, hf)
   new_info.owner = new_owner
-  new_info.scores = new_scores
   new_info.status = new_status
 
   return { new_info, new_state }
@@ -498,7 +432,7 @@ export const has_word = (letters:string|string[], lang='english') => {
     return true
   })
 }
-export const state_to_letters = (state:State): string => construct_state(state).tiles.filter(tile => !TILE_OUT_SET.has(tile.pos.st())).map(tile => tile.letter).sort().join('')
+export const state_to_letters = (state:State): string => construct_state(state).tiles.map(tile => tile.letter).sort().join('')
 export const game_has_word = (info:Info, state:State): boolean => {
   return has_word(state_to_letters(state))
 }

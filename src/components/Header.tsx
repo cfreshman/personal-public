@@ -70,18 +70,12 @@ const User = ({ expand }: { expand: boolean }) => {
         cn: false,
         // is_21: false,
       })
-      defer(() => {
-        auth.set(new_auth)
-        location.reload()
-        // defer(() => {
-        //   Q('.dropdown-container.user .dropdown-label').click()
-        // })
-      })
+      auth.set(new_auth)
     },
     _update_email: async (email, force_verify=false) => {
       if (email) {
         await api.post('/notify/method', { method: 'email', value: email, source: location.host, force_verify })
-        if (location.pathname.startsWith('/notify')) location.reload()
+        // if (location.pathname.startsWith('/notify')) location.reload()
       }
     },
     signin: async (func, message=undefined) => {
@@ -95,7 +89,9 @@ const User = ({ expand }: { expand: boolean }) => {
           log('[SIGNIN] complete', auth)
           // email && setTimeout(() => api.post('/notify/email', { email, source: location.host }), 1000)
           handle._reset_with_new_auth(new_auth)
-          handle._update_email(email)
+          handle._update_email(email).then(() => {
+            location.reload()
+          })
         })
         .catch(e => {
           setError(e.error || e.toString() || 'error')
@@ -385,7 +381,7 @@ const User = ({ expand }: { expand: boolean }) => {
           <br/>
           {/* <div style={S(`width:max-content; padding:0 .5em`)}><button className='cute'><A tab='https://www.trustpilot.com/review/freshman.dev'>review <span style={S('font-family:system-ui')}>✏️</span></A></button></div>
           <br/> */}
-          <div style={S(`width:max-content; padding:0 .5em`)}><button className='cute'><A tab='/donate'>tip me <span style={S('font-family:system-ui')}>☕️</span></A></button></div>
+          <div style={S(`width:max-content; padding:0 .5em`)}><button className='cute'><A tab='https://freshman.dev/tip'>tip me <span style={S('font-family:system-ui')}>☕️</span></A></button></div>
           <br/>
           <div style={S(`width:max-content; padding:0 .5em`)}><button className='cute'><A tab='/contact'>hire me!</A></button></div>
           <br/>
@@ -721,14 +717,14 @@ const User = ({ expand }: { expand: boolean }) => {
                 log('google server payload', new_auth)
                 handle._reset_with_new_auth(new_auth)
                 if (!use_google.exists) {
-                  handle._update_email(jwt_data.email, true)
+                  await handle._update_email(jwt_data.email, true)
 
                   // set profile info
                   let icon, bio
                   const update_profile = async () => {
                     log('update profile', { bio, icon })
                     await api.post(`/profile/bio`, { bio, icon })
-                    if (location.pathname.startsWith(`/u/${new_auth.user}`)) location.reload()
+                    defer(() => location.reload())
                   }
 
                   bio = `joined ${datetime.ymd()}`
@@ -750,6 +746,8 @@ const User = ({ expand }: { expand: boolean }) => {
                   }
                   img.onerror = () => update_profile()
                   img.src = jwt_data.picture
+                } else {
+                  defer(() => location.reload())
                 }
               } catch (e) {
                 setError(e.error || e)
@@ -870,10 +868,10 @@ const User = ({ expand }: { expand: boolean }) => {
   `)
 
   const user_dropdown_control:any = {}
-  // useF(!!dropdown, () => defer(() => {
-  //   user_dropdown_control.toggle && user_dropdown_control.toggle(!!dropdown)
-  //   log('user dropdown control', !!dropdown, user_dropdown_control.toggle)
-  // }))
+  useF(!!dropdown, () => defer(() => {
+    user_dropdown_control.toggle && user_dropdown_control.toggle(!!dropdown)
+    log('user dropdown control', !!dropdown, user_dropdown_control.toggle)
+  }))
 
   return <>
     <Unread />

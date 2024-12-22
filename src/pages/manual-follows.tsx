@@ -7,7 +7,7 @@ import { Q, S, defer, deletion, from, logged_handle, merge, named_log, pick, ran
 import { JSX, anyFields, truthy } from 'src/lib/types'
 import { copy } from 'src/lib/copy'
 import { usePageSettings, usePathState, useSave } from 'src/lib/hooks_ext'
-import { Description } from 'src/components/base/Base'
+import { Description } from 'src/components/base/old/Base'
 import { V } from 'src/lib/ve'
 import url from 'src/lib/url'
 

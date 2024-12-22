@@ -217,7 +217,7 @@ export const replace = {
     title: 'donate a coffee!',
     description: 'i really do like coffee a lot',
     keywords: 'donate, me, a, coffee, donoboard, donation, donations, sponsor, sponsors, leaderboard, 6000, 8334, $1, one, dollar, slots, wow, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
-    icon: 'https://freshman.dev/raw/coffee/mug.jpg',
+    icon: 'https://freshman.dev/raw/coffee/mug.png',
   },
   plat: common.plat, 'plate-chat': common.plat,
   'daffodil': {
@@ -608,12 +608,6 @@ export const replace = {
     title: 'capture',
     description: 'word strategy game',
     keywords: 'capture, word, strategy, game, multiplayer, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
-    icon: 'https://freshman.dev/raw/images/icon-capture.png',
-  },
-  'lettergo': {
-    title: 'lettergo',
-    description: 'word strategy game',
-    keywords: 'lettergo, word, strategy, game, multiplayer, web, app, web app, javascript, cyrus, wiggin, freshman, freshman_dev, freshman.dev',
     icon: 'https://freshman.dev/raw/images/icon-capture.png',
   },
 }

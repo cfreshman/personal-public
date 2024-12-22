@@ -40,7 +40,7 @@ export default () => {
         gap: .25em;
         width: min(30em, 100%);
         `)}>
-          {[['/raw/coffee/mug.png', `filter: contrast(1.2) saturate(0.5)`], ['/raw/coffee/wave.jpg']].map(([src, css='']) => <img src={src} style={S(`
+          {[['/raw/coffee/mug.png'], ['/raw/coffee/wave.jpg']].map(([src, css='']) => <img src={src} style={S(`
           width: 10em;
           flex-grow: 1;
           // border: 1px solid currentcolor;
@@ -88,7 +88,7 @@ export default () => {
         </>}
         <div>support publicly:</div>
         <Dangerous html={`<a href='https://ko-fi.com/U7U64599J' target='_blank'>
-          <img style='height:3em' src='https://storage.ko-fi.com/cdn/kofi1.png?v=3' border='0' alt='Buy Me a Coffee at ko-fi.com' />
+          <img style='height:3em' src='https://storage.ko-fi.com/cdn/kofi3.png?v=6' border='0' alt='Buy Me a Coffee at ko-fi.com' />
         </a>`} />
         <HalfLine />
         <div>support privately:</div>

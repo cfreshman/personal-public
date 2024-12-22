@@ -12,7 +12,7 @@ import url from 'src/lib/url'
 import { store } from 'src/lib/store'
 
 const { named_log, rand, set, maths, keys, values, list, defer } = window as any
-const log = named_log('petals util')
+const log = named_log('capture util')
 
 
 export const named_colors = {
@@ -45,7 +45,7 @@ export const default_player_profiles = [{
 }]
 
 export const PlayerName = ({ name, profile, arrow=false, zoom=1, stats=false, icon_only=false, icon_click=undefined, handle=undefined, info_id=undefined, do_reaction=undefined, reaction=undefined }) => {
-  // const base_jsx = name ? <A href={stats ? `/petals/stats/${name}` : `/u/${name}`}>{name}</A> : 'invite'
+  // const base_jsx = name ? <A href={stats ? `/capture/stats/${name}` : `/u/${name}`}>{name}</A> : 'invite'
   const [settings] = user.settings.use()
 
   const base_jsx = name 
@@ -57,12 +57,12 @@ export const PlayerName = ({ name, profile, arrow=false, zoom=1, stats=false, ic
     : stats && handle 
     ? 
       info_id
-      ? <A href={`/petals/game-stats/${info_id}/${name}`}>{name}</A>
+      ? <A href={`/capture/game-stats/${info_id}/${name}`}>{name}</A>
       : <a onClick={e => handle.open_stats(name)}>{name}</a>
-    : <A href={stats ? `/petals/stats/${name}` : `/u/${name}`}>{name}</A>
+    : <A href={stats ? `/capture/stats/${name}` : `/u/${name}`}>{name}</A>
   : 'invite'
   const name_jsx = arrow ? <span>{'>'} {base_jsx} {'<'}</span> : base_jsx
-  return <div className='petals-player-name grow middle-column' style={S(`
+  return <div className='capture-player-name grow middle-column' style={S(`
   font-size: ${zoom}em;
   `)}>
     {icon_only ? null : name_jsx}
@@ -81,7 +81,7 @@ export const PlayerName = ({ name, profile, arrow=false, zoom=1, stats=false, ic
           user-select: none;
           `)}>
             <span>emote!</span>
-            {[...(settings?.petals?.reacts || '😀😎😭🫠😈')].map((reaction, i, ar) => {
+            {[...(settings?.capture?.reacts || '😀😎😭🫠😈')].map((reaction, i, ar) => {
               const angle = i / ar.length * maths.TAU - maths.TAU / 4
               const x = Math.cos(angle) * 1.25 + 2
               const y = Math.sin(angle) * 1.25 + 2
@@ -105,7 +105,7 @@ export const PlayerName = ({ name, profile, arrow=false, zoom=1, stats=false, ic
           `)}>
             {/* <InfoButton onClick={e => {
               close()
-              url.push('/settings/petals')
+              url.push('/settings/capture')
             }}>edit</InfoButton> */}
             <div />
             <InfoButton onClick={close}>close</InfoButton>
@@ -136,7 +136,7 @@ export const PlayerNameFromInfo = ({ owner, info, display_turn:display_turn_i, p
     // info_id: info.id,
     reaction: display_turn?.owner === owner && display_turn?.reaction,
     icon_click: !do_reaction && icon_click, handle, do_reaction: do_reaction && (reaction => {
-      api.post(`/petals/game/${info.id}/react`, { reaction })
+      api.post(`/capture/game/${info.id}/react`, { reaction })
     }),
   }} />
 }
@@ -148,13 +148,14 @@ height: max-content;
 width: max-content;
 `)
 export const open_about = () => open_popup(close => <>
-  <InfoBody id='petals-menu-about' className='middle-column'>
-    <img src='/raw/images/icon-petals.png' width={128} style={S(`
+  <InfoBody id='capture-menu-about' className='middle-column'>
+    <img src='/raw/images/icon-capture.png' width={128} style={S(`
     border: 1px solid #000;
     image-rendering: pixelated;
     `)} />
+    <div>capture</div>
     <HalfLine />
-    <div>petals: a turn-based word game developed by me!</div>
+    <div>a new word strategy game</div>
     <HalfLine />
     <div className='row wide end'>
       <InfoButton onClick={close}>close</InfoButton>
@@ -162,14 +163,14 @@ export const open_about = () => open_popup(close => <>
   </InfoBody>
 </>)
 export const open_howto = ({ handle, viewer }) => open_popup(close => <>
-  <InfoBody id='petals-menu-howto' className='column'>
-    <div><b>/petals - word strategy game</b></div>
+  <InfoBody id='capture-menu-howto' className='column'>
+    <div><b>/capture - word strategy game</b></div>
     <HalfLine />
     <div className='column' style={S(`font-size: .8em`)}>
       {/* <div><b>2-player, turn-based, untimed</b> (timed → soon)</div> */}
       {/* <HalfLine /> */}
       {/* <div>capture more tiles than your opponent to win!</div> */}
-      <div>to win, <b>get 11 points without going over!</b></div>
+      <div>to win, <b>own the most tiles</b> when all played</div>
       {/* <div>5x5 board of letters</div> */}
       {/* <HalfLine /> */}
       {/* <div>spell words using any tiles on the board. keep any 'unlocked' tiles. lock a tile by owning it and surrounding tiles</div> */}
@@ -182,16 +183,15 @@ export const open_howto = ({ handle, viewer }) => open_popup(close => <>
       style={S(`text-align:left`)}
       >
         <div>• spell words using any tiles on the board</div>
-        <div>• you score a point for each group you own</div>
-        <div>• you go back to 5 if you go over 11</div>
-        <div>• unused tiles get randomized</div>
+        <div>• surround enemy (no empty tiles) to capture</div>
+        <div>• you won't keep tiles inside enemy territory</div>
       </div>
       {/* <HalfLine /> */}
       {/* <HalfLine /> */}
       {/* <InfoButton disabled>tutorial (coming soon)</InfoButton> */}
       {/* <InfoButton onClick={async e => {
-        store.set('petals-ai-speedy-ms', 100)
-        store.set('petals-tutorial-start', true)
+        store.set('capture-ai-speedy-ms', 100)
+        store.set('capture-tutorial-start', true)
         handle.open(await create_game(undefined, [viewer, 'speedy'], true))
         close()
       }}>play tutorial</InfoButton> */}

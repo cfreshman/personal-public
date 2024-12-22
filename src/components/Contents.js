@@ -102,8 +102,12 @@ export const Page = ({ loaded, override }) => {
     useE(id, () => {
         console.debug('PAGE ID', id, path)
         projects[id] && meta.description.set(projects[id][1])
-        // meta.icon.set()
         meta.title.set(parseSubdomain() === id ? id+'.' : '/'+id)
+
+        ;(async () => {
+            const icon = await api.post('/icon', { href: 'https://freshman.dev' + '/' + id })
+            meta.icon.set(icon)
+        })()
     })
 
     // use embedded page if it exists
